@@ -1,0 +1,97 @@
+{
+  "mathematical_proof": {
+    "calculations": {
+      "ecdsa_shor": {
+        "algorithm": "Shor's Algorithm for ECDLP",
+        "complexity": {
+          "explanation": "Complexidade quântica do algoritmo de Shor para DLP",
+          "formula": "O((log N)^3)",
+          "parameters": {
+            "N": "2^256 (tamanho do campo secp256k1)",
+            "complexity_estimate": "O(256^3) ≈ O(16,777,216)",
+            "log_N": 256
+          }
+        },
+        "problem": "Discrete Logarithm Problem on secp256k1",
+        "qubit_estimation": {
+          "formula": "2 * log(N) * overhead_surface_code",
+          "logical_qubits": {
+            "base": "2 * 256 = 512",
+            "logical_qubits_estimate": "512 * 40,000 = 20,480,000",
+            "overhead_surface_code": "~40,000x (para error rate 10^-3)",
+            "source": "Gidney & Ekerå 2021, surface code overhead"
+          },
+          "physical_qubits": {
+            "estimate": "2-4 bilhões",
+            "explanation": "Com correção de erro quântico (surface code)",
+            "source": "Based on Gidney & Ekerå 2021"
+          }
+        },
+        "references": [
+          {
+            "authors": "Gidney & Ekerå",
+            "title": "How to factor 2048 bit RSA integers in 8 hours using 20 million noisy qubits",
+            "url": "https://arxiv.org/abs/1905.09749",
+            "year": 2021
+          }
+        ],
+        "time_estimation": {
+          "circuit_depth": "~10^9 operações",
+          "gate_time": "100ns (superconducting qubits)",
+          "source": "Gidney & Ekerå 2021",
+          "total_time": "dias a meses (com correção de erro)"
+        }
+      },
+      "ml_dsa_grover": {
+        "algorithm": "Grover's Algorithm for Key Search",
+        "complexity": {
+          "explanation": "Grover reduz complexidade de 2^n para 2^(n/2)",
+          "formula": "O(2^(n/2))",
+          "parameters": {
+            "classical_complexity": "2^128",
+            "n": "128 (security level)",
+            "quantum_advantage": "2^64 (fator quadrático)",
+            "quantum_complexity": "2^64"
+          }
+        },
+        "problem": "Key recovery em ML-DSA-128",
+        "references": [
+          {
+            "name": "ML-DSA",
+            "standard": "FIPS 204",
+            "url": "https://csrc.nist.gov/publications/detail/fips/204/final"
+          }
+        ],
+        "security_margin": {
+          "assessment": "Ainda seguro contra computadores quânticos práticos",
+          "classical_security": "128 bits",
+          "margin": "64 bits quânticos",
+          "quantum_security": "64 bits (após Grover)"
+        }
+      },
+      "sphincs_grover": {
+        "algorithm": "Grover's Algorithm for Hash-based Signatures",
+        "complexity": {
+          "explanation": "Grover reduz complexidade de busca em hash",
+          "formula": "O(2^(n/2))",
+          "parameters": {
+            "classical_complexity": "2^128",
+            "n": "128 (security level)",
+            "quantum_complexity": "2^64",
+            "security_margin": "64 bits quânticos"
+          }
+        },
+        "problem": "Key recovery em SPHINCS+",
+        "references": [
+          {
+            "name": "SLH-DSA",
+            "standard": "FIPS 205",
+            "url": "https://csrc.nist.gov/publications/detail/fips/205/final"
+          }
+        ]
+      }
+    },
+    "generated_at": "2025-11-25T14:45:56.593810Z",
+    "version": "1.0"
+  }
+}

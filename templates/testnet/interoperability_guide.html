@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia: Transferências Reais - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <div class="mb-6">
+            <a href="/testnet/interoperability" class="text-blue-400 hover:text-blue-300">← Voltar ao Dashboard</a>
+        </div>
+
+        <h1 class="text-4xl font-bold mb-2">🔥 Guia: Transferências Cross-Chain REAIS</h1>
+        <p class="text-gray-400 mb-8">Como fazer transferências reais que aparecem nos explorers</p>
+
+        <!-- Por que Transferências Reais -->
+        <div class="bg-red-900 border-l-4 border-red-500 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">⚠️ Por que Transferências Reais são Necessárias</h2>
+            <p class="text-gray-200 mb-4">
+                <strong>Análise Técnica:</strong> "Interoperabilidade NÃO dá pra simular. Porque interoperabilidade depende da rede externa, e os devs sabem disso."
+            </p>
+            <p class="text-gray-300">
+                Para passar <strong>confiança REAL</strong> para desenvolvedores, é necessário:
+            </p>
+            <ul class="list-disc list-inside text-gray-300 mt-4 space-y-2">
+                <li>✅ <code>source_tx_hash</code> <strong>REAL</strong> (aparece no explorer)</li>
+                <li>✅ <code>target_tx_hash</code> <strong>REAL</strong> (aparece no explorer)</li>
+                <li>✅ <code>block_number</code> <strong>REAL</strong></li>
+                <li>✅ <code>confirmations >= 1</code></li>
+                <li>✅ Explorer links <strong>VÁLIDOS</strong></li>
+                <li>✅ Receipt <strong>REAL</strong></li>
+            </ul>
+        </div>
+
+        <!-- Requisitos -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">📋 Requisitos</h2>
+            
+            <h3 class="text-xl font-semibold mb-3 mt-6">1. Chaves Privadas de Testnet</h3>
+            <p class="text-gray-300 mb-4">Você precisa ter chaves privadas com saldo em testnets:</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div class="bg-gray-700 p-4 rounded">
+                    <h4 class="font-semibold text-blue-400 mb-2">Ethereum Sepolia</h4>
+                    <code class="text-sm">ETH_PRIVATE_KEY=0x...</code>
+                    <p class="text-sm text-gray-400 mt-2">Faucet: <a href="https://sepoliafaucet.com/" target="_blank" class="text-blue-400 hover:underline">sepoliafaucet.com</a></p>
+                </div>
+                
+                <div class="bg-gray-700 p-4 rounded">
+                    <h4 class="font-semibold text-purple-400 mb-2">Polygon Amoy</h4>
+                    <code class="text-sm">POLYGON_PRIVATE_KEY=0x...</code>
+                    <p class="text-sm text-gray-400 mt-2">Faucet: <a href="https://faucet.polygon.technology/" target="_blank" class="text-blue-400 hover:underline">faucet.polygon.technology</a></p>
+                </div>
+                
+                <div class="bg-gray-700 p-4 rounded">
+                    <h4 class="font-semibold text-yellow-400 mb-2">Bitcoin Testnet</h4>
+                    <code class="text-sm">BITCOIN_TESTNET_PRIVATE_KEY=...</code>
+                    <p class="text-sm text-gray-400 mt-2">Faucet: <a href="https://bitcoinfaucet.uo1.net/" target="_blank" class="text-blue-400 hover:underline">bitcoinfaucet.uo1.net</a></p>
+                </div>
+                
+                <div class="bg-gray-700 p-4 rounded">
+                    <h4 class="font-semibold text-green-400 mb-2">Solana Testnet</h4>
+                    <code class="text-sm">SOLANA_PRIVATE_KEY=...</code>
+                    <p class="text-sm text-gray-400 mt-2">Faucet: <a href="https://faucet.solana.com/" target="_blank" class="text-blue-400 hover:underline">faucet.solana.com</a></p>
+                </div>
+            </div>
+
+            <h3 class="text-xl font-semibold mb-3 mt-6">2. Configuração no `.env`</h3>
+            <div class="bg-gray-900 p-4 rounded font-mono text-sm overflow-x-auto">
+<pre># Ethereum Sepolia
+ETH_PRIVATE_KEY=0x...
+INFURA_PROJECT_ID=4622f8123b1a4cf7a3e30098d9120d7f
+
+# Polygon Amoy
+POLYGON_PRIVATE_KEY=0x...
+
+# Bitcoin Testnet
+BITCOIN_TESTNET_PRIVATE_KEY=...
+BLOCKCYPHER_API_TOKEN=17766314e49c439e85cec883969614ac
+
+# Solana Testnet
+SOLANA_PRIVATE_KEY=...
+SOLANA_RPC_URL=https://api.testnet.solana.com
+
+# BSC Testnet
+BSC_PRIVATE_KEY=0x...
+
+# Base Sepolia
+BASE_PRIVATE_KEY=0x...</pre>
+            </div>
+
+            <h3 class="text-xl font-semibold mb-3 mt-6">3. Reservas de Liquidez</h3>
+            <p class="text-gray-300 mb-4">
+                Para transferências reais, você precisa ter tokens na chain de destino:
+            </p>
+            <ul class="list-disc list-inside text-gray-300 space-y-2">
+                <li><strong>Polygon → Ethereum:</strong> Precisa ter ETH na Ethereum Sepolia</li>
+                <li><strong>Ethereum → Polygon:</strong> Precisa ter MATIC na Polygon Amoy</li>
+                <li><strong>Bitcoin → Polygon:</strong> Precisa ter MATIC na Polygon Amoy</li>
+            </ul>
+        </div>
+
+        <!-- Como Fazer -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">🚀 Como Fazer uma Transferência Real</h2>
+            
+            <h3 class="text-xl font-semibold mb-3 mt-4">Opção 1: Via Dashboard (Recomendado)</h3>
+            <ol class="list-decimal list-inside text-gray-300 space-y-2 mb-6">
+                <li>Acesse: <code class="bg-gray-900 px-2 py-1 rounded">/testnet/interoperability</code></li>
+                <li>Preencha os campos:
+                    <ul class="list-disc list-inside ml-6 mt-2 space-y-1">
+                        <li><strong>Chain Origem:</strong> Polygon</li>
+                        <li><strong>Chain Destino:</strong> Ethereum</li>
+                        <li><strong>Quantidade:</strong> 0.01 (pequeno valor para teste)</li>
+                        <li><strong>Endereço Destino:</strong> Seu endereço Ethereum Sepolia</li>
+                    </ul>
+                </li>
+                <li>Clique em "Executar Transferência"</li>
+                <li><strong>IMPORTANTE:</strong> Configure as chaves privadas no <code>.env</code> antes!</li>
+            </ol>
+
+            <h3 class="text-xl font-semibold mb-3 mt-4">Opção 2: Via Script Python</h3>
+            <div class="bg-gray-900 p-4 rounded font-mono text-sm overflow-x-auto">
+<pre>from real_cross_chain_bridge import RealCrossChainBridge
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+bridge = RealCrossChainBridge()
+
+result = bridge.real_cross_chain_transfer(
+    source_chain="polygon",
+    target_chain="ethereum",
+    amount=0.01,
+    token_symbol="MATIC",
+    recipient="0xSEU_ENDERECO_ETHEREUM",
+    source_private_key=os.getenv('POLYGON_PRIVATE_KEY')
+)
+
+print(result)</pre>
+            </div>
+        </div>
+
+        <!-- Verificação -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">✅ Verificação de Transferência Real</h2>
+            <p class="text-gray-300 mb-4">Após executar, verifique:</p>
+            <ul class="list-disc list-inside text-gray-300 space-y-2 mb-6">
+                <li><strong>TX Hash Origem:</strong> Deve aparecer no explorer da chain origem</li>
+                <li><strong>TX Hash Destino:</strong> Deve aparecer no explorer da chain destino</li>
+                <li><strong>Block Numbers:</strong> Devem ser números reais</li>
+                <li><strong>Confirmations:</strong> Devem ser >= 1</li>
+                <li><strong>Explorer Links:</strong> Devem funcionar</li>
+            </ul>
+
+            <h3 class="text-xl font-semibold mb-3">Explorers das Testnets:</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <a href="https://sepolia.etherscan.io" target="_blank" class="bg-blue-600 hover:bg-blue-700 p-4 rounded text-center">
+                    <i class="fas fa-external-link-alt mr-2"></i>Ethereum Sepolia
+                </a>
+                <a href="https://amoy.polygonscan.com" target="_blank" class="bg-purple-600 hover:bg-purple-700 p-4 rounded text-center">
+                    <i class="fas fa-external-link-alt mr-2"></i>Polygon Amoy
+                </a>
+                <a href="https://live.blockcypher.com/btc-testnet" target="_blank" class="bg-yellow-600 hover:bg-yellow-700 p-4 rounded text-center">
+                    <i class="fas fa-external-link-alt mr-2"></i>Bitcoin Testnet
+                </a>
+                <a href="https://explorer.solana.com/?cluster=testnet" target="_blank" class="bg-green-600 hover:bg-green-700 p-4 rounded text-center">
+                    <i class="fas fa-external-link-alt mr-2"></i>Solana Testnet
+                </a>
+            </div>
+        </div>
+
+        <!-- Segurança -->
+        <div class="bg-red-900 border-l-4 border-red-500 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">🔒 Segurança</h2>
+            <ul class="list-disc list-inside text-gray-200 space-y-2">
+                <li>⚠️ <strong>NUNCA</strong> compartilhe chaves privadas!</li>
+                <li>⚠️ <strong>NUNCA</strong> use chaves de mainnet em código!</li>
+                <li>⚠️ <strong>SEMPRE</strong> use testnets para testes!</li>
+                <li>⚠️ <strong>SEMPRE</strong> use valores pequenos para testes!</li>
+            </ul>
+        </div>
+
+        <!-- Comparação -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">📊 O que Muda com Transferência Real</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-red-900 p-4 rounded">
+                    <h3 class="font-semibold mb-2">❌ Simulado (Atual)</h3>
+                    <pre class="text-xs overflow-x-auto">{
+  "source_tx_hash": "0xabc123...",
+  "target_tx_hash": "0xdef456...",
+  "transfer_real": false,
+  "note": "⚠️ Transferência simulada"
+}</pre>
+                </div>
+                
+                <div class="bg-green-900 p-4 rounded">
+                    <h3 class="font-semibold mb-2">✅ Real (Com Configuração)</h3>
+                    <pre class="text-xs overflow-x-auto">{
+  "source_tx_hash": "0x477971...",
+  "target_tx_hash": "0x8d7449...",
+  "source_block_number": 12345678,
+  "target_block_number": 9876543,
+  "source_confirmations": 12,
+  "target_confirmations": 6,
+  "transfer_real": true,
+  "note": "✅ Transferência real"
+}</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resultado Esperado -->
+        <div class="bg-green-900 border-l-4 border-green-500 p-6 rounded-lg">
+            <h2 class="text-2xl font-semibold mb-4">🎯 Resultado Esperado</h2>
+            <p class="text-gray-200 mb-4">
+                Com transferências reais, desenvolvedores verão:
+            </p>
+            <ul class="list-disc list-inside text-gray-200 space-y-2">
+                <li>✅ "Essa transferência foi REAL. Posso verificar nos explorers."</li>
+                <li>✅ "Os TX hashes são válidos e aparecem nas blockchains."</li>
+                <li>✅ "Isso é interoperabilidade de verdade, não simulação."</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
+

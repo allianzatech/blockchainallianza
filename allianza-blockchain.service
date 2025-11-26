@@ -1,0 +1,17 @@
+
+[Unit]
+Description=Allianza Blockchain Production
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/allianza-blockchain
+Environment=PYTHONPATH=/home/ubuntu/allianza-blockchain
+ExecStart=/usr/bin/python3 /home/ubuntu/allianza-blockchain/run_production.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+        

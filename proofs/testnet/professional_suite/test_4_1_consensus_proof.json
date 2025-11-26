@@ -1,0 +1,29 @@
+{
+  "test_id": "test_4_1_consensus",
+  "name": "Testes de Consenso",
+  "start_time": "2025-11-26T00:53:10.009428",
+  "tests": {
+    "pbft": {
+      "success": true,
+      "consensus_reached": true,
+      "approve_count": 5,
+      "total_nodes": 5,
+      "threshold": 4
+    },
+    "latency": {
+      "success": true,
+      "average_ms": 0.18291473388671875,
+      "min_ms": 0.1442432403564453,
+      "max_ms": 0.3604888916015625,
+      "tests": 10
+    },
+    "throughput": {
+      "success": true,
+      "transactions_per_second": 6481.192922815421,
+      "total_blocks": 20,
+      "duration": 0.0030858516693115234
+    }
+  },
+  "success": true,
+  "duration": 0.010568857192993164
+}

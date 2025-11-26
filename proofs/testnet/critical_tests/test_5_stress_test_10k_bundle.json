@@ -1,0 +1,11 @@
+{
+  "test_id": "test_5_stress_test_10k",
+  "timestamp": "2025-11-26T00:53:53.916907",
+  "num_transactions": 10000,
+  "successful": 10000,
+  "failed": 0,
+  "duration": 0.5448682308197021,
+  "throughput_per_second": 18353.061225382797,
+  "success_rate": 100.0,
+  "errors_sample": []
+}

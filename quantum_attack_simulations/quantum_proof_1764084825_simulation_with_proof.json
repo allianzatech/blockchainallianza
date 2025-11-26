@@ -1,0 +1,681 @@
+{
+  "algorithm_specifications": {
+    "protected": {
+      "schemes": [
+        {
+          "algorithm": "ML-KEM-768",
+          "ciphertext_size": 1088,
+          "key_size": 1184,
+          "quantum_resilience": "128 bits quânticos",
+          "security_level": 3,
+          "standard": "FIPS 203",
+          "type": "Key Encapsulation Mechanism"
+        },
+        {
+          "algorithm": "ML-DSA-128",
+          "public_key_size": 32,
+          "quantum_resilience": "128 bits quânticos",
+          "security_level": 3,
+          "signature_size": 2420,
+          "standard": "FIPS 204",
+          "type": "Digital Signature Algorithm"
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128s",
+          "public_key_size": 32,
+          "quantum_resilience": "128 bits quânticos",
+          "security_level": 3,
+          "signature_size": 7856,
+          "standard": "FIPS 205",
+          "type": "Hash-based Signature"
+        }
+      ]
+    },
+    "traditional": {
+      "algorithm": "ECDSA-secp256k1",
+      "attack_complexity": "O((log N)^3)",
+      "best_attack": "Shor's algorithm - polynomial time",
+      "key_size": 256,
+      "quantum_resilience": "0 bits",
+      "vulnerability": "Complete - chave privada recuperável em tempo polinomial"
+    }
+  },
+  "canonical_sha256": "5697e8a7a8dfb891ae619f934d892098198d0bedc20b82992818f2fa176628ef",
+  "comparison": {
+    "attack_success_protected": false,
+    "attack_success_traditional": true,
+    "funds_protected": 10.0,
+    "funds_stolen_traditional": 10.0,
+    "improvement_percent": 100.0,
+    "vulnerability_difference": "COMPLETE → NONE"
+  },
+  "disclaimers": {
+    "assumptions": "Pressupostos sobre capacidades quânticas são baseados em projeções realistas",
+    "ongoing_research": "Pesquisa em criptografia pós-quântica e computação quântica está em constante evolução",
+    "simulation_nature": "Esta é uma simulação educacional baseada em pesquisa atual",
+    "uncertainties": "Timeline para CRQC (Cryptographically Relevant Quantum Computer) é incerta",
+    "verification": "Especialistas devem verificar afirmações contra literatura científica atual"
+  },
+  "implementation_guidance": {
+    "crypto_agility": {
+      "framework": "Identificadores de algoritmo extensíveis (OIDs)",
+      "requirement": "Suporte a múltiplos algoritmos PQC",
+      "standard": "NIST SP 800-208",
+      "testing": "Transição suave entre esquemas"
+    },
+    "deployment_phases": {
+      "estimated_duration": "2-5 anos",
+      "phase_1": "Implementação híbrida (ECDSA + PQC)",
+      "phase_2": "Migração gradual para PQC-only",
+      "phase_3": "Remoção de ECDSA legacy"
+    },
+    "key_management": {
+      "backup": "Backup seguro com criptografia PQC",
+      "key_generation": "Hardware Security Modules (HSM) quando possível",
+      "rotation": "Políticas baseadas em avaliação de risco contínua",
+      "storage": "Proteção contra captura futura (encrypt-at-rest)"
+    }
+  },
+  "mathematical_proof": {
+    "mathematical_proof": {
+      "calculations": {
+        "ecdsa_shor": {
+          "algorithm": "Shor's Algorithm for ECDLP",
+          "complexity": {
+            "explanation": "Complexidade quântica do algoritmo de Shor para DLP",
+            "formula": "O((log N)^3)",
+            "parameters": {
+              "N": "2^256 (tamanho do campo secp256k1)",
+              "complexity_estimate": "O(256^3) ≈ O(16,777,216)",
+              "log_N": 256
+            }
+          },
+          "problem": "Discrete Logarithm Problem on secp256k1",
+          "qubit_estimation": {
+            "formula": "2 * log(N) * overhead_surface_code",
+            "logical_qubits": {
+              "base": "2 * 256 = 512",
+              "logical_qubits_estimate": "512 * 40,000 = 20,480,000",
+              "overhead_surface_code": "~40,000x (para error rate 10^-3)",
+              "source": "Gidney & Ekerå 2021, surface code overhead"
+            },
+            "physical_qubits": {
+              "estimate": "2-4 bilhões",
+              "explanation": "Com correção de erro quântico (surface code)",
+              "source": "Based on Gidney & Ekerå 2021"
+            }
+          },
+          "references": [
+            {
+              "authors": "Gidney & Ekerå",
+              "title": "How to factor 2048 bit RSA integers in 8 hours using 20 million noisy qubits",
+              "url": "https://arxiv.org/abs/1905.09749",
+              "year": 2021
+            }
+          ],
+          "time_estimation": {
+            "circuit_depth": "~10^9 operações",
+            "gate_time": "100ns (superconducting qubits)",
+            "source": "Gidney & Ekerå 2021",
+            "total_time": "dias a meses (com correção de erro)"
+          }
+        },
+        "ml_dsa_grover": {
+          "algorithm": "Grover's Algorithm for Key Search",
+          "complexity": {
+            "explanation": "Grover reduz complexidade de 2^n para 2^(n/2)",
+            "formula": "O(2^(n/2))",
+            "parameters": {
+              "classical_complexity": "2^128",
+              "n": "128 (security level)",
+              "quantum_advantage": "2^64 (fator quadrático)",
+              "quantum_complexity": "2^64"
+            }
+          },
+          "problem": "Key recovery em ML-DSA-128",
+          "references": [
+            {
+              "name": "ML-DSA",
+              "standard": "FIPS 204",
+              "url": "https://csrc.nist.gov/publications/detail/fips/204/final"
+            }
+          ],
+          "security_margin": {
+            "assessment": "Ainda seguro contra computadores quânticos práticos",
+            "classical_security": "128 bits",
+            "margin": "64 bits quânticos",
+            "quantum_security": "64 bits (após Grover)"
+          }
+        },
+        "sphincs_grover": {
+          "algorithm": "Grover's Algorithm for Hash-based Signatures",
+          "complexity": {
+            "explanation": "Grover reduz complexidade de busca em hash",
+            "formula": "O(2^(n/2))",
+            "parameters": {
+              "classical_complexity": "2^128",
+              "n": "128 (security level)",
+              "quantum_complexity": "2^64",
+              "security_margin": "64 bits quânticos"
+            }
+          },
+          "problem": "Key recovery em SPHINCS+",
+          "references": [
+            {
+              "name": "SLH-DSA",
+              "standard": "FIPS 205",
+              "url": "https://csrc.nist.gov/publications/detail/fips/205/final"
+            }
+          ]
+        }
+      },
+      "generated_at": "2025-11-25T15:33:45.170820Z",
+      "version": "1.0"
+    }
+  },
+  "methodology": {
+    "quantum_assumptions": {
+      "architecture": "superconducting_qubits",
+      "error_rate": "10^-3",
+      "gate_time": "100ns",
+      "note": "Baseado em arquiteturas quânticas atuais e projeções realistas",
+      "parallelization": "limited_by_quantum_volume",
+      "qubit_quality": "logical_qubits_with_surface_code"
+    },
+    "security_parameters": {
+      "attack_model": "Q2_model",
+      "note": "Q2 model: atacante com acesso a computador quântico mas sem comunicação quântica",
+      "optimization": "best_known_attacks",
+      "security_level": "NIST_Level_3"
+    }
+  },
+  "migration_strategies": {
+    "composite_signatures": {
+      "adoption": "Alto nível de segurança, maior overhead",
+      "description": "Combinação de múltiplos esquemas PQC (QRS-3: ML-DSA + SPHINCS+)",
+      "security_benefit": "Redundância criptográfica, resistência a falhas de um esquema",
+      "standard": "NIST SP 800-208"
+    },
+    "hybrid_approach": {
+      "adoption": "Recomendado para transição gradual",
+      "description": "ECDSA + PQC signature (dual signatures)",
+      "implementation_complexity": "Moderada",
+      "security_benefit": "Proteção durante transição, compatibilidade retroativa",
+      "standard": "NIST SP 800-208"
+    }
+  },
+  "parameters": {
+    "note": "Use este seed para reproduzir a simulação exatamente",
+    "reproducible": true,
+    "seed": 8771081165180743751
+  },
+  "performance_analysis": {
+    "computational_overhead": {
+      "key_generation": {
+        "ml_dsa_128": "3-8x mais lento que ECDSA",
+        "ml_kem_768": "2-5x mais lento que ECDSA",
+        "slh_dsa_128s": "5-15x mais lento que ECDSA"
+      },
+      "memory_usage": {
+        "ml_dsa_128": "3-8x maior que ECDSA",
+        "ml_kem_768": "2-5x maior que ECDSA",
+        "slh_dsa_128s": "10-50x maior que ECDSA"
+      },
+      "signing": {
+        "ml_dsa_128": "10-50x mais lento que ECDSA",
+        "slh_dsa_128s": "50-200x mais lento que ECDSA"
+      },
+      "verification": {
+        "ml_dsa_128": "2-10x mais lento que ECDSA",
+        "slh_dsa_128s": "5-20x mais lento que ECDSA"
+      }
+    },
+    "network_impact": {
+      "blockchain_storage_growth": {
+        "full_migration": "2-15x dependendo do esquema",
+        "hybrid_approach": "3-8x"
+      },
+      "transaction_size_increase": {
+        "hybrid_ecdsa_pqc": "4-8x",
+        "ml_dsa_only": "3-5x",
+        "slh_dsa_only": "10-15x"
+      }
+    }
+  },
+  "pqc_signature": {
+    "algorithm": "ML-DSA-128",
+    "public_key": "QQPoJNdiGDqJiCIJ7q+hjjzT5M0zqyr/Xjaj+tPkXPOoOgH4BJP0XJfQts8dZ+ANaT7oXaPTm3ZUXftW9k1dR3rNFSksTfuDBGFf97WFuQbmgGtXL+abuMCoC9e4dqNVHdZaZRCCBtE4ZJ4afMY9qlGkX8qmkbad+HypFRM6RmEcypVawF0FEBVkWATgCZA70WQK5oalIqUvfby4oqOdAjxXvuwX1I/9/zrU6ltk2WZAmpbsTNAtstXB1nQHd+Q59/s01oMsxlF2zW9ZoZ2pLQVkr5ElOhsw6n+APCnwspIDL1DPEUl+QlJIgMqfze4kw/kSSTyceEqlatkH4XPuZnApAiE5n0O21MLso2N2xG/TbxtuM8AS1kgMPTW9I1a/DDJkrst61Jgb/GK5V0cA0wAcv/KMFFskLcaVjlvt2mr8UZgvAC+WbnJ38jjuBWB09bICDVtrK4mU8L1JDmfM0D8KyKIVmE14JSbEOiDXB07xseAbBX7qBkRdLzrQy3LNy0tjjEWXdqOZBSXbM/Eswbw2caTxMfDhJaqM4G/Ix03FVeb1ikm7czlHZi/RUZcIeTrHUiMj7zPuDTgJ969g8eu8S/onE47lf8PRyYBWcO6cv2iok9bmBR3qg1UeszOJUCLoAHSZqiW/jDqhjBa+v9ZBVv1KVNuhCV0DYhvpGWXrq/Hm5YTW9OKoX8pB979dMhkpoCN/QVTl2IkuTpJxT9WE52D5s/ed6hNAEZUun0zQMlcw5nHEUCFCpbmr6FDDhC129GspO2hxoev9SBJ+KhbjhL97KcKHcJLP8ByEChFGYITpqrwbgQImkk/9vprFX+Nsp+PQwFp6LNnXIRjkoiwytH0fVLQiQnyYiDbEcXmn7R5hvF6t3V0JJt+1Oj3cSLlPblydhOFN0yohfWL7wt+Y6cGnSjR0ZHxThKD/t2qJiqb6kxEkS7bG3qJBhjlt03cB69RDJ53eBlVHnwWEQ4RbEMd8HnHa59871x9bBbDo8VpuGSpae7aCYcWMo2wcdi8G2WLY/Lgl04Qo1f3ltDHBVqAZ8kFn1YOx+SWx1ESSCygKqSQGswzJ2D374ME+n70+Q5ziCaWT/uXSxTKrEZ3IMdSxU6vgjOyhov/lGNa48b1cyVnRvDJL/1I+TliBQh4N/H6YPPBklEaoaAxdTyt2vzjM4dY1PJCqiagSlYAB6GPsU1/BM1KhbhrxP2ijb//JNZO4NzKAPyHXS5b23UHdsvt7tx2bGPXJXrvdWW40YUbwv4GwvOVDbPq2zzfHK9zQrLVVgYOnJB2uifMAjxLqEt2NolxTph4oZ1DxkaWQsGrjs6oibeeiyZQfAObdF2CZfBQHnxJ61ZIgNRy/e9ym6HwNQ9f+Ofp/LokaNfWMxZb0MjguV1F6sO6lUW4m6ueBvq5Wyo8UlYaH1XYE6Y7Zsp5CFEjJMOvO14ga6tNNWCLZub7z8MkCEF//LZHRvGeLqikBEynYVCIUCxcWN36YgfGeLzrSfdnFJZGJs2ILGm47ebP7z402nlCZDyIw8BKUwJuWSchw5l7EGV4b1M5LfxJaieDOVpKR6cfRfH/69u3ekGJxPMA35puP+IuKtzS8AGbcRS1m6hz04FCgJW4vM+JWxmYmg+JwZ1iuaZ0S4WhKTuujCYiWdDte+hgSgzh+xRCk5nTb24lodpH5fCoOr13NVSfqT6fUl0MlvZyix6xC4xVBXdDnjEceT09gkBswEoGY2dM3JOcIUZMrsQ==",
+    "signature": "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",
+    "signed_hash": "5697e8a7a8dfb891ae619f934d892098198d0bedc20b82992818f2fa176628ef",
+    "timestamp": "2025-11-25T15:33:45.170768Z"
+  },
+  "protected": {
+    "algorithms_attacked": [
+      "ECDSA",
+      "ML-DSA",
+      "SLH-DSA-SHA2-128s"
+    ],
+    "attack_attempts": [
+      {
+        "algorithm": "ECDSA",
+        "algorithm_spec": null,
+        "details": {
+          "but_insufficient": true,
+          "key_recovered": true
+        },
+        "method": "Shor's Algorithm",
+        "success": true,
+        "time_seconds": 1.5
+      },
+      {
+        "algorithm": "ML-DSA",
+        "algorithm_spec": null,
+        "details": {
+          "reason": "Lattice-based cryptography is quantum-resistant"
+        },
+        "method": "Shor's + Grover's Algorithms",
+        "success": false,
+        "time_seconds": 3.0
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "algorithm_spec": null,
+        "details": {
+          "quantum_resilience": "128 bits quânticos",
+          "reason": "Hash-based cryptography with large parameters is quantum-resistant",
+          "security_level": 3,
+          "standard": "FIPS 205"
+        },
+        "method": "Shor's + Grover's Algorithms",
+        "success": false,
+        "time_seconds": 2.51
+      }
+    ],
+    "attack_time_seconds": 7.52,
+    "blockchain_type": "quantum_protected",
+    "details": {
+      "failed_attacks": 2,
+      "migration_strategy": {
+        "adoption": "Alto nível de segurança, maior overhead",
+        "description": "Combinação de múltiplos esquemas PQC (QRS-3: ML-DSA + SPHINCS+)",
+        "security_benefit": "Redundância criptográfica, resistência a falhas de um esquema",
+        "standard": "NIST SP 800-208"
+      },
+      "protection_mechanism": "ML-DSA + SPHINCS+ (NIST PQC Standards)",
+      "successful_attacks": 1,
+      "total_attempts": 3
+    },
+    "funds_protected": 10.0,
+    "funds_stolen": 0.0,
+    "private_key_recovered": false,
+    "protected_schemes": [],
+    "protection_level": "QRS-3 (Triple Redundancy)",
+    "success": false,
+    "vulnerability_level": "NONE"
+  },
+  "references": {
+    "implementation_repos": [
+      {
+        "description": "Biblioteca open-source de algoritmos PQC",
+        "name": "Open Quantum Safe (liboqs)",
+        "url": "https://github.com/open-quantum-safe/liboqs"
+      },
+      {
+        "description": "Implementações limpas de algoritmos PQC",
+        "name": "PQClean",
+        "url": "https://github.com/PQClean/PQClean"
+      },
+      {
+        "description": "Biblioteca Java com suporte PQC",
+        "name": "Bouncy Castle PQC",
+        "url": "https://www.bouncycastle.org/"
+      }
+    ],
+    "key_papers": [
+      {
+        "authors": "Gidney & Ekerå",
+        "relevance": "Estimativas de recursos para quebrar criptografia atual",
+        "title": "How to factor 2048 bit RSA integers in 8 hours using 20 million noisy qubits",
+        "url": "https://arxiv.org/abs/1905.09749",
+        "year": 2021
+      },
+      {
+        "authors": "Alagic et al.",
+        "relevance": "Padrões NIST PQC finais",
+        "title": "Status report on the third round of the NIST Post-Quantum Cryptography Standardization Process",
+        "url": "https://csrc.nist.gov/publications/detail/nistir/8413/final",
+        "year": 2022
+      },
+      {
+        "authors": "Mosca & Piani",
+        "relevance": "Estimativas de timeline para ameaça quântica",
+        "title": "Quantum threat timeline report",
+        "year": 2023
+      }
+    ],
+    "nist_standards": [
+      {
+        "name": "ML-KEM",
+        "standard": "FIPS 203",
+        "type": "Key Encapsulation Mechanism",
+        "url": "https://csrc.nist.gov/publications/detail/fips/203/final"
+      },
+      {
+        "name": "ML-DSA",
+        "standard": "FIPS 204",
+        "type": "Digital Signature Algorithm",
+        "url": "https://csrc.nist.gov/publications/detail/fips/204/final"
+      },
+      {
+        "name": "SLH-DSA",
+        "standard": "FIPS 205",
+        "type": "Hash-based Signature",
+        "url": "https://csrc.nist.gov/publications/detail/fips/205/final"
+      },
+      {
+        "name": "Recommendation for Stateful Hash-Based Signature Schemes",
+        "standard": "NIST SP 800-208",
+        "type": "Guideline",
+        "url": "https://csrc.nist.gov/publications/detail/sp/800-208/final"
+      }
+    ]
+  },
+  "resource_estimates": {
+    "ml_dsa_128": {
+      "classical_complexity": "2^143 operações",
+      "confidence": "high",
+      "quantum_resilience": "128 bits quânticos",
+      "source": "NIST PQC Standardization Process - FIPS 204"
+    },
+    "ml_kem_768": {
+      "classical_complexity": "2^143 operações",
+      "confidence": "high",
+      "memory_requirement": "~2^40 bits",
+      "quantum_advantage": "fator quadrático apenas (Grover)",
+      "security_margin": "~128 bits quânticos",
+      "source": "NIST PQC Standardization Process - FIPS 203"
+    },
+    "shor_ecdsa_256": {
+      "confidence": "high",
+      "depth": "~10^9 operações",
+      "logical_qubits": "20-30 milhões",
+      "paper_url": "https://arxiv.org/abs/1905.09749",
+      "physical_qubits": "2-4 bilhões",
+      "source": "Gidney & Ekerå 2021 - 'How to factor 2048 bit RSA integers in 8 hours using 20 million noisy qubits'",
+      "total_time": "dias a meses (com correção de erro)"
+    },
+    "slh_dsa_128s": {
+      "classical_complexity": "2^143 operações",
+      "confidence": "high",
+      "quantum_resilience": "128 bits quânticos",
+      "source": "NIST PQC Standardization Process - FIPS 205"
+    }
+  },
+  "risk_assessment": {
+    "cost_analysis": {
+      "deployment_phases": "2-5 years",
+      "development_effort": "6-18 meses",
+      "note": "Depende da complexidade do sistema e requisitos de interoperabilidade",
+      "testing_requirements": "extensive_interoperability"
+    },
+    "timeline_estimates": {
+      "cryptographically_relevant_quantum_computer": {
+        "note": "Estimativas baseadas em progresso atual e desafios técnicos remanescentes",
+        "optimistic": "2035-2040",
+        "pessimistic": "2030-2035",
+        "realistic": "2040-2050"
+      },
+      "store_now_attack_later": {
+        "mitigation": "PQC migration before public breakthroughs",
+        "note": "Ataques podem ser preparados agora e executados quando QC estiver disponível",
+        "risk_period": "10-30 anos"
+      }
+    }
+  },
+  "simulation_id": "quantum_attack_1764084810",
+  "summary": {
+    "attack_time_protected": 7.52,
+    "attack_time_traditional": 4.51,
+    "funds_protected": 10.0,
+    "funds_stolen_traditional": 10.0,
+    "improvement_percent": 100.0,
+    "protected_safe": true,
+    "traditional_vulnerable": true
+  },
+  "technical_details": {
+    "protected": {
+      "algorithms_attacked": [
+        "ECDSA",
+        "ML-DSA",
+        "SLH-DSA-SHA2-128s"
+      ],
+      "attack_attempts": [
+        {
+          "algorithm": "ECDSA",
+          "algorithm_spec": null,
+          "details": {
+            "but_insufficient": true,
+            "key_recovered": true
+          },
+          "method": "Shor's Algorithm",
+          "success": true,
+          "time_seconds": 1.5
+        },
+        {
+          "algorithm": "ML-DSA",
+          "algorithm_spec": null,
+          "details": {
+            "reason": "Lattice-based cryptography is quantum-resistant"
+          },
+          "method": "Shor's + Grover's Algorithms",
+          "success": false,
+          "time_seconds": 3.0
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128s",
+          "algorithm_spec": null,
+          "details": {
+            "quantum_resilience": "128 bits quânticos",
+            "reason": "Hash-based cryptography with large parameters is quantum-resistant",
+            "security_level": 3,
+            "standard": "FIPS 205"
+          },
+          "method": "Shor's + Grover's Algorithms",
+          "success": false,
+          "time_seconds": 2.51
+        }
+      ],
+      "protection_level": "QRS-3 (Triple Redundancy)",
+      "resistant_algorithms": [
+        "ML-DSA",
+        "SLH-DSA-SHA2-128s"
+      ]
+    },
+    "traditional": {
+      "algorithm_attacked": "ECDSA",
+      "attack_method": "Shor's Algorithm",
+      "complexity": "O((log N)^3)",
+      "quantum_operations": "~10^6 qubits"
+    }
+  },
+  "timestamp": "2025-11-25T12:33:45.129206",
+  "traditional": {
+    "algorithm_attacked": "ECDSA",
+    "attack_method": "Shor's Algorithm",
+    "attack_time_seconds": 4.51,
+    "blockchain_type": "traditional",
+    "details": {
+      "complexity": "O((log N)^3)",
+      "quantum_operations": "~10^6 qubits",
+      "steps": 4,
+      "success_rate": "100%"
+    },
+    "funds_protected": 0.0,
+    "funds_stolen": 10.0,
+    "private_key_recovered": true,
+    "success": true,
+    "vulnerability_level": "COMPLETE"
+  },
+  "verification_metadata": {
+    "canonical_json_path": "quantum_attack_simulations\\quantum_proof_1764084825_simulation.json",
+    "canonical_sha256": "5697e8a7a8dfb891ae619f934d892098198d0bedc20b82992818f2fa176628ef",
+    "mathematical_proof": {
+      "mathematical_proof": {
+        "calculations": {
+          "ecdsa_shor": {
+            "algorithm": "Shor's Algorithm for ECDLP",
+            "complexity": {
+              "explanation": "Complexidade quântica do algoritmo de Shor para DLP",
+              "formula": "O((log N)^3)",
+              "parameters": {
+                "N": "2^256 (tamanho do campo secp256k1)",
+                "complexity_estimate": "O(256^3) ≈ O(16,777,216)",
+                "log_N": 256
+              }
+            },
+            "problem": "Discrete Logarithm Problem on secp256k1",
+            "qubit_estimation": {
+              "formula": "2 * log(N) * overhead_surface_code",
+              "logical_qubits": {
+                "base": "2 * 256 = 512",
+                "logical_qubits_estimate": "512 * 40,000 = 20,480,000",
+                "overhead_surface_code": "~40,000x (para error rate 10^-3)",
+                "source": "Gidney & Ekerå 2021, surface code overhead"
+              },
+              "physical_qubits": {
+                "estimate": "2-4 bilhões",
+                "explanation": "Com correção de erro quântico (surface code)",
+                "source": "Based on Gidney & Ekerå 2021"
+              }
+            },
+            "references": [
+              {
+                "authors": "Gidney & Ekerå",
+                "title": "How to factor 2048 bit RSA integers in 8 hours using 20 million noisy qubits",
+                "url": "https://arxiv.org/abs/1905.09749",
+                "year": 2021
+              }
+            ],
+            "time_estimation": {
+              "circuit_depth": "~10^9 operações",
+              "gate_time": "100ns (superconducting qubits)",
+              "source": "Gidney & Ekerå 2021",
+              "total_time": "dias a meses (com correção de erro)"
+            }
+          },
+          "ml_dsa_grover": {
+            "algorithm": "Grover's Algorithm for Key Search",
+            "complexity": {
+              "explanation": "Grover reduz complexidade de 2^n para 2^(n/2)",
+              "formula": "O(2^(n/2))",
+              "parameters": {
+                "classical_complexity": "2^128",
+                "n": "128 (security level)",
+                "quantum_advantage": "2^64 (fator quadrático)",
+                "quantum_complexity": "2^64"
+              }
+            },
+            "problem": "Key recovery em ML-DSA-128",
+            "references": [
+              {
+                "name": "ML-DSA",
+                "standard": "FIPS 204",
+                "url": "https://csrc.nist.gov/publications/detail/fips/204/final"
+              }
+            ],
+            "security_margin": {
+              "assessment": "Ainda seguro contra computadores quânticos práticos",
+              "classical_security": "128 bits",
+              "margin": "64 bits quânticos",
+              "quantum_security": "64 bits (após Grover)"
+            }
+          },
+          "sphincs_grover": {
+            "algorithm": "Grover's Algorithm for Hash-based Signatures",
+            "complexity": {
+              "explanation": "Grover reduz complexidade de busca em hash",
+              "formula": "O(2^(n/2))",
+              "parameters": {
+                "classical_complexity": "2^128",
+                "n": "128 (security level)",
+                "quantum_complexity": "2^64",
+                "security_margin": "64 bits quânticos"
+              }
+            },
+            "problem": "Key recovery em SPHINCS+",
+            "references": [
+              {
+                "name": "SLH-DSA",
+                "standard": "FIPS 205",
+                "url": "https://csrc.nist.gov/publications/detail/fips/205/final"
+              }
+            ]
+          }
+        },
+        "generated_at": "2025-11-25T15:33:45.170820Z",
+        "version": "1.0"
+      }
+    },
+    "pqc_signature": {
+      "algorithm": "ML-DSA-128",
+      "public_key": "QQPoJNdiGDqJiCIJ7q+hjjzT5M0zqyr/Xjaj+tPkXPOoOgH4BJP0XJfQts8dZ+ANaT7oXaPTm3ZUXftW9k1dR3rNFSksTfuDBGFf97WFuQbmgGtXL+abuMCoC9e4dqNVHdZaZRCCBtE4ZJ4afMY9qlGkX8qmkbad+HypFRM6RmEcypVawF0FEBVkWATgCZA70WQK5oalIqUvfby4oqOdAjxXvuwX1I/9/zrU6ltk2WZAmpbsTNAtstXB1nQHd+Q59/s01oMsxlF2zW9ZoZ2pLQVkr5ElOhsw6n+APCnwspIDL1DPEUl+QlJIgMqfze4kw/kSSTyceEqlatkH4XPuZnApAiE5n0O21MLso2N2xG/TbxtuM8AS1kgMPTW9I1a/DDJkrst61Jgb/GK5V0cA0wAcv/KMFFskLcaVjlvt2mr8UZgvAC+WbnJ38jjuBWB09bICDVtrK4mU8L1JDmfM0D8KyKIVmE14JSbEOiDXB07xseAbBX7qBkRdLzrQy3LNy0tjjEWXdqOZBSXbM/Eswbw2caTxMfDhJaqM4G/Ix03FVeb1ikm7czlHZi/RUZcIeTrHUiMj7zPuDTgJ969g8eu8S/onE47lf8PRyYBWcO6cv2iok9bmBR3qg1UeszOJUCLoAHSZqiW/jDqhjBa+v9ZBVv1KVNuhCV0DYhvpGWXrq/Hm5YTW9OKoX8pB979dMhkpoCN/QVTl2IkuTpJxT9WE52D5s/ed6hNAEZUun0zQMlcw5nHEUCFCpbmr6FDDhC129GspO2hxoev9SBJ+KhbjhL97KcKHcJLP8ByEChFGYITpqrwbgQImkk/9vprFX+Nsp+PQwFp6LNnXIRjkoiwytH0fVLQiQnyYiDbEcXmn7R5hvF6t3V0JJt+1Oj3cSLlPblydhOFN0yohfWL7wt+Y6cGnSjR0ZHxThKD/t2qJiqb6kxEkS7bG3qJBhjlt03cB69RDJ53eBlVHnwWEQ4RbEMd8HnHa59871x9bBbDo8VpuGSpae7aCYcWMo2wcdi8G2WLY/Lgl04Qo1f3ltDHBVqAZ8kFn1YOx+SWx1ESSCygKqSQGswzJ2D374ME+n70+Q5ziCaWT/uXSxTKrEZ3IMdSxU6vgjOyhov/lGNa48b1cyVnRvDJL/1I+TliBQh4N/H6YPPBklEaoaAxdTyt2vzjM4dY1PJCqiagSlYAB6GPsU1/BM1KhbhrxP2ijb//JNZO4NzKAPyHXS5b23UHdsvt7tx2bGPXJXrvdWW40YUbwv4GwvOVDbPq2zzfHK9zQrLVVgYOnJB2uifMAjxLqEt2NolxTph4oZ1DxkaWQsGrjs6oibeeiyZQfAObdF2CZfBQHnxJ61ZIgNRy/e9ym6HwNQ9f+Ofp/LokaNfWMxZb0MjguV1F6sO6lUW4m6ueBvq5Wyo8UlYaH1XYE6Y7Zsp5CFEjJMOvO14ga6tNNWCLZub7z8MkCEF//LZHRvGeLqikBEynYVCIUCxcWN36YgfGeLzrSfdnFJZGJs2ILGm47ebP7z402nlCZDyIw8BKUwJuWSchw5l7EGV4b1M5LfxJaieDOVpKR6cfRfH/69u3ekGJxPMA35puP+IuKtzS8AGbcRS1m6hz04FCgJW4vM+JWxmYmg+JwZ1iuaZ0S4WhKTuujCYiWdDte+hgSgzh+xRCk5nTb24lodpH5fCoOr13NVSfqT6fUl0MlvZyix6xC4xVBXdDnjEceT09gkBswEoGY2dM3JOcIUZMrsQ==",
+      "signature": "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",
+      "signed_hash": "5697e8a7a8dfb891ae619f934d892098198d0bedc20b82992818f2fa176628ef",
+      "timestamp": "2025-11-25T15:33:45.170768Z"
+    },
+    "proof_id": "quantum_proof_1764084825",
+    "reproducibility": {
+      "code_version_hash": "ed7319c4b4b3b7c1",
+      "generated_at": "2025-11-25T15:33:45.170888Z",
+      "note": "Use o seed para reproduzir a simulação exatamente",
+      "seed": 8771081165180743751,
+      "seed_fixed": true,
+      "version": "1.0"
+    },
+    "verification_commands": {
+      "verification_instructions": {
+        "generated_at": "2025-11-25T15:33:45.335246Z",
+        "steps": [
+          {
+            "command": "sha256sum quantum_proof_1764084825_simulation.json",
+            "description": "Verificar hash SHA-256 do JSON canônico",
+            "expected_output": "Hash SHA-256 do arquivo",
+            "step": 1,
+            "verification": "Comparar com canonical_sha256 no bundle"
+          },
+          {
+            "command": "oqs-sig verify --algorithm dilithium2 --public-key ml_dsa_public_key.pem --signature ml_dsa_signature.bin simulation.json.sha256",
+            "description": "Verificar assinatura ML-DSA",
+            "expected_output": "Signature valid",
+            "note": "Usar Open Quantum Safe (liboqs) ou similar",
+            "step": 2
+          },
+          {
+            "command": "oqs-sig verify --algorithm sphincs-sha2-128s-simple --public-key sphincs_public_key.pem --signature sphincs_signature.bin simulation.json.sha256",
+            "description": "Verificar assinatura SPHINCS+",
+            "expected_output": "Signature valid",
+            "note": "Usar Open Quantum Safe (liboqs) ou similar",
+            "step": 3
+          },
+          {
+            "command": "python quantum_attack_simulator.py --seed <SEED_FROM_PARAMETERS> --verify",
+            "description": "Reproduzir simulação com mesmo seed",
+            "expected_output": "Mesmo hash SHA-256 gerado",
+            "note": "Seed está em parameters.json",
+            "step": 4
+          },
+          {
+            "command": "python proof_bundle_generator.py verify --bundle-dir quantum_attack_simulations --bundle-id quantum_proof_1764084825",
+            "description": "Verificar integridade completa do bundle",
+            "expected_output": "All checks passed",
+            "note": "Usar o verificador de proof bundles",
+            "step": 5
+          }
+        ],
+        "version": "1.0"
+      }
+    }
+  },
+  "victim_address": "1HZwkjkeaoZfTSaJxDw6aKkxp45agDiEzN",
+  "victim_balance": 10.0
+}

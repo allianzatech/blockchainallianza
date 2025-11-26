@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: allianza-blockchain
+    env: python
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: gunicorn -w 4 -b 0.0.0.0:$PORT --timeout 120 --worker-class gevent wsgi:application
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PORT
+        value: "5000"
+      - key: HOST
+        value: "0.0.0.0"
+    healthCheckPath: /health
+    autoDeploy: true
+

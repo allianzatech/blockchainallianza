@@ -1,0 +1,16 @@
+{
+  "leaf_hash": "1390b28ddd62c62295f19d622ae4553b25c60e559ec4a5b952490c420472f979",
+  "leaf_index": 5,
+  "path": [
+    "hash1",
+    "hash2",
+    "hash3"
+  ],
+  "positions": [
+    0,
+    1,
+    0
+  ],
+  "root": "merkle_root_abc123",
+  "tree_depth": 3
+}

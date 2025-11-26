@@ -1,0 +1,329 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+⚡ SOLANA BRIDGE - INTEGRAÇÃO COMPLETA
+Suporte completo para transferências Solana no bridge cross-chain
+"""
+
+import os
+import time
+import json
+import base58
+import requests
+from typing import Dict, Optional, Tuple
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Tentar importar bibliotecas Solana
+try:
+    from solders.keypair import Keypair
+    from solders.pubkey import Pubkey
+    from solders.system_program import transfer, TransferParams
+    from solders.transaction import Transaction
+    from solders.rpc.requests import SendTransaction
+    from solana.rpc.api import Client
+    from solana.rpc.commitment import Confirmed
+    SOLANA_LIBS_AVAILABLE = True
+except ImportError:
+    SOLANA_LIBS_AVAILABLE = False
+    print("⚠️  Bibliotecas Solana não disponíveis. Instale com: pip install solana solders")
+
+class SolanaBridge:
+    """Bridge para Solana - Transferências Reais"""
+    
+    def __init__(self):
+        # RPC endpoints Solana
+        self.rpc_endpoints = {
+            "mainnet": os.getenv('SOLANA_MAINNET_RPC', 'https://api.mainnet-beta.solana.com'),
+            "testnet": os.getenv('SOLANA_TESTNET_RPC', 'https://api.testnet.solana.com'),
+            "devnet": os.getenv('SOLANA_DEVNET_RPC', 'https://api.devnet.solana.com')
+        }
+        
+        self.network = os.getenv('SOLANA_NETWORK', 'testnet')
+        self.rpc_url = self.rpc_endpoints.get(self.network, self.rpc_endpoints['testnet'])
+        
+        # Cliente RPC
+        self.client = None
+        if SOLANA_LIBS_AVAILABLE:
+            try:
+                self.client = Client(self.rpc_url)
+                print(f"✅ Solana RPC conectado: {self.network}")
+            except Exception as e:
+                print(f"⚠️  Erro ao conectar Solana RPC: {e}")
+                self.client = None
+        
+        # Taxa de câmbio
+        self.exchange_rates = {
+            "SOL": 100.0,  # $100 por SOL (fallback)
+            "USDC": 1.0,
+            "USDT": 1.0
+        }
+    
+    def validate_address(self, address: str) -> Tuple[bool, Optional[str]]:
+        """Validar endereço Solana"""
+        try:
+            if not address or not isinstance(address, str):
+                return False, "Endereço inválido"
+            
+            # Solana addresses são Base58, 32-44 caracteres
+            if len(address) < 32 or len(address) > 44:
+                return False, "Comprimento inválido (deve ser 32-44 caracteres)"
+            
+            # Tentar decodificar Base58
+            try:
+                decoded = base58.b58decode(address)
+                if len(decoded) != 32:
+                    return False, "Comprimento de bytes inválido (deve ser 32 bytes)"
+                
+                # Se bibliotecas Solana disponíveis, validar com Pubkey
+                if SOLANA_LIBS_AVAILABLE:
+                    try:
+                        pubkey = Pubkey.from_string(address)
+                        return True, None
+                    except:
+                        return False, "Endereço Base58 inválido"
+                
+                return True, None
+            except Exception as e:
+                return False, f"Erro ao decodificar Base58: {e}"
+        except Exception as e:
+            return False, f"Erro ao validar endereço: {e}"
+    
+    def get_balance(self, address: str) -> Dict:
+        """Obter saldo SOL de um endereço"""
+        is_valid, error = self.validate_address(address)
+        if not is_valid:
+            return {
+                "success": False,
+                "error": f"Endereço inválido: {error}"
+            }
+        
+        try:
+            if self.client:
+                # Usar biblioteca Solana
+                pubkey = Pubkey.from_string(address)
+                response = self.client.get_balance(pubkey, commitment=Confirmed)
+                
+                if response.value is not None:
+                    balance_lamports = response.value
+                    balance_sol = balance_lamports / 1e9  # SOL tem 9 decimais
+                    
+                    return {
+                        "success": True,
+                        "address": address,
+                        "balance_lamports": balance_lamports,
+                        "balance_sol": balance_sol,
+                        "network": self.network
+                    }
+            else:
+                # Fallback: usar RPC direto
+                payload = {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "getBalance",
+                    "params": [address]
+                }
+                
+                response = requests.post(
+                    self.rpc_url,
+                    json=payload,
+                    timeout=10
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if "result" in data and "value" in data["result"]:
+                        balance_lamports = data["result"]["value"]
+                        balance_sol = balance_lamports / 1e9
+                        
+                        return {
+                            "success": True,
+                            "address": address,
+                            "balance_lamports": balance_lamports,
+                            "balance_sol": balance_sol,
+                            "network": self.network
+                        }
+            
+            return {
+                "success": False,
+                "error": "Não foi possível obter saldo"
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Erro ao obter saldo: {e}"
+            }
+    
+    def send_transaction(
+        self,
+        from_private_key: str,
+        to_address: str,
+        amount_sol: float
+    ) -> Dict:
+        """
+        Enviar transação SOL real
+        
+        Args:
+            from_private_key: Chave privada do remetente (Base58 ou bytes)
+            to_address: Endereço do destinatário
+            amount_sol: Quantidade em SOL
+        """
+        # Validar endereço de destino
+        is_valid, error = self.validate_address(to_address)
+        if not is_valid:
+            return {
+                "success": False,
+                "error": f"Endereço de destino inválido: {error}"
+            }
+        
+        # Validar quantidade
+        if amount_sol <= 0:
+            return {
+                "success": False,
+                "error": "Quantidade deve ser maior que zero"
+            }
+        
+        # Converter para lamports
+        amount_lamports = int(amount_sol * 1e9)
+        
+        try:
+            if not SOLANA_LIBS_AVAILABLE:
+                return {
+                    "success": False,
+                    "error": "Bibliotecas Solana não disponíveis. Instale: pip install solana solders"
+                }
+            
+            # Carregar keypair
+            try:
+                # Tentar como Base58 string
+                if isinstance(from_private_key, str):
+                    keypair_bytes = base58.b58decode(from_private_key)
+                    keypair = Keypair.from_bytes(keypair_bytes)
+                else:
+                    keypair = Keypair.from_bytes(from_private_key)
+            except:
+                return {
+                    "success": False,
+                    "error": "Chave privada inválida"
+                }
+            
+            # Obter saldo do remetente
+            from_pubkey = keypair.pubkey()
+            balance_result = self.get_balance(str(from_pubkey))
+            
+            if not balance_result.get("success"):
+                return {
+                    "success": False,
+                    "error": f"Não foi possível verificar saldo: {balance_result.get('error')}"
+                }
+            
+            balance_sol = balance_result.get("balance_sol", 0)
+            
+            # Verificar saldo suficiente (incluindo fee)
+            fee_estimate = 0.000005  # ~5000 lamports (fee típico Solana)
+            required = amount_sol + fee_estimate
+            
+            if balance_sol < required:
+                return {
+                    "success": False,
+                    "error": f"Saldo insuficiente. Disponível: {balance_sol} SOL, Necessário: {required} SOL",
+                    "balance": balance_sol,
+                    "required": required
+                }
+            
+            # Criar transação
+            to_pubkey = Pubkey.from_string(to_address)
+            
+            # Criar instrução de transferência
+            instruction = transfer(
+                TransferParams(
+                    from_pubkey=from_pubkey,
+                    to_pubkey=to_pubkey,
+                    lamports=amount_lamports
+                )
+            )
+            
+            # Criar e assinar transação
+            transaction = Transaction()
+            transaction.add(instruction)
+            
+            # Obter recent blockhash
+            recent_blockhash = self.client.get_latest_blockhash(commitment=Confirmed)
+            transaction.recent_blockhash = recent_blockhash.value.blockhash
+            
+            # Assinar transação
+            transaction.sign(keypair)
+            
+            # Enviar transação
+            response = self.client.send_transaction(
+                transaction,
+                keypair,
+                opts={"skip_preflight": False}
+            )
+            
+            if response.value:
+                tx_signature = str(response.value)
+                
+                # Aguardar confirmação
+                confirmation = self.client.confirm_transaction(
+                    tx_signature,
+                    commitment=Confirmed,
+                    timeout=30
+                )
+                
+                return {
+                    "success": True,
+                    "tx_signature": tx_signature,
+                    "from": str(from_pubkey),
+                    "to": to_address,
+                    "amount_sol": amount_sol,
+                    "amount_lamports": amount_lamports,
+                    "network": self.network,
+                    "confirmed": confirmation.value[0].confirmation_status if confirmation.value else None,
+                    "explorer_url": f"https://explorer.solana.com/tx/{tx_signature}?cluster={self.network}"
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": "Transação não foi enviada"
+                }
+                
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return {
+                "success": False,
+                "error": f"Erro ao enviar transação Solana: {e}"
+            }
+    
+    def get_transaction_status(self, tx_signature: str) -> Dict:
+        """Obter status de uma transação"""
+        try:
+            if self.client:
+                signature = Pubkey.from_string(tx_signature) if isinstance(tx_signature, str) else tx_signature
+                response = self.client.get_transaction(
+                    signature,
+                    commitment=Confirmed
+                )
+                
+                if response.value:
+                    tx_data = response.value
+                    return {
+                        "success": True,
+                        "tx_signature": tx_signature,
+                        "slot": tx_data.slot,
+                        "block_time": tx_data.block_time,
+                        "status": "confirmed" if tx_data.meta and tx_data.meta.err is None else "failed"
+                    }
+            
+            return {
+                "success": False,
+                "error": "Transação não encontrada"
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Erro ao obter status: {e}"
+            }
+

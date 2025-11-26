@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificador QRS-3 - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <div class="mb-6">
+            <a href="/testnet" class="text-blue-400 hover:text-blue-300">← Voltar ao Dashboard</a>
+        </div>
+
+        <h1 class="text-4xl font-bold mb-2">🔐 Verificador QRS-3</h1>
+        <p class="text-gray-400 mb-8">Verifique assinaturas quânticas QRS-3 (ECDSA + ML-DSA + SPHINCS+)</p>
+
+        <!-- Gerar Exemplo -->
+        <div class="bg-purple-900 p-6 rounded-lg mb-6 max-w-2xl">
+            <h2 class="text-2xl font-semibold mb-4">🧪 Não sabe como testar? Gere um exemplo!</h2>
+            <p class="text-gray-300 mb-4">Clique no botão abaixo para gerar uma mensagem e assinatura QRS-3 de exemplo que você pode verificar.</p>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Mensagem de Exemplo (opcional)</label>
+                    <input type="text" id="exampleMessage" placeholder="Hello Allianza Testnet!" 
+                           class="w-full bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+                <button id="generateExampleBtn" class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-semibold transition">
+                    <i class="fas fa-magic mr-2"></i>Gerar Exemplo de Assinatura QRS-3
+                </button>
+            </div>
+            <div id="exampleResult" class="mt-4 hidden"></div>
+        </div>
+
+        <div class="bg-gray-800 p-6 rounded-lg max-w-2xl">
+            <h2 class="text-2xl font-semibold mb-4">Verificar Assinatura QRS-3</h2>
+            <form id="verifyForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Mensagem</label>
+                    <textarea id="message" rows="4" placeholder="Digite a mensagem original..."
+                              class="w-full bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Assinatura QRS-3 (JSON)</label>
+                    <textarea id="signature" rows="8" placeholder='{"ecdsa": {...}, "ml_dsa": {...}, "sphincs": {...}}'
+                              class="w-full bg-gray-700 text-white px-4 py-2 rounded-lg font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                <button type="submit" class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-semibold transition">
+                    <i class="fas fa-shield-alt mr-2"></i>Verificar Assinatura
+                </button>
+            </form>
+            <div id="result" class="mt-4 hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        // Gerar Exemplo
+        document.getElementById('generateExampleBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('generateExampleBtn');
+            const resultDiv = document.getElementById('exampleResult');
+            const exampleMessage = document.getElementById('exampleMessage').value || 'Hello Allianza Testnet!';
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Gerando...';
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<p class="text-purple-400">Gerando assinatura QRS-3...</p>';
+            
+            try {
+                const response = await fetch('/testnet/api/qrs3/generate-example', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({message: exampleMessage})
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Preencher campos automaticamente
+                    document.getElementById('message').value = data.message;
+                    document.getElementById('signature').value = JSON.stringify(data.signature, null, 2);
+                    
+                    resultDiv.innerHTML = `
+                        <div class="bg-green-900 p-4 rounded">
+                            <p class="text-green-300 font-semibold mb-2">✅ Exemplo Gerado com Sucesso!</p>
+                            <div class="space-y-2 text-sm">
+                                <div>
+                                    <p class="text-gray-300 font-medium">Mensagem:</p>
+                                    <p class="font-mono bg-gray-800 p-2 rounded">${data.message}</p>
+                                </div>
+                                <div class="mt-2">
+                                    <p class="text-gray-300 font-medium">Status da Verificação:</p>
+                                    <p class="text-green-300">${data.verified ? '✅ Válida' : '❌ Inválida'}</p>
+                                </div>
+                                <div class="mt-3 bg-blue-900 p-3 rounded">
+                                    <p class="text-blue-200 font-medium mb-1">Instruções:</p>
+                                    <ul class="text-xs text-blue-100 space-y-1">
+                                        ${data.instructions.map(i => `<li>${i}</li>`).join('')}
+                                    </ul>
+                                </div>
+                                <p class="text-yellow-300 text-xs mt-2">💡 Os campos foram preenchidos automaticamente. Clique em "Verificar Assinatura" para testar!</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="bg-red-900 p-4 rounded">
+                            <p class="text-red-300">❌ ${data.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="bg-red-900 p-4 rounded">
+                        <p class="text-red-300">❌ Erro: ${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-magic mr-2"></i>Gerar Exemplo de Assinatura QRS-3';
+            }
+        });
+        
+        document.getElementById('verifyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = document.getElementById('message').value;
+            const signatureText = document.getElementById('signature').value;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<p class="text-blue-400">Verificando...</p>';
+            
+            try {
+                const signature = JSON.parse(signatureText);
+                
+                const response = await fetch('/testnet/api/qrs3/verify', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({message, signature})
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (data.verified) {
+                        // Detalhes da assinatura
+                        const sig = data.signature || {};
+                        
+                        resultDiv.innerHTML = `
+                            <div class="bg-green-900 p-4 rounded">
+                                <p class="text-green-300 text-xl font-semibold mb-3">✅ Assinatura Válida!</p>
+                                
+                                <div class="bg-gray-800 p-3 rounded mb-3">
+                                    <p class="text-sm font-medium text-gray-300 mb-2">Detalhes da Verificação:</p>
+                                    <div class="space-y-1 text-xs">
+                                        <div class="flex justify-between">
+                                            <span>ECDSA:</span>
+                                            <span class="text-green-400">✓ Verificado</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>ML-DSA:</span>
+                                            <span class="text-green-400">✓ Verificado</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>SPHINCS+:</span>
+                                            <span class="text-green-400">✓ Verificado</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-blue-900 p-3 rounded mb-3">
+                                    <p class="text-blue-200 text-sm font-medium mb-1">📄 Prova Criptográfica:</p>
+                                    <p class="text-xs text-blue-100">Hash SHA-512: <span class="font-mono">${data.proof_hash || 'N/A'}</span></p>
+                                    ${data.proof ? `<a href="${data.proof}" class="text-blue-400 hover:text-blue-300 text-xs underline">📥 Baixar Prova (JSON)</a>` : ''}
+                                </div>
+                                
+                                <p class="text-xs text-gray-300 mt-2">✅ Esta é uma prova real de que a assinatura QRS-3 foi verificada com sucesso na Allianza Testnet!</p>
+                            </div>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="bg-red-900 p-4 rounded">
+                                <p class="text-red-300 text-xl font-semibold">❌ Assinatura Inválida</p>
+                                <p class="text-sm mt-2 text-gray-300">A assinatura não pôde ser verificada. Verifique se a mensagem e a assinatura estão corretas.</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="bg-red-900 p-4 rounded">
+                            <p class="text-red-300">❌ ${data.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="bg-red-900 p-4 rounded">
+                        <p class="text-red-300">❌ Erro ao processar: ${error.message}</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

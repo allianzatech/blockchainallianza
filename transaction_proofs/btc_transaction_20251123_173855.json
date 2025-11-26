@@ -1,0 +1,54 @@
+{
+  "transaction_type": "bitcoin_send",
+  "timestamp": 1763930335.6652226,
+  "from_private_key_prefix": "cSamqcRz79...",
+  "to_address": "mzBc4XEFSdzCDcTxAgf6EZXgsZWpztRhef",
+  "amount_btc": 9.144215712048649e-11,
+  "steps": [
+    {
+      "step": "address_validation_start",
+      "timestamp": 1763930335.665454,
+      "level": "info",
+      "data": {
+        "to_address": "mzBc4XEFSdzCDcTxAgf6EZXgsZWpztRhef"
+      }
+    },
+    {
+      "step": "address_validation_success",
+      "timestamp": 1763930335.66563,
+      "level": "info",
+      "data": {}
+    },
+    {
+      "step": "amount_too_small",
+      "timestamp": 1763930335.6659539,
+      "level": "error",
+      "data": {
+        "amount_btc": 9.144215712048649e-11,
+        "minimum": 1e-08
+      }
+    }
+  ],
+  "errors": [
+    {
+      "step": "amount_too_small",
+      "timestamp": 1763930335.6659539,
+      "level": "error",
+      "data": {
+        "amount_btc": 9.144215712048649e-11,
+        "minimum": 1e-08
+      }
+    }
+  ],
+  "warnings": [],
+  "success": false,
+  "final_result": {
+    "success": false,
+    "error": "Valor muito pequeno: 9.144215712048649e-11 BTC. Mínimo é 1 satoshi (0.00000001 BTC)"
+  },
+  "_metadata": {
+    "timestamp": "2025-11-23T17:38:55.666221",
+    "version": "1.0",
+    "type": "bitcoin_transaction_proof"
+  }
+}

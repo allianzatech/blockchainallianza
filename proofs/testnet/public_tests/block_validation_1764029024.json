@@ -1,0 +1,65 @@
+{
+  "success": true,
+  "test_id": "block_validation_1764029024",
+  "test_name": "Validação de Blocos",
+  "results": {
+    "total_blocks": 8,
+    "valid_blocks": 8,
+    "validation_rate_percent": 100.0,
+    "shards_checked": 8,
+    "total_time_ms": 0.08,
+    "proofs": {
+      "block_headers": [
+        {
+          "index": 0,
+          "hash": "61409ad69f964c42bf1945f9441837900808174ba9d17fb0ab618efcf252b54e",
+          "previous_hash": "0",
+          "timestamp": 1764028794.1485271,
+          "merkle_root": "0x0x0",
+          "shard_id": 0,
+          "transaction_count": 0
+        },
+        {
+          "index": 0,
+          "hash": "7dde97d58bccee0bd7ead74582e715d3d6120f605c6e65491a0be43122927a29",
+          "previous_hash": "0",
+          "timestamp": 1764028794.148635,
+          "merkle_root": "0x0x0",
+          "shard_id": 1,
+          "transaction_count": 0
+        },
+        {
+          "index": 0,
+          "hash": "86bc8e6e9c7686b6aecd211c311d5251bb78a226273baf0faa3293d79b3d39f5",
+          "previous_hash": "0",
+          "timestamp": 1764028794.1486812,
+          "merkle_root": "0x0x0",
+          "shard_id": 2,
+          "transaction_count": 0
+        },
+        {
+          "index": 0,
+          "hash": "a3fee4115f4a77fed202321f8160bea2420b4ad3b990e74e6ef0b4393816fc20",
+          "previous_hash": "0",
+          "timestamp": 1764028794.1487086,
+          "merkle_root": "0x0x0",
+          "shard_id": 3,
+          "transaction_count": 0
+        },
+        {
+          "index": 0,
+          "hash": "448866bdb210933235645d842ca598b48b47dd1da7162b4a41a042de8480bdf0",
+          "previous_hash": "0",
+          "timestamp": 1764028794.1487293,
+          "merkle_root": "0x0x0",
+          "shard_id": 4,
+          "transaction_count": 0
+        }
+      ],
+      "validation_method": "hash_verification",
+      "canonicalization": "block_header_hash",
+      "verification_command": "python verify_allianza_proofs.py proofs/testnet/public_tests/block_validation_1764029024.json"
+    }
+  },
+  "timestamp": "2025-11-25T00:03:44.947157Z"
+}

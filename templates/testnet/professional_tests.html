@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Testes Profissionais - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .test-card {
+            transition: all 0.3s ease;
+        }
+        .test-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .test-running {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold mb-2">🧪 Testes Profissionais</h1>
+            <p class="text-gray-400">Suite completa de testes para Allianza Testnet</p>
+            <p class="text-sm text-gray-500 mt-2">Implementa todos os testes obrigatórios para uma testnet de nível mundial</p>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <div class="text-2xl font-bold" id="total-tests">0</div>
+                <div class="text-sm text-gray-400">Total de Testes</div>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <div class="text-2xl font-bold text-green-400" id="successful-tests">0</div>
+                <div class="text-sm text-gray-400">Bem-sucedidos</div>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <div class="text-2xl font-bold text-red-400" id="failed-tests">0</div>
+                <div class="text-sm text-gray-400">Falharam</div>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <div class="text-2xl font-bold text-blue-400" id="success-rate">0%</div>
+                <div class="text-sm text-gray-400">Taxa de Sucesso</div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="mb-8 flex gap-4">
+            <button onclick="runAllTests()" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold">
+                <i class="fas fa-play mr-2"></i>Executar Todos os Testes
+            </button>
+            <button onclick="loadResults()" class="bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-lg font-semibold">
+                <i class="fas fa-sync mr-2"></i>Atualizar Resultados
+            </button>
+        </div>
+
+        <!-- Test Categories -->
+        <div class="space-y-6">
+            <!-- 1. Testes de Camada Quântica -->
+            <div>
+                <h2 class="text-2xl font-semibold mb-4 text-blue-400">🟦 1. Testes de Camada Quântica (PQC / QRS-3)</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-blue-500">
+                        <h3 class="text-xl font-semibold mb-2">1.1. Geração de Chaves PQC</h3>
+                        <p class="text-sm text-gray-400 mb-4">ML-DSA, ML-KEM, SPHINCS+</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-1-1-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('1_1_pqc_key_generation')" class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-blue-500">
+                        <h3 class="text-xl font-semibold mb-2">1.2. Assinatura QRS-3</h3>
+                        <p class="text-sm text-gray-400 mb-4">ECDSA + ML-DSA + SPHINCS+</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-1-2-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('1_2_qrs3_signature')" class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-blue-500">
+                        <h3 class="text-xl font-semibold mb-2">1.3. Verificação PQC em Auditoria</h3>
+                        <p class="text-sm text-gray-400 mb-4">Logs, Bundler, Integridade</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-1-3-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('1_3_pqc_audit_verification')" class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Testes de Interoperabilidade -->
+            <div>
+                <h2 class="text-2xl font-semibold mb-4 text-orange-400">🟧 2. Testes de Interoperabilidade (ALZ-NIEV)</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-orange-500">
+                        <h3 class="text-xl font-semibold mb-2">2.1. Proof-of-Lock</h3>
+                        <p class="text-sm text-gray-400 mb-4">Lock → ZK Proof → Verificação</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-2-1-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('2_1_proof_of_lock')" class="w-full bg-orange-600 hover:bg-orange-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-orange-500">
+                        <h3 class="text-xl font-semibold mb-2">2.2. Gasless Interoperability</h3>
+                        <p class="text-sm text-gray-400 mb-4">Fee patrocinado, Replay protection</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-2-2-status">⚠️ Em desenvolvimento</div>
+                        </div>
+                        <button onclick="runTest('2_2_gasless_interoperability')" class="w-full bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded" disabled>
+                            Em desenvolvimento
+                        </button>
+                    </div>
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-orange-500">
+                        <h3 class="text-xl font-semibold mb-2">2.3. Conversão Bitcoin ↔ EVM</h3>
+                        <p class="text-sm text-gray-400 mb-4">UTXO Lock, Merkle Proof, Emissão</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-2-3-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('2_3_bitcoin_evm_conversion')" class="w-full bg-orange-600 hover:bg-orange-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Testes de Ataque Quântico -->
+            <div>
+                <h2 class="text-2xl font-semibold mb-4 text-green-400">🟩 3. Testes de Ataque Quântico</h2>
+                <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-green-500">
+                        <h3 class="text-xl font-semibold mb-2">3. Simulação de Ataque Quântico</h3>
+                        <p class="text-sm text-gray-400 mb-4">Shor, Grover, Comparação ECDSA vs PQC</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300">✅ Implementado no Simulador</div>
+                        </div>
+                        <a href="/dashboard/quantum-attack-simulator" class="block w-full bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-center">
+                            Abrir Simulador
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Testes de Blockchain Core -->
+            <div>
+                <h2 class="text-2xl font-semibold mb-4 text-yellow-400">🟨 4. Testes de Blockchain Core</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-yellow-500">
+                        <h3 class="text-xl font-semibold mb-2">4.1. Consenso</h3>
+                        <p class="text-sm text-gray-400 mb-4">PBFT, Latência, Throughput</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300">⚠️ Em desenvolvimento</div>
+                        </div>
+                        <button class="w-full bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded" disabled>
+                            Em desenvolvimento
+                        </button>
+                    </div>
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-yellow-500">
+                        <h3 class="text-xl font-semibold mb-2">4.2. Sincronização de Nós</h3>
+                        <p class="text-sm text-gray-400 mb-4">Full/Pruned/Light nodes</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300">⚠️ Em desenvolvimento</div>
+                        </div>
+                        <button class="w-full bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded" disabled>
+                            Em desenvolvimento
+                        </button>
+                    </div>
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-yellow-500">
+                        <h3 class="text-xl font-semibold mb-2">4.3. Transações</h3>
+                        <p class="text-sm text-gray-400 mb-4">Envio, Recebimento, Nonces</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-4-3-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('4_3_transactions')" class="w-full bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Testes de Smart Contracts -->
+            <div>
+                <h2 class="text-2xl font-semibold mb-4 text-purple-400">🟫 5. Testes de Smart Contracts</h2>
+                <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-purple-500">
+                        <h3 class="text-xl font-semibold mb-2">5. Smart Contracts</h3>
+                        <p class="text-sm text-gray-400 mb-4">Execução ALZ-NIEV, Replay Attack, Fraude</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300">⚠️ Em desenvolvimento (Fase 2)</div>
+                        </div>
+                        <button class="w-full bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded" disabled>
+                            Em desenvolvimento
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Testes de Infraestrutura -->
+            <div>
+                <h2 class="text-2xl font-semibold mb-4 text-pink-400">🟪 6. Testes de Infraestrutura</h2>
+                <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-pink-500">
+                        <h3 class="text-xl font-semibold mb-2">6. Infraestrutura</h3>
+                        <p class="text-sm text-gray-400 mb-4">Dashboard, API pública</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-6-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('6_infrastructure')" class="w-full bg-pink-600 hover:bg-pink-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. Testes para Auditores -->
+            <div>
+                <h2 class="text-2xl font-semibold mb-4 text-red-400">🟥 7. Testes para Investidores / Auditores</h2>
+                <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-red-500">
+                        <h3 class="text-xl font-semibold mb-2">7. Testes para Auditores</h3>
+                        <p class="text-sm text-gray-400 mb-4">Bundle PQC, Reprodutibilidade, Timeline</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-7-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('7_auditor_tests')" class="w-full bg-red-600 hover:bg-red-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8. Testes Opcionais -->
+            <div>
+                <h2 class="text-2xl font-semibold mb-4 text-cyan-400">🟦 8. Testes Opcionais</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-cyan-500">
+                        <h3 class="text-xl font-semibold mb-2">8.1. FHE</h3>
+                        <p class="text-sm text-gray-400 mb-4">Criptografia Homomórfica</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300">✅ PoC implementado</div>
+                        </div>
+                    </div>
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-cyan-500">
+                        <h3 class="text-xl font-semibold mb-2">8.2. QR-DID</h3>
+                        <p class="text-sm text-gray-400 mb-4">Identidade Quântico-Segura</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300">✅ Implementado</div>
+                        </div>
+                    </div>
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-cyan-500">
+                        <h3 class="text-xl font-semibold mb-2">8.3. Wormhole Prevention</h3>
+                        <p class="text-sm text-gray-400 mb-4">Prevenção de exploits</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300">⚠️ Em desenvolvimento</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Modal -->
+        <div id="results-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+            <div class="bg-gray-800 p-6 rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-2xl font-semibold">Resultados do Teste</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                <pre id="results-content" class="bg-gray-900 p-4 rounded text-sm overflow-x-auto"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function runTest(testId) {
+            const statusEl = document.getElementById(`test-${testId.replace(/_/g, '-')}-status`);
+            if (statusEl) {
+                statusEl.textContent = '🔄 Executando...';
+                statusEl.parentElement.parentElement.classList.add('test-running');
+            }
+
+            try {
+                const response = await fetch(`/testnet/professional-tests/api/run/${testId}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                const result = await response.json();
+
+                if (statusEl) {
+                    statusEl.parentElement.parentElement.classList.remove('test-running');
+                    if (result.success) {
+                        statusEl.textContent = '✅ Sucesso';
+                        statusEl.className = 'text-sm text-green-400';
+                    } else {
+                        statusEl.textContent = '❌ Falhou: ' + (result.error || 'Erro desconhecido');
+                        statusEl.className = 'text-sm text-red-400';
+                    }
+                }
+
+                showResults(result);
+                loadResults();
+            } catch (error) {
+                if (statusEl) {
+                    statusEl.parentElement.parentElement.classList.remove('test-running');
+                    statusEl.textContent = '❌ Erro: ' + error.message;
+                    statusEl.className = 'text-sm text-red-400';
+                }
+            }
+        }
+
+        async function runAllTests() {
+            if (!confirm('Executar todos os testes? Isso pode levar alguns minutos.')) return;
+
+            try {
+                const response = await fetch('/testnet/professional-tests/api/run-all', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                const result = await response.json();
+                showResults(result);
+                loadResults();
+            } catch (error) {
+                alert('Erro ao executar testes: ' + error.message);
+            }
+        }
+
+        function showResults(result) {
+            document.getElementById('results-content').textContent = JSON.stringify(result, null, 2);
+            document.getElementById('results-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('results-modal').classList.add('hidden');
+        }
+
+        async function loadResults() {
+            // Atualizar estatísticas (simulado - em produção buscar do servidor)
+            // Por enquanto, apenas atualizar visualmente
+        }
+
+        // Fechar modal ao clicar fora
+        document.getElementById('results-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+

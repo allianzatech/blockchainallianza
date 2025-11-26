@@ -1,0 +1,41 @@
+{
+  "teste_id": "novas_melhorias_1764098858",
+  "timestamp": "2025-11-25T19:27:38.961723Z",
+  "tipo": "Teste das Novas Melhorias Implementadas",
+  "status": "concluido",
+  "resultados": {
+    "qr_did": {
+      "success": true,
+      "did": "did:allianza:1764098858732:0c647acb1b858780",
+      "quantum_resistant": false
+    },
+    "banking_api": {
+      "success": true,
+      "pqc_available": true
+    },
+    "zk_interop": {
+      "success": true,
+      "proof_id": "zk_proof_1764098858_3192f93f260d06fb",
+      "valid": true,
+      "privacy_preserved": true
+    },
+    "fhe_poc": {
+      "success": true,
+      "operations": 1,
+      "fhe_available": true
+    },
+    "qkd": {
+      "success": true,
+      "session_id": "qkd_session_1764098858_880bf637b9e70924",
+      "method": "ML-KEM_FALLBACK",
+      "active_sessions": 1
+    }
+  },
+  "resumo": {
+    "total_testes": 5,
+    "sucessos": 5,
+    "falhas": 0
+  },
+  "hash_sha256": "3884303177a308402f933a2c3fee992794076dfece5c9543db817d7aeeb5d01c",
+  "arquivo": "relatorios_implementacao/relatorio_novas_melhorias_20251125_192738.json"
+}

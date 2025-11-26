@@ -1,0 +1,87 @@
+{
+  "success": true,
+  "total_tests": 5,
+  "successful_tests": 5,
+  "failed_tests": 0,
+  "success_rate_percent": 100.0,
+  "total_time_ms": 27798.13,
+  "tests": [
+    {
+      "success": true,
+      "test_id": "qrs3_signature_1763731234",
+      "test_name": "QRS-3 Signature",
+      "results": {
+        "keypair_generated": true,
+        "signature_created": true,
+        "verification_passed": true,
+        "signing_time_ms": 267.49396324157715,
+        "total_time_ms": 356.3730716705322,
+        "algorithms": {
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true
+        },
+        "redundancy_level": 3
+      },
+      "timestamp": "2025-11-21T13:20:35.015532Z"
+    },
+    {
+      "success": true,
+      "test_id": "interop_1763731235",
+      "test_name": "Interoperabilidade",
+      "results": {
+        "lock_created": true,
+        "lock_id": "lock_89f7c27f036be0a64ae849f332e4f54d",
+        "tx_hash": "0x9c4e3f4858e04e5ac5b24197512da1eb6ec2d6c96fae61014de11fda3169618f",
+        "lock_verified": true,
+        "total_time_ms": 0.01430511474609375
+      },
+      "timestamp": "2025-11-21T13:20:35.016681Z"
+    },
+    {
+      "success": true,
+      "test_id": "performance_1763731235",
+      "test_name": "Performance",
+      "results": {
+        "total_signatures": 100,
+        "successful_signatures": 100,
+        "success_rate_percent": 100.0,
+        "avg_time_ms": 274.3,
+        "min_time_ms": 228.34,
+        "max_time_ms": 629.81,
+        "std_deviation_ms": 48.44,
+        "throughput_per_second": 3.65,
+        "total_time_ms": 27432.0
+      },
+      "timestamp": "2025-11-21T13:21:02.450016Z"
+    },
+    {
+      "success": true,
+      "test_id": "block_validation_1763731262",
+      "test_name": "Validação de Blocos",
+      "results": {
+        "total_blocks": 8,
+        "valid_blocks": 8,
+        "validation_rate_percent": 100.0,
+        "shards_checked": 8,
+        "total_time_ms": 0.02
+      },
+      "timestamp": "2025-11-21T13:21:02.450925Z"
+    },
+    {
+      "success": true,
+      "test_id": "quantum_security_1763731262",
+      "test_name": "Segurança Quântica",
+      "results": {
+        "ml_dsa_available": true,
+        "sphincs_available": false,
+        "qrs3_available": true,
+        "redundancy_level": 2,
+        "quantum_safe": true,
+        "total_time_ms": 0.0
+      },
+      "timestamp": "2025-11-21T13:21:02.452562Z"
+    }
+  ],
+  "timestamp": "2025-11-21T13:21:02.457323Z"
+}

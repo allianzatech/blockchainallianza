@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Segurança Quântica - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <div class="mb-6">
+            <a href="/testnet" class="text-blue-400 hover:text-blue-300">← Voltar ao Dashboard</a>
+        </div>
+
+        <h1 class="text-4xl font-bold mb-2">🔐 Dashboard de Segurança Quântica</h1>
+        <p class="text-gray-400 mb-8">Métricas QRS-3, Entropia Quântica e Performance PQC</p>
+
+        <!-- Status QRS-3 -->
+        <div class="bg-purple-900 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">Status QRS-3</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-gray-800 p-4 rounded">
+                    <p class="text-gray-400 text-sm">Status</p>
+                    <p class="text-2xl font-bold text-green-400">{{ dashboard.qrs3_metrics.status|upper }}</p>
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <p class="text-gray-400 text-sm">Nível de Redundância</p>
+                    <p class="text-2xl font-bold text-purple-400">{{ dashboard.qrs3_metrics.redundancy_level }}</p>
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <p class="text-gray-400 text-sm">Taxa de Uso</p>
+                    <p class="text-2xl font-bold text-blue-400">{{ "%.2f"|format(dashboard.qrs3_metrics.usage_rate_percent) }}%</p>
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <p class="text-gray-400 text-sm">Transações QRS-3</p>
+                    <p class="text-2xl font-bold text-yellow-400">{{ dashboard.qrs3_metrics.total_qrs3_transactions }}</p>
+                </div>
+            </div>
+            
+            <div class="mt-4 bg-gray-800 p-4 rounded">
+                <p class="text-sm font-semibold mb-2">Algoritmos Ativos:</p>
+                <div class="flex gap-4">
+                    <span class="px-3 py-1 rounded bg-green-600">✅ ECDSA</span>
+                    <span class="px-3 py-1 rounded bg-green-600">✅ ML-DSA</span>
+                    {% if dashboard.qrs3_metrics.algorithms.sphincs %}
+                        {% if dashboard.qrs3_metrics.algorithms.sphincs_real %}
+                    <span class="px-3 py-1 rounded bg-green-600">✅ SPHINCS+ (Real)</span>
+                        {% else %}
+                    <span class="px-3 py-1 rounded bg-yellow-600">⚠️ SPHINCS+ (Simulado)</span>
+                        {% endif %}
+                    {% else %}
+                    <span class="px-3 py-1 rounded bg-red-600">❌ SPHINCS+ (Indisponível)</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Entropia Quântica -->
+        <div class="bg-blue-900 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">🌐 Entropia Quântica</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-gray-800 p-4 rounded">
+                    <p class="text-gray-400 text-sm">Total Gerado</p>
+                    <p class="text-2xl font-bold text-blue-400">{{ "{:,}".format(dashboard.quantum_entropy.total_generated_bytes) }} bytes</p>
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <p class="text-gray-400 text-sm">Taxa de Geração</p>
+                    <p class="text-2xl font-bold text-green-400">{{ dashboard.quantum_entropy.rate_bytes_per_second }} bytes/s</p>
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <p class="text-gray-400 text-sm">Fonte</p>
+                    <p class="text-xl font-bold text-purple-400">{{ dashboard.quantum_entropy.source|upper }}</p>
+                    {% if dashboard.quantum_entropy.quantum_secure %}
+                    <span class="text-xs text-green-400">✅ Quântico-Seguro</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Assinaturas Híbridas -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">📊 Assinaturas Híbridas</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div class="bg-purple-900 p-4 rounded">
+                    <p class="text-gray-300 text-sm">QRS-3 (Tripla)</p>
+                    <p class="text-3xl font-bold">{{ dashboard.hybrid_signatures.qrs3_count }}</p>
+                    <p class="text-sm text-gray-400">{{ "%.1f"|format(dashboard.hybrid_signatures.percentages.qrs3) }}%</p>
+                </div>
+                <div class="bg-blue-900 p-4 rounded">
+                    <p class="text-gray-300 text-sm">QRS-2 (Dupla)</p>
+                    <p class="text-3xl font-bold">{{ dashboard.hybrid_signatures.qrs2_count }}</p>
+                    <p class="text-sm text-gray-400">{{ "%.1f"|format(dashboard.hybrid_signatures.percentages.qrs2) }}%</p>
+                </div>
+                <div class="bg-gray-700 p-4 rounded">
+                    <p class="text-gray-300 text-sm">ECDSA Apenas</p>
+                    <p class="text-3xl font-bold">{{ dashboard.hybrid_signatures.ecdsa_only_count }}</p>
+                    <p class="text-sm text-gray-400">{{ "%.1f"|format(dashboard.hybrid_signatures.percentages.ecdsa_only) }}%</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance PQC -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">⚡ Performance PQC</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {% for algo_name, algo_data in dashboard.pqc_performance.items() %}
+                {% if algo_name != "last_updated" %}
+                <div class="bg-gray-700 p-4 rounded">
+                    <h3 class="font-semibold mb-2">{{ algo_name|upper }}</h3>
+                    <div class="space-y-1 text-sm">
+                        <div class="flex justify-between">
+                            <span>Tempo Médio:</span>
+                            <span class="font-bold text-green-400">{{ "%.2f"|format(algo_data.avg_verification_time_ms) }}ms</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Min/Max:</span>
+                            <span class="text-gray-400">{{ "%.2f"|format(algo_data.min_time_ms) }}ms / {{ "%.2f"|format(algo_data.max_time_ms) }}ms</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Taxa de Sucesso:</span>
+                            <span class="font-bold text-green-400">{{ "%.1f"|format(algo_data.success_rate_percent) }}%</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Total Verificações:</span>
+                            <span class="text-blue-400">{{ algo_data.total_verifications }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Monitoramento 0-day -->
+        <div class="bg-red-900 p-6 rounded-lg">
+            <h2 class="text-2xl font-semibold mb-4">🛡️ Monitoramento 0-day</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div class="bg-gray-800 p-4 rounded">
+                    <p class="text-gray-400 text-sm">Ataques Detectados</p>
+                    <p class="text-3xl font-bold text-red-400">{{ dashboard.zero_day_monitoring.attacks_detected }}</p>
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <p class="text-gray-400 text-sm">Ataques Mitigados</p>
+                    <p class="text-3xl font-bold text-green-400">{{ dashboard.zero_day_monitoring.attacks_mitigated }}</p>
+                </div>
+            </div>
+            <div class="bg-gray-800 p-4 rounded">
+                <p class="text-sm font-semibold mb-2">Camadas de Proteção Ativas:</p>
+                <div class="flex flex-wrap gap-2">
+                    {% for layer in dashboard.zero_day_monitoring.protection_layers %}
+                    <span class="px-3 py-1 rounded bg-green-600 text-sm">✅ {{ layer }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Atualizar dashboard a cada 10 segundos
+        setInterval(() => {
+            fetch('/testnet/api/quantum-security')
+                .then(r => r.json())
+                .then(data => {
+                    location.reload();
+                });
+        }, 10000);
+    </script>
+</body>
+</html>
+

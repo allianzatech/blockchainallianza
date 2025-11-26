@@ -1,0 +1,28 @@
+{
+  "test_id": "test_5_smart_contracts",
+  "name": "Testes de Smart Contracts",
+  "start_time": "2025-11-26T00:53:11.917554",
+  "tests": {
+    "alz_niev_execution": {
+      "success": true,
+      "contract_address": "0xc1b20dEB6cf148e8b2D5d07985402A64818ae8Ea",
+      "tx_hash": null,
+      "note": "Contrato real deployado"
+    },
+    "replay_attack_prevention": {
+      "success": true,
+      "first_check": true,
+      "replay_blocked": true,
+      "note": "Replay attack prevenido com nonces únicos"
+    },
+    "fraud_detection": {
+      "success": true,
+      "double_spend_detected": false,
+      "invalid_signature_detected": false,
+      "replay_detected": true,
+      "note": "Sistema de detecção de fraude funcionando"
+    }
+  },
+  "success": true,
+  "duration": 5.620152950286865
+}

@@ -1,0 +1,35 @@
+{
+  "test": "Ethereum Real Transaction Validation",
+  "timestamp": "2025-11-20T18:53:51.053242",
+  "tx_hash": "9a75d8edd1af2f7239db94d799abbdec30c42870899cbdcb5d9d8df4daf27110",
+  "tx_data": {
+    "block": 9671202,
+    "from": "0x2CdA41645F2dBffB852a605E92B185501801FC28",
+    "to": "0x091382ad7490FDd0F73D2c8697Fd15aA76F218d7",
+    "value_wei": "500000000000000000",
+    "value_eth": "0.5"
+  },
+  "validation_result": {
+    "valid": true,
+    "chain": "ethereum",
+    "algorithm": "ECDSA EVM",
+    "tx_hash": "9a75d8edd1af2f7239db94d799abbdec30c42870899cbdcb5d9d8df4daf27110",
+    "signer_address": "0x2CdA41645F2dBffB852a605E92B185501801FC28",
+    "from": "0x2CdA41645F2dBffB852a605E92B185501801FC28",
+    "to": "0x091382ad7490FDd0F73D2c8697Fd15aA76F218d7",
+    "value": 0.5,
+    "block_number": 9671202,
+    "gas_used": 21000,
+    "tx_status": "success",
+    "tx_status_code": 1,
+    "message": "\u2705 Assinatura ethereum validada - Consulta blockchain REAL via Web3.py",
+    "proof": "\u2705 Allianza entende assinaturas ethereum nativas - SEM BRIDGES",
+    "explorer_link": "https://sepolia.etherscan.io/tx/9a75d8edd1af2f7239db94d799abbdec30c42870899cbdcb5d9d8df4daf27110",
+    "note": "Assinatura validada independentemente do status da execu\u00e7\u00e3o da transa\u00e7\u00e3o"
+  },
+  "proof": "\u2705 Transa\u00e7\u00e3o REAL validada na blockchain Ethereum Sepolia",
+  "bridge_free": true,
+  "no_wrapped_tokens": true,
+  "real_blockchain_query": true,
+  "explorer_link": "https://sepolia.etherscan.io/tx/9a75d8edd1af2f7239db94d799abbdec30c42870899cbdcb5d9d8df4daf27110"
+}

@@ -1,0 +1,274 @@
+openapi: 3.0.0
+info:
+  title: Allianza Blockchain API
+  description: |
+    API completa da Allianza Blockchain - Primeira blockchain com QRS-3 (Tripla Redundância Quântica)
+    
+    ## Características Principais:
+    - 🔐 QRS-3: ECDSA + ML-DSA + SPHINCS+
+    - 🌉 Interoperabilidade Universal: Bitcoin, Ethereum, Polygon, Solana, BSC, Base
+    - ⚡ Performance Otimizada: Processamento paralelo e batch verification
+    - 🛡️ Segurança Quântica: Algoritmos PQC NIST
+    
+  version: 2.0.0
+  contact:
+    name: Allianza Blockchain Team
+    email: support@allianza.io
+
+servers:
+  - url: http://localhost:5000
+    description: Servidor de desenvolvimento
+  - url: https://api.allianza.io
+    description: Servidor de produção
+
+tags:
+  - name: Blockchain
+    description: Operações básicas da blockchain
+  - name: Quantum Security
+    description: Operações relacionadas a segurança quântica (QRS-3)
+  - name: Interoperability
+    description: Interoperabilidade cross-chain
+  - name: Wallets
+    description: Gerenciamento de carteiras
+  - name: Transactions
+    description: Criação e validação de transações
+  - name: Monitoring
+    description: Métricas e monitoramento
+
+paths:
+  /api/health:
+    get:
+      tags:
+        - Monitoring
+      summary: Verifica saúde do sistema
+      responses:
+        '200':
+          description: Sistema saudável
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  healthy:
+                    type: boolean
+                  checks:
+                    type: object
+                  timestamp:
+                    type: number
+
+  /api/wallet/create:
+    post:
+      tags:
+        - Wallets
+      summary: Cria nova carteira
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                blockchain_source:
+                  type: string
+                  enum: [allianza, bitcoin, ethereum, polygon, solana, bsc, base]
+      responses:
+        '200':
+          description: Carteira criada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  address:
+                    type: string
+                  private_key:
+                    type: string
+
+  /api/transaction/create:
+    post:
+      tags:
+        - Transactions
+      summary: Cria nova transação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sender
+                - receiver
+                - amount
+                - private_key
+              properties:
+                sender:
+                  type: string
+                receiver:
+                  type: string
+                amount:
+                  type: number
+                private_key:
+                  type: string
+                network:
+                  type: string
+      responses:
+        '200':
+          description: Transação criada
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+  /api/quantum/qrs3/generate:
+    post:
+      tags:
+        - Quantum Security
+      summary: Gera par de chaves QRS-3
+      responses:
+        '200':
+          description: Par de chaves gerado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  keypair_id:
+                    type: string
+                  redundancy_level:
+                    type: integer
+                    enum: [2, 3]
+
+  /api/interoperability/validate:
+    post:
+      tags:
+        - Interoperability
+      summary: Valida assinatura cross-chain
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                chain:
+                  type: string
+                tx_hash:
+                  type: string
+                address:
+                  type: string
+      responses:
+        '200':
+          description: Validação realizada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                  chain:
+                    type: string
+                  details:
+                    type: object
+
+  /api/interoperability/transfer:
+    post:
+      tags:
+        - Interoperability
+      summary: Realiza transferência cross-chain
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - source_chain
+                - target_chain
+                - amount
+                - recipient
+              properties:
+                source_chain:
+                  type: string
+                target_chain:
+                  type: string
+                amount:
+                  type: number
+                recipient:
+                  type: string
+                token_symbol:
+                  type: string
+      responses:
+        '200':
+          description: Transferência iniciada
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+  /api/monitoring/metrics:
+    get:
+      tags:
+        - Monitoring
+      summary: Obtém métricas do sistema
+      responses:
+        '200':
+          description: Métricas retornadas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metrics:
+                    type: object
+                  health:
+                    type: object
+                  timestamp:
+                    type: number
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error_code:
+          type: string
+          example: "E001"
+        message:
+          type: string
+          example: "Endereço inválido"
+        details:
+          type: object
+        timestamp:
+          type: number
+
+    Success:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+        timestamp:
+          type: number
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+
+
+
+
+
+

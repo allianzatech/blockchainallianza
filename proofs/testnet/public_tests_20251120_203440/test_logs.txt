@@ -1,0 +1,126 @@
+======================================================================
+ALLIANZA QUANTUM TESTNET - TESTES PÚBLICOS
+======================================================================
+
+Data: 2025-11-20T20:34:40.828088
+Versão: 1.0.0
+Duração Total: 64.51s
+
+[2025-11-20T20:33:36.316102] 🚀 Iniciando Testes Públicos da Allianza Quantum Testnet
+[2025-11-20T20:33:36.317214] ======================================================================
+[2025-11-20T20:33:36.320349] 🔍 Teste 1: Validando QRS-3 Signature
+[2025-11-20T20:33:36.322873]   🔐 Gerando assinatura QRS-3...
+[2025-11-20T20:33:37.301200]   ✔ SPHINCS+ OK (tempo: 977.23ms)
+[2025-11-20T20:33:37.304681]   ✔ ML-DSA OK
+[2025-11-20T20:33:37.306362]   ✔ ECDSA OK
+[2025-11-20T20:33:37.309793]   🔍 Verificando assinatura...
+[2025-11-20T20:33:37.312386]   ✅ Verificação QRS-3: SUCCESS
+[2025-11-20T20:33:37.313705]   📋 Hash da Prova: 69cffccb2aae0018b7b25dd16d2f07bd...
+[2025-11-20T20:33:37.314550] 🔍 Teste 2: Testando Interoperabilidade
+[2025-11-20T20:33:37.315314]   🔐 Criando Lock on-chain...
+[2025-11-20T20:33:37.417198]   ⛓️ Lock confirmado - TxHash: 0x3eba43e25d8968062189b74bb79fa967f8540bef8e6ea2b3939bd38163ce07da
+[2025-11-20T20:33:37.418954]   ✅ Interoperabilidade: SUCCESS
+[2025-11-20T20:33:37.419908] 🔍 Teste 3: Testando Performance
+[2025-11-20T20:33:37.420702]   🔄 Executando 100 assinaturas QRS-3...
+[2025-11-20T20:33:44.297624]   📊 Progresso: 10/100
+[2025-11-20T20:33:51.363520]   📊 Progresso: 20/100
+[2025-11-20T20:33:58.334877]   📊 Progresso: 30/100
+[2025-11-20T20:34:06.066887]   📊 Progresso: 40/100
+[2025-11-20T20:34:10.837302]   📊 Progresso: 50/100
+[2025-11-20T20:34:13.849555]   📊 Progresso: 60/100
+[2025-11-20T20:34:18.349881]   📊 Progresso: 70/100
+[2025-11-20T20:34:25.464760]   📊 Progresso: 80/100
+[2025-11-20T20:34:32.210040]   📊 Progresso: 90/100
+[2025-11-20T20:34:40.819612]   📊 Progresso: 100/100
+[2025-11-20T20:34:40.821478]   ✅ Performance: 100 assinaturas em 63.38s
+[2025-11-20T20:34:40.822423]   📊 Média: 633.78ms | Min: 160.21ms | Max: 1693.67ms
+[2025-11-20T20:34:40.823228] 🔍 Teste 4: Validando Blocos
+[2025-11-20T20:34:40.824085]   ✅ Validação: 8/8 blocos validados
+[2025-11-20T20:34:40.824877] 🔍 Teste 5: Testando Segurança Quântica
+[2025-11-20T20:34:40.825684]   ✅ QRS-3: Disponível
+[2025-11-20T20:34:40.826459]   ✅ ML-DSA: Disponível
+[2025-11-20T20:34:40.827349]   ✅ SPHINCS+: Indisponível
+
+======================================================================
+RESUMO DOS TESTES
+======================================================================
+
+{
+  "total_tests": 5,
+  "passed": 4,
+  "failed": 1,
+  "success_rate": 80.0
+}
+
+======================================================================
+DETALHES DOS TESTES
+======================================================================
+
+{
+  "qrs3_signature": {
+    "success": true,
+    "test_name": "QRS-3 Signature",
+    "message": "test_qrs3_1763681616",
+    "signature_time_ms": 977.23,
+    "verify_time_ms": 0.01,
+    "redundancy_level": 3,
+    "has_classic": true,
+    "has_ml_dsa": true,
+    "has_sphincs": true,
+    "proof_hash": "69cffccb2aae0018b7b25dd16d2f07bd1356e86eab7755218971ed45a3ce888214fe0ef7a53dbe3dbfd89593b57f77091e0140298b4a4d9e07e841cf456b1fc0",
+    "algorithms": {
+      "ecdsa": "secp256k1",
+      "ml_dsa": "Dilithium3",
+      "sphincs": "SPHINCS+-SHAKE-256f"
+    },
+    "pqc_versions": {
+      "ml_dsa": "NIST FIPS 204",
+      "sphincs": "NIST FIPS 205"
+    }
+  },
+  "interoperability": {
+    "success": true,
+    "test_name": "Interoperabilidade",
+    "lock_id": "lock_1763681617_29fdb1e9",
+    "tx_hash_source": "0x3eba43e25d8968062189b74bb79fa967f8540bef8e6ea2b3939bd38163ce07da",
+    "tx_hash_target": "0x30035c0ad650cafad9017e97fb23b6d62343f8ea65bcd61fd873d0e1ead5a641",
+    "confirmations": 1,
+    "bridge_status": "active",
+    "chains": {
+      "source": "allianza",
+      "target": "ethereum_testnet"
+    },
+    "proof_hash": "904d8b584902547144215f03ef08cc4a6b3238109023d413613f68e60fa4a64498e06403c9354ad9838b46520a1754a5f44d4ae795a1c3bc5c4118ba96208c92"
+  },
+  "performance": {
+    "success": true,
+    "test_name": "Performance",
+    "num_signatures": 100,
+    "avg_time_ms": 633.78,
+    "min_time_ms": 160.21,
+    "max_time_ms": 1693.67,
+    "std_dev_ms": 230.15,
+    "total_time_s": 63.38,
+    "throughput_per_sec": 1.58
+  },
+  "block_validation": {
+    "success": true,
+    "test_name": "Block Validation",
+    "total_blocks": 8,
+    "validated": 8,
+    "shards": 8,
+    "validation_rate": 100.0
+  },
+  "quantum_security": {
+    "success": false,
+    "test_name": "Quantum Security",
+    "qrs3_available": true,
+    "ml_dsa_available": true,
+    "sphincs_available": false,
+    "quantum_resistant": true,
+    "nist_standards": {
+      "ml_dsa": "FIPS 204",
+      "sphincs": "FIPS 205"
+    }
+  }
+}

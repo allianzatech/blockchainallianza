@@ -1,0 +1,154 @@
+{
+  "transaction_type": "bitcoin_send",
+  "timestamp": 1763930533.290054,
+  "from_private_key_prefix": "cSamqcRz79...",
+  "to_address": "mzBc4XEFSdzCDcTxAgf6EZXgsZWpztRhef",
+  "amount_btc": 9.144215712048647e-08,
+  "steps": [
+    {
+      "step": "address_validation_start",
+      "timestamp": 1763930533.2902715,
+      "level": "info",
+      "data": {
+        "to_address": "mzBc4XEFSdzCDcTxAgf6EZXgsZWpztRhef"
+      }
+    },
+    {
+      "step": "address_validation_success",
+      "timestamp": 1763930533.290373,
+      "level": "info",
+      "data": {}
+    },
+    {
+      "step": "amount_validated",
+      "timestamp": 1763930533.290991,
+      "level": "info",
+      "data": {
+        "amount_btc": 9.144215712048647e-08,
+        "amount_satoshis": 9
+      }
+    },
+    {
+      "step": "pre_send_summary",
+      "timestamp": 1763930550.0583267,
+      "level": "info",
+      "data": {
+        "wallet_name": "temp_wallet_1763930533_legacy",
+        "wallet_address": "mjQMvYHE5Bpqze4ifq6NLP9BthNJgxWRud",
+        "from_address": "mjQMvYHE5Bpqze4ifq6NLP9BthNJgxWRud",
+        "to_address": "mzBc4XEFSdzCDcTxAgf6EZXgsZWpztRhef",
+        "amount_btc": 9.144215712048647e-08,
+        "amount_satoshis": 9,
+        "wallet_utxos_count": 0,
+        "api_utxos_count": 1
+      }
+    },
+    {
+      "step": "using_blockcypher_api",
+      "timestamp": 1763930550.059146,
+      "level": "info",
+      "data": {
+        "utxos_count": 1
+      }
+    },
+    {
+      "step": "using_blockcypher_api",
+      "timestamp": 1763930550.0595205,
+      "level": "info",
+      "data": {
+        "utxos_count": 1
+      }
+    },
+    {
+      "step": "blockcypher_create_request",
+      "timestamp": 1763930550.0629184,
+      "level": "info",
+      "data": {
+        "inputs_count": 1,
+        "outputs_count": 2,
+        "total_input": 111998,
+        "output_value": 9,
+        "change_value": 110739,
+        "fee": 1250
+      }
+    },
+    {
+      "step": "blockcypher_create_error",
+      "timestamp": 1763930551.4158807,
+      "level": "error",
+      "data": {
+        "status_code": 400,
+        "error": "{\n  \"errors\": [\n    {\n      \"error\": \"Not enough funds after fees in 1 inputs to pay for 2 outputs, missing -21250.\"\n    }\n  ],\n  \"tx\": {\n    \"block_height\": -1,\n    \"block_index\": -1,\n    \"hash\": \"b284c3bbd24e1994d27802a1f091debe240f87bffec1c532bfae254b17fe99d7\",\n    \"addresses\": [\n      \"mjQMvYHE5Bpqze4ifq6NLP9BthNJgxWRud\",\n      \"mzBc4XEFSdzCDcTxAgf6EZXgsZWpztRhef\"\n    ],\n    \"total\": 110748,\n    \"fees\": 1250,\n    \"size\": 119,\n    \"vsize\": 119,\n    \"preference\": \"low\",\n    \"relayed_by\": \"2804",
+        "request_data": {
+          "inputs": [
+            {
+              "prev_hash": "82ea0f0dee1de29a334374c1cdbf816e05da4cf2a88a0d7119f88a2ed9a72076",
+              "output_index": 0
+            }
+          ],
+          "outputs": [
+            {
+              "addresses": [
+                "mzBc4XEFSdzCDcTxAgf6EZXgsZWpztRhef"
+              ],
+              "value": 9
+            },
+            {
+              "addresses": [
+                "mjQMvYHE5Bpqze4ifq6NLP9BthNJgxWRud"
+              ],
+              "value": 110739
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "errors": [
+    {
+      "step": "blockcypher_create_error",
+      "timestamp": 1763930551.4158807,
+      "level": "error",
+      "data": {
+        "status_code": 400,
+        "error": "{\n  \"errors\": [\n    {\n      \"error\": \"Not enough funds after fees in 1 inputs to pay for 2 outputs, missing -21250.\"\n    }\n  ],\n  \"tx\": {\n    \"block_height\": -1,\n    \"block_index\": -1,\n    \"hash\": \"b284c3bbd24e1994d27802a1f091debe240f87bffec1c532bfae254b17fe99d7\",\n    \"addresses\": [\n      \"mjQMvYHE5Bpqze4ifq6NLP9BthNJgxWRud\",\n      \"mzBc4XEFSdzCDcTxAgf6EZXgsZWpztRhef\"\n    ],\n    \"total\": 110748,\n    \"fees\": 1250,\n    \"size\": 119,\n    \"vsize\": 119,\n    \"preference\": \"low\",\n    \"relayed_by\": \"2804",
+        "request_data": {
+          "inputs": [
+            {
+              "prev_hash": "82ea0f0dee1de29a334374c1cdbf816e05da4cf2a88a0d7119f88a2ed9a72076",
+              "output_index": 0
+            }
+          ],
+          "outputs": [
+            {
+              "addresses": [
+                "mzBc4XEFSdzCDcTxAgf6EZXgsZWpztRhef"
+              ],
+              "value": 9
+            },
+            {
+              "addresses": [
+                "mjQMvYHE5Bpqze4ifq6NLP9BthNJgxWRud"
+              ],
+              "value": 110739
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "warnings": [],
+  "success": false,
+  "final_result": {
+    "success": false,
+    "error": "BlockCypher API falhou e bitcoinlib não reconhece UTXOs",
+    "blockcypher_attempted": true,
+    "wallet_utxos": 0,
+    "api_utxos": 1
+  },
+  "_metadata": {
+    "timestamp": "2025-11-23T17:42:31.416268",
+    "version": "1.0",
+    "type": "bitcoin_transaction_proof"
+  }
+}

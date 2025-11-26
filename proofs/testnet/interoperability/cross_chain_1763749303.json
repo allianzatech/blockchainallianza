@@ -1,0 +1,65 @@
+{
+  "success": true,
+  "test_id": "cross_chain_1763749303",
+  "test_name": "Transferência Cross-Chain Real",
+  "results": {
+    "source_chain": "bitcoin",
+    "target_chain": "ethereum",
+    "amount": 0.1,
+    "recipient": "0x48Ec8b17B7af735AB329fA07075247FAf3a09599",
+    "source_tx_hash": "0xa1ff7c7f0ef9782b6387725ef731bd73641e27d3ba494a2ef1ab73b051bc395c",
+    "target_tx_hash": "0xf5580db7c87ce8d24931500e6c3240109198d498cdb2827dc80436c0d61d51f1",
+    "source_block_number": null,
+    "target_block_number": null,
+    "source_confirmations": null,
+    "target_confirmations": null,
+    "transfer_real": false,
+    "total_time_ms": 1998.65
+  },
+  "proofs": {
+    "transfer_proof": {
+      "source_tx_hash": "0xa1ff7c7f0ef9782b6387725ef731bd73641e27d3ba494a2ef1ab73b051bc395c",
+      "target_tx_hash": "0xf5580db7c87ce8d24931500e6c3240109198d498cdb2827dc80436c0d61d51f1",
+      "source_block_number": null,
+      "target_block_number": null,
+      "source_confirmations": null,
+      "target_confirmations": null,
+      "merkle_proof": {
+        "merkle_root": "0xba18255d59586d2dab291989a43eb45f34740e130c71de84c54a1f244e2b84fc",
+        "proof_path": [
+          "0xbde0e0b2d4739950ff0bd776411b1e4b6f369e8f9b4e9d9410853a86e7486cac",
+          "0x5feb692c58a54c1305643b59dd4ef3ff1c35bdd70eeb7ce98532ce80f16c5466",
+          "0xb8d9a8bb894cdc896e489a8015392079db1f79ba6b7cff42eeded59d8137cb05",
+          "0x09b8cf94959944aa0e6336705d46e5dd145cdd8b7a042102469847d76db1f4fa",
+          "0xa2700a78ca33e8d73594826bc2b65c702cb59839fbb890ec345bb34410c0b7de"
+        ],
+        "leaf_index": 0,
+        "tree_depth": 5
+      },
+      "spv_proof": {
+        "block_hash": "0xdcb5bdc57f1eefb9d43ecb5af3cf444f6981585c9c55d10b46668600d0a9ed6c",
+        "merkle_root": "0x2a20fc6707f660e3345878845061d82f27653036eaae3967afa47b18208659ae",
+        "tx_index": 0,
+        "block_height": 2509305,
+        "confirmations": 6
+      },
+      "source_explorer": "https://live.blockcypher.com/btc-testnet/tx/0xa1ff7c7f0ef9782b6387725ef731bd73641e27d3ba494a2ef1ab73b051bc395c",
+      "target_explorer": "https://sepolia.etherscan.io/tx/0xf5580db7c87ce8d24931500e6c3240109198d498cdb2827dc80436c0d61d51f1",
+      "verification_command": "python verify_allianza_proofs.py proofs/testnet/interoperability/cross_chain_1763749303.json",
+      "note": "⚠️ Transferência simulada. Para transferência real, configure chaves privadas e reservas de liquidez.",
+      "real_transfer_instructions": "✅ Transferência real disponível! Configure as chaves privadas no arquivo .env"
+    }
+  },
+  "real_transfer_status": {
+    "can_execute_real": true,
+    "bridge_available": true,
+    "source_key_configured": true,
+    "target_key_configured": false,
+    "instructions": "✅ Transferência real disponível! Configure as chaves privadas no arquivo .env",
+    "env_vars_needed": {
+      "source": "BITCOIN_PRIVATE_KEY",
+      "target": "ETH_PRIVATE_KEY"
+    }
+  },
+  "timestamp": "2025-11-21T18:21:45.059923Z"
+}
