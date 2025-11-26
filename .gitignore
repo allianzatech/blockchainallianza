@@ -58,6 +58,10 @@ deploy/
 *.zip
 allianza_deploy.zip
 
+# liboqs (biblioteca grande, não precisa versionar)
+liboqs/
+liboqs-python/
+
 # Proofs (opcional - descomente se não quiser versionar)
 # proofs/
 # audit_bundles/
