@@ -61,6 +61,26 @@ allianza_deploy.zip
 # liboqs (biblioteca grande, não precisa versionar)
 liboqs/
 liboqs-python/
+liboqs-python/**/*
+
+# Pastas grandes que não precisam ser versionadas
+proofs/
+audit_bundles/
+data/
+*.db
+*.sqlite
+*.sqlite3
+allianza_blockchain.db
+qaas_audit.db
+
+# Arquivos grandes
+*.zip
+proofs.zip
+*.log
+*.log.*
+allianza_blockchain.log
+allianza_blockchain_structured.log
+qaas_enterprise.log
 
 # Proofs (opcional - descomente se não quiser versionar)
 # proofs/
