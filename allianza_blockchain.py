@@ -3652,10 +3652,11 @@ def wallet_legacy():
     """Dashboard simplificado - Wallet legado"""
     return render_template('dashboard_simples.html')
 
-@app.route('/explorer')
-def explorer():
-    """Site demo/explorer - Demonstração técnica completa"""
-    return render_template('index.html')
+# Rota /explorer removida - agora é gerenciada pelo testnet_bp blueprint
+# @app.route('/explorer')
+# def explorer():
+#     """Site demo/explorer - Demonstração técnica completa"""
+#     return render_template('index.html')
 
 @app.route('/create_wallet', methods=['POST'])
 def create_wallet():
