@@ -583,14 +583,14 @@ def api_qrs3_verify():
                     proof_id = proof.get("data", {}).get("meta", {}).get("proof_id")
                 
                 if proof_id:
-                    proof_url = f"/testnet/api/proofs/qrs3/{proof_id}?format=json"
+                    proof_url = f"/api/proofs/qrs3/{proof_id}?format=json"
                 elif proof.get("filepath"):
                     # Se não tem proof_id, usar nome do arquivo
                     import os
                     filename = os.path.basename(proof.get("filepath", ""))
                     if filename.endswith(".json"):
                         proof_id_from_file = filename[:-5]  # Remove .json
-                        proof_url = f"/testnet/api/proofs/qrs3/{proof_id_from_file}?format=json"
+                        proof_url = f"/api/proofs/qrs3/{proof_id_from_file}?format=json"
             
             response_data = {
                 "success": True,
