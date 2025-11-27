@@ -2209,6 +2209,24 @@ def init_professional_tests(app, blockchain_instance, quantum_security_instance,
         bridge_instance=bridge_instance
     )
     
+    # Error handler para garantir que sempre retorne JSON
+    @professional_tests_bp.errorhandler(404)
+    def handle_404(e):
+        return jsonify({"success": False, "error": "Rota não encontrada"}), 404
+    
+    @professional_tests_bp.errorhandler(500)
+    def handle_500(e):
+        return jsonify({"success": False, "error": "Erro interno do servidor"}), 500
+    
+    @professional_tests_bp.errorhandler(Exception)
+    def handle_exception(e):
+        import traceback
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "type": type(e).__name__
+        }), 500
+    
     app.register_blueprint(professional_tests_bp)
     print("✅ Professional Test Suite inicializada!")
 
@@ -2270,8 +2288,9 @@ def api_run_test():
 @professional_tests_bp.route('/api/run/<test_id>', methods=['POST'])
 def api_run_test_by_path(test_id):
     """Executar teste específico (aceita test_id no path)"""
-    if not professional_suite:
-        return jsonify({"error": "Professional Test Suite não inicializada"}), 500
+    try:
+        if not professional_suite:
+            return jsonify({"success": False, "error": "Professional Test Suite não inicializada"}), 500
     
     test_methods = {
         "1_1_pqc_key_generation": professional_suite.test_1_1_pqc_key_generation,
@@ -2293,11 +2312,15 @@ def api_run_test_by_path(test_id):
         "8_optional_tests": professional_suite.test_8_optional_tests
     }
     
-    if test_id not in test_methods:
-        return jsonify({"error": f"Teste '{test_id}' não encontrado"}), 404
-    
-    try:
-        result = test_methods[test_id]()
+        if test_id not in test_methods:
+            return jsonify({"success": False, "error": f"Teste '{test_id}' não encontrado"}), 404
+        
+        # Verificar se o método existe
+        test_method = test_methods[test_id]
+        if not callable(test_method):
+            return jsonify({"success": False, "error": f"Método '{test_id}' não é callable"}), 500
+        
+        result = test_method()
         # Garantir que o resultado é um dict válido
         if not isinstance(result, dict):
             result = {"error": "Resultado inválido do teste", "raw_result": str(result)}
@@ -2305,7 +2328,7 @@ def api_run_test_by_path(test_id):
         return jsonify({"success": result.get("success", False), **result})
     except AttributeError as e:
         # Método não existe
-        return jsonify({"success": False, "error": f"Método '{test_id}' não encontrado na classe: {str(e)}"}), 500
+        return jsonify({"success": False, "error": f"Método não encontrado: {str(e)}"}), 500
     except Exception as e:
         import traceback
         error_trace = traceback.format_exc()
