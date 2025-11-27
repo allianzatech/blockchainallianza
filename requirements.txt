@@ -9,5 +9,5 @@ gunicorn==21.2.0
 requests==2.31.0
 base58==2.1.1
 setuptools>=65.0.0
-bitcoinlib>=0.12.0
+bitcoinlib==0.7.5      ← CORRIGIDO!
 bech32>=1.2.0
