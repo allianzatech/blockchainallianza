@@ -2,8 +2,9 @@ services:
   - type: web
     name: allianza-blockchain
     env: python
+    pythonVersion: "3.10"
     buildCommand: pip install --upgrade pip && pip install -r requirements.txt
-    startCommand: gunicorn -w 4 -b 0.0.0.0:$PORT --timeout 120 --worker-class gevent wsgi:application
+    startCommand: gunicorn -w 4 -b 0.0.0.0:$PORT --timeout 120 wsgi:application
     envVars:
       - key: FLASK_ENV
         value: production

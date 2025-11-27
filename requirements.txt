@@ -6,6 +6,4 @@ cryptography==41.0.7
 web3==6.11.0
 python-dotenv==1.0.0
 gunicorn==21.2.0
-gevent==23.9.1
-eventlet==0.33.3
 requests==2.31.0
