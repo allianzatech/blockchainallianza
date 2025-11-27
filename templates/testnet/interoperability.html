@@ -3,23 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALZ-NIEV - Allianza Testnet</title>
+    <title>Interoperabilidade - Transferências Reais - Allianza Testnet</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .layer-card {
-            transition: transform 0.2s;
-        }
-        .layer-card:hover {
-            transform: translateY(-2px);
-        }
-    </style>
 </head>
 <body class="bg-gray-900 text-white">
     <div class="container mx-auto px-4 py-8">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-4xl font-bold mb-2">🌐 ALZ-NIEV</h1>
-            <p class="text-gray-400">Non-Intermediate Execution Validation - Interoperabilidade Única no Mundo</p>
+            <h1 class="text-4xl font-bold mb-2">💰 Transferência Real Cross-Chain</h1>
+            <p class="text-gray-400">Envie tokens REAIS entre blockchains diferentes (Polygon, Bitcoin, Ethereum, etc.)</p>
+            <p class="text-sm text-yellow-400 mt-2">✅ As transferências aparecem nos explorers e são 100% reais!</p>
         </div>
 
         <!-- Status -->
@@ -27,117 +20,127 @@
             <p class="text-yellow-400">⏳ Verificando status...</p>
         </div>
 
-        <!-- As 5 Camadas -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            <div class="layer-card bg-blue-900 p-6 rounded-lg">
-                <h3 class="text-xl font-bold mb-2">🔵 ELNI</h3>
-                <p class="text-sm text-gray-300">Execution-Level Native Interop</p>
-                <p class="text-xs text-gray-400 mt-2">Execução nativa sem bridges</p>
-            </div>
-            <div class="layer-card bg-purple-900 p-6 rounded-lg">
-                <h3 class="text-xl font-bold mb-2">🟣 ZKEF</h3>
-                <p class="text-sm text-gray-300">Zero-Knowledge External Functions</p>
-                <p class="text-xs text-gray-400 mt-2">Provas ZK sem relayers</p>
-            </div>
-            <div class="layer-card bg-green-900 p-6 rounded-lg">
-                <h3 class="text-xl font-bold mb-2">🟢 UP-NMT</h3>
-                <p class="text-sm text-gray-300">Universal Proof Normalized Merkle Tunneling</p>
-                <p class="text-xs text-gray-400 mt-2">Provas Merkle universais</p>
-            </div>
-            <div class="layer-card bg-yellow-900 p-6 rounded-lg">
-                <h3 class="text-xl font-bold mb-2">🟡 MCL</h3>
-                <p class="text-sm text-gray-300">Multi-Consensus Layer</p>
-                <p class="text-xs text-gray-400 mt-2">Suporte a qualquer consenso</p>
-            </div>
-            <div class="layer-card bg-red-900 p-6 rounded-lg">
-                <h3 class="text-xl font-bold mb-2">🔴 AES</h3>
-                <p class="text-sm text-gray-300">Atomic Execution Sync</p>
-                <p class="text-xs text-gray-400 mt-2">Execução atômica multi-chain</p>
-            </div>
-        </div>
-
-        <!-- Teste 1: Execução Cross-Chain Simples -->
+        <!-- Transferência Real -->
         <div class="bg-gray-800 p-6 rounded-lg mb-6">
-            <h2 class="text-2xl font-bold mb-4">🔵 Teste 1: Execução Cross-Chain (ELNI + Todas as Provas)</h2>
+            <h2 class="text-2xl font-bold mb-4">📝 Preencha os Dados da Transferência</h2>
+            <p class="text-sm text-gray-400 mb-4">Simples: escolha origem, destino, quantidade e endereço. É só isso!</p>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-sm font-medium mb-2">Source Chain</label>
+                    <label class="block text-sm font-medium mb-2">Blockchain de Origem</label>
                     <select id="sourceChain" class="w-full bg-gray-700 text-white p-2 rounded">
-                        <option value="allianza">Allianza</option>
-                        <option value="polygon">Polygon</option>
-                        <option value="ethereum">Ethereum</option>
+                        <option value="polygon">Polygon (Amoy)</option>
+                        <option value="ethereum">Ethereum (Sepolia)</option>
+                        <option value="bsc">BSC (Testnet)</option>
+                        <option value="base">Base (Sepolia)</option>
+                        <option value="bitcoin">Bitcoin (Testnet)</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-2">Target Chain</label>
+                    <label class="block text-sm font-medium mb-2">Blockchain de Destino</label>
                     <select id="targetChain" class="w-full bg-gray-700 text-white p-2 rounded">
-                        <option value="polygon">Polygon</option>
-                        <option value="ethereum">Ethereum</option>
-                        <option value="bsc">BSC</option>
-                        <option value="bitcoin">Bitcoin</option>
-                        <option value="solana">Solana</option>
+                        <option value="bitcoin">Bitcoin (Testnet)</option>
+                        <option value="polygon">Polygon (Amoy)</option>
+                        <option value="ethereum">Ethereum (Sepolia)</option>
+                        <option value="bsc">BSC (Testnet)</option>
+                        <option value="base">Base (Sepolia)</option>
                     </select>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-sm font-medium mb-2">Function Name</label>
-                    <input type="text" id="functionName" value="getBalance" class="w-full bg-gray-700 text-white p-2 rounded">
+                    <label class="block text-sm font-medium mb-2">Quantidade</label>
+                    <input type="number" id="amount" step="0.0001" value="0.1" class="w-full bg-gray-700 text-white p-2 rounded">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-2">Function Params (JSON)</label>
-                    <input type="text" id="functionParams" value='{"address": "0x1234..."}' class="w-full bg-gray-700 text-white p-2 rounded">
+                    <label class="block text-sm font-medium mb-2">Token</label>
+                    <select id="tokenSymbol" class="w-full bg-gray-700 text-white p-2 rounded">
+                        <option value="MATIC">MATIC</option>
+                        <option value="ETH">ETH</option>
+                        <option value="BNB">BNB</option>
+                        <option value="BTC">BTC</option>
+                    </select>
                 </div>
             </div>
 
-            <button onclick="testExecution()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded font-bold">
-                🚀 Executar com ALZ-NIEV
-            </button>
-
-            <div id="executionResult" class="mt-4 hidden">
-                <div class="bg-gray-900 p-4 rounded">
-                    <pre id="executionResultContent" class="text-sm overflow-auto"></pre>
-                </div>
-            </div>
-        </div>
-
-        <!-- Teste 2: Execução Atômica Multi-Chain -->
-        <div class="bg-gray-800 p-6 rounded-lg mb-6">
-            <h2 class="text-2xl font-bold mb-4">🔴 Teste 2: Execução Atômica Multi-Chain (AES)</h2>
-            
             <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Chains (JSON Array)</label>
-                <textarea id="atomicChains" rows="6" class="w-full bg-gray-700 text-white p-2 rounded font-mono text-sm">[
-  {"chain": "polygon", "function": "transfer", "params": {"to": "0x1234...", "amount": 100}},
-  {"chain": "ethereum", "function": "mint", "params": {"to": "0x5678...", "amount": 50}},
-  {"chain": "bsc", "function": "swap", "params": {"token_in": "BNB", "token_out": "USDT", "amount": 10}}
-]</textarea>
+                <label class="block text-sm font-medium mb-2">Endereço Destinatário</label>
+                <input type="text" id="recipient" placeholder="0x... ou tb1q..." class="w-full bg-gray-700 text-white p-2 rounded">
             </div>
 
-            <button onclick="testAtomic()" class="bg-red-600 hover:bg-red-700 px-6 py-2 rounded font-bold">
-                ⚡ Executar Atomicamente
+            <div class="mb-4 p-4 bg-blue-900 rounded">
+                <p class="text-sm font-bold mb-2">💡 Como funciona:</p>
+                <ol class="text-xs text-gray-300 list-decimal list-inside space-y-1">
+                    <li>Escolha a blockchain de origem (ex: Polygon)</li>
+                    <li>Escolha a blockchain de destino (ex: Bitcoin)</li>
+                    <li>Digite a quantidade e o token</li>
+                    <li>Cole o endereço do destinatário</li>
+                    <li>Clique em "Executar Transferência REAL"</li>
+                    <li>A transferência aparecerá nos explorers!</li>
+                </ol>
+            </div>
+
+            <div class="mb-4 p-4 bg-yellow-900 rounded">
+                <p class="text-sm font-bold mb-2">⚠️ Importante:</p>
+                <ul class="text-xs text-gray-300 list-disc list-inside space-y-1">
+                    <li>Esta é uma transferência REAL que aparecerá nos explorers</li>
+                    <li>Você precisa ter saldo suficiente na blockchain de origem</li>
+                    <li>Não tem saldo? Use o <a href="/faucet" class="text-blue-400 underline font-bold">Faucet</a> para obter tokens de teste</li>
+                </ul>
+            </div>
+
+            <button onclick="executeRealTransfer()" class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded font-bold text-lg w-full">
+                🚀 Executar Transferência REAL
             </button>
 
-            <div id="atomicResult" class="mt-4 hidden">
+            <div id="transferResult" class="mt-4 hidden">
                 <div class="bg-gray-900 p-4 rounded">
-                    <pre id="atomicResultContent" class="text-sm overflow-auto"></pre>
+                    <h3 class="text-lg font-bold mb-2">Resultado da Transferência</h3>
+                    <pre id="transferResultContent" class="text-sm overflow-auto max-h-96"></pre>
                 </div>
             </div>
         </div>
 
-        <!-- Link para Faucet -->
-        <div class="bg-yellow-900 p-4 rounded-lg mb-6">
-            <p class="font-bold mb-2">💰 Precisa de Tokens de Teste?</p>
-            <p class="text-sm mb-2">Para executar funções que requerem saldo, use o faucet:</p>
-            <a href="/faucet" class="text-blue-400 hover:underline">→ Acessar Faucet</a>
+        <!-- Informação sobre ALZ-NIEV -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-bold mb-4">🧬 Tecnologia ALZ-NIEV</h2>
+            <p class="text-sm text-gray-300 mb-4">
+                Por trás desta interface simples, está o sistema ALZ-NIEV com 5 camadas de segurança e provas criptográficas.
+                Você não precisa entender isso - apenas faça sua transferência e tudo funciona automaticamente!
+            </p>
+            <details class="text-sm">
+                <summary class="cursor-pointer text-blue-400 hover:text-blue-300">Ver detalhes técnicos (opcional)</summary>
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div class="bg-blue-900 p-4 rounded">
+                        <h3 class="font-bold mb-1">🔵 ELNI</h3>
+                        <p class="text-xs text-gray-300">Execution-Level Native Interop</p>
+                    </div>
+                    <div class="bg-purple-900 p-4 rounded">
+                        <h3 class="font-bold mb-1">🟣 ZKEF</h3>
+                        <p class="text-xs text-gray-300">Zero-Knowledge External Functions</p>
+                    </div>
+                    <div class="bg-green-900 p-4 rounded">
+                        <h3 class="font-bold mb-1">🟢 UP-NMT</h3>
+                        <p class="text-xs text-gray-300">Universal Proof Normalized Merkle Tunneling</p>
+                    </div>
+                    <div class="bg-yellow-900 p-4 rounded">
+                        <h3 class="font-bold mb-1">🟡 MCL</h3>
+                        <p class="text-xs text-gray-300">Multi-Consensus Layer</p>
+                    </div>
+                    <div class="bg-red-900 p-4 rounded">
+                        <h3 class="font-bold mb-1">🔴 AES</h3>
+                        <p class="text-xs text-gray-300">Atomic Execution Sync</p>
+                    </div>
+                </div>
+            </details>
         </div>
 
         <!-- Links -->
         <div class="flex gap-4">
             <a href="/" class="text-blue-400 hover:underline">← Voltar ao Dashboard</a>
-            <a href="/interoperability" class="text-blue-400 hover:underline">Interoperabilidade Tradicional →</a>
+            <a href="/faucet" class="text-blue-400 hover:underline">Faucet →</a>
+            <a href="/alz-niev" class="text-blue-400 hover:underline">ALZ-NIEV Dashboard →</a>
         </div>
     </div>
 
@@ -145,87 +148,81 @@
         // Verificar status
         async function checkStatus() {
             try {
-                const response = await fetch('/api/alz-niev/status');
+                const response = await fetch('/api/interoperability/status');
                 const data = await response.json();
                 
                 const statusDiv = document.getElementById('status');
                 if (data.available) {
-                    statusDiv.innerHTML = '<p class="text-green-400">✅ ALZ-NIEV disponível e funcionando!</p>';
+                    statusDiv.innerHTML = '<p class="text-green-400">✅ Sistema de interoperabilidade disponível e pronto para transferências REAIS!</p>';
                 } else {
-                    statusDiv.innerHTML = '<p class="text-red-400">❌ ALZ-NIEV não disponível</p>';
+                    statusDiv.innerHTML = '<p class="text-yellow-400">⚠️ Sistema em modo limitado: ' + (data.error || 'Não disponível') + '</p>';
                 }
             } catch (error) {
-                document.getElementById('status').innerHTML = '<p class="text-red-400">❌ Erro ao verificar status</p>';
+                document.getElementById('status').innerHTML = '<p class="text-yellow-400">⚠️ Verificando status...</p>';
             }
         }
 
-        // Teste de execução cross-chain
-        async function testExecution() {
+        // Executar transferência real
+        async function executeRealTransfer() {
             const sourceChain = document.getElementById('sourceChain').value;
             const targetChain = document.getElementById('targetChain').value;
-            const functionName = document.getElementById('functionName').value;
-            const functionParamsText = document.getElementById('functionParams').value;
-            
-            let functionParams = {};
-            try {
-                functionParams = JSON.parse(functionParamsText);
-            } catch (e) {
-                alert('Erro: Function Params deve ser JSON válido');
+            const amount = parseFloat(document.getElementById('amount').value);
+            const tokenSymbol = document.getElementById('tokenSymbol').value;
+            const recipient = document.getElementById('recipient').value.trim();
+
+            if (!recipient) {
+                alert('Por favor, insira um endereço destinatário');
                 return;
             }
 
-            const resultDiv = document.getElementById('executionResult');
-            const resultContent = document.getElementById('executionResultContent');
+            if (amount <= 0) {
+                alert('A quantidade deve ser maior que zero');
+                return;
+            }
+
+            const resultDiv = document.getElementById('transferResult');
+            const resultContent = document.getElementById('transferResultContent');
             resultDiv.classList.remove('hidden');
-            resultContent.textContent = '⏳ Executando...';
+            resultContent.textContent = '⏳ Executando transferência REAL...\n\nIsso pode levar alguns segundos...';
 
             try {
-                const response = await fetch('/api/alz-niev/execute', {
+                const response = await fetch('/api/interoperability/transfer-real', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         source_chain: sourceChain,
                         target_chain: targetChain,
-                        function_name: functionName,
-                        function_params: functionParams
+                        amount: amount,
+                        token_symbol: tokenSymbol,
+                        recipient: recipient
                     })
                 });
 
                 const data = await response.json();
-                resultContent.textContent = JSON.stringify(data, null, 2);
+                
+                if (data.success) {
+                    let resultText = '✅ Transferência REAL executada com sucesso!\n\n';
+                    resultText += '📊 Detalhes:\n';
+                    resultText += JSON.stringify(data, null, 2);
+                    
+                    if (data.source_tx) {
+                        resultText += '\n\n🔗 Links dos Explorers:\n';
+                        if (data.source_tx.startsWith('0x')) {
+                            resultText += `Polygon/EVM: https://amoy.polygonscan.com/tx/${data.source_tx}\n`;
+                        } else {
+                            resultText += `Bitcoin: https://blockstream.info/testnet/tx/${data.source_tx}\n`;
+                        }
+                    }
+                    
+                    resultContent.textContent = resultText;
+                    resultContent.classList.add('text-green-400');
+                } else {
+                    resultContent.textContent = '❌ Erro na transferência:\n\n' + JSON.stringify(data, null, 2);
+                    resultContent.classList.add('text-red-400');
+                }
             } catch (error) {
-                resultContent.textContent = `Erro: ${error.message}`;
-            }
-        }
-
-        // Teste de execução atômica
-        async function testAtomic() {
-            const chainsText = document.getElementById('atomicChains').value;
-            
-            let chains = [];
-            try {
-                chains = JSON.parse(chainsText);
-            } catch (e) {
-                alert('Erro: Chains deve ser JSON válido');
-                return;
-            }
-
-            const resultDiv = document.getElementById('atomicResult');
-            const resultContent = document.getElementById('atomicResultContent');
-            resultDiv.classList.remove('hidden');
-            resultContent.textContent = '⏳ Executando atomicamente...';
-
-            try {
-                const response = await fetch('/api/alz-niev/atomic', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ chains })
-                });
-
-                const data = await response.json();
-                resultContent.textContent = JSON.stringify(data, null, 2);
-            } catch (error) {
-                resultContent.textContent = `Erro: ${error.message}`;
+                resultContent.textContent = '❌ Erro ao executar transferência:\n\n' + error.message;
+                resultContent.classList.add('text-red-400');
             }
         }
 
@@ -234,7 +231,3 @@
     </script>
 </body>
 </html>
-
-
-
-
