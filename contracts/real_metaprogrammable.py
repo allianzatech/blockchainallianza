@@ -9,14 +9,42 @@ load_dotenv()
 
 class RealMetaprogrammableSystem:
     def __init__(self):
-        self.eth_w3 = Web3(HTTPProvider(os.getenv('ETH_RPC_URL')))
-        self.private_key = os.getenv('REAL_ETH_PRIVATE_KEY').replace('0x', '')
-        self.account = self.eth_w3.eth.account.from_key(self.private_key)
-        self.meta_tokens = {}
+        eth_rpc_url = os.getenv('ETH_RPC_URL')
+        private_key = os.getenv('REAL_ETH_PRIVATE_KEY')
         
-        print("🔮 REAL METAPROGRAMMABLE SYSTEM: Inicializado!")
-        print(f"✅ Conta: {self.account.address}")
-        print(f"💰 Saldo: {self.eth_w3.from_wei(self.eth_w3.eth.get_balance(self.account.address), 'ether')} ETH")
+        # Verificar se as variáveis necessárias estão definidas
+        if not eth_rpc_url or not private_key:
+            self.eth_w3 = None
+            self.private_key = None
+            self.account = None
+            self.meta_tokens = {}
+            print("⚠️  REAL METAPROGRAMMABLE SYSTEM: Variáveis de ambiente não configuradas (ETH_RPC_URL ou REAL_ETH_PRIVATE_KEY)")
+            print("   Sistema funcionará em modo simulação")
+            return
+        
+        try:
+            self.eth_w3 = Web3(HTTPProvider(eth_rpc_url))
+            self.private_key = private_key.replace('0x', '') if private_key else None
+            if self.private_key:
+                self.account = self.eth_w3.eth.account.from_key(self.private_key)
+            else:
+                self.account = None
+            self.meta_tokens = {}
+            
+            if self.account:
+                print("🔮 REAL METAPROGRAMMABLE SYSTEM: Inicializado!")
+                print(f"✅ Conta: {self.account.address}")
+                try:
+                    balance = self.eth_w3.from_wei(self.eth_w3.eth.get_balance(self.account.address), 'ether')
+                    print(f"💰 Saldo: {balance} ETH")
+                except:
+                    print("💰 Saldo: Não disponível")
+        except Exception as e:
+            print(f"⚠️  Erro ao inicializar REAL METAPROGRAMMABLE SYSTEM: {e}")
+            self.eth_w3 = None
+            self.private_key = None
+            self.account = None
+            self.meta_tokens = {}
     
     def get_metaprogrammable_abi(self):
         """ABI para contrato metaprogramável REAL"""
@@ -108,6 +136,12 @@ class RealMetaprogrammableSystem:
     
     def deploy_metaprogrammable_token(self, name, symbol, initial_supply):
         """Deploy REAL de token metaprogramável na Ethereum"""
+        if not self.eth_w3 or not self.account:
+            return {
+                "success": False, 
+                "error": "REAL_ETH_PRIVATE_KEY ou ETH_RPC_URL não configurados",
+                "note": "Configure as variáveis de ambiente para usar o sistema real"
+            }
         try:
             print(f"🚀 Deploying REAL Metaprogrammable Token: {symbol}")
             
@@ -183,6 +217,12 @@ class RealMetaprogrammableSystem:
     
     def metaprogrammable_transfer(self, token_id, to_address, amount, target_chain):
         """Transferência REAL com metaprogramação entre chains"""
+        if not self.eth_w3 or not self.account:
+            return {
+                "success": False, 
+                "error": "REAL_ETH_PRIVATE_KEY ou ETH_RPC_URL não configurados",
+                "note": "Configure as variáveis de ambiente para usar o sistema real"
+            }
         try:
             token = self.meta_tokens.get(token_id)
             if not token:
