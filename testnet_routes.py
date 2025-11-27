@@ -1032,14 +1032,20 @@ def api_stream_public_tests():
 @testnet_bp.route('/interoperability', methods=['GET'])
 def interoperability_dashboard_route():
     """Dashboard de interoperabilidade - Agora usando ALZ-NIEV"""
-    if not alz_niev:
-        # Retornar página amigável ao invés de erro 500
+    try:
+        if not alz_niev:
+            # Retornar página amigável ao invés de erro 500
+            return render_template('testnet/interoperability.html',
+                                 alz_niev_available=False,
+                                 error_message="ALZ-NIEV não está disponível no momento."), 200
+        
+        return render_template('testnet/interoperability.html',
+                             alz_niev_available=True)
+    except Exception as e:
+        # Fallback se houver erro
         return render_template('testnet/interoperability.html',
                              alz_niev_available=False,
-                             error_message="ALZ-NIEV não está disponível no momento. O módulo pkg_resources não foi encontrado."), 200
-    
-    return render_template('testnet/interoperability.html',
-                         alz_niev_available=True)
+                             error_message=f"Erro ao carregar: {str(e)}"), 200
 
 @testnet_bp.route('/api/interoperability/status', methods=['GET'])
 def api_interoperability_status():
