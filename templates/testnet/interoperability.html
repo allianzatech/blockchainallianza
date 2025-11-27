@@ -198,6 +198,13 @@
                     })
                 });
 
+                // Verificar se a resposta é JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Resposta não é JSON. Status: ${response.status}. Resposta: ${text.substring(0, 200)}`);
+                }
+
                 const data = await response.json();
                 
                 if (data.success) {

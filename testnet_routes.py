@@ -1137,10 +1137,21 @@ def api_test_proof_of_lock():
 @testnet_bp.route('/api/interoperability/transfer-real', methods=['POST'])
 def api_transfer_real():
     """Transferência REAL cross-chain usando ALZ-NIEV"""
-    if not alz_niev:
-        return jsonify({"error": "ALZ-NIEV não inicializado"}), 500
-    
     try:
+        # Verificar se é JSON
+        if not request.is_json:
+            return jsonify({
+                "success": False,
+                "error": "Content-Type deve ser application/json"
+            }), 400
+        
+        if not alz_niev:
+            return jsonify({
+                "success": False,
+                "error": "ALZ-NIEV não inicializado",
+                "available": False
+            }), 200  # Retornar 200 mas com success=False para não quebrar o frontend
+        
         data = request.get_json() or {}
         source_chain = data.get('source_chain', 'polygon')
         target_chain = data.get('target_chain', 'bitcoin')
@@ -1163,14 +1174,28 @@ def api_transfer_real():
             token_symbol=token_symbol
         )
         
-        return jsonify(result), 200 if result.get("success") else 500
+        # Garantir que result é um dict válido
+        if not isinstance(result, dict):
+            result = {"success": False, "error": "Resultado inválido da transferência"}
         
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
+        # Sempre retornar JSON, mesmo se result.get("success") for False
+        return jsonify(result), 200
+        
+    except ValueError as e:
+        # Erro de conversão (ex: float inválido)
         return jsonify({
             "success": False,
-            "error": str(e)
+            "error": f"Erro de validação: {str(e)}"
+        }), 400
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        # Log do erro mas não expor traceback completo no JSON
+        print(f"❌ Erro em transfer-real: {error_trace}")
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "error_type": type(e).__name__
         }), 500
 
 @testnet_bp.route('/api/interoperability/test/cross-chain', methods=['POST'])
