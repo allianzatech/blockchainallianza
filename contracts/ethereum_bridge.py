@@ -26,10 +26,14 @@ class RealEthereumBridge:
             print(f"📡 RPC URL: {'✅ Configurada' if eth_rpc else '❌ Faltando'}")
             print(f"🔑 Private Key: {'✅ Configurada' if private_key else '❌ Faltando'}")
             
-            if not eth_rpc:
-                raise Exception("ETH_RPC_URL não configurada no .env")
-            if not private_key:
-                raise Exception("REAL_ETH_PRIVATE_KEY não configurada no .env")
+            if not eth_rpc or not private_key:
+                print("⚠️  Ethereum Bridge: Variáveis de ambiente não configuradas")
+                print("   Configure ETH_RPC_URL e REAL_ETH_PRIVATE_KEY para usar funcionalidades reais")
+                print("   Continuando em modo simulação...")
+                self.eth_w3 = None
+                self.account = None
+                self.private_key = None
+                return
             
             self.eth_w3 = Web3(HTTPProvider(eth_rpc))
             print(f"✅ Ethereum Conectado: {self.eth_w3.is_connected()}")
@@ -47,8 +51,11 @@ class RealEthereumBridge:
             print(f"💰 Saldo: {balance_eth} ETH")
             
         except Exception as e:
-            print(f"❌ Erro setup Ethereum: {e}")
-            raise e
+            print(f"⚠️  Erro setup Ethereum: {e}")
+            print("   Continuando em modo simulação...")
+            self.eth_w3 = None
+            self.account = None
+            self.private_key = None
         
     def get_contract_abi(self):
         """ABI simplificada para teste"""

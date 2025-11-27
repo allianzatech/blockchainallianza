@@ -20,9 +20,13 @@ class BitcoinTransactionMonitor:
         try:
             from contracts.ethereum_bridge import RealEthereumBridge
             self.eth_bridge = RealEthereumBridge()
-            print("✅ Ponte Ethereum configurada para swaps BTC→ETH")
-        except ImportError:
-            print("⚠️  Ponte Ethereum não disponível - usando modo simulação")
+            if self.eth_bridge.eth_w3 and self.eth_bridge.account:
+                print("✅ Ponte Ethereum configurada para swaps BTC→ETH")
+            else:
+                print("⚠️  Ponte Ethereum em modo simulação (variáveis não configuradas)")
+        except (ImportError, Exception) as e:
+            print(f"⚠️  Ponte Ethereum não disponível - usando modo simulação: {e}")
+            self.eth_bridge = None
     
     def generate_btc_address(self):
         """Gerar endereço Bitcoin único para depósito"""
