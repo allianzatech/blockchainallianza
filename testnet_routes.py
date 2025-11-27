@@ -805,20 +805,101 @@ def quantum_security_dashboard_route():
                     temp_dashboard = QuantumSecurityDashboard(quantum_security, blockchain_inst)
                     dashboard_data = temp_dashboard.get_complete_dashboard()
                 else:
-                    # Fallback com dados básicos
-                    dashboard_data = {"status": "available", "metrics": {}}
+                    # Fallback com dados básicos - estrutura completa
+                    dashboard_data = {
+                        "qrs3_metrics": {
+                            "status": "available",
+                            "redundancy_level": "QRS-2",
+                            "usage_rate_percent": 0.0,
+                            "total_qrs3_transactions": 0,
+                            "algorithms": {"ecdsa": True, "ml_dsa": True, "sphincs": False, "sphincs_real": False}
+                        },
+                        "quantum_entropy": {
+                            "total_generated_bytes": 0,
+                            "rate_bytes_per_second": 0,
+                            "source": "simulated",
+                            "quantum_secure": False
+                        },
+                        "hybrid_signatures": {
+                            "qrs3_count": 0,
+                            "qrs2_count": 0,
+                            "ecdsa_only_count": 0,
+                            "percentages": {"qrs3": 0.0, "qrs2": 0.0, "ecdsa_only": 100.0}
+                        },
+                        "pqc_performance": {},
+                        "zero_day_monitoring": {
+                            "attacks_detected": 0,
+                            "attacks_mitigated": 0,
+                            "protection_layers": []
+                        }
+                    }
             except Exception as e:
-                # Fallback básico se houver erro
-                dashboard_data = {"status": "available", "metrics": {}, "error": str(e)}
+                # Fallback básico se houver erro - estrutura completa
+                dashboard_data = {
+                    "qrs3_metrics": {
+                        "status": "available",
+                        "redundancy_level": "QRS-2",
+                        "usage_rate_percent": 0.0,
+                        "total_qrs3_transactions": 0,
+                        "algorithms": {"ecdsa": True, "ml_dsa": True, "sphincs": False, "sphincs_real": False}
+                    },
+                    "quantum_entropy": {
+                        "total_generated_bytes": 0,
+                        "rate_bytes_per_second": 0,
+                        "source": "simulated",
+                        "quantum_secure": False
+                    },
+                    "hybrid_signatures": {
+                        "qrs3_count": 0,
+                        "qrs2_count": 0,
+                        "ecdsa_only_count": 0,
+                        "percentages": {"qrs3": 0.0, "qrs2": 0.0, "ecdsa_only": 100.0}
+                    },
+                    "pqc_performance": {},
+                    "zero_day_monitoring": {
+                        "attacks_detected": 0,
+                        "attacks_mitigated": 0,
+                        "protection_layers": []
+                    },
+                    "error": str(e)
+                }
         else:
             dashboard_data = quantum_dashboard.get_complete_dashboard()
         
         return render_template('testnet/quantum_security.html',
                              dashboard=dashboard_data)
     except Exception as e:
-        # Fallback básico se houver erro
+        # Fallback básico se houver erro - estrutura completa
+        fallback_dashboard = {
+            "qrs3_metrics": {
+                "status": "available",
+                "redundancy_level": "QRS-2",
+                "usage_rate_percent": 0.0,
+                "total_qrs3_transactions": 0,
+                "algorithms": {"ecdsa": True, "ml_dsa": True, "sphincs": False, "sphincs_real": False}
+            },
+            "quantum_entropy": {
+                "total_generated_bytes": 0,
+                "rate_bytes_per_second": 0,
+                "source": "simulated",
+                "quantum_secure": False
+            },
+            "hybrid_signatures": {
+                "qrs3_count": 0,
+                "qrs2_count": 0,
+                "ecdsa_only_count": 0,
+                "percentages": {"qrs3": 0.0, "qrs2": 0.0, "ecdsa_only": 100.0}
+            },
+            "pqc_performance": {},
+            "zero_day_monitoring": {
+                "attacks_detected": 0,
+                "attacks_mitigated": 0,
+                "protection_layers": []
+            },
+            "error": str(e)
+        }
         return render_template('testnet/quantum_security.html',
-                             dashboard={"status": "available", "metrics": {}, "error": str(e)}), 200
+                             dashboard=fallback_dashboard), 200
 
 @testnet_bp.route('/api/quantum-security', methods=['GET'])
 def api_quantum_security():
