@@ -12,5 +12,6 @@ services:
       - key: SECRET_KEY
         generateValue: true
     healthCheckPath: /health
+    healthCheckGracePeriod: 60
     autoDeploy: true
 

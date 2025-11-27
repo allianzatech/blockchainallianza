@@ -3651,6 +3651,15 @@ def real_test_status():
 # ROTAS DA API
 # =============================================================================
 
+@app.route('/health')
+def health_check():
+    """Health check endpoint para Render e outros serviços"""
+    return jsonify({
+        "status": "healthy",
+        "service": "Allianza Blockchain",
+        "timestamp": datetime.now().isoformat()
+    }), 200
+
 @app.route('/')
 def index():
     """Página inicial com conteúdo completo da testnet"""
