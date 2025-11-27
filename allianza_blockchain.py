@@ -1339,19 +1339,12 @@ except Exception as e:
 allianza_blockchain = AllianzaBlockchain()
 
 # =============================================================================
-# INICIALIZAÇÃO UEC - NOVA SEÇÃO
+# INICIALIZAÇÃO UEC - DESATIVADO
 # =============================================================================
 
-if UEC_AVAILABLE:
-    try:
-        allianza_uec = AllianzaUEC(allianza_blockchain)
-        init_uec_routes(app, allianza_blockchain)
-        logger.info("🌌 UEC INTEGRADA: Universal Execution Chain Ativa")
-    except Exception as e:
-        logger.error(f"❌ Erro ao inicializar UEC: {e}")
-        UEC_AVAILABLE = False
-else:
-    logger.info("⚠️  UEC não disponível - sistema funcionando em modo legado")
+# UEC desativado - usando ALZ-NIEV no testnet
+UEC_AVAILABLE = False
+logger.info("⚠️  UEC desativado - usando ALZ-NIEV no testnet")
 
 # =============================================================================
 # ROTAS DE TESTE E UTILIDADE
@@ -3651,82 +3644,8 @@ def real_test_status():
 # ROTAS DA API
 # =============================================================================
 
-@app.route('/')
-def index():
-    """Página inicial com conteúdo completo da testnet"""
-    # Obter dados da testnet (mesma lógica do dashboard da testnet)
-    try:
-        from testnet_config import get_network_info
-        network_info = get_network_info()
-    except:
-        network_info = {
-            "network_id": "0x414C5A54",
-            "chain_id": "20241120",
-            "version": "1.0.0"
-        }
-    
-    # Obter stats do explorer (usar mesma lógica do dashboard da testnet)
-    stats = None
-    faucet_stats = None
-    
-    try:
-        from testnet_explorer import TestnetExplorer
-        from testnet_faucet import TestnetFaucet
-        
-        # Tentar usar instâncias globais do testnet_routes
-        try:
-            import testnet_routes
-            if hasattr(testnet_routes, 'explorer') and testnet_routes.explorer:
-                stats = testnet_routes.explorer.get_network_stats()
-            else:
-                # Criar instância temporária
-                temp_explorer = TestnetExplorer(allianza_blockchain)
-                stats = temp_explorer.get_network_stats()
-        except Exception as e:
-            # Criar instância temporária se não conseguir acessar global
-            temp_explorer = TestnetExplorer(allianza_blockchain)
-            stats = temp_explorer.get_network_stats()
-        
-        try:
-            import testnet_routes
-            if hasattr(testnet_routes, 'faucet') and testnet_routes.faucet:
-                faucet_stats = testnet_routes.faucet.get_stats()
-            else:
-                # Criar instância temporária
-                from quantum_security import QuantumSecuritySystem
-                temp_faucet = TestnetFaucet(allianza_blockchain, QuantumSecuritySystem())
-                faucet_stats = temp_faucet.get_stats()
-        except Exception as e:
-            faucet_stats = {
-                "total_requests": 0,
-                "total_sent": 0,
-                "total_rejected": 0,
-                "amount_per_request": 1000
-            }
-    except Exception as e:
-        # Valores padrão em caso de erro
-        stats = {
-            "total_blocks": 0,
-            "total_transactions": 0,
-            "pending_transactions": 0,
-            "tps_current": 0,
-            "tps_24h_avg": 0,
-            "latency_avg_ms": 0,
-            "active_shards": 0,
-            "validators_online": 0,
-            "network_status": "operational"
-        }
-        faucet_stats = {
-            "total_requests": 0,
-            "total_sent": 0,
-            "total_rejected": 0,
-            "amount_per_request": 1000
-        }
-    
-    return render_template('index_simples.html',
-                         network_info=network_info,
-                         stats=stats,
-                         faucet_stats=faucet_stats)
+# Rota / removida - agora é tratada pelo blueprint testnet_bp sem prefixo
+# A rota / será tratada por testnet_routes.py através do blueprint
 
 @app.route('/wallet')
 def wallet_legacy():
@@ -4281,14 +4200,14 @@ try:
     init_testnet_routes(app, allianza_blockchain, quantum_sys, bridge_instance)
     logger.info("🌐 ALLIANZA TESTNET: Rotas inicializadas!")
     print("🌐 ALLIANZA TESTNET: Testnet profissional carregada!")
-    print("   • GET  /testnet - Dashboard principal")
-    print("   • GET  /testnet/explorer - Explorer da rede")
-    print("   • GET  /testnet/faucet - Faucet")
-    print("   • GET  /testnet/qrs3-verifier - Verificador QRS-3")
-    print("   • POST /testnet/api/faucet/request - Solicitar tokens")
-    print("   • GET  /testnet/api/blocks - API de blocos")
-    print("   • GET  /testnet/api/transactions - API de transações")
-    print("   • GET  /testnet/api/network/stats - Estatísticas da rede")
+    print("   • GET  / - Dashboard principal")
+    print("   • GET  /explorer - Explorer da rede")
+    print("   • GET  /faucet - Faucet")
+    print("   • GET  /qrs3-verifier - Verificador QRS-3")
+    print("   • POST /api/faucet/request - Solicitar tokens")
+    print("   • GET  /api/blocks - API de blocos")
+    print("   • GET  /api/transactions - API de transações")
+    print("   • GET  /api/network/stats - Estatísticas da rede")
     
     # Verificar se o blueprint foi registrado
     registered_blueprints = [bp.name for bp in app.blueprints.values()]

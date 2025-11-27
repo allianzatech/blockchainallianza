@@ -42,8 +42,8 @@ except ImportError as e:
     print(f"⚠️  Professional Test Suite não disponível: {e}")
     PROFESSIONAL_SUITE_AVAILABLE = False
 
-# Criar blueprint
-testnet_bp = Blueprint('testnet', __name__, url_prefix='/testnet')
+# Criar blueprint SEM prefixo - rotas na raiz
+testnet_bp = Blueprint('testnet', __name__, url_prefix='')
 
 # Instâncias globais (serão inicializadas)
 faucet = None
@@ -107,7 +107,7 @@ def init_testnet_routes(app, blockchain_instance, quantum_security_instance, bri
             professional_tests = None
         
         app.register_blueprint(testnet_bp)
-        print(f"✅ Testnet blueprint registrado com sucesso! URL prefix: /testnet")
+        print(f"✅ Testnet blueprint registrado com sucesso! URL prefix: / (raiz)")
         
         # Inicializar Professional Test Suite
         if PROFESSIONAL_SUITE_AVAILABLE:

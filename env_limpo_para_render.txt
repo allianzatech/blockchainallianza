@@ -1,0 +1,69 @@
+# .env - VARIÁVEIS DE AMBIENTE - MANTENHA SECRETO!
+
+# =============================================================================
+# APIs E TOKENS
+# =============================================================================
+INFURA_PROJECT_ID=4622f8123b1a4cf7a3e30098d9120d7f
+INFURA_PROJECT_SECRET=17766314e49c439e85cec883969614ac
+BLOCKCYPHER_API_TOKEN=17766314e49c439e85cec883969614ac
+
+# =============================================================================
+# CONFIGURAÇÃO GERAL
+# =============================================================================
+# Modo de operação: testnet ou mainnet
+BLOCKCHAIN_MODE=testnet
+
+# Segurança
+ENCRYPTION_KEY=sua_chave_de_criptografia_aqui_32_chars
+
+# =============================================================================
+# CHAVES PRIVADAS PARA INTEROPERABILIDADE REAL
+# =============================================================================
+REAL_ETH_PRIVATE_KEY=0xa2b050a9ff78efabced4fd16bf5e51d204fd9a1bdab4b56418a5148fe70b4c28
+REAL_POLY_PRIVATE_KEY=0xa2b050a9ff78efabced4fd16bf5e51d204fd9a1bdab4b56418a5148fe70b4c28
+REAL_BRIDGE_OWNER=0x86AE40869EB6ACb9477b42BfC9150c0A2Cc21f5E
+
+# Chaves adicionais (para compatibilidade)
+ETH_PRIVATE_KEY=0xa2b050a9ff78efabced4fd16bf5e51d204fd9a1bdab4b56418a5148fe70b4c28
+
+# =============================================================================
+# RPCs PARA INTEROPERABILIDADE REAL
+# =============================================================================
+ETH_RPC_URL=https://sepolia.infura.io/v3/4622f8123b1a4cf7a3e30098d9120d7f
+POLY_RPC_URL=https://polygon-amoy.infura.io/v3/4622f8123b1a4cf7a3e30098d9120d7f
+
+# =============================================================================
+# CONTRATOS REAIS DEPLOYADOS
+# =============================================================================
+BRIDGE_CONTRACT_ETH=0xbc111ED545888BFBBDB940524e6C1596cB59Bf7f
+BRIDGE_CONTRACT_POLY=0x...
+
+# =============================================================================
+# POLYGON CONFIGURATION
+# =============================================================================
+POLYGON_RPC_URL=https://rpc-amoy.polygon.technology/
+POLYGON_MASTER_WALLET=0x48Ec8b17B7af735AB329fA07075247FAf3a09599
+POLYGON_MASTER_PRIVATE_KEY=a2b050a9ff78efabced4fd16bf5e51d204fd9a1bdab4b56418a5148fe70b4c28
+ALZ_CONTRACT_POLYGON=
+POLYGON_PRIVATE_KEY=a2b050a9ff78efabced4fd16bf5e51d204fd9a1bdab4b56418a5148fe70b4c28
+
+# =============================================================================
+# BASE CONFIGURATION
+# =============================================================================
+BASE_RPC_URL=https://base-sepolia-rpc.publicnode.com
+BASE_ADDRESS=0x86AE40869EB6ACb9477b42BfC9150c0A2Cc21f5E
+BASE_PRIVATE_KEY=a2b050a9ff78efabced4fd16bf5e51d204fd9a1bdab4b56418a5148fe70b4c28
+
+# =============================================================================
+# SOLANA CONFIGURATION
+# =============================================================================
+SOLANA_RPC_URL=https://api.testnet.solana.com
+SOLANA_ADDRESS=5qzASbWFvFBhyAq8D9k9mvf3ubzHKYdA49saDgFNgvhk
+SOLANA_PRIVATE_KEY=3VLK1GhCx6o7PimEPb5dgn6qUdtf7Ykxc1RmEH7ToVtUycvMmUH1cQj7GSajjZW9xuvSjco19YUqtrqat9kohHHx
+
+# =============================================================================
+# BITCOIN TESTNET CONFIGURATION
+# =============================================================================
+BITCOIN_TESTNET_ADDRESS=mjQMvYHE5Bpqze4ifq6NLP9BthNJgxWRud
+BITCOIN_PRIVATE_KEY=cSamqcRz79BCXe5LWhqVSMhKo1bkxZA3EE6PTpy8hkYVVmofUXfJ
+

@@ -3,6 +3,2301 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALZ-NIEV - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .layer-card {
+            transition: transform 0.2s;
+        }
+        .layer-card:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold mb-2">🌐 ALZ-NIEV</h1>
+            <p class="text-gray-400">Non-Intermediate Execution Validation - Interoperabilidade Única no Mundo</p>
+        </div>
+
+        <!-- Status -->
+        <div id="status" class="mb-6 p-4 bg-gray-800 rounded-lg">
+            <p class="text-yellow-400">⏳ Verificando status...</p>
+        </div>
+
+        <!-- As 5 Camadas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            <div class="layer-card bg-blue-900 p-6 rounded-lg">
+                <h3 class="text-xl font-bold mb-2">🔵 ELNI</h3>
+                <p class="text-sm text-gray-300">Execution-Level Native Interop</p>
+                <p class="text-xs text-gray-400 mt-2">Execução nativa sem bridges</p>
+            </div>
+            <div class="layer-card bg-purple-900 p-6 rounded-lg">
+                <h3 class="text-xl font-bold mb-2">🟣 ZKEF</h3>
+                <p class="text-sm text-gray-300">Zero-Knowledge External Functions</p>
+                <p class="text-xs text-gray-400 mt-2">Provas ZK sem relayers</p>
+            </div>
+            <div class="layer-card bg-green-900 p-6 rounded-lg">
+                <h3 class="text-xl font-bold mb-2">🟢 UP-NMT</h3>
+                <p class="text-sm text-gray-300">Universal Proof Normalized Merkle Tunneling</p>
+                <p class="text-xs text-gray-400 mt-2">Provas Merkle universais</p>
+            </div>
+            <div class="layer-card bg-yellow-900 p-6 rounded-lg">
+                <h3 class="text-xl font-bold mb-2">🟡 MCL</h3>
+                <p class="text-sm text-gray-300">Multi-Consensus Layer</p>
+                <p class="text-xs text-gray-400 mt-2">Suporte a qualquer consenso</p>
+            </div>
+            <div class="layer-card bg-red-900 p-6 rounded-lg">
+                <h3 class="text-xl font-bold mb-2">🔴 AES</h3>
+                <p class="text-sm text-gray-300">Atomic Execution Sync</p>
+                <p class="text-xs text-gray-400 mt-2">Execução atômica multi-chain</p>
+            </div>
+        </div>
+
+        <!-- Teste 1: Execução Cross-Chain Simples -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-bold mb-4">🔵 Teste 1: Execução Cross-Chain (ELNI + Todas as Provas)</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Source Chain</label>
+                    <select id="sourceChain" class="w-full bg-gray-700 text-white p-2 rounded">
+                        <option value="allianza">Allianza</option>
+                        <option value="polygon">Polygon</option>
+                        <option value="ethereum">Ethereum</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Target Chain</label>
+                    <select id="targetChain" class="w-full bg-gray-700 text-white p-2 rounded">
+                        <option value="polygon">Polygon</option>
+                        <option value="ethereum">Ethereum</option>
+                        <option value="bsc">BSC</option>
+                        <option value="bitcoin">Bitcoin</option>
+                        <option value="solana">Solana</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Function Name</label>
+                    <input type="text" id="functionName" value="getBalance" class="w-full bg-gray-700 text-white p-2 rounded">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Function Params (JSON)</label>
+                    <input type="text" id="functionParams" value='{"address": "0x1234..."}' class="w-full bg-gray-700 text-white p-2 rounded">
+                </div>
+            </div>
+
+            <button onclick="testExecution()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded font-bold">
+                🚀 Executar com ALZ-NIEV
+            </button>
+
+            <div id="executionResult" class="mt-4 hidden">
+                <div class="bg-gray-900 p-4 rounded">
+                    <pre id="executionResultContent" class="text-sm overflow-auto"></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Teste 2: Execução Atômica Multi-Chain -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-bold mb-4">🔴 Teste 2: Execução Atômica Multi-Chain (AES)</h2>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Chains (JSON Array)</label>
+                <textarea id="atomicChains" rows="6" class="w-full bg-gray-700 text-white p-2 rounded font-mono text-sm">[
+  {"chain": "polygon", "function": "transfer", "params": {"to": "0x1234...", "amount": 100}},
+  {"chain": "ethereum", "function": "mint", "params": {"to": "0x5678...", "amount": 50}},
+  {"chain": "bsc", "function": "swap", "params": {"token_in": "BNB", "token_out": "USDT", "amount": 10}}
+]</textarea>
+            </div>
+
+            <button onclick="testAtomic()" class="bg-red-600 hover:bg-red-700 px-6 py-2 rounded font-bold">
+                ⚡ Executar Atomicamente
+            </button>
+
+            <div id="atomicResult" class="mt-4 hidden">
+                <div class="bg-gray-900 p-4 rounded">
+                    <pre id="atomicResultContent" class="text-sm overflow-auto"></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Link para Faucet -->
+        <div class="bg-yellow-900 p-4 rounded-lg mb-6">
+            <p class="font-bold mb-2">💰 Precisa de Tokens de Teste?</p>
+            <p class="text-sm mb-2">Para executar funções que requerem saldo, use o faucet:</p>
+            <a href="/faucet" class="text-blue-400 hover:underline">→ Acessar Faucet</a>
+        </div>
+
+        <!-- Links -->
+        <div class="flex gap-4">
+            <a href="/testnet" class="text-blue-400 hover:underline">← Voltar ao Dashboard</a>
+            <a href="/interoperability" class="text-blue-400 hover:underline">Interoperabilidade Tradicional →</a>
+        </div>
+    </div>
+
+    <script>
+        // Verificar status
+        async function checkStatus() {
+            try {
+                const response = await fetch('/api/alz-niev/status');
+                const data = await response.json();
+                
+                const statusDiv = document.getElementById('status');
+                if (data.available) {
+                    statusDiv.innerHTML = '<p class="text-green-400">✅ ALZ-NIEV disponível e funcionando!</p>';
+                } else {
+                    statusDiv.innerHTML = '<p class="text-red-400">❌ ALZ-NIEV não disponível</p>';
+                }
+            } catch (error) {
+                document.getElementById('status').innerHTML = '<p class="text-red-400">❌ Erro ao verificar status</p>';
+            }
+        }
+
+        // Teste de execução cross-chain
+        async function testExecution() {
+            const sourceChain = document.getElementById('sourceChain').value;
+            const targetChain = document.getElementById('targetChain').value;
+            const functionName = document.getElementById('functionName').value;
+            const functionParamsText = document.getElementById('functionParams').value;
+            
+            let functionParams = {};
+            try {
+                functionParams = JSON.parse(functionParamsText);
+            } catch (e) {
+                alert('Erro: Function Params deve ser JSON válido');
+                return;
+            }
+
+            const resultDiv = document.getElementById('executionResult');
+            const resultContent = document.getElementById('executionResultContent');
+            resultDiv.classList.remove('hidden');
+            resultContent.textContent = '⏳ Executando...';
+
+            try {
+                const response = await fetch('/api/alz-niev/execute', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        source_chain: sourceChain,
+                        target_chain: targetChain,
+                        function_name: functionName,
+                        function_params: functionParams
+                    })
+                });
+
+                const data = await response.json();
+                resultContent.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultContent.textContent = `Erro: ${error.message}`;
+            }
+        }
+
+        // Teste de execução atômica
+        async function testAtomic() {
+            const chainsText = document.getElementById('atomicChains').value;
+            
+            let chains = [];
+            try {
+                chains = JSON.parse(chainsText);
+            } catch (e) {
+                alert('Erro: Chains deve ser JSON válido');
+                return;
+            }
+
+            const resultDiv = document.getElementById('atomicResult');
+            const resultContent = document.getElementById('atomicResultContent');
+            resultDiv.classList.remove('hidden');
+            resultContent.textContent = '⏳ Executando atomicamente...';
+
+            try {
+                const response = await fetch('/api/alz-niev/atomic', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ chains })
+                });
+
+                const data = await response.json();
+                resultContent.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultContent.textContent = `Erro: ${error.message}`;
+            }
+        }
+
+        // Verificar status ao carregar
+        checkStatus();
+    </script>
+</body>
+</html>
+
+
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Allianza Testnet - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold mb-2">🌐 Allianza Testnet</h1>
+            <p class="text-gray-400">Primeira testnet do mundo com proteção quântica nativa</p>
+        </div>
+
+        <!-- Network Info -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-lg font-semibold mb-2">Network ID</h3>
+                <p class="text-2xl font-mono">{{ network_info.network_id }}</p>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-lg font-semibold mb-2">Chain ID</h3>
+                <p class="text-2xl font-mono">{{ network_info.chain_id }}</p>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-lg font-semibold mb-2">Versão</h3>
+                <p class="text-2xl">{{ network_info.version }}</p>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-blue-900 p-6 rounded-lg">
+                <h3 class="text-sm text-gray-400 mb-1">Total de Blocos</h3>
+                <p class="text-3xl font-bold">{{ stats.total_blocks }}</p>
+            </div>
+            <div class="bg-green-900 p-6 rounded-lg">
+                <h3 class="text-sm text-gray-400 mb-1">Total de Transações</h3>
+                <p class="text-3xl font-bold">{{ stats.total_transactions }}</p>
+            </div>
+            <div class="bg-purple-900 p-6 rounded-lg">
+                <h3 class="text-sm text-gray-400 mb-1">TPS (24h)</h3>
+                <p class="text-3xl font-bold">{{ stats.tps_24h_avg }}</p>
+            </div>
+            <div class="bg-yellow-900 p-6 rounded-lg">
+                <h3 class="text-sm text-gray-400 mb-1">Latência Média</h3>
+                <p class="text-3xl font-bold">{{ stats.latency_avg_ms }}ms</p>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <a href="/faucet" class="bg-green-600 hover:bg-green-700 p-6 rounded-lg text-center transition transform hover:scale-105">
+                <i class="fas fa-faucet text-4xl mb-2"></i>
+                <h3 class="text-xl font-semibold">Faucet</h3>
+                <p class="text-sm text-gray-300">Obter tokens de teste</p>
+            </a>
+            <a href="/explorer" class="bg-blue-600 hover:bg-blue-700 p-6 rounded-lg text-center transition transform hover:scale-105">
+                <i class="fas fa-search text-4xl mb-2"></i>
+                <h3 class="text-xl font-semibold">Explorer</h3>
+                <p class="text-sm text-gray-300">Explorar blocos e transações</p>
+            </a>
+            <a href="/qrs3-verifier" class="bg-purple-600 hover:bg-purple-700 p-6 rounded-lg text-center transition transform hover:scale-105">
+                <i class="fas fa-shield-alt text-4xl mb-2"></i>
+                <h3 class="text-xl font-semibold">Verificador QRS-3</h3>
+                <p class="text-sm text-gray-300">Verificar assinaturas quânticas</p>
+            </a>
+            <a href="/dashboard/quantum-attack-simulator" class="bg-gradient-to-br from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 p-6 rounded-lg text-center transition transform hover:scale-105 shadow-lg hover:shadow-2xl">
+                <i class="fas fa-flask text-4xl mb-2"></i>
+                <h3 class="text-xl font-semibold">🔬 Simulador de Ataque Quântico</h3>
+                <p class="text-sm text-gray-300">Testar segurança quântica</p>
+            </a>
+        </div>
+
+        <!-- Novas Funcionalidades Profissionais -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">🔐 Funcionalidades Profissionais</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <a href="/status" class="bg-gray-800 hover:bg-gray-700 p-6 rounded-lg border-2 border-green-500 transition">
+                    <i class="fas fa-chart-line text-4xl mb-2 text-green-400"></i>
+                    <h3 class="text-xl font-semibold">Status Page</h3>
+                    <p class="text-sm text-gray-300">Monitoramento em tempo real</p>
+                    <p class="text-xs text-gray-400 mt-2">Uptime, componentes, incidentes</p>
+                </a>
+                <a href="/quantum-security" class="bg-gray-800 hover:bg-gray-700 p-6 rounded-lg border-2 border-purple-500 transition">
+                    <i class="fas fa-atom text-4xl mb-2 text-purple-400"></i>
+                    <h3 class="text-xl font-semibold">Segurança Quântica</h3>
+                    <p class="text-sm text-gray-300">Dashboard QRS-3 e PQC</p>
+                    <p class="text-xs text-gray-400 mt-2">Métricas, entropia, performance</p>
+                </a>
+                <a href="/interoperability" class="bg-gray-800 hover:bg-gray-700 p-6 rounded-lg border-2 border-blue-500 transition">
+                    <i class="fas fa-project-diagram text-4xl mb-2 text-blue-400"></i>
+                    <h3 class="text-xl font-semibold">Interoperabilidade</h3>
+                    <p class="text-sm text-gray-300">Teste cross-chain real</p>
+                    <p class="text-xs text-gray-400 mt-2">Validação, Proof-of-Lock, Transferências</p>
+                </a>
+                <a href="/alz-niev" class="bg-gray-800 hover:bg-gray-700 p-6 rounded-lg border-2 border-purple-500 transition">
+                    <i class="fas fa-atom text-4xl mb-2 text-purple-400"></i>
+                    <h3 class="text-xl font-semibold">ALZ-NIEV</h3>
+                    <p class="text-sm text-gray-300">Interoperabilidade Única</p>
+                    <p class="text-xs text-gray-400 mt-2">5 Camadas: ELNI, ZKEF, UP-NMT, MCL, AES</p>
+                </a>
+                <a href="/public-tests" class="bg-gray-800 hover:bg-gray-700 p-6 rounded-lg border-2 border-yellow-500 transition">
+                    <i class="fas fa-vial text-4xl mb-2 text-yellow-400"></i>
+                    <h3 class="text-xl font-semibold">Testes Públicos</h3>
+                    <p class="text-sm text-gray-300">Execute testes reais</p>
+                    <p class="text-xs text-gray-400 mt-2">5 testes com logs em tempo real</p>
+                </a>
+                <a href="/dashboard/quantum-attack-simulator" class="bg-gray-800 hover:bg-gray-700 p-6 rounded-lg border-2 border-pink-500 transition transform hover:scale-105">
+                    <i class="fas fa-flask text-4xl mb-2 text-pink-400"></i>
+                    <h3 class="text-xl font-semibold">🔬 Simulador de Ataque Quântico</h3>
+                    <p class="text-sm text-gray-300">Teste segurança quântica</p>
+                    <p class="text-xs text-gray-400 mt-2">Comparação ECDSA vs PQC, provas verificáveis</p>
+                </a>
+                <a href="/professional-tests" class="bg-gray-800 hover:bg-gray-700 p-6 rounded-lg border-2 border-cyan-500 transition transform hover:scale-105">
+                    <i class="fas fa-vial text-4xl mb-2 text-cyan-400"></i>
+                    <h3 class="text-xl font-semibold">🧪 Testes Profissionais</h3>
+                    <p class="text-sm text-gray-300">Suite completa de testes</p>
+                    <p class="text-xs text-gray-400 mt-2">Todos os testes obrigatórios para testnet profissional</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div class="bg-gray-800 p-6 rounded-lg">
+            <h3 class="text-xl font-semibold mb-4">Status da Rede</h3>
+            <div class="flex items-center">
+                <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                <span class="text-lg">{{ stats.network_status|upper }}</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorer - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <div class="mb-6">
+            <a href="/testnet" class="text-blue-400 hover:text-blue-300">← Voltar ao Dashboard</a>
+        </div>
+
+        <h1 class="text-4xl font-bold mb-2">🔍 Explorer</h1>
+        <p class="text-gray-400 mb-8">Explore blocos, transações e estatísticas da rede</p>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-blue-900 p-4 rounded-lg">
+                <h3 class="text-sm text-gray-400">Total de Blocos</h3>
+                <p class="text-2xl font-bold">{{ stats.total_blocks }}</p>
+            </div>
+            <div class="bg-green-900 p-4 rounded-lg">
+                <h3 class="text-sm text-gray-400">Total de Transações</h3>
+                <p class="text-2xl font-bold">{{ stats.total_transactions }}</p>
+            </div>
+            <div class="bg-purple-900 p-4 rounded-lg">
+                <h3 class="text-sm text-gray-400">TPS (24h)</h3>
+                <p class="text-2xl font-bold">{{ stats.tps_24h_avg }}</p>
+            </div>
+            <div class="bg-yellow-900 p-4 rounded-lg">
+                <h3 class="text-sm text-gray-400">Latência Média</h3>
+                <p class="text-2xl font-bold">{{ stats.latency_avg_ms }}ms</p>
+            </div>
+        </div>
+
+        <!-- Blocks -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Blocos Recentes</h2>
+            <div class="space-y-2">
+                {% for block in blocks %}
+                <div class="bg-gray-800 p-4 rounded-lg">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="font-mono text-sm">#{{ block.index }}</span>
+                            <span class="ml-4 text-xs text-gray-400">{{ block.timestamp_readable }}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            {% if block.qrs3_verified %}
+                            <span class="bg-green-600 px-2 py-1 rounded text-xs">QRS-3 ✓</span>
+                            {% endif %}
+                            <a href="/api/proofs/block/{{ block.index }}?format=json" 
+                               class="bg-blue-600 px-2 py-1 rounded text-xs hover:bg-blue-700">
+                                📄 JSON
+                            </a>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <p class="text-xs text-gray-400">Hash: <span class="font-mono">{{ block.hash[:20] }}...</span></p>
+                        <p class="text-xs text-gray-400">Transações: {{ block.transaction_count }} | Shard: {{ block.shard_id }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Transactions -->
+        <div>
+            <h2 class="text-2xl font-semibold mb-4">Transações Recentes</h2>
+            <div class="space-y-2">
+                {% for tx in transactions %}
+                <div class="bg-gray-800 p-4 rounded-lg">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="font-mono text-xs">{{ tx.tx_hash[:20] }}...</span>
+                            <span class="ml-4 text-xs text-gray-400">{{ tx.timestamp_readable }}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            {% if tx.qrs3_verified %}
+                            <span class="bg-green-600 px-2 py-1 rounded text-xs">QRS-3 ✓</span>
+                            {% endif %}
+                            <a href="/api/proofs/transaction/{{ tx.tx_hash }}?format=json" 
+                               class="bg-blue-600 px-2 py-1 rounded text-xs hover:bg-blue-700">
+                                📄 JSON
+                            </a>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-sm">
+                        <p><span class="text-gray-400">De:</span> <span class="font-mono">{{ tx.from[:20] }}...</span></p>
+                        <p><span class="text-gray-400">Para:</span> <span class="font-mono">{{ tx.to[:20] }}...</span></p>
+                        <p><span class="text-gray-400">Valor:</span> {{ tx.amount }} ALZ-T</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Explorer Melhorado - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .stat-card {
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+        .tx-card {
+            transition: all 0.3s;
+        }
+        .tx-card:hover {
+            background-color: rgba(55, 65, 81, 0.8);
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-green { background-color: #10b981; color: white; }
+        .badge-blue { background-color: #3b82f6; color: white; }
+        .badge-purple { background-color: #8b5cf6; color: white; }
+        .badge-yellow { background-color: #f59e0b; color: white; }
+        .badge-red { background-color: #ef4444; color: white; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-6">
+            <a href="/testnet" class="text-blue-400 hover:text-blue-300 mb-4 inline-block">
+                <i class="fas fa-arrow-left mr-2"></i>Voltar ao Dashboard
+            </a>
+            <h1 class="text-4xl font-bold mb-2">🔍 Explorer Melhorado</h1>
+            <p class="text-gray-400">Explore blocos, transações e estatísticas detalhadas da rede</p>
+        </div>
+
+        <!-- Stats Melhoradas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="stat-card bg-blue-900 p-4 rounded-lg border-2 border-blue-500">
+                <h3 class="text-sm text-gray-400 mb-1">Total de Blocos</h3>
+                <p class="text-3xl font-bold">{{ stats.total_blocks }}</p>
+                {% if stats.last_block_index %}
+                <p class="text-xs text-gray-400 mt-1">Último: #{{ stats.last_block_index }}</p>
+                {% endif %}
+            </div>
+            <div class="stat-card bg-green-900 p-4 rounded-lg border-2 border-green-500">
+                <h3 class="text-sm text-gray-400 mb-1">Total de Transações</h3>
+                <p class="text-3xl font-bold">{{ stats.total_transactions }}</p>
+                {% if stats.pending_transactions %}
+                <p class="text-xs text-gray-400 mt-1">{{ stats.pending_transactions }} pendentes</p>
+                {% endif %}
+            </div>
+            <div class="stat-card bg-purple-900 p-4 rounded-lg border-2 border-purple-500">
+                <h3 class="text-sm text-gray-400 mb-1">TPS (24h)</h3>
+                <p class="text-3xl font-bold">{{ stats.tps_24h_avg }}</p>
+                {% if stats.tps_current %}
+                <p class="text-xs text-gray-400 mt-1">Atual: {{ stats.tps_current }}/s</p>
+                {% endif %}
+            </div>
+            <div class="stat-card bg-yellow-900 p-4 rounded-lg border-2 border-yellow-500">
+                <h3 class="text-sm text-gray-400 mb-1">Latência Média</h3>
+                <p class="text-3xl font-bold">{{ stats.latency_avg_ms }}ms</p>
+                {% if stats.active_shards %}
+                <p class="text-xs text-gray-400 mt-1">{{ stats.active_shards }} shards ativos</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Estatísticas Avançadas -->
+        {% if stats.cross_chain or stats.quantum_security %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            {% if stats.cross_chain %}
+            <div class="bg-gray-800 p-6 rounded-lg border-2 border-cyan-500">
+                <h3 class="text-xl font-semibold mb-4 text-cyan-400">
+                    <i class="fas fa-project-diagram mr-2"></i>Cross-Chain
+                </h3>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Transações:</span>
+                        <span class="font-bold">{{ stats.cross_chain.total_transactions }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Volume Total:</span>
+                        <span class="font-bold">{{ "%.2f"|format(stats.cross_chain.total_volume) }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Percentual:</span>
+                        <span class="font-bold">{{ stats.cross_chain.percentage }}%</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if stats.quantum_security %}
+            <div class="bg-gray-800 p-6 rounded-lg border-2 border-purple-500">
+                <h3 class="text-xl font-semibold mb-4 text-purple-400">
+                    <i class="fas fa-atom mr-2"></i>Segurança Quântica
+                </h3>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Assinadas com PQC:</span>
+                        <span class="font-bold">{{ stats.quantum_security.quantum_signed_count }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Percentual:</span>
+                        <span class="font-bold">{{ stats.quantum_security.quantum_percentage }}%</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">QRS-3 Verificadas:</span>
+                        <span class="font-bold">{{ stats.quantum_security.qrs3_verified_count }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Chains Suportadas -->
+        {% if stats.chains_supported %}
+        <div class="mb-8 bg-gray-800 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold mb-2">🌐 Blockchains Suportadas</h3>
+            <div class="flex flex-wrap gap-2">
+                {% for chain in stats.chains_supported %}
+                <span class="badge badge-blue">{{ chain }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Blocks Melhorados -->
+        <div class="mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold">📦 Blocos Recentes</h2>
+                <span class="text-sm text-gray-400">{{ blocks|length }} blocos</span>
+            </div>
+            <div class="space-y-3">
+                {% for block in blocks %}
+                <div class="tx-card bg-gray-800 p-5 rounded-lg border-l-4 border-blue-500">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="font-mono text-lg font-bold text-blue-400">#{{ block.index }}</span>
+                                {% if block.qrs3_verified %}
+                                <span class="badge badge-green">
+                                    <i class="fas fa-shield-alt mr-1"></i>QRS-3 ✓
+                                </span>
+                                {% endif %}
+                                {% if block.statistics.cross_chain_count > 0 %}
+                                <span class="badge badge-cyan">
+                                    <i class="fas fa-project-diagram mr-1"></i>{{ block.statistics.cross_chain_count }} Cross-Chain
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="text-sm text-gray-400 space-y-1">
+                                <p><span class="text-gray-500">Hash:</span> <span class="font-mono">{{ block.hash_short }}</span></p>
+                                <p><span class="text-gray-500">Timestamp:</span> {{ block.timestamp_readable }} <span class="text-gray-600">({{ block.timestamp_relative }})</span></p>
+                                <p><span class="text-gray-500">Shard:</span> {{ block.shard_id }} | <span class="text-gray-500">Validator:</span> {{ block.validator[:20] }}...</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold text-green-400">{{ block.transaction_count }}</div>
+                            <div class="text-xs text-gray-400">transações</div>
+                            {% if block.statistics %}
+                            <div class="text-xs text-gray-400 mt-1">
+                                Total: {{ "%.2f"|format(block.statistics.total_amount) }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if block.statistics %}
+                    <div class="mt-3 pt-3 border-t border-gray-700 grid grid-cols-3 gap-2 text-xs">
+                        <div>
+                            <span class="text-gray-500">Cross-Chain:</span>
+                            <span class="font-bold">{{ block.statistics.cross_chain_count }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">PQC Signed:</span>
+                            <span class="font-bold">{{ block.statistics.quantum_signed_count }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">Tamanho:</span>
+                            <span class="font-bold">{{ block.size_bytes }} bytes</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-3 flex gap-2">
+                        <a href="/api/proofs/block/{{ block.index }}?format=json" 
+                           class="text-xs bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">
+                            <i class="fas fa-file-code mr-1"></i>JSON
+                        </a>
+                        {% if block.transaction_count > 0 %}
+                        <button onclick="toggleBlockTransactions({{ block.index }})" 
+                                class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded">
+                            <i class="fas fa-list mr-1"></i>Ver Transações
+                        </button>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Transações do bloco (ocultas por padrão) -->
+                    <div id="block-{{ block.index }}-transactions" class="hidden mt-4 pt-4 border-t border-gray-700">
+                        <h4 class="text-sm font-semibold mb-2">Transações do Bloco:</h4>
+                        <div class="space-y-2">
+                            {% for tx in block.transactions[:5] %}
+                            <div class="bg-gray-900 p-3 rounded text-xs">
+                                <div class="flex justify-between">
+                                    <span class="font-mono">{{ tx.tx_hash_short }}</span>
+                                    <span class="text-gray-400">{{ tx.amount_formatted }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% if block.transaction_count > 5 %}
+                            <p class="text-xs text-gray-500">... e mais {{ block.transaction_count - 5 }} transações</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Transactions Melhoradas -->
+        <div>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold">💸 Transações Recentes</h2>
+                <span class="text-sm text-gray-400">{{ transactions|length }} transações</span>
+            </div>
+            <div class="space-y-3">
+                {% for tx in transactions %}
+                <div class="tx-card bg-gray-800 p-5 rounded-lg border-l-4 {% if tx.is_cross_chain %}border-cyan-500{% elif tx.has_quantum_signature %}border-purple-500{% else %}border-green-500{% endif %}">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2 flex-wrap">
+                                <span class="font-mono text-sm">{{ tx.tx_hash_short }}</span>
+                                {% if tx.is_cross_chain %}
+                                <span class="badge badge-cyan">
+                                    <i class="fas fa-project-diagram mr-1"></i>{{ tx.source_chain }} → {{ tx.target_chain }}
+                                </span>
+                                {% endif %}
+                                {% if tx.has_quantum_signature %}
+                                <span class="badge badge-purple">
+                                    <i class="fas fa-atom mr-1"></i>{{ tx.quantum_algorithm }}
+                                </span>
+                                {% endif %}
+                                {% if tx.qrs3_verified %}
+                                <span class="badge badge-green">
+                                    <i class="fas fa-shield-alt mr-1"></i>QRS-3 ✓
+                                </span>
+                                {% endif %}
+                                <span class="badge badge-{{ tx.status_color }}">
+                                    {{ tx.status|upper }}
+                                </span>
+                            </div>
+                            <div class="text-sm text-gray-400 space-y-1">
+                                <p>
+                                    <span class="text-gray-500">De:</span> 
+                                    <span class="font-mono">{{ tx.from_short }}</span>
+                                    <span class="text-gray-600">→</span>
+                                    <span class="text-gray-500">Para:</span> 
+                                    <span class="font-mono">{{ tx.to_short }}</span>
+                                </p>
+                                <p>
+                                    <span class="text-gray-500">Valor:</span> 
+                                    <span class="font-bold text-green-400">{{ tx.amount_formatted }}</span>
+                                    {% if tx.gas_cost > 0 %}
+                                    <span class="text-gray-600">|</span>
+                                    <span class="text-gray-500">Gas:</span> 
+                                    <span class="text-yellow-400">{{ tx.gas_cost|int }}</span>
+                                    {% endif %}
+                                </p>
+                                <p>
+                                    <span class="text-gray-500">Timestamp:</span> 
+                                    {{ tx.timestamp_readable }} 
+                                    <span class="text-gray-600">({{ tx.timestamp_relative }})</span>
+                                    {% if tx.confirmations > 0 %}
+                                    <span class="text-gray-600">|</span>
+                                    <span class="text-gray-500">Confirmações:</span> 
+                                    <span class="text-green-400">{{ tx.confirmations }}</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xl font-bold text-green-400">{{ tx.amount_formatted }}</div>
+                            <div class="text-xs text-gray-400">ALZ-T</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3 flex gap-2 flex-wrap">
+                        <a href="/api/proofs/transaction/{{ tx.tx_hash }}?format=json" 
+                           class="text-xs bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">
+                            <i class="fas fa-file-code mr-1"></i>JSON
+                        </a>
+                        {% if tx.explorer_url %}
+                        <a href="{{ tx.explorer_url }}" target="_blank"
+                           class="text-xs bg-cyan-600 hover:bg-cyan-700 px-3 py-1 rounded">
+                            <i class="fas fa-external-link-alt mr-1"></i>Explorer Externo
+                        </a>
+                        {% endif %}
+                        {% if tx.has_quantum_signature %}
+                        <span class="text-xs bg-purple-600 px-3 py-1 rounded">
+                            <i class="fas fa-atom mr-1"></i>PQC: {{ tx.quantum_algorithm }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleBlockTransactions(blockIndex) {
+            const element = document.getElementById(`block-${blockIndex}-transactions`);
+            if (element) {
+                element.classList.toggle('hidden');
+            }
+        }
+        
+        // Auto-refresh a cada 30 segundos
+        setInterval(() => {
+            location.reload();
+        }, 30000);
+    </script>
+</body>
+</html>
+
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faucet - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <div class="mb-6">
+            <a href="/testnet" class="text-blue-400 hover:text-blue-300">← Voltar ao Dashboard</a>
+        </div>
+
+        <h1 class="text-4xl font-bold mb-2">💰 Faucet</h1>
+        <p class="text-gray-400 mb-8">Obtenha tokens de teste para experimentar a Allianza Testnet</p>
+
+        <!-- Gerar Wallet -->
+        <div class="bg-blue-900 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">👛 Não tem endereço? Gere um agora!</h2>
+            <p class="text-gray-300 mb-4">Clique no botão abaixo para gerar uma nova wallet e obter seu endereço Allianza.</p>
+            <button id="generateWalletBtn" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition">
+                <i class="fas fa-wallet mr-2"></i>Gerar Nova Wallet
+            </button>
+            <div id="walletResult" class="mt-4 hidden"></div>
+        </div>
+
+        <!-- Form -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Solicitar Tokens</h2>
+            <form id="faucetForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Endereço Allianza</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="address" placeholder="ALZ1..." 
+                               class="flex-1 bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button type="button" id="pasteAddressBtn" class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg">
+                            <i class="fas fa-paste"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">Deve começar com ALZ1 e ter 42 caracteres</p>
+                </div>
+                <button type="submit" class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition">
+                    <i class="fas fa-faucet mr-2"></i>Solicitar Tokens
+                </button>
+            </form>
+            <div id="result" class="mt-4 hidden"></div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <h3 class="text-sm text-gray-400">Total Enviado</h3>
+                <p class="text-2xl font-bold">{{ faucet_stats.total_sent }}</p>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <h3 class="text-sm text-gray-400">Total Rejeitado</h3>
+                <p class="text-2xl font-bold">{{ faucet_stats.total_rejected }}</p>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <h3 class="text-sm text-gray-400">Quantidade por Requisição</h3>
+                <p class="text-2xl font-bold">{{ faucet_stats.amount_per_request }} ALZ-T</p>
+            </div>
+        </div>
+
+        <!-- Recent Logs -->
+        <div class="bg-gray-800 p-6 rounded-lg">
+            <h2 class="text-2xl font-semibold mb-4">Logs Recentes</h2>
+            <div class="space-y-2">
+                {% for log in logs %}
+                <div class="bg-gray-700 p-3 rounded">
+                    <div class="flex justify-between">
+                        <span class="font-mono text-sm">{{ log.address[:20] }}...</span>
+                        <span class="text-xs text-gray-400">{{ log.timestamp }}</span>
+                    </div>
+                    <div class="text-xs text-gray-400 mt-1">
+                        TX: <span class="font-mono">{{ log.tx_hash[:20] }}...</span> | 
+                        Amount: {{ log.amount }} ALZ-T
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gerar Wallet
+        document.getElementById('generateWalletBtn').addEventListener('click', async () => {
+            const walletResultDiv = document.getElementById('walletResult');
+            walletResultDiv.classList.remove('hidden');
+            walletResultDiv.innerHTML = '<p class="text-blue-400">Gerando wallet...</p>';
+            
+            try {
+                const response = await fetch('/api/wallet/generate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.address) {
+                    walletResultDiv.innerHTML = `
+                        <div class="bg-green-900 p-4 rounded">
+                            <p class="text-green-300 font-semibold mb-2">✅ Wallet Gerado com Sucesso!</p>
+                            <div class="space-y-2 text-sm">
+                                <div>
+                                    <p class="text-gray-300 font-medium">Endereço:</p>
+                                    <p class="font-mono bg-gray-800 p-2 rounded break-all">${data.address}</p>
+                                    <button onclick="copyToClipboard('${data.address}')" class="mt-1 text-blue-400 hover:text-blue-300 text-xs">
+                                        <i class="fas fa-copy"></i> Copiar
+                                    </button>
+                                </div>
+                                <div class="mt-3">
+                                    <p class="text-yellow-300 font-medium">⚠️ Chave Privada (TESTNET APENAS):</p>
+                                    <p class="font-mono bg-gray-800 p-2 rounded break-all text-xs">${data.private_key}</p>
+                                    <button onclick="copyToClipboard('${data.private_key}')" class="mt-1 text-blue-400 hover:text-blue-300 text-xs">
+                                        <i class="fas fa-copy"></i> Copiar
+                                    </button>
+                                    <p class="text-red-300 text-xs mt-2">${data.message}</p>
+                                </div>
+                                <div class="mt-3 bg-blue-900 p-3 rounded">
+                                    <p class="text-blue-200 font-medium mb-1">Instruções:</p>
+                                    <ul class="text-xs text-blue-100 space-y-1">
+                                        ${data.instructions.map(i => `<li>${i}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    // Preencher campo de endereço
+                    document.getElementById('address').value = data.address;
+                    // Copiar para clipboard
+                    navigator.clipboard.writeText(data.address);
+                } else {
+                    walletResultDiv.innerHTML = `
+                        <div class="bg-red-900 p-4 rounded">
+                            <p class="text-red-300">❌ ${data.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                walletResultDiv.innerHTML = `
+                    <div class="bg-red-900 p-4 rounded">
+                        <p class="text-red-300">❌ Erro: ${error.message}</p>
+                    </div>
+                `;
+            }
+        });
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+            alert('Copiado para a área de transferência!');
+        }
+
+        // Faucet Request
+        document.getElementById('faucetForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const address = document.getElementById('address').value;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<p class="text-blue-400">Processando...</p>';
+            
+            try {
+                const response = await fetch('/api/faucet/request', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({address})
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="bg-green-900 p-4 rounded">
+                            <p class="text-green-300 font-semibold">✅ ${data.message}</p>
+                            <div class="mt-3 bg-gray-700 p-3 rounded">
+                                <p class="text-sm mb-1"><strong>TX Hash:</strong></p>
+                                <p class="font-mono text-xs break-all">${data.tx_hash}</p>
+                                <div class="mt-2 flex gap-2">
+                                    <a href="/explorer" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-xs">
+                                        🔍 Ver no Explorer
+                                    </a>
+                                    <a href="/api/proofs/transaction/${data.tx_hash}?format=json" class="bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded text-xs">
+                                        📄 Baixar Prova
+                                    </a>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-300 mt-2">✅ Esta é uma transação REAL na testnet! Você pode verificar no explorer.</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="bg-red-900 p-4 rounded">
+                            <p class="text-red-300">❌ ${data.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="bg-red-900 p-4 rounded">
+                        <p class="text-red-300">❌ Erro: ${error.message}</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALZ-NIEV - Transferências Reais - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold mb-2">💰 Transferência Real Cross-Chain</h1>
+            <p class="text-gray-400">Envie tokens REAIS entre blockchains diferentes (Polygon, Bitcoin, Ethereum, etc.)</p>
+            <p class="text-sm text-yellow-400 mt-2">✅ As transferências aparecem nos explorers e são 100% reais!</p>
+        </div>
+
+        <!-- Status -->
+        <div id="status" class="mb-6 p-4 bg-gray-800 rounded-lg">
+            <p class="text-yellow-400">⏳ Verificando status...</p>
+        </div>
+
+        <!-- Transferência Real -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-bold mb-4">📝 Preencha os Dados da Transferência</h2>
+            <p class="text-sm text-gray-400 mb-4">Simples: escolha origem, destino, quantidade e endereço. É só isso!</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Blockchain de Origem</label>
+                    <select id="sourceChain" class="w-full bg-gray-700 text-white p-2 rounded">
+                        <option value="polygon">Polygon (Amoy)</option>
+                        <option value="ethereum">Ethereum (Sepolia)</option>
+                        <option value="bsc">BSC (Testnet)</option>
+                        <option value="base">Base (Sepolia)</option>
+                        <option value="bitcoin">Bitcoin (Testnet)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Blockchain de Destino</label>
+                    <select id="targetChain" class="w-full bg-gray-700 text-white p-2 rounded">
+                        <option value="bitcoin">Bitcoin (Testnet)</option>
+                        <option value="polygon">Polygon (Amoy)</option>
+                        <option value="ethereum">Ethereum (Sepolia)</option>
+                        <option value="bsc">BSC (Testnet)</option>
+                        <option value="base">Base (Sepolia)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Quantidade</label>
+                    <input type="number" id="amount" step="0.0001" value="0.1" class="w-full bg-gray-700 text-white p-2 rounded">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Token</label>
+                    <select id="tokenSymbol" class="w-full bg-gray-700 text-white p-2 rounded">
+                        <option value="MATIC">MATIC</option>
+                        <option value="ETH">ETH</option>
+                        <option value="BNB">BNB</option>
+                        <option value="BTC">BTC</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Endereço Destinatário</label>
+                <input type="text" id="recipient" placeholder="0x... ou tb1q..." class="w-full bg-gray-700 text-white p-2 rounded">
+            </div>
+
+            <div class="mb-4 p-4 bg-blue-900 rounded">
+                <p class="text-sm font-bold mb-2">💡 Como funciona:</p>
+                <ol class="text-xs text-gray-300 list-decimal list-inside space-y-1">
+                    <li>Escolha a blockchain de origem (ex: Polygon)</li>
+                    <li>Escolha a blockchain de destino (ex: Bitcoin)</li>
+                    <li>Digite a quantidade e o token</li>
+                    <li>Cole o endereço do destinatário</li>
+                    <li>Clique em "Executar Transferência REAL"</li>
+                    <li>A transferência aparecerá nos explorers!</li>
+                </ol>
+            </div>
+
+            <div class="mb-4 p-4 bg-yellow-900 rounded">
+                <p class="text-sm font-bold mb-2">⚠️ Importante:</p>
+                <ul class="text-xs text-gray-300 list-disc list-inside space-y-1">
+                    <li>Esta é uma transferência REAL que aparecerá nos explorers</li>
+                    <li>Você precisa ter saldo suficiente na blockchain de origem</li>
+                    <li>Não tem saldo? Use o <a href="/faucet" class="text-blue-400 underline font-bold">Faucet</a> para obter tokens de teste</li>
+                </ul>
+            </div>
+
+            <button onclick="executeRealTransfer()" class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded font-bold text-lg w-full">
+                🚀 Executar Transferência REAL
+            </button>
+
+            <div id="transferResult" class="mt-4 hidden">
+                <div class="bg-gray-900 p-4 rounded">
+                    <h3 class="text-lg font-bold mb-2">Resultado da Transferência</h3>
+                    <pre id="transferResultContent" class="text-sm overflow-auto max-h-96"></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informação sobre ALZ-NIEV -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-bold mb-4">🧬 Tecnologia ALZ-NIEV</h2>
+            <p class="text-sm text-gray-300 mb-4">
+                Por trás desta interface simples, está o sistema ALZ-NIEV com 5 camadas de segurança e provas criptográficas.
+                Você não precisa entender isso - apenas faça sua transferência e tudo funciona automaticamente!
+            </p>
+            <details class="text-sm">
+                <summary class="cursor-pointer text-blue-400 hover:text-blue-300">Ver detalhes técnicos (opcional)</summary>
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div class="bg-blue-900 p-4 rounded">
+                        <h3 class="font-bold mb-1">🔵 ELNI</h3>
+                        <p class="text-xs text-gray-300">Execution-Level Native Interop</p>
+                    </div>
+                    <div class="bg-purple-900 p-4 rounded">
+                        <h3 class="font-bold mb-1">🟣 ZKEF</h3>
+                        <p class="text-xs text-gray-300">Zero-Knowledge External Functions</p>
+                    </div>
+                    <div class="bg-green-900 p-4 rounded">
+                        <h3 class="font-bold mb-1">🟢 UP-NMT</h3>
+                        <p class="text-xs text-gray-300">Universal Proof Normalized Merkle Tunneling</p>
+                    </div>
+                    <div class="bg-yellow-900 p-4 rounded">
+                        <h3 class="font-bold mb-1">🟡 MCL</h3>
+                        <p class="text-xs text-gray-300">Multi-Consensus Layer</p>
+                    </div>
+                    <div class="bg-red-900 p-4 rounded">
+                        <h3 class="font-bold mb-1">🔴 AES</h3>
+                        <p class="text-xs text-gray-300">Atomic Execution Sync</p>
+                    </div>
+                </div>
+            </details>
+        </div>
+
+        <!-- Links -->
+        <div class="flex gap-4">
+            <a href="/testnet" class="text-blue-400 hover:underline">← Voltar ao Dashboard</a>
+            <a href="/faucet" class="text-blue-400 hover:underline">Faucet →</a>
+        </div>
+    </div>
+
+    <script>
+        // Verificar status
+        async function checkStatus() {
+            try {
+                const response = await fetch('/api/alz-niev/status');
+                const data = await response.json();
+                
+                const statusDiv = document.getElementById('status');
+                if (data.available) {
+                    statusDiv.innerHTML = '<p class="text-green-400">✅ ALZ-NIEV disponível e pronto para transferências REAIS!</p>';
+                } else {
+                    statusDiv.innerHTML = '<p class="text-red-400">❌ ALZ-NIEV não disponível</p>';
+                }
+            } catch (error) {
+                document.getElementById('status').innerHTML = '<p class="text-red-400">❌ Erro ao verificar status</p>';
+            }
+        }
+
+        // Executar transferência real
+        async function executeRealTransfer() {
+            const sourceChain = document.getElementById('sourceChain').value;
+            const targetChain = document.getElementById('targetChain').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const tokenSymbol = document.getElementById('tokenSymbol').value;
+            const recipient = document.getElementById('recipient').value.trim();
+
+            if (!recipient) {
+                alert('Por favor, insira um endereço destinatário');
+                return;
+            }
+
+            if (amount <= 0) {
+                alert('A quantidade deve ser maior que zero');
+                return;
+            }
+
+            const resultDiv = document.getElementById('transferResult');
+            const resultContent = document.getElementById('transferResultContent');
+            resultDiv.classList.remove('hidden');
+            resultContent.textContent = '⏳ Executando transferência REAL...\n\nIsso pode levar alguns segundos...';
+
+            try {
+                const response = await fetch('/api/interoperability/transfer-real', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        source_chain: sourceChain,
+                        target_chain: targetChain,
+                        amount: amount,
+                        token_symbol: tokenSymbol,
+                        recipient: recipient
+                    })
+                });
+
+                const data = await response.json();
+                resultContent.textContent = JSON.stringify(data, null, 2);
+                
+                if (data.success && data.transfer_real) {
+                    resultContent.innerHTML = `
+✅ <span style="color: green;">Transferência REAL executada com sucesso!</span>
+
+📋 Detalhes:
+- Source Chain: ${data.source_chain}
+- Target Chain: ${data.target_chain}
+- Amount: ${data.amount} ${data.token_symbol}
+- Recipient: ${data.recipient}
+
+🔗 Transações:
+${data.source_tx_hash ? `- Source TX: <a href="${data.explorers?.source || '#'}" target="_blank" style="color: blue;">${data.source_tx_hash}</a>` : ''}
+${data.target_tx_hash ? `- Target TX: <a href="${data.explorers?.target || '#'}" target="_blank" style="color: blue;">${data.target_tx_hash}</a>` : ''}
+
+🧬 Provas ALZ-NIEV:
+- ZK Proof: ${data.proofs?.zk_proof ? '✅ Gerada' : '❌'}
+- Merkle Proof: ${data.proofs?.merkle_proof ? '✅ Gerada' : '❌'}
+- Consensus Proof: ${data.proofs?.consensus_proof ? '✅ Gerada' : '❌'}
+
+${data.message || ''}
+                    `;
+                }
+            } catch (error) {
+                resultContent.textContent = `Erro: ${error.message}`;
+            }
+        }
+
+        // Verificar status ao carregar
+        checkStatus();
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia: Transferências Reais - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <div class="mb-6">
+            <a href="/interoperability" class="text-blue-400 hover:text-blue-300">← Voltar ao Dashboard</a>
+        </div>
+
+        <h1 class="text-4xl font-bold mb-2">🔥 Guia: Transferências Cross-Chain REAIS</h1>
+        <p class="text-gray-400 mb-8">Como fazer transferências reais que aparecem nos explorers</p>
+
+        <!-- Por que Transferências Reais -->
+        <div class="bg-red-900 border-l-4 border-red-500 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">⚠️ Por que Transferências Reais são Necessárias</h2>
+            <p class="text-gray-200 mb-4">
+                <strong>Análise Técnica:</strong> "Interoperabilidade NÃO dá pra simular. Porque interoperabilidade depende da rede externa, e os devs sabem disso."
+            </p>
+            <p class="text-gray-300">
+                Para passar <strong>confiança REAL</strong> para desenvolvedores, é necessário:
+            </p>
+            <ul class="list-disc list-inside text-gray-300 mt-4 space-y-2">
+                <li>✅ <code>source_tx_hash</code> <strong>REAL</strong> (aparece no explorer)</li>
+                <li>✅ <code>target_tx_hash</code> <strong>REAL</strong> (aparece no explorer)</li>
+                <li>✅ <code>block_number</code> <strong>REAL</strong></li>
+                <li>✅ <code>confirmations >= 1</code></li>
+                <li>✅ Explorer links <strong>VÁLIDOS</strong></li>
+                <li>✅ Receipt <strong>REAL</strong></li>
+            </ul>
+        </div>
+
+        <!-- Requisitos -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">📋 Requisitos</h2>
+            
+            <h3 class="text-xl font-semibold mb-3 mt-6">1. Chaves Privadas de Testnet</h3>
+            <p class="text-gray-300 mb-4">Você precisa ter chaves privadas com saldo em testnets:</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div class="bg-gray-700 p-4 rounded">
+                    <h4 class="font-semibold text-blue-400 mb-2">Ethereum Sepolia</h4>
+                    <code class="text-sm">ETH_PRIVATE_KEY=0x...</code>
+                    <p class="text-sm text-gray-400 mt-2">Faucet: <a href="https://sepoliafaucet.com/" target="_blank" class="text-blue-400 hover:underline">sepoliafaucet.com</a></p>
+                </div>
+                
+                <div class="bg-gray-700 p-4 rounded">
+                    <h4 class="font-semibold text-purple-400 mb-2">Polygon Amoy</h4>
+                    <code class="text-sm">POLYGON_PRIVATE_KEY=0x...</code>
+                    <p class="text-sm text-gray-400 mt-2">Faucet: <a href="https://faucet.polygon.technology/" target="_blank" class="text-blue-400 hover:underline">faucet.polygon.technology</a></p>
+                </div>
+                
+                <div class="bg-gray-700 p-4 rounded">
+                    <h4 class="font-semibold text-yellow-400 mb-2">Bitcoin Testnet</h4>
+                    <code class="text-sm">BITCOIN_TESTNET_PRIVATE_KEY=...</code>
+                    <p class="text-sm text-gray-400 mt-2">Faucet: <a href="https://bitcoinfaucet.uo1.net/" target="_blank" class="text-blue-400 hover:underline">bitcoinfaucet.uo1.net</a></p>
+                </div>
+                
+                <div class="bg-gray-700 p-4 rounded">
+                    <h4 class="font-semibold text-green-400 mb-2">Solana Testnet</h4>
+                    <code class="text-sm">SOLANA_PRIVATE_KEY=...</code>
+                    <p class="text-sm text-gray-400 mt-2">Faucet: <a href="https://faucet.solana.com/" target="_blank" class="text-blue-400 hover:underline">faucet.solana.com</a></p>
+                </div>
+            </div>
+
+            <h3 class="text-xl font-semibold mb-3 mt-6">2. Configuração no `.env`</h3>
+            <div class="bg-gray-900 p-4 rounded font-mono text-sm overflow-x-auto">
+<pre># Ethereum Sepolia
+ETH_PRIVATE_KEY=0x...
+INFURA_PROJECT_ID=4622f8123b1a4cf7a3e30098d9120d7f
+
+# Polygon Amoy
+POLYGON_PRIVATE_KEY=0x...
+
+# Bitcoin Testnet
+BITCOIN_TESTNET_PRIVATE_KEY=...
+BLOCKCYPHER_API_TOKEN=17766314e49c439e85cec883969614ac
+
+# Solana Testnet
+SOLANA_PRIVATE_KEY=...
+SOLANA_RPC_URL=https://api.testnet.solana.com
+
+# BSC Testnet
+BSC_PRIVATE_KEY=0x...
+
+# Base Sepolia
+BASE_PRIVATE_KEY=0x...</pre>
+            </div>
+
+            <h3 class="text-xl font-semibold mb-3 mt-6">3. Reservas de Liquidez</h3>
+            <p class="text-gray-300 mb-4">
+                Para transferências reais, você precisa ter tokens na chain de destino:
+            </p>
+            <ul class="list-disc list-inside text-gray-300 space-y-2">
+                <li><strong>Polygon → Ethereum:</strong> Precisa ter ETH na Ethereum Sepolia</li>
+                <li><strong>Ethereum → Polygon:</strong> Precisa ter MATIC na Polygon Amoy</li>
+                <li><strong>Bitcoin → Polygon:</strong> Precisa ter MATIC na Polygon Amoy</li>
+            </ul>
+        </div>
+
+        <!-- Como Fazer -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">🚀 Como Fazer uma Transferência Real</h2>
+            
+            <h3 class="text-xl font-semibold mb-3 mt-4">Opção 1: Via Dashboard (Recomendado)</h3>
+            <ol class="list-decimal list-inside text-gray-300 space-y-2 mb-6">
+                <li>Acesse: <code class="bg-gray-900 px-2 py-1 rounded">/interoperability</code></li>
+                <li>Preencha os campos:
+                    <ul class="list-disc list-inside ml-6 mt-2 space-y-1">
+                        <li><strong>Chain Origem:</strong> Polygon</li>
+                        <li><strong>Chain Destino:</strong> Ethereum</li>
+                        <li><strong>Quantidade:</strong> 0.01 (pequeno valor para teste)</li>
+                        <li><strong>Endereço Destino:</strong> Seu endereço Ethereum Sepolia</li>
+                    </ul>
+                </li>
+                <li>Clique em "Executar Transferência"</li>
+                <li><strong>IMPORTANTE:</strong> Configure as chaves privadas no <code>.env</code> antes!</li>
+            </ol>
+
+            <h3 class="text-xl font-semibold mb-3 mt-4">Opção 2: Via Script Python</h3>
+            <div class="bg-gray-900 p-4 rounded font-mono text-sm overflow-x-auto">
+<pre>from real_cross_chain_bridge import RealCrossChainBridge
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+bridge = RealCrossChainBridge()
+
+result = bridge.real_cross_chain_transfer(
+    source_chain="polygon",
+    target_chain="ethereum",
+    amount=0.01,
+    token_symbol="MATIC",
+    recipient="0xSEU_ENDERECO_ETHEREUM",
+    source_private_key=os.getenv('POLYGON_PRIVATE_KEY')
+)
+
+print(result)</pre>
+            </div>
+        </div>
+
+        <!-- Verificação -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">✅ Verificação de Transferência Real</h2>
+            <p class="text-gray-300 mb-4">Após executar, verifique:</p>
+            <ul class="list-disc list-inside text-gray-300 space-y-2 mb-6">
+                <li><strong>TX Hash Origem:</strong> Deve aparecer no explorer da chain origem</li>
+                <li><strong>TX Hash Destino:</strong> Deve aparecer no explorer da chain destino</li>
+                <li><strong>Block Numbers:</strong> Devem ser números reais</li>
+                <li><strong>Confirmations:</strong> Devem ser >= 1</li>
+                <li><strong>Explorer Links:</strong> Devem funcionar</li>
+            </ul>
+
+            <h3 class="text-xl font-semibold mb-3">Explorers das Testnets:</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <a href="https://sepolia.etherscan.io" target="_blank" class="bg-blue-600 hover:bg-blue-700 p-4 rounded text-center">
+                    <i class="fas fa-external-link-alt mr-2"></i>Ethereum Sepolia
+                </a>
+                <a href="https://amoy.polygonscan.com" target="_blank" class="bg-purple-600 hover:bg-purple-700 p-4 rounded text-center">
+                    <i class="fas fa-external-link-alt mr-2"></i>Polygon Amoy
+                </a>
+                <a href="https://live.blockcypher.com/btc-testnet" target="_blank" class="bg-yellow-600 hover:bg-yellow-700 p-4 rounded text-center">
+                    <i class="fas fa-external-link-alt mr-2"></i>Bitcoin Testnet
+                </a>
+                <a href="https://explorer.solana.com/?cluster=testnet" target="_blank" class="bg-green-600 hover:bg-green-700 p-4 rounded text-center">
+                    <i class="fas fa-external-link-alt mr-2"></i>Solana Testnet
+                </a>
+            </div>
+        </div>
+
+        <!-- Segurança -->
+        <div class="bg-red-900 border-l-4 border-red-500 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">🔒 Segurança</h2>
+            <ul class="list-disc list-inside text-gray-200 space-y-2">
+                <li>⚠️ <strong>NUNCA</strong> compartilhe chaves privadas!</li>
+                <li>⚠️ <strong>NUNCA</strong> use chaves de mainnet em código!</li>
+                <li>⚠️ <strong>SEMPRE</strong> use testnets para testes!</li>
+                <li>⚠️ <strong>SEMPRE</strong> use valores pequenos para testes!</li>
+            </ul>
+        </div>
+
+        <!-- Comparação -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">📊 O que Muda com Transferência Real</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-red-900 p-4 rounded">
+                    <h3 class="font-semibold mb-2">❌ Simulado (Atual)</h3>
+                    <pre class="text-xs overflow-x-auto">{
+  "source_tx_hash": "0xabc123...",
+  "target_tx_hash": "0xdef456...",
+  "transfer_real": false,
+  "note": "⚠️ Transferência simulada"
+}</pre>
+                </div>
+                
+                <div class="bg-green-900 p-4 rounded">
+                    <h3 class="font-semibold mb-2">✅ Real (Com Configuração)</h3>
+                    <pre class="text-xs overflow-x-auto">{
+  "source_tx_hash": "0x477971...",
+  "target_tx_hash": "0x8d7449...",
+  "source_block_number": 12345678,
+  "target_block_number": 9876543,
+  "source_confirmations": 12,
+  "target_confirmations": 6,
+  "transfer_real": true,
+  "note": "✅ Transferência real"
+}</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resultado Esperado -->
+        <div class="bg-green-900 border-l-4 border-green-500 p-6 rounded-lg">
+            <h2 class="text-2xl font-semibold mb-4">🎯 Resultado Esperado</h2>
+            <p class="text-gray-200 mb-4">
+                Com transferências reais, desenvolvedores verão:
+            </p>
+            <ul class="list-disc list-inside text-gray-200 space-y-2">
+                <li>✅ "Essa transferência foi REAL. Posso verificar nos explorers."</li>
+                <li>✅ "Os TX hashes são válidos e aparecem nas blockchains."</li>
+                <li>✅ "Isso é interoperabilidade de verdade, não simulação."</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Testes Profissionais - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .test-card {
+            transition: all 0.3s ease;
+        }
+        .test-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .test-running {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold mb-2">🧪 Testes Profissionais</h1>
+            <p class="text-gray-400">Suite completa de testes para Allianza Testnet</p>
+            <p class="text-sm text-gray-500 mt-2">Implementa todos os testes obrigatórios para uma testnet de nível mundial</p>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <div class="text-2xl font-bold" id="total-tests">0</div>
+                <div class="text-sm text-gray-400">Total de Testes</div>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <div class="text-2xl font-bold text-green-400" id="successful-tests">0</div>
+                <div class="text-sm text-gray-400">Bem-sucedidos</div>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <div class="text-2xl font-bold text-red-400" id="failed-tests">0</div>
+                <div class="text-sm text-gray-400">Falharam</div>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <div class="text-2xl font-bold text-blue-400" id="success-rate">0%</div>
+                <div class="text-sm text-gray-400">Taxa de Sucesso</div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="mb-8 flex gap-4">
+            <button onclick="runAllTests()" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold">
+                <i class="fas fa-play mr-2"></i>Executar Todos os Testes
+            </button>
+            <button onclick="loadResults()" class="bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-lg font-semibold">
+                <i class="fas fa-sync mr-2"></i>Atualizar Resultados
+            </button>
+        </div>
+
+        <!-- Test Categories -->
+        <div class="space-y-6">
+            <!-- 1. Testes de Camada Quântica -->
+            <div>
+                <h2 class="text-2xl font-semibold mb-4 text-blue-400">🟦 1. Testes de Camada Quântica (PQC / QRS-3)</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-blue-500">
+                        <h3 class="text-xl font-semibold mb-2">1.1. Geração de Chaves PQC</h3>
+                        <p class="text-sm text-gray-400 mb-4">ML-DSA, ML-KEM, SPHINCS+</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-1-1-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('1_1_pqc_key_generation')" class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-blue-500">
+                        <h3 class="text-xl font-semibold mb-2">1.2. Assinatura QRS-3</h3>
+                        <p class="text-sm text-gray-400 mb-4">ECDSA + ML-DSA + SPHINCS+</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-1-2-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('1_2_qrs3_signature')" class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-blue-500">
+                        <h3 class="text-xl font-semibold mb-2">1.3. Verificação PQC em Auditoria</h3>
+                        <p class="text-sm text-gray-400 mb-4">Logs, Bundler, Integridade</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-1-3-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('1_3_pqc_audit_verification')" class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Testes de Interoperabilidade -->
+            <div>
+                <h2 class="text-2xl font-semibold mb-4 text-orange-400">🟧 2. Testes de Interoperabilidade (ALZ-NIEV)</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-orange-500">
+                        <h3 class="text-xl font-semibold mb-2">2.1. Proof-of-Lock</h3>
+                        <p class="text-sm text-gray-400 mb-4">Lock → ZK Proof → Verificação</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-2-1-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('2_1_proof_of_lock')" class="w-full bg-orange-600 hover:bg-orange-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-orange-500">
+                        <h3 class="text-xl font-semibold mb-2">2.2. Gasless Interoperability</h3>
+                        <p class="text-sm text-gray-400 mb-4">Fee patrocinado, Replay protection</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-2-2-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('2_2_gasless_interoperability')" class="w-full bg-orange-600 hover:bg-orange-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-orange-500">
+                        <h3 class="text-xl font-semibold mb-2">2.3. Conversão Bitcoin ↔ EVM</h3>
+                        <p class="text-sm text-gray-400 mb-4">UTXO Lock, Merkle Proof, Emissão</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-2-3-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('2_3_bitcoin_evm_conversion')" class="w-full bg-orange-600 hover:bg-orange-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Testes de Ataque Quântico -->
+            <div>
+                <h2 class="text-2xl font-semibold mb-4 text-green-400">🟩 3. Testes de Ataque Quântico</h2>
+                <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-green-500">
+                        <h3 class="text-xl font-semibold mb-2">3. Simulação de Ataque Quântico</h3>
+                        <p class="text-sm text-gray-400 mb-4">Shor, Grover, Comparação ECDSA vs PQC</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300">✅ Implementado no Simulador</div>
+                        </div>
+                        <a href="/dashboard/quantum-attack-simulator" class="block w-full bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-center">
+                            Abrir Simulador
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Testes de Blockchain Core -->
+            <div>
+                <h2 class="text-2xl font-semibold mb-4 text-yellow-400">🟨 4. Testes de Blockchain Core</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-yellow-500">
+                        <h3 class="text-xl font-semibold mb-2">4.1. Consenso</h3>
+                        <p class="text-sm text-gray-400 mb-4">PBFT, Latência, Throughput</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-4-1-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('4_1_consensus')" class="w-full bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-yellow-500">
+                        <h3 class="text-xl font-semibold mb-2">4.2. Sincronização de Nós</h3>
+                        <p class="text-sm text-gray-400 mb-4">Full/Pruned/Light nodes</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-4-2-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('4_2_node_sync')" class="w-full bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-yellow-500">
+                        <h3 class="text-xl font-semibold mb-2">4.3. Transações</h3>
+                        <p class="text-sm text-gray-400 mb-4">Envio, Recebimento, Nonces</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-4-3-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('4_3_transactions')" class="w-full bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Testes de Smart Contracts -->
+            <div>
+                <h2 class="text-2xl font-semibold mb-4 text-purple-400">🟫 5. Testes de Smart Contracts</h2>
+                <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-purple-500">
+                        <h3 class="text-xl font-semibold mb-2">5. Smart Contracts</h3>
+                        <p class="text-sm text-gray-400 mb-4">Execução ALZ-NIEV, Replay Attack, Fraude</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-5-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('5_smart_contracts')" class="w-full bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Testes de Infraestrutura -->
+            <div>
+                <h2 class="text-2xl font-semibold mb-4 text-pink-400">🟪 6. Testes de Infraestrutura</h2>
+                <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-pink-500">
+                        <h3 class="text-xl font-semibold mb-2">6. Infraestrutura</h3>
+                        <p class="text-sm text-gray-400 mb-4">Dashboard, API pública</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-6-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('6_infrastructure')" class="w-full bg-pink-600 hover:bg-pink-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. Testes para Auditores -->
+            <div>
+                <h2 class="text-2xl font-semibold mb-4 text-red-400">🟥 7. Testes para Investidores / Auditores</h2>
+                <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-red-500">
+                        <h3 class="text-xl font-semibold mb-2">7. Testes para Auditores</h3>
+                        <p class="text-sm text-gray-400 mb-4">Bundle PQC, Reprodutibilidade, Timeline</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-7-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('7_auditor_tests')" class="w-full bg-red-600 hover:bg-red-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8. Testes Opcionais -->
+            <div>
+                <h2 class="text-2xl font-semibold mb-4 text-cyan-400">🟦 8. Testes Opcionais</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-cyan-500">
+                        <h3 class="text-xl font-semibold mb-2">8.1. FHE</h3>
+                        <p class="text-sm text-gray-400 mb-4">Criptografia Homomórfica</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-8-1-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('8_1_fhe')" class="w-full bg-cyan-600 hover:bg-cyan-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-cyan-500">
+                        <h3 class="text-xl font-semibold mb-2">8.2. QR-DID</h3>
+                        <p class="text-sm text-gray-400 mb-4">Identidade Quântico-Segura</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-8-2-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('8_2_qr_did')" class="w-full bg-cyan-600 hover:bg-cyan-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                    <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-cyan-500">
+                        <h3 class="text-xl font-semibold mb-2">8.3. Wormhole Prevention</h3>
+                        <p class="text-sm text-gray-400 mb-4">Prevenção de exploits</p>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-300" id="test-8-3-status">⏳ Não executado</div>
+                        </div>
+                        <button onclick="runTest('8_optional_tests')" class="w-full bg-cyan-600 hover:bg-cyan-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Modal -->
+        <div id="results-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+            <div class="bg-gray-800 p-6 rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-2xl font-semibold">Resultados do Teste</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                <pre id="results-content" class="bg-gray-900 p-4 rounded text-sm overflow-x-auto"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function runTest(testId) {
+            // Mapear IDs especiais
+            const statusIdMap = {
+                '8_optional_tests': 'test-8-3-status',
+                '8_1_fhe': 'test-8-1-status',
+                '8_2_qr_did': 'test-8-2-status'
+            };
+            const statusId = statusIdMap[testId] || `test-${testId.replace(/_/g, '-')}-status`;
+            const statusEl = document.getElementById(statusId);
+            if (statusEl) {
+                statusEl.textContent = '🔄 Executando...';
+                statusEl.parentElement.parentElement.classList.add('test-running');
+            }
+
+            try {
+                const response = await fetch(`/professional-tests/api/run/${testId}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                const result = await response.json();
+
+                if (statusEl) {
+                    statusEl.parentElement.parentElement.classList.remove('test-running');
+                    if (result.success) {
+                        statusEl.textContent = '✅ Sucesso';
+                        statusEl.className = 'text-sm text-green-400';
+                    } else {
+                        statusEl.textContent = '❌ Falhou: ' + (result.error || 'Erro desconhecido');
+                        statusEl.className = 'text-sm text-red-400';
+                    }
+                }
+
+                showResults(result);
+                loadResults();
+            } catch (error) {
+                if (statusEl) {
+                    statusEl.parentElement.parentElement.classList.remove('test-running');
+                    statusEl.textContent = '❌ Erro: ' + error.message;
+                    statusEl.className = 'text-sm text-red-400';
+                }
+            }
+        }
+
+        async function runAllTests() {
+            if (!confirm('Executar todos os testes? Isso pode levar alguns minutos.')) return;
+
+            try {
+                const response = await fetch('/professional-tests/api/run-all', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                const result = await response.json();
+                showResults(result);
+                loadResults();
+            } catch (error) {
+                alert('Erro ao executar testes: ' + error.message);
+            }
+        }
+
+        function showResults(result) {
+            document.getElementById('results-content').textContent = JSON.stringify(result, null, 2);
+            document.getElementById('results-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('results-modal').classList.add('hidden');
+        }
+
+        async function loadResults() {
+            // Atualizar estatísticas (simulado - em produção buscar do servidor)
+            // Por enquanto, apenas atualizar visualmente
+        }
+
+        // Fechar modal ao clicar fora
+        document.getElementById('results-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testes Públicos - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <div class="mb-6">
+            <a href="/testnet" class="text-blue-400 hover:text-blue-300">← Voltar ao Dashboard</a>
+        </div>
+
+        <h1 class="text-4xl font-bold mb-2">🧪 Testes Públicos</h1>
+        <p class="text-gray-400 mb-8">Execute testes reais e veja os resultados em tempo real</p>
+
+        <!-- Botão Executar Todos -->
+        <div class="bg-blue-900 p-6 rounded-lg mb-6">
+            <button id="runAllTestsBtn" class="bg-blue-600 hover:bg-blue-700 px-8 py-4 rounded-lg font-semibold text-lg transition">
+                <i class="fas fa-play mr-2"></i>Executar Todos os Testes
+            </button>
+            <p class="text-sm text-gray-300 mt-2">Execute os 5 testes principais e veja os resultados detalhados</p>
+        </div>
+
+        <!-- Testes Individuais -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <h3 class="font-semibold mb-2">1. QRS-3 Signature</h3>
+                <button onclick="runTest('qrs3')" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded text-sm">
+                    Executar
+                </button>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <h3 class="font-semibold mb-2">2. Interoperabilidade</h3>
+                <button onclick="runTest('interoperability')" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded text-sm">
+                    Executar
+                </button>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <h3 class="font-semibold mb-2">3. Performance</h3>
+                <button onclick="runTest('performance')" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded text-sm">
+                    Executar
+                </button>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <h3 class="font-semibold mb-2">4. Validação de Blocos</h3>
+                <button onclick="runTest('block_validation')" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded text-sm">
+                    Executar
+                </button>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <h3 class="font-semibold mb-2">5. Segurança Quântica</h3>
+                <button onclick="runTest('quantum_security')" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded text-sm">
+                    Executar
+                </button>
+            </div>
+        </div>
+
+        <!-- Logs em Tempo Real -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">📋 Logs em Tempo Real</h2>
+            <div id="logsContainer" class="bg-gray-900 p-4 rounded font-mono text-sm max-h-96 overflow-y-auto">
+                <p class="text-gray-500">Aguardando execução de testes...</p>
+            </div>
+        </div>
+
+        <!-- Resultados -->
+        <div id="resultsContainer" class="hidden">
+            <h2 class="text-2xl font-semibold mb-4">📊 Resultados</h2>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        function addLog(message, type = 'info') {
+            const container = document.getElementById('logsContainer');
+            const timestamp = new Date().toLocaleTimeString();
+            const colors = {
+                'info': 'text-blue-400',
+                'success': 'text-green-400',
+                'error': 'text-red-400',
+                'warning': 'text-yellow-400'
+            };
+            
+            const logEntry = document.createElement('p');
+            logEntry.className = colors[type] || 'text-gray-300';
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            container.appendChild(logEntry);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function runTest(testName) {
+            addLog(`Iniciando teste: ${testName}...`, 'info');
+            
+            fetch('/api/public-tests/run', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({test_name: testName})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    addLog(`✅ Teste ${testName} concluído!`, 'success');
+                    displayResult(data);
+                } else {
+                    addLog(`❌ Erro: ${data.error}`, 'error');
+                }
+            })
+            .catch(e => {
+                addLog(`❌ Erro: ${e.message}`, 'error');
+            });
+        }
+
+        function runAllTests() {
+            const btn = document.getElementById('runAllTestsBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Executando...';
+            
+            document.getElementById('logsContainer').innerHTML = '';
+            addLog('🚀 Iniciando todos os testes...', 'info');
+            
+            fetch('/api/public-tests/run', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    addLog(`✅ Todos os testes concluídos! Taxa de sucesso: ${data.success_rate_percent}%`, 'success');
+                    displaySummary(data);
+                } else {
+                    addLog(`❌ Alguns testes falharam`, 'error');
+                }
+            })
+            .catch(e => {
+                addLog(`❌ Erro: ${e.message}`, 'error');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-play mr-2"></i>Executar Todos os Testes';
+            });
+        }
+
+        function displayResult(result) {
+            const container = document.getElementById('resultsContent');
+            container.innerHTML = `
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4">${result.test_name}</h3>
+                    <pre class="bg-gray-900 p-4 rounded text-sm overflow-x-auto">${JSON.stringify(result.results, null, 2)}</pre>
+                </div>
+            `;
+            document.getElementById('resultsContainer').classList.remove('hidden');
+        }
+
+        function displaySummary(summary) {
+            const container = document.getElementById('resultsContent');
+            let html = `
+                <div class="bg-gray-800 p-6 rounded-lg mb-4">
+                    <h3 class="text-xl font-semibold mb-4">Resumo Geral</h3>
+                    <div class="grid grid-cols-3 gap-4 mb-4">
+                        <div class="bg-gray-700 p-4 rounded">
+                            <p class="text-sm text-gray-400">Taxa de Sucesso</p>
+                            <p class="text-3xl font-bold text-green-400">${summary.success_rate_percent}%</p>
+                        </div>
+                        <div class="bg-gray-700 p-4 rounded">
+                            <p class="text-sm text-gray-400">Testes Passaram</p>
+                            <p class="text-3xl font-bold text-blue-400">${summary.successful_tests}/${summary.total_tests}</p>
+                        </div>
+                        <div class="bg-gray-700 p-4 rounded">
+                            <p class="text-sm text-gray-400">Tempo Total</p>
+                            <p class="text-3xl font-bold text-purple-400">${(summary.total_time_ms/1000).toFixed(2)}s</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            summary.tests.forEach(test => {
+                html += `
+                    <div class="bg-gray-800 p-4 rounded-lg mb-2">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-semibold">${test.test_name}</h4>
+                            <span class="px-3 py-1 rounded ${test.success ? 'bg-green-600' : 'bg-red-600'}">
+                                ${test.success ? '✅' : '❌'}
+                            </span>
+                        </div>
+                        <pre class="bg-gray-900 p-3 rounded text-xs overflow-x-auto">${JSON.stringify(test.results, null, 2)}</pre>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            document.getElementById('resultsContainer').classList.remove('hidden');
+        }
+
+        document.getElementById('runAllTestsBtn').addEventListener('click', runAllTests);
+    </script>
+</body>
+</html>
+
+
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificador QRS-3 - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <div class="mb-6">
+            <a href="/testnet" class="text-blue-400 hover:text-blue-300">← Voltar ao Dashboard</a>
+        </div>
+
+        <h1 class="text-4xl font-bold mb-2">🔐 Verificador QRS-3</h1>
+        <p class="text-gray-400 mb-8">Verifique assinaturas quânticas QRS-3 (ECDSA + ML-DSA + SPHINCS+)</p>
+
+        <!-- Gerar Exemplo -->
+        <div class="bg-purple-900 p-6 rounded-lg mb-6 max-w-2xl">
+            <h2 class="text-2xl font-semibold mb-4">🧪 Não sabe como testar? Gere um exemplo!</h2>
+            <p class="text-gray-300 mb-4">Clique no botão abaixo para gerar uma mensagem e assinatura QRS-3 de exemplo que você pode verificar.</p>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Mensagem de Exemplo (opcional)</label>
+                    <input type="text" id="exampleMessage" placeholder="Hello Allianza Testnet!" 
+                           class="w-full bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+                <button id="generateExampleBtn" class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-semibold transition">
+                    <i class="fas fa-magic mr-2"></i>Gerar Exemplo de Assinatura QRS-3
+                </button>
+            </div>
+            <div id="exampleResult" class="mt-4 hidden"></div>
+        </div>
+
+        <div class="bg-gray-800 p-6 rounded-lg max-w-2xl">
+            <h2 class="text-2xl font-semibold mb-4">Verificar Assinatura QRS-3</h2>
+            <form id="verifyForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Mensagem</label>
+                    <textarea id="message" rows="4" placeholder="Digite a mensagem original..."
+                              class="w-full bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Assinatura QRS-3 (JSON)</label>
+                    <textarea id="signature" rows="8" placeholder='{"ecdsa": {...}, "ml_dsa": {...}, "sphincs": {...}}'
+                              class="w-full bg-gray-700 text-white px-4 py-2 rounded-lg font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                <button type="submit" class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-semibold transition">
+                    <i class="fas fa-shield-alt mr-2"></i>Verificar Assinatura
+                </button>
+            </form>
+            <div id="result" class="mt-4 hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        // Gerar Exemplo
+        document.getElementById('generateExampleBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('generateExampleBtn');
+            const resultDiv = document.getElementById('exampleResult');
+            const exampleMessage = document.getElementById('exampleMessage').value || 'Hello Allianza Testnet!';
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Gerando...';
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<p class="text-purple-400">Gerando assinatura QRS-3...</p>';
+            
+            try {
+                const response = await fetch('/api/qrs3/generate-example', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({message: exampleMessage})
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Preencher campos automaticamente
+                    document.getElementById('message').value = data.message;
+                    document.getElementById('signature').value = JSON.stringify(data.signature, null, 2);
+                    
+                    resultDiv.innerHTML = `
+                        <div class="bg-green-900 p-4 rounded">
+                            <p class="text-green-300 font-semibold mb-2">✅ Exemplo Gerado com Sucesso!</p>
+                            <div class="space-y-2 text-sm">
+                                <div>
+                                    <p class="text-gray-300 font-medium">Mensagem:</p>
+                                    <p class="font-mono bg-gray-800 p-2 rounded">${data.message}</p>
+                                </div>
+                                <div class="mt-2">
+                                    <p class="text-gray-300 font-medium">Status da Verificação:</p>
+                                    <p class="text-green-300">${data.verified ? '✅ Válida' : '❌ Inválida'}</p>
+                                </div>
+                                <div class="mt-3 bg-blue-900 p-3 rounded">
+                                    <p class="text-blue-200 font-medium mb-1">Instruções:</p>
+                                    <ul class="text-xs text-blue-100 space-y-1">
+                                        ${data.instructions.map(i => `<li>${i}</li>`).join('')}
+                                    </ul>
+                                </div>
+                                <p class="text-yellow-300 text-xs mt-2">💡 Os campos foram preenchidos automaticamente. Clique em "Verificar Assinatura" para testar!</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="bg-red-900 p-4 rounded">
+                            <p class="text-red-300">❌ ${data.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="bg-red-900 p-4 rounded">
+                        <p class="text-red-300">❌ Erro: ${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-magic mr-2"></i>Gerar Exemplo de Assinatura QRS-3';
+            }
+        });
+        
+        document.getElementById('verifyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = document.getElementById('message').value;
+            const signatureText = document.getElementById('signature').value;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<p class="text-blue-400">Verificando...</p>';
+            
+            try {
+                const signature = JSON.parse(signatureText);
+                
+                const response = await fetch('/api/qrs3/verify', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({message, signature})
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (data.verified) {
+                        // Detalhes da assinatura
+                        const sig = data.signature || {};
+                        
+                        resultDiv.innerHTML = `
+                            <div class="bg-green-900 p-4 rounded">
+                                <p class="text-green-300 text-xl font-semibold mb-3">✅ Assinatura Válida!</p>
+                                
+                                <div class="bg-gray-800 p-3 rounded mb-3">
+                                    <p class="text-sm font-medium text-gray-300 mb-2">Detalhes da Verificação:</p>
+                                    <div class="space-y-1 text-xs">
+                                        <div class="flex justify-between">
+                                            <span>ECDSA:</span>
+                                            <span class="text-green-400">✓ Verificado</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>ML-DSA:</span>
+                                            <span class="text-green-400">✓ Verificado</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>SPHINCS+:</span>
+                                            <span class="text-green-400">✓ Verificado</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-blue-900 p-3 rounded mb-3">
+                                    <p class="text-blue-200 text-sm font-medium mb-1">📄 Prova Criptográfica:</p>
+                                    <p class="text-xs text-blue-100">Hash SHA-512: <span class="font-mono">${data.proof_hash || 'N/A'}</span></p>
+                                    ${data.proof ? `<a href="${data.proof}" class="text-blue-400 hover:text-blue-300 text-xs underline">📥 Baixar Prova (JSON)</a>` : ''}
+                                </div>
+                                
+                                <p class="text-xs text-gray-300 mt-2">✅ Esta é uma prova real de que a assinatura QRS-3 foi verificada com sucesso na Allianza Testnet!</p>
+                            </div>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="bg-red-900 p-4 rounded">
+                                <p class="text-red-300 text-xl font-semibold">❌ Assinatura Inválida</p>
+                                <p class="text-sm mt-2 text-gray-300">A assinatura não pôde ser verificada. Verifique se a mensagem e a assinatura estão corretas.</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="bg-red-900 p-4 rounded">
+                            <p class="text-red-300">❌ ${data.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="bg-red-900 p-4 rounded">
+                        <p class="text-red-300">❌ Erro ao processar: ${error.message}</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Segurança Quântica - Allianza Testnet</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -160,7 +2455,7 @@
     <script>
         // Atualizar dashboard a cada 10 segundos
         setInterval(() => {
-            fetch('/testnet/api/quantum-security')
+            fetch('/api/quantum-security')
                 .then(r => r.json())
                 .then(data => {
                     location.reload();
@@ -169,4 +2464,143 @@
     </script>
 </body>
 </html>
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <div class="mb-6">
+            <a href="/testnet" class="text-blue-400 hover:text-blue-300">← Voltar ao Dashboard</a>
+        </div>
+
+        <h1 class="text-4xl font-bold mb-2">📊 Status Page</h1>
+        <p class="text-gray-400 mb-8">Monitoramento em tempo real da Allianza Testnet</p>
+
+        <!-- Status Geral -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-semibold">Status Geral</h2>
+                <span class="px-4 py-2 rounded-lg bg-green-600 font-semibold">
+                    ✅ {{ overall_status.status|upper }}
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-gray-700 p-4 rounded">
+                    <p class="text-gray-400 text-sm">Uptime</p>
+                    <p class="text-3xl font-bold text-green-400">{{ "%.2f"|format(overall_status.uptime_percentage) }}%</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ overall_status.uptime_readable }}</p>
+                </div>
+                <div class="bg-gray-700 p-4 rounded">
+                    <p class="text-gray-400 text-sm">Latência Média</p>
+                    <p class="text-3xl font-bold text-blue-400">{{ "%.2f"|format(realtime_metrics.latency_avg_ms) }}ms</p>
+                </div>
+                <div class="bg-gray-700 p-4 rounded">
+                    <p class="text-gray-400 text-sm">Validadores Online</p>
+                    <p class="text-3xl font-bold text-purple-400">{{ realtime_metrics.validators_online }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Componentes -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">Componentes</h2>
+            <div class="space-y-3">
+                {% for component_id, component in overall_status.components.items() %}
+                <div class="bg-gray-700 p-4 rounded flex items-center justify-between">
+                    <div>
+                        <p class="font-semibold">{{ component.name }}</p>
+                        <p class="text-sm text-gray-400">
+                            {% if component.response_time_ms %}
+                            Tempo de resposta: {{ "%.2f"|format(component.response_time_ms) }}ms
+                            {% elif component.online_count is defined %}
+                            Online: {{ component.online_count }}/{{ component.total_count }}
+                            {% elif component.blocks_total is defined %}
+                            Blocos: {{ component.blocks_total }} | Shards: {{ component.shards_active }}
+                            {% endif %}
+                        </p>
+                    </div>
+                    <span class="px-3 py-1 rounded bg-green-600 text-sm">
+                        ✅ {{ component.status|upper }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Métricas em Tempo Real -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">Métricas em Tempo Real</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-gray-700 p-4 rounded">
+                    <p class="text-gray-400 text-sm">TPS Atual</p>
+                    <p class="text-2xl font-bold text-green-400">{{ "%.2f"|format(realtime_metrics.tps_current) }}</p>
+                </div>
+                <div class="bg-gray-700 p-4 rounded">
+                    <p class="text-gray-400 text-sm">TPS 24h (Média)</p>
+                    <p class="text-2xl font-bold text-blue-400">{{ "%.2f"|format(realtime_metrics.tps_24h_avg) }}</p>
+                </div>
+                <div class="bg-gray-700 p-4 rounded">
+                    <p class="text-gray-400 text-sm">Blocos (Última Hora)</p>
+                    <p class="text-2xl font-bold text-purple-400">{{ realtime_metrics.blocks_last_hour }}</p>
+                </div>
+                <div class="bg-gray-700 p-4 rounded">
+                    <p class="text-gray-400 text-sm">Última Atualização</p>
+                    <p class="text-xs text-gray-300">{{ realtime_metrics.timestamp[:19] }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Incidentes -->
+        <div class="bg-gray-800 p-6 rounded-lg">
+            <h2 class="text-2xl font-semibold mb-4">Histórico de Incidentes</h2>
+            {% if incidents %}
+            <div class="space-y-3">
+                {% for incident in incidents %}
+                <div class="bg-gray-700 p-4 rounded">
+                    <div class="flex items-center justify-between mb-2">
+                        <div>
+                            <p class="font-semibold">{{ incident.type|upper }}</p>
+                            <p class="text-sm text-gray-400">{{ incident.description }}</p>
+                        </div>
+                        <span class="px-3 py-1 rounded bg-green-600 text-sm">
+                            ✅ {{ incident.status|upper }}
+                        </span>
+                    </div>
+                    <p class="text-xs text-gray-500">
+                        {{ incident.started_at[:19] }} - Impacto: {{ incident.impact|upper }}
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-400">Nenhum incidente registrado. Rede operacional! ✅</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Atualizar métricas a cada 5 segundos
+        setInterval(() => {
+            fetch('/api/status')
+                .then(r => r.json())
+                .then(data => {
+                    // Atualizar página com novos dados
+                    location.reload();
+                });
+        }, 5000);
+    </script>
+</body>
+</html>
+
+
+
 

@@ -1,7 +1,7 @@
 {
   "test_id": "test_4_2_node_sync",
   "name": "Sincronização de Nós",
-  "start_time": "2025-11-26T00:53:10.025117",
+  "start_time": "2025-11-27T11:58:13.413803",
   "tests": {
     "full_node_sync": {
       "success": true,
@@ -38,7 +38,7 @@
         "block_height": 1001,
         "peers_count": 4,
         "synced": true,
-        "last_sync_time": 1764129190.0288844,
+        "last_sync_time": 1764255493.4165137,
         "validator": false,
         "stake": 0.0
       },
@@ -49,7 +49,7 @@
         "block_height": 1001,
         "peers_count": 4,
         "synced": false,
-        "last_sync_time": 1764129190.026199,
+        "last_sync_time": 1764255493.4156673,
         "validator": false,
         "stake": 0.0
       },
@@ -60,7 +60,7 @@
         "block_height": 1001,
         "peers_count": 4,
         "synced": true,
-        "last_sync_time": 1764129190.0289037,
+        "last_sync_time": 1764255493.4165235,
         "validator": false,
         "stake": 0.0
       },
@@ -71,7 +71,7 @@
         "block_height": 1001,
         "peers_count": 4,
         "synced": true,
-        "last_sync_time": 1764129190.0289102,
+        "last_sync_time": 1764255493.4165275,
         "validator": false,
         "stake": 0.0
       },
@@ -82,7 +82,7 @@
         "block_height": 1001,
         "peers_count": 4,
         "synced": true,
-        "last_sync_time": 1764129190.0289147,
+        "last_sync_time": 1764255493.416531,
         "validator": false,
         "stake": 0.0
       }
@@ -93,8 +93,8 @@
       "latest_block_hash": null,
       "consensus_reached": false
     },
-    "timestamp": "2025-11-26T00:53:10.028966"
+    "timestamp": "2025-11-27T11:58:13.416556"
   },
   "success": true,
-  "duration": 0.003889799118041992
+  "duration": 0.0027811527252197266
 }

@@ -1,0 +1,91 @@
+═══════════════════════════════════════════════════════════════
+🔧 CORREÇÃO: contracts/real_metaprogrammable.py
+═══════════════════════════════════════════════════════════════
+
+ARQUIVO: contracts/real_metaprogrammable.py
+
+═══════════════════════════════════════════════════════════════
+CORREÇÃO 1: Linha 11-19 (método __init__)
+═══════════════════════════════════════════════════════════════
+
+SUBSTITUIR:
+```python
+class RealMetaprogrammableSystem:
+    def __init__(self):
+        self.eth_w3 = Web3(HTTPProvider(os.getenv('ETH_RPC_URL')))
+        self.private_key = os.getenv('REAL_ETH_PRIVATE_KEY').replace('0x', '')
+        self.account = self.eth_w3.eth.account.from_key(self.private_key)
+        self.meta_tokens = {}
+        
+        print("🔮 REAL METAPROGRAMMABLE SYSTEM: Inicializado!")
+        print(f"✅ Conta: {self.account.address}")
+        print(f"💰 Saldo: {self.eth_w3.from_wei(self.eth_w3.eth.get_balance(self.account.address), 'ether')} ETH")
+```
+
+POR:
+```python
+class RealMetaprogrammableSystem:
+    def __init__(self):
+        eth_rpc_url = os.getenv('ETH_RPC_URL')
+        private_key_env = os.getenv('REAL_ETH_PRIVATE_KEY')
+        
+        # Verificar se as variáveis de ambiente estão configuradas
+        if not eth_rpc_url or not private_key_env:
+            self.eth_w3 = None
+            self.private_key = None
+            self.account = None
+            self.meta_tokens = {}
+            print("⚠️  REAL METAPROGRAMMABLE SYSTEM: Variáveis de ambiente não configuradas")
+            print("   Configure ETH_RPC_URL e REAL_ETH_PRIVATE_KEY para usar funcionalidades reais")
+            return
+        
+        self.eth_w3 = Web3(HTTPProvider(eth_rpc_url))
+        self.private_key = private_key_env.replace('0x', '') if private_key_env else None
+        self.account = self.eth_w3.eth.account.from_key(self.private_key) if self.private_key else None
+        self.meta_tokens = {}
+        
+        if self.account:
+            print("🔮 REAL METAPROGRAMMABLE SYSTEM: Inicializado!")
+            print(f"✅ Conta: {self.account.address}")
+            try:
+                balance = self.eth_w3.from_wei(self.eth_w3.eth.get_balance(self.account.address), 'ether')
+                print(f"💰 Saldo: {balance} ETH")
+            except Exception as e:
+                print(f"⚠️  Erro ao obter saldo: {e}")
+```
+
+═══════════════════════════════════════════════════════════════
+CORREÇÃO 2: Linha 257 (instância global)
+═══════════════════════════════════════════════════════════════
+
+SUBSTITUIR:
+```python
+# Instância global
+real_meta_system = RealMetaprogrammableSystem()
+```
+
+POR:
+```python
+# Instância global (só cria se variáveis de ambiente estiverem configuradas)
+try:
+    real_meta_system = RealMetaprogrammableSystem()
+    if not real_meta_system.eth_w3 or not real_meta_system.account:
+        real_meta_system = None
+        print("⚠️  REAL METAPROGRAMMABLE SYSTEM: Modo simulação (variáveis não configuradas)")
+except Exception as e:
+    print(f"⚠️  Erro ao inicializar RealMetaprogrammableSystem: {e}")
+    real_meta_system = None
+```
+
+═══════════════════════════════════════════════════════════════
+RESUMO DAS MUDANÇAS
+═══════════════════════════════════════════════════════════════
+
+1. ✅ Adicionar verificação se ETH_RPC_URL existe
+2. ✅ Adicionar verificação se REAL_ETH_PRIVATE_KEY existe
+3. ✅ Tratar caso quando variáveis não existem (modo simulação)
+4. ✅ Proteger criação da instância global com try/except
+5. ✅ Evitar erro AttributeError quando variáveis são None
+
+═══════════════════════════════════════════════════════════════
+
