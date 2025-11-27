@@ -1051,7 +1051,14 @@ def interoperability_dashboard_route():
 def api_interoperability_status():
     """API do status de interoperabilidade - Agora usando ALZ-NIEV"""
     if not alz_niev:
-        return jsonify({"error": "ALZ-NIEV não inicializado"}), 500
+        return jsonify({
+            "available": False,
+            "system": "ALZ-NIEV",
+            "error": "ALZ-NIEV não inicializado",
+            "layers": {},
+            "supported_chains": [],
+            "real_transfers": False
+        }), 200
     
     return jsonify({
         "available": True,
@@ -1347,14 +1354,20 @@ def api_download_qrs3_proof(proof_id):
 @testnet_bp.route('/alz-niev', methods=['GET'])
 def alz_niev_dashboard():
     """Dashboard ALZ-NIEV"""
-    if not alz_niev:
-        # Retornar página amigável ao invés de erro 500
+    try:
+        if not alz_niev:
+            # Retornar página amigável ao invés de erro 500
+            return render_template('testnet/alz_niev.html', 
+                                 alz_niev_available=False,
+                                 error_message="ALZ-NIEV não está disponível no momento."), 200
+        
         return render_template('testnet/alz_niev.html', 
+                             alz_niev_available=True)
+    except Exception as e:
+        # Fallback se houver erro
+        return render_template('testnet/alz_niev.html',
                              alz_niev_available=False,
-                             error_message="ALZ-NIEV não está disponível no momento. O módulo pkg_resources não foi encontrado."), 200
-    
-    return render_template('testnet/alz_niev.html', 
-                         alz_niev_available=True)
+                             error_message=f"Erro ao carregar: {str(e)}"), 200
 
 @testnet_bp.route('/api/alz-niev/execute', methods=['POST'])
 def api_alz_niev_execute():
