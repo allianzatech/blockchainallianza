@@ -6,6 +6,7 @@ Faucet, Explorer, Verificador QRS-3, Testes Públicos
 from flask import Blueprint, jsonify, request, render_template, send_file, make_response
 from pathlib import Path
 import json
+import os
 from datetime import datetime
 
 from testnet_config import get_network_info, is_valid_testnet_address
