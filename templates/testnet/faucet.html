@@ -3,238 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALZ-NIEV - Allianza Testnet</title>
+    <title>Faucet - Allianza Testnet</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .layer-card {
-            transition: transform 0.2s;
-        }
-        .layer-card:hover {
-            transform: translateY(-2px);
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-gray-900 text-white">
     <div class="container mx-auto px-4 py-8">
-        <!-- Header -->
-        <div class="mb-8">
-            <h1 class="text-4xl font-bold mb-2">🌐 ALZ-NIEV</h1>
-            <p class="text-gray-400">Non-Intermediate Execution Validation - Interoperabilidade Única no Mundo</p>
+        <div class="mb-6">
+            <a href="/" class="text-blue-400 hover:text-blue-300">← Voltar ao Dashboard</a>
         </div>
 
-        <!-- Status -->
-        <div id="status" class="mb-6 p-4 bg-gray-800 rounded-lg">
-            <p class="text-yellow-400">⏳ Verificando status...</p>
-        </div>
+        <h1 class="text-4xl font-bold mb-2">💰 Faucet</h1>
+        <p class="text-gray-400 mb-8">Obtenha tokens de teste para experimentar a Allianza Testnet</p>
 
-        <!-- As 5 Camadas -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            <div class="layer-card bg-blue-900 p-6 rounded-lg">
-                <h3 class="text-xl font-bold mb-2">🔵 ELNI</h3>
-                <p class="text-sm text-gray-300">Execution-Level Native Interop</p>
-                <p class="text-xs text-gray-400 mt-2">Execução nativa sem bridges</p>
-            </div>
-            <div class="layer-card bg-purple-900 p-6 rounded-lg">
-                <h3 class="text-xl font-bold mb-2">🟣 ZKEF</h3>
-                <p class="text-sm text-gray-300">Zero-Knowledge External Functions</p>
-                <p class="text-xs text-gray-400 mt-2">Provas ZK sem relayers</p>
-            </div>
-            <div class="layer-card bg-green-900 p-6 rounded-lg">
-                <h3 class="text-xl font-bold mb-2">🟢 UP-NMT</h3>
-                <p class="text-sm text-gray-300">Universal Proof Normalized Merkle Tunneling</p>
-                <p class="text-xs text-gray-400 mt-2">Provas Merkle universais</p>
-            </div>
-            <div class="layer-card bg-yellow-900 p-6 rounded-lg">
-                <h3 class="text-xl font-bold mb-2">🟡 MCL</h3>
-                <p class="text-sm text-gray-300">Multi-Consensus Layer</p>
-                <p class="text-xs text-gray-400 mt-2">Suporte a qualquer consenso</p>
-            </div>
-            <div class="layer-card bg-red-900 p-6 rounded-lg">
-                <h3 class="text-xl font-bold mb-2">🔴 AES</h3>
-                <p class="text-sm text-gray-300">Atomic Execution Sync</p>
-                <p class="text-xs text-gray-400 mt-2">Execução atômica multi-chain</p>
-            </div>
-        </div>
-
-        <!-- Teste 1: Execução Cross-Chain Simples -->
-        <div class="bg-gray-800 p-6 rounded-lg mb-6">
-            <h2 class="text-2xl font-bold mb-4">🔵 Teste 1: Execução Cross-Chain (ELNI + Todas as Provas)</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-sm font-medium mb-2">Source Chain</label>
-                    <select id="sourceChain" class="w-full bg-gray-700 text-white p-2 rounded">
-                        <option value="allianza">Allianza</option>
-                        <option value="polygon">Polygon</option>
-                        <option value="ethereum">Ethereum</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-2">Target Chain</label>
-                    <select id="targetChain" class="w-full bg-gray-700 text-white p-2 rounded">
-                        <option value="polygon">Polygon</option>
-                        <option value="ethereum">Ethereum</option>
-                        <option value="bsc">BSC</option>
-                        <option value="bitcoin">Bitcoin</option>
-                        <option value="solana">Solana</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-sm font-medium mb-2">Function Name</label>
-                    <input type="text" id="functionName" value="getBalance" class="w-full bg-gray-700 text-white p-2 rounded">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-2">Function Params (JSON)</label>
-                    <input type="text" id="functionParams" value='{"address": "0x1234..."}' class="w-full bg-gray-700 text-white p-2 rounded">
-                </div>
-            </div>
-
-            <button onclick="testExecution()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded font-bold">
-                🚀 Executar com ALZ-NIEV
+        <!-- Gerar Wallet -->
+        <div class="bg-blue-900 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">👛 Não tem endereço? Gere um agora!</h2>
+            <p class="text-gray-300 mb-4">Clique no botão abaixo para gerar uma nova wallet e obter seu endereço Allianza.</p>
+            <button id="generateWalletBtn" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition">
+                <i class="fas fa-wallet mr-2"></i>Gerar Nova Wallet
             </button>
+            <div id="walletResult" class="mt-4 hidden"></div>
+        </div>
 
-            <div id="executionResult" class="mt-4 hidden">
-                <div class="bg-gray-900 p-4 rounded">
-                    <pre id="executionResultContent" class="text-sm overflow-auto"></pre>
+        <!-- Form -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Solicitar Tokens</h2>
+            <form id="faucetForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Endereço Allianza</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="address" placeholder="ALZ1..." 
+                               class="flex-1 bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button type="button" id="pasteAddressBtn" class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg">
+                            <i class="fas fa-paste"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">Deve começar com ALZ1 e ter 42 caracteres</p>
                 </div>
+                <button type="submit" class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition">
+                    <i class="fas fa-faucet mr-2"></i>Solicitar Tokens
+                </button>
+            </form>
+            <div id="result" class="mt-4 hidden"></div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <h3 class="text-sm text-gray-400">Total Enviado</h3>
+                <p class="text-2xl font-bold">{{ faucet_stats.total_sent }}</p>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <h3 class="text-sm text-gray-400">Total Rejeitado</h3>
+                <p class="text-2xl font-bold">{{ faucet_stats.total_rejected }}</p>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <h3 class="text-sm text-gray-400">Quantidade por Requisição</h3>
+                <p class="text-2xl font-bold">{{ faucet_stats.amount_per_request }} ALZ-T</p>
             </div>
         </div>
 
-        <!-- Teste 2: Execução Atômica Multi-Chain -->
-        <div class="bg-gray-800 p-6 rounded-lg mb-6">
-            <h2 class="text-2xl font-bold mb-4">🔴 Teste 2: Execução Atômica Multi-Chain (AES)</h2>
-            
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Chains (JSON Array)</label>
-                <textarea id="atomicChains" rows="6" class="w-full bg-gray-700 text-white p-2 rounded font-mono text-sm">[
-  {"chain": "polygon", "function": "transfer", "params": {"to": "0x1234...", "amount": 100}},
-  {"chain": "ethereum", "function": "mint", "params": {"to": "0x5678...", "amount": 50}},
-  {"chain": "bsc", "function": "swap", "params": {"token_in": "BNB", "token_out": "USDT", "amount": 10}}
-]</textarea>
-            </div>
-
-            <button onclick="testAtomic()" class="bg-red-600 hover:bg-red-700 px-6 py-2 rounded font-bold">
-                ⚡ Executar Atomicamente
-            </button>
-
-            <div id="atomicResult" class="mt-4 hidden">
-                <div class="bg-gray-900 p-4 rounded">
-                    <pre id="atomicResultContent" class="text-sm overflow-auto"></pre>
+        <!-- Recent Logs -->
+        <div class="bg-gray-800 p-6 rounded-lg">
+            <h2 class="text-2xl font-semibold mb-4">Logs Recentes</h2>
+            <div class="space-y-2">
+                {% for log in logs %}
+                <div class="bg-gray-700 p-3 rounded">
+                    <div class="flex justify-between">
+                        <span class="font-mono text-sm">{{ log.address[:20] }}...</span>
+                        <span class="text-xs text-gray-400">{{ log.timestamp }}</span>
+                    </div>
+                    <div class="text-xs text-gray-400 mt-1">
+                        TX: <span class="font-mono">{{ log.tx_hash[:20] }}...</span> | 
+                        Amount: {{ log.amount }} ALZ-T
+                    </div>
                 </div>
+                {% endfor %}
             </div>
-        </div>
-
-        <!-- Link para Faucet -->
-        <div class="bg-yellow-900 p-4 rounded-lg mb-6">
-            <p class="font-bold mb-2">💰 Precisa de Tokens de Teste?</p>
-            <p class="text-sm mb-2">Para executar funções que requerem saldo, use o faucet:</p>
-            <a href="/faucet" class="text-blue-400 hover:underline">→ Acessar Faucet</a>
-        </div>
-
-        <!-- Links -->
-        <div class="flex gap-4">
-            <a href="/" class="text-blue-400 hover:underline">← Voltar ao Dashboard</a>
-            <a href="/interoperability" class="text-blue-400 hover:underline">Interoperabilidade Tradicional →</a>
         </div>
     </div>
 
     <script>
-        // Verificar status
-        async function checkStatus() {
+        // Gerar Wallet
+        document.getElementById('generateWalletBtn').addEventListener('click', async () => {
+            const walletResultDiv = document.getElementById('walletResult');
+            walletResultDiv.classList.remove('hidden');
+            walletResultDiv.innerHTML = '<p class="text-blue-400">Gerando wallet...</p>';
+            
             try {
-                const response = await fetch('/api/alz-niev/status');
+                const response = await fetch('/api/wallet/generate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
                 const data = await response.json();
                 
-                const statusDiv = document.getElementById('status');
-                if (data.available) {
-                    statusDiv.innerHTML = '<p class="text-green-400">✅ ALZ-NIEV disponível e funcionando!</p>';
+                if (data.success && data.address) {
+                    walletResultDiv.innerHTML = `
+                        <div class="bg-green-900 p-4 rounded">
+                            <p class="text-green-300 font-semibold mb-2">✅ Wallet Gerado com Sucesso!</p>
+                            <div class="space-y-2 text-sm">
+                                <div>
+                                    <p class="text-gray-300 font-medium">Endereço:</p>
+                                    <p class="font-mono bg-gray-800 p-2 rounded break-all">${data.address}</p>
+                                    <button onclick="copyToClipboard('${data.address}')" class="mt-1 text-blue-400 hover:text-blue-300 text-xs">
+                                        <i class="fas fa-copy"></i> Copiar
+                                    </button>
+                                </div>
+                                <div class="mt-3">
+                                    <p class="text-yellow-300 font-medium">⚠️ Chave Privada (TESTNET APENAS):</p>
+                                    <p class="font-mono bg-gray-800 p-2 rounded break-all text-xs">${data.private_key}</p>
+                                    <button onclick="copyToClipboard('${data.private_key}')" class="mt-1 text-blue-400 hover:text-blue-300 text-xs">
+                                        <i class="fas fa-copy"></i> Copiar
+                                    </button>
+                                    <p class="text-red-300 text-xs mt-2">${data.message}</p>
+                                </div>
+                                <div class="mt-3 bg-blue-900 p-3 rounded">
+                                    <p class="text-blue-200 font-medium mb-1">Instruções:</p>
+                                    <ul class="text-xs text-blue-100 space-y-1">
+                                        ${data.instructions.map(i => `<li>${i}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    // Preencher campo de endereço
+                    document.getElementById('address').value = data.address;
+                    // Copiar para clipboard
+                    navigator.clipboard.writeText(data.address);
                 } else {
-                    statusDiv.innerHTML = '<p class="text-red-400">❌ ALZ-NIEV não disponível</p>';
+                    walletResultDiv.innerHTML = `
+                        <div class="bg-red-900 p-4 rounded">
+                            <p class="text-red-300">❌ ${data.error}</p>
+                        </div>
+                    `;
                 }
             } catch (error) {
-                document.getElementById('status').innerHTML = '<p class="text-red-400">❌ Erro ao verificar status</p>';
+                walletResultDiv.innerHTML = `
+                    <div class="bg-red-900 p-4 rounded">
+                        <p class="text-red-300">❌ Erro: ${error.message}</p>
+                    </div>
+                `;
             }
+        });
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+            alert('Copiado para a área de transferência!');
         }
 
-        // Teste de execução cross-chain
-        async function testExecution() {
-            const sourceChain = document.getElementById('sourceChain').value;
-            const targetChain = document.getElementById('targetChain').value;
-            const functionName = document.getElementById('functionName').value;
-            const functionParamsText = document.getElementById('functionParams').value;
+        // Faucet Request
+        document.getElementById('faucetForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const address = document.getElementById('address').value;
+            const resultDiv = document.getElementById('result');
             
-            let functionParams = {};
-            try {
-                functionParams = JSON.parse(functionParamsText);
-            } catch (e) {
-                alert('Erro: Function Params deve ser JSON válido');
-                return;
-            }
-
-            const resultDiv = document.getElementById('executionResult');
-            const resultContent = document.getElementById('executionResultContent');
             resultDiv.classList.remove('hidden');
-            resultContent.textContent = '⏳ Executando...';
-
+            resultDiv.innerHTML = '<p class="text-blue-400">Processando...</p>';
+            
             try {
-                const response = await fetch('/api/alz-niev/execute', {
+                const response = await fetch('/api/faucet/request', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        source_chain: sourceChain,
-                        target_chain: targetChain,
-                        function_name: functionName,
-                        function_params: functionParams
-                    })
+                    body: JSON.stringify({address})
                 });
-
+                
                 const data = await response.json();
-                resultContent.textContent = JSON.stringify(data, null, 2);
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="bg-green-900 p-4 rounded">
+                            <p class="text-green-300 font-semibold">✅ ${data.message}</p>
+                            <div class="mt-3 bg-gray-700 p-3 rounded">
+                                <p class="text-sm mb-1"><strong>TX Hash:</strong></p>
+                                <p class="font-mono text-xs break-all">${data.tx_hash}</p>
+                                <div class="mt-2 flex gap-2">
+                                    <a href="/explorer" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-xs">
+                                        🔍 Ver no Explorer
+                                    </a>
+                                    <a href="/api/proofs/transaction/${data.tx_hash}?format=json" class="bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded text-xs">
+                                        📄 Baixar Prova
+                                    </a>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-300 mt-2">✅ Esta é uma transação REAL na testnet! Você pode verificar no explorer.</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="bg-red-900 p-4 rounded">
+                            <p class="text-red-300">❌ ${data.error}</p>
+                        </div>
+                    `;
+                }
             } catch (error) {
-                resultContent.textContent = `Erro: ${error.message}`;
+                resultDiv.innerHTML = `
+                    <div class="bg-red-900 p-4 rounded">
+                        <p class="text-red-300">❌ Erro: ${error.message}</p>
+                    </div>
+                `;
             }
-        }
-
-        // Teste de execução atômica
-        async function testAtomic() {
-            const chainsText = document.getElementById('atomicChains').value;
-            
-            let chains = [];
-            try {
-                chains = JSON.parse(chainsText);
-            } catch (e) {
-                alert('Erro: Chains deve ser JSON válido');
-                return;
-            }
-
-            const resultDiv = document.getElementById('atomicResult');
-            const resultContent = document.getElementById('atomicResultContent');
-            resultDiv.classList.remove('hidden');
-            resultContent.textContent = '⏳ Executando atomicamente...';
-
-            try {
-                const response = await fetch('/api/alz-niev/atomic', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ chains })
-                });
-
-                const data = await response.json();
-                resultContent.textContent = JSON.stringify(data, null, 2);
-            } catch (error) {
-                resultContent.textContent = `Erro: ${error.message}`;
-            }
-        }
-
-        // Verificar status ao carregar
-        checkStatus();
+        });
     </script>
 </body>
 </html>
-
-
-
 
