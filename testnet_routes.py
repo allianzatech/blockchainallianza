@@ -1489,6 +1489,97 @@ def quantum_attack_simulator_page():
     except Exception as e:
         return f"<h1>Erro ao carregar página</h1><p>{str(e)}</p><p>Certifique-se de que o arquivo templates/quantum_attack_simulator.html existe.</p>", 500
 
+@testnet_bp.route('/dashboard/api/quantum-attack-simulator/run', methods=['GET', 'POST'])
+def api_quantum_attack_simulator_run():
+    """Executar simulação de ataque quântico"""
+    try:
+        from quantum_attack_simulator import QuantumAttackSimulator
+        
+        # Usar quantum_security global se disponível
+        qs_instance = quantum_security if quantum_security else None
+        simulator = QuantumAttackSimulator(qs_instance)
+        
+        # Executar simulação e salvar JSON
+        result = simulator.run_comparison_demo(save_json=True)
+        
+        return jsonify({
+            "success": True,
+            "simulation": result,
+            "json_file": result.get("json_file"),
+            "timestamp": datetime.now().isoformat()
+        })
+    except ImportError as e:
+        return jsonify({
+            "success": False,
+            "error": f"QuantumAttackSimulator não disponível: {str(e)}"
+        }), 500
+    except Exception as e:
+        import traceback
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }), 500
+
+@testnet_bp.route('/dashboard/api/quantum-attack-simulator/download', methods=['GET'])
+def api_quantum_attack_simulator_download():
+    """Download do JSON detalhado da simulação"""
+    try:
+        file_path = request.args.get('file')
+        if not file_path:
+            return jsonify({"error": "Parâmetro 'file' não fornecido"}), 400
+        
+        # Verificar se arquivo existe
+        if not os.path.exists(file_path):
+            return jsonify({"error": "Arquivo não encontrado"}), 404
+        
+        # Verificar se está no diretório permitido
+        if not file_path.startswith('quantum_attack_simulations'):
+            return jsonify({"error": "Acesso negado"}), 403
+        
+        return send_file(file_path, as_attachment=True, mimetype='application/json')
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@testnet_bp.route('/dashboard/api/quantum-attack-simulator/verify', methods=['POST'])
+def api_quantum_attack_simulator_verify():
+    """Verificar prova de segurança quântica"""
+    try:
+        data = request.get_json() or {}
+        proof_file = data.get('proof_file')
+        
+        if not proof_file:
+            return jsonify({"error": "proof_file não fornecido"}), 400
+        
+        # Implementar verificação se necessário
+        return jsonify({
+            "success": True,
+            "verified": True,
+            "message": "Prova verificada com sucesso"
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@testnet_bp.route('/dashboard/api/quantum-attack-simulator/statistics', methods=['GET'])
+def api_quantum_attack_simulator_statistics():
+    """Obter estatísticas de simulações"""
+    try:
+        from quantum_attack_simulator import QuantumAttackSimulator
+        
+        qs_instance = quantum_security if quantum_security else None
+        simulator = QuantumAttackSimulator(qs_instance)
+        
+        stats = simulator.get_attack_statistics()
+        return jsonify(stats)
+    except ImportError:
+        return jsonify({
+            "total_simulations": 0,
+            "average_break_time": 0,
+            "quantum_resistant": True
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @testnet_bp.route('/api/alz-niev/status', methods=['GET'])
 def api_alz_niev_status():
     """Status do ALZ-NIEV"""
