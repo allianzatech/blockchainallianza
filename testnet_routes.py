@@ -1481,6 +1481,14 @@ def api_alz_niev_atomic():
             "error": str(e)
         }), 500
 
+@testnet_bp.route('/dashboard/quantum-attack-simulator', methods=['GET'])
+def quantum_attack_simulator_page():
+    """Página do simulador de ataque quântico"""
+    try:
+        return render_template('quantum_attack_simulator.html')
+    except Exception as e:
+        return f"<h1>Erro ao carregar página</h1><p>{str(e)}</p><p>Certifique-se de que o arquivo templates/quantum_attack_simulator.html existe.</p>", 500
+
 @testnet_bp.route('/api/alz-niev/status', methods=['GET'])
 def api_alz_niev_status():
     """Status do ALZ-NIEV"""

@@ -2101,9 +2101,50 @@ def api_run_all_tests():
     results = professional_suite.run_all_tests()
     return jsonify(results)
 
+@professional_tests_bp.route('/api/run-test', methods=['POST'])
+def api_run_test():
+    """Executar teste específico (aceita test_id no body)"""
+    if not professional_suite:
+        return jsonify({"error": "Professional Test Suite não inicializada"}), 500
+    
+    data = request.get_json() or {}
+    test_id = data.get('test_id')
+    
+    if not test_id:
+        return jsonify({"error": "test_id não fornecido"}), 400
+    
+    test_methods = {
+        "1_1_pqc_key_generation": professional_suite.test_1_1_pqc_key_generation,
+        "1_2_qrs3_signature": professional_suite.test_1_2_qrs3_signature,
+        "1_3_pqc_audit_verification": professional_suite.test_1_3_pqc_audit_verification,
+        "2_1_proof_of_lock": professional_suite.test_2_1_proof_of_lock,
+        "2_2_gasless_interoperability": professional_suite.test_2_2_gasless_interoperability,
+        "2_3_bitcoin_evm_conversion": professional_suite.test_2_3_bitcoin_evm_conversion,
+        "3_quantum_attack": professional_suite.test_3_quantum_attack_simulation,
+        "4_1_consensus": professional_suite.test_4_1_consensus,
+        "4_2_node_sync": professional_suite.test_4_2_node_sync,
+        "4_3_transactions": professional_suite.test_4_3_transactions,
+        "5_smart_contracts": professional_suite.test_5_smart_contracts,
+        "6_infrastructure": professional_suite.test_6_infrastructure,
+        "7_auditor_tests": professional_suite.test_7_auditor_tests,
+        "8_1_fhe": professional_suite.test_8_1_fhe,
+        "8_2_qr_did": professional_suite.test_8_2_qr_did,
+        "8_3_wormhole_prevention": professional_suite.test_8_3_wormhole_prevention,
+        "8_optional_tests": professional_suite.test_8_optional_tests
+    }
+    
+    if test_id not in test_methods:
+        return jsonify({"error": f"Teste '{test_id}' não encontrado"}), 404
+    
+    try:
+        result = test_methods[test_id]()
+        return jsonify({"success": True, **result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @professional_tests_bp.route('/api/run/<test_id>', methods=['POST'])
-def api_run_test(test_id):
-    """Executar teste específico"""
+def api_run_test_by_path(test_id):
+    """Executar teste específico (aceita test_id no path)"""
     if not professional_suite:
         return jsonify({"error": "Professional Test Suite não inicializada"}), 500
     
@@ -2123,6 +2164,7 @@ def api_run_test(test_id):
         "7_auditor_tests": professional_suite.test_7_auditor_tests,
         "8_1_fhe": professional_suite.test_8_1_fhe,
         "8_2_qr_did": professional_suite.test_8_2_qr_did,
+        "8_3_wormhole_prevention": professional_suite.test_8_3_wormhole_prevention,
         "8_optional_tests": professional_suite.test_8_optional_tests
     }
     
@@ -2131,9 +2173,9 @@ def api_run_test(test_id):
     
     try:
         result = test_methods[test_id]()
-        return jsonify(result)
+        return jsonify({"success": True, **result})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @professional_tests_bp.route('/api/results/<test_id>')
 def api_get_results(test_id):
