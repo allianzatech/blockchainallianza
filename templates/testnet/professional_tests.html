@@ -119,10 +119,10 @@
                         <h3 class="text-xl font-semibold mb-2">2.2. Gasless Interoperability</h3>
                         <p class="text-sm text-gray-400 mb-4">Fee patrocinado, Replay protection</p>
                         <div class="mb-4">
-                            <div class="text-sm text-gray-300" id="test-2-2-status">⚠️ Em desenvolvimento</div>
+                            <div class="text-sm text-gray-300" id="test-2-2-status">⏳ Não executado</div>
                         </div>
-                        <button onclick="runTest('2_2_gasless_interoperability')" class="w-full bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded" disabled>
-                            Em desenvolvimento
+                        <button onclick="runTest('2_2_gasless_interoperability')" class="w-full bg-orange-600 hover:bg-orange-700 px-4 py-2 rounded">
+                            Executar
                         </button>
                     </div>
                     <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-orange-500">
@@ -163,20 +163,20 @@
                         <h3 class="text-xl font-semibold mb-2">4.1. Consenso</h3>
                         <p class="text-sm text-gray-400 mb-4">PBFT, Latência, Throughput</p>
                         <div class="mb-4">
-                            <div class="text-sm text-gray-300">⚠️ Em desenvolvimento</div>
+                            <div class="text-sm text-gray-300" id="test-4-1-status">⏳ Não executado</div>
                         </div>
-                        <button class="w-full bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded" disabled>
-                            Em desenvolvimento
+                        <button onclick="runTest('4_1_consensus')" class="w-full bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded">
+                            Executar
                         </button>
                     </div>
                     <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-yellow-500">
                         <h3 class="text-xl font-semibold mb-2">4.2. Sincronização de Nós</h3>
                         <p class="text-sm text-gray-400 mb-4">Full/Pruned/Light nodes</p>
                         <div class="mb-4">
-                            <div class="text-sm text-gray-300">⚠️ Em desenvolvimento</div>
+                            <div class="text-sm text-gray-300" id="test-4-2-status">⏳ Não executado</div>
                         </div>
-                        <button class="w-full bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded" disabled>
-                            Em desenvolvimento
+                        <button onclick="runTest('4_2_node_sync')" class="w-full bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded">
+                            Executar
                         </button>
                     </div>
                     <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-yellow-500">
@@ -200,10 +200,10 @@
                         <h3 class="text-xl font-semibold mb-2">5. Smart Contracts</h3>
                         <p class="text-sm text-gray-400 mb-4">Execução ALZ-NIEV, Replay Attack, Fraude</p>
                         <div class="mb-4">
-                            <div class="text-sm text-gray-300">⚠️ Em desenvolvimento (Fase 2)</div>
+                            <div class="text-sm text-gray-300" id="test-5-status">⏳ Não executado</div>
                         </div>
-                        <button class="w-full bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded" disabled>
-                            Em desenvolvimento
+                        <button onclick="runTest('5_smart_contracts')" class="w-full bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded">
+                            Executar
                         </button>
                     </div>
                 </div>
@@ -265,8 +265,11 @@
                         <h3 class="text-xl font-semibold mb-2">8.3. Wormhole Prevention</h3>
                         <p class="text-sm text-gray-400 mb-4">Prevenção de exploits</p>
                         <div class="mb-4">
-                            <div class="text-sm text-gray-300">⚠️ Em desenvolvimento</div>
+                            <div class="text-sm text-gray-300" id="test-8-3-status">⏳ Não executado</div>
                         </div>
+                        <button onclick="runTest('8_optional_tests')" class="w-full bg-cyan-600 hover:bg-cyan-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
                     </div>
                 </div>
             </div>
@@ -288,7 +291,12 @@
 
     <script>
         async function runTest(testId) {
-            const statusEl = document.getElementById(`test-${testId.replace(/_/g, '-')}-status`);
+            // Mapear IDs especiais
+            const statusIdMap = {
+                '8_optional_tests': 'test-8-3-status'
+            };
+            const statusId = statusIdMap[testId] || `test-${testId.replace(/_/g, '-')}-status`;
+            const statusEl = document.getElementById(statusId);
             if (statusEl) {
                 statusEl.textContent = '🔄 Executando...';
                 statusEl.parentElement.parentElement.classList.add('test-running');
