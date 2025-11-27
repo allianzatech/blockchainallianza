@@ -151,7 +151,9 @@ class ProfessionalTestSuite:
             # Teste ML-DSA-128
             if self.pqc_manager:
                 try:
-                    keypair_result = self.pqc_manager.generate_ml_dsa_keypair()
+                    import time
+                    key_id = f"ml_dsa_test_{int(time.time())}"
+                    keypair_result = self.pqc_manager.generate_ml_dsa_keypair(key_id=key_id)
                     if isinstance(keypair_result, dict):
                         ml_dsa_pub = keypair_result.get("public_key", "")
                         ml_dsa_priv = keypair_result.get("private_key", "")
@@ -273,14 +275,16 @@ class ProfessionalTestSuite:
             # Assinatura ML-DSA
             if self.pqc_manager:
                 try:
-                    keypair_result = self.pqc_manager.generate_ml_dsa_keypair()
+                    import time
+                    key_id = f"ml_dsa_qrs3_{int(time.time())}"
+                    keypair_result = self.pqc_manager.generate_ml_dsa_keypair(key_id=key_id)
                     if isinstance(keypair_result, dict):
                         ml_dsa_pub = keypair_result.get("public_key", "")
                         ml_dsa_priv = keypair_result.get("private_key", "")
-                        key_id = keypair_result.get("keypair_id", "test_key")
+                        if not keypair_result.get("keypair_id"):
+                            keypair_result["keypair_id"] = key_id
                     else:
                         ml_dsa_pub, ml_dsa_priv = keypair_result
-                        key_id = "test_key"
                     
                     sig_result = self.pqc_manager.sign_ml_dsa(key_id, payload_hash.encode())
                     if isinstance(sig_result, dict):
@@ -311,10 +315,15 @@ class ProfessionalTestSuite:
             if self.quantum_security:
                 try:
                     sphincs_keypair = self.quantum_security.generate_sphincs_keypair("test_qrs3")
-                    sphincs_sig = self.quantum_security.sign_sphincs(
-                        payload_hash,
-                        "test_qrs3"
+                    sphincs_keypair_id = sphincs_keypair.get("keypair_id", "test_qrs3")
+                    sig_result = self.quantum_security.sign_with_sphincs(
+                        sphincs_keypair_id,
+                        payload_hash.encode()
                     )
+                    if isinstance(sig_result, dict) and sig_result.get("success"):
+                        sphincs_sig = sig_result.get("signature", "")
+                    else:
+                        raise Exception(f"Erro ao assinar com SPHINCS+: {sig_result.get('error', 'Unknown error')}")
                     
                     results["signatures"]["sphincs"] = {
                         "algorithm": "SPHINCS+ SHA2-128s",
@@ -392,14 +401,16 @@ class ProfessionalTestSuite:
             log_hash = hashlib.sha256(log_json.encode()).hexdigest()
             
             if self.pqc_manager:
-                keypair_result = self.pqc_manager.generate_ml_dsa_keypair()
+                import time
+                key_id = f"audit_key_{int(time.time())}"
+                keypair_result = self.pqc_manager.generate_ml_dsa_keypair(key_id=key_id)
                 if isinstance(keypair_result, dict):
                     pub_key = keypair_result.get("public_key", "")
                     priv_key = keypair_result.get("private_key", "")
-                    key_id = keypair_result.get("keypair_id", "audit_key")
+                    if not keypair_result.get("keypair_id"):
+                        keypair_result["keypair_id"] = key_id
                 else:
                     pub_key, priv_key = keypair_result
-                    key_id = "audit_key"
                 
                 sig_result = self.pqc_manager.sign_ml_dsa(key_id, log_hash.encode())
                 if isinstance(sig_result, dict):
@@ -551,11 +562,14 @@ class ProfessionalTestSuite:
             if self.pqc_manager:
                 bundle_json = json.dumps(bundle, sort_keys=True)
                 bundle_hash = hashlib.sha256(bundle_json.encode()).hexdigest()
-                keypair_result = self.pqc_manager.generate_ml_dsa_keypair()
+                import time
+                key_id = f"bundle_key_{int(time.time())}"
+                keypair_result = self.pqc_manager.generate_ml_dsa_keypair(key_id=key_id)
                 if isinstance(keypair_result, dict):
                     pub_key = keypair_result.get("public_key", "")
                     priv_key = keypair_result.get("private_key", "")
-                    key_id = keypair_result.get("keypair_id", "bundle_key")
+                    if not keypair_result.get("keypair_id"):
+                        keypair_result["keypair_id"] = key_id
                 else:
                     pub_key, priv_key = keypair_result
                     key_id = "bundle_key"
