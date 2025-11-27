@@ -2247,43 +2247,61 @@ def api_run_all_tests():
 @professional_tests_bp.route('/api/run-test', methods=['POST'])
 def api_run_test():
     """Executar teste específico (aceita test_id no body)"""
-    if not professional_suite:
-        return jsonify({"error": "Professional Test Suite não inicializada"}), 500
-    
-    data = request.get_json() or {}
-    test_id = data.get('test_id')
-    
-    if not test_id:
-        return jsonify({"error": "test_id não fornecido"}), 400
-    
-    test_methods = {
-        "1_1_pqc_key_generation": professional_suite.test_1_1_pqc_key_generation,
-        "1_2_qrs3_signature": professional_suite.test_1_2_qrs3_signature,
-        "1_3_pqc_audit_verification": professional_suite.test_1_3_pqc_audit_verification,
-        "2_1_proof_of_lock": professional_suite.test_2_1_proof_of_lock,
-        "2_2_gasless_interoperability": professional_suite.test_2_2_gasless_interoperability,
-        "2_3_bitcoin_evm_conversion": professional_suite.test_2_3_bitcoin_evm_conversion,
-        "3_quantum_attack": professional_suite.test_3_quantum_attack_simulation,
-        "4_1_consensus": professional_suite.test_4_1_consensus,
-        "4_2_node_sync": professional_suite.test_4_2_node_sync,
-        "4_3_transactions": professional_suite.test_4_3_transactions,
-        "5_smart_contracts": professional_suite.test_5_smart_contracts,
-        "6_infrastructure": professional_suite.test_6_infrastructure,
-        "7_auditor_tests": professional_suite.test_7_auditor_tests,
-        "8_1_fhe": professional_suite.test_8_1_fhe,
-        "8_2_qr_did": professional_suite.test_8_2_qr_did,
-        "8_3_wormhole_prevention": professional_suite.test_8_3_wormhole_prevention,
-        "8_optional_tests": professional_suite.test_8_optional_tests
-    }
-    
-    if test_id not in test_methods:
-        return jsonify({"error": f"Teste '{test_id}' não encontrado"}), 404
-    
     try:
-        result = test_methods[test_id]()
-        return jsonify({"success": True, **result})
+        if not professional_suite:
+            return jsonify({"success": False, "error": "Professional Test Suite não inicializada"}), 500
+        
+        # Garantir que o request é JSON
+        if not request.is_json:
+            return jsonify({"success": False, "error": "Content-Type deve ser application/json"}), 400
+        
+        data = request.get_json() or {}
+        test_id = data.get('test_id')
+        
+        if not test_id:
+            return jsonify({"success": False, "error": "test_id não fornecido"}), 400
+        
+        test_methods = {
+            "1_1_pqc_key_generation": professional_suite.test_1_1_pqc_key_generation,
+            "1_2_qrs3_signature": professional_suite.test_1_2_qrs3_signature,
+            "1_3_pqc_audit_verification": professional_suite.test_1_3_pqc_audit_verification,
+            "2_1_proof_of_lock": professional_suite.test_2_1_proof_of_lock,
+            "2_2_gasless_interoperability": professional_suite.test_2_2_gasless_interoperability,
+            "2_3_bitcoin_evm_conversion": professional_suite.test_2_3_bitcoin_evm_conversion,
+            "3_quantum_attack": professional_suite.test_3_quantum_attack_simulation,
+            "4_1_consensus": professional_suite.test_4_1_consensus,
+            "4_2_node_sync": professional_suite.test_4_2_node_sync,
+            "4_3_transactions": professional_suite.test_4_3_transactions,
+            "5_smart_contracts": professional_suite.test_5_smart_contracts,
+            "6_infrastructure": professional_suite.test_6_infrastructure,
+            "7_auditor_tests": professional_suite.test_7_auditor_tests,
+            "8_1_fhe": professional_suite.test_8_1_fhe,
+            "8_2_qr_did": professional_suite.test_8_2_qr_did,
+            "8_3_wormhole_prevention": professional_suite.test_8_3_wormhole_prevention,
+            "8_optional_tests": professional_suite.test_8_optional_tests
+        }
+        
+        if test_id not in test_methods:
+            return jsonify({"success": False, "error": f"Teste '{test_id}' não encontrado"}), 404
+        
+        # Verificar se o método existe
+        test_method = test_methods[test_id]
+        if not callable(test_method):
+            return jsonify({"success": False, "error": f"Método '{test_id}' não é callable"}), 500
+        
+        result = test_method()
+        # Garantir que o resultado é um dict válido
+        if not isinstance(result, dict):
+            result = {"error": "Resultado inválido do teste", "raw_result": str(result)}
+        # Garantir que sempre retorna JSON válido
+        return jsonify({"success": result.get("success", False), **result})
+    except AttributeError as e:
+        # Método não existe
+        return jsonify({"success": False, "error": f"Método não encontrado: {str(e)}"}), 500
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        import traceback
+        error_trace = traceback.format_exc()
+        return jsonify({"success": False, "error": str(e), "traceback": error_trace}), 500
 
 @professional_tests_bp.route('/api/run/<test_id>', methods=['POST'])
 def api_run_test_by_path(test_id):
@@ -2291,8 +2309,8 @@ def api_run_test_by_path(test_id):
     try:
         if not professional_suite:
             return jsonify({"success": False, "error": "Professional Test Suite não inicializada"}), 500
-    
-    test_methods = {
+        
+        test_methods = {
         "1_1_pqc_key_generation": professional_suite.test_1_1_pqc_key_generation,
         "1_2_qrs3_signature": professional_suite.test_1_2_qrs3_signature,
         "1_3_pqc_audit_verification": professional_suite.test_1_3_pqc_audit_verification,
