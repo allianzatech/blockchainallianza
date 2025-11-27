@@ -819,7 +819,10 @@ def api_stream_public_tests():
 def interoperability_dashboard_route():
     """Dashboard de interoperabilidade - Agora usando ALZ-NIEV"""
     if not alz_niev:
-        return jsonify({"error": "ALZ-NIEV não inicializado"}), 500
+        # Retornar página amigável ao invés de erro 500
+        return render_template('testnet/interoperability.html',
+                             alz_niev_available=False,
+                             error_message="ALZ-NIEV não está disponível no momento. O módulo pkg_resources não foi encontrado."), 200
     
     return render_template('testnet/interoperability.html',
                          alz_niev_available=True)
