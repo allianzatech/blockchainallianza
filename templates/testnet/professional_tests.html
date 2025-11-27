@@ -251,15 +251,21 @@
                         <h3 class="text-xl font-semibold mb-2">8.1. FHE</h3>
                         <p class="text-sm text-gray-400 mb-4">Criptografia Homomórfica</p>
                         <div class="mb-4">
-                            <div class="text-sm text-gray-300">✅ PoC implementado</div>
+                            <div class="text-sm text-gray-300" id="test-8-1-status">⏳ Não executado</div>
                         </div>
+                        <button onclick="runTest('8_1_fhe')" class="w-full bg-cyan-600 hover:bg-cyan-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
                     </div>
                     <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-cyan-500">
                         <h3 class="text-xl font-semibold mb-2">8.2. QR-DID</h3>
                         <p class="text-sm text-gray-400 mb-4">Identidade Quântico-Segura</p>
                         <div class="mb-4">
-                            <div class="text-sm text-gray-300">✅ Implementado</div>
+                            <div class="text-sm text-gray-300" id="test-8-2-status">⏳ Não executado</div>
                         </div>
+                        <button onclick="runTest('8_2_qr_did')" class="w-full bg-cyan-600 hover:bg-cyan-700 px-4 py-2 rounded">
+                            Executar
+                        </button>
                     </div>
                     <div class="test-card bg-gray-800 p-6 rounded-lg border-2 border-cyan-500">
                         <h3 class="text-xl font-semibold mb-2">8.3. Wormhole Prevention</h3>
@@ -293,7 +299,9 @@
         async function runTest(testId) {
             // Mapear IDs especiais
             const statusIdMap = {
-                '8_optional_tests': 'test-8-3-status'
+                '8_optional_tests': 'test-8-3-status',
+                '8_1_fhe': 'test-8-1-status',
+                '8_2_qr_did': 'test-8-2-status'
             };
             const statusId = statusIdMap[testId] || `test-${testId.replace(/_/g, '-')}-status`;
             const statusEl = document.getElementById(statusId);
