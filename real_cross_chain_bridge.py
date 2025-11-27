@@ -1037,7 +1037,16 @@ class RealCrossChainBridge:
                 else:
                     tx_hash = w3.eth.send_raw_transaction(raw_tx)
                 
-                tx_hash_hex = tx_hash.hex()
+                # Garantir que o hash sempre tenha prefixo 0x para EVM chains
+                if isinstance(tx_hash, bytes):
+                    tx_hash_hex = '0x' + tx_hash.hex()
+                elif isinstance(tx_hash, str):
+                    tx_hash_hex = tx_hash if tx_hash.startswith('0x') else '0x' + tx_hash
+                else:
+                    # Web3 retorna HexBytes, converter para string com 0x
+                    tx_hash_hex = tx_hash.hex() if hasattr(tx_hash, 'hex') else str(tx_hash)
+                    if not tx_hash_hex.startswith('0x'):
+                        tx_hash_hex = '0x' + tx_hash_hex
                 print(f"✅ send_raw_transaction retornou hash: {tx_hash_hex}")
                 
                 # Armazenar assinatura quântica com hash final da transação (se disponível)
@@ -3310,25 +3319,66 @@ class RealCrossChainBridge:
                 # Obter private key
                 if not source_private_key:
                     if source_chain == "polygon":
-                        source_private_key = os.getenv('POLYGON_PRIVATE_KEY') or os.getenv('POLYGON_MASTER_PRIVATE_KEY')
+                        source_private_key = (
+                            os.getenv('POLYGON_PRIVATE_KEY') or 
+                            os.getenv('REAL_POLY_PRIVATE_KEY') or 
+                            os.getenv('POLYGON_MASTER_PRIVATE_KEY')
+                        )
                     elif source_chain == "bsc":
-                        source_private_key = os.getenv('BSC_PRIVATE_KEY') or os.getenv('POLYGON_PRIVATE_KEY') or os.getenv('POLYGON_MASTER_PRIVATE_KEY')
+                        source_private_key = (
+                            os.getenv('BSC_PRIVATE_KEY') or 
+                            os.getenv('POLYGON_PRIVATE_KEY') or 
+                            os.getenv('REAL_POLY_PRIVATE_KEY') or 
+                            os.getenv('POLYGON_MASTER_PRIVATE_KEY')
+                        )
                     elif source_chain == "ethereum":
-                        source_private_key = os.getenv('ETH_PRIVATE_KEY') or os.getenv('POLYGON_PRIVATE_KEY') or os.getenv('POLYGON_MASTER_PRIVATE_KEY')
+                        source_private_key = (
+                            os.getenv('ETH_PRIVATE_KEY') or 
+                            os.getenv('REAL_ETH_PRIVATE_KEY') or 
+                            os.getenv('POLYGON_PRIVATE_KEY') or 
+                            os.getenv('REAL_POLY_PRIVATE_KEY') or 
+                            os.getenv('POLYGON_MASTER_PRIVATE_KEY')
+                        )
                     elif source_chain == "base":
-                        source_private_key = os.getenv('BASE_PRIVATE_KEY') or os.getenv('POLYGON_PRIVATE_KEY') or os.getenv('POLYGON_MASTER_PRIVATE_KEY')
+                        source_private_key = (
+                            os.getenv('BASE_PRIVATE_KEY') or 
+                            os.getenv('POLYGON_PRIVATE_KEY') or 
+                            os.getenv('REAL_POLY_PRIVATE_KEY') or 
+                            os.getenv('POLYGON_MASTER_PRIVATE_KEY')
+                        )
                 
                 # Normalizar private key (adicionar 0x se não tiver)
                 if source_private_key:
                     source_private_key = source_private_key.strip()
-                    if not source_private_key.startswith('0x'):
+                    # Verificar se não está vazia após strip
+                    if not source_private_key:
+                        source_private_key = None
+                    elif not source_private_key.startswith('0x'):
                         source_private_key = '0x' + source_private_key
                 
                 if not source_private_key:
+                    # Verificar valores reais das variáveis (para debug)
+                    poly_key = os.getenv('POLYGON_PRIVATE_KEY', '').strip()
+                    real_poly_key = os.getenv('REAL_POLY_PRIVATE_KEY', '').strip()
+                    poly_master_key = os.getenv('POLYGON_MASTER_PRIVATE_KEY', '').strip()
+                    
                     return {
                         "success": False,
                         "error": f"Private key não configurada para {source_chain}",
-                        "note": f"Configure {source_chain.upper()}_PRIVATE_KEY ou POLYGON_PRIVATE_KEY no .env"
+                        "note": f"Configure {source_chain.upper()}_PRIVATE_KEY, REAL_{source_chain.upper()}_PRIVATE_KEY ou POLYGON_PRIVATE_KEY no .env",
+                        "debug": {
+                            "POLYGON_PRIVATE_KEY": f"✅ configurado ({len(poly_key)} chars)" if poly_key else "❌ não configurado ou vazio",
+                            "REAL_POLY_PRIVATE_KEY": f"✅ configurado ({len(real_poly_key)} chars)" if real_poly_key else "❌ não configurado ou vazio",
+                            "POLYGON_MASTER_PRIVATE_KEY": f"✅ configurado ({len(poly_master_key)} chars)" if poly_master_key else "❌ não configurado ou vazio",
+                            "source_chain": source_chain,
+                            "tested_variables": [
+                                f"{source_chain.upper()}_PRIVATE_KEY",
+                                f"REAL_{source_chain.upper()}_PRIVATE_KEY",
+                                "POLYGON_PRIVATE_KEY",
+                                "REAL_POLY_PRIVATE_KEY",
+                                "POLYGON_MASTER_PRIVATE_KEY"
+                            ]
+                        }
                     }
                 
                 # Endereço de bridge na chain de origem (em produção seria contrato)
