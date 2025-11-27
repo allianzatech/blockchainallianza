@@ -544,10 +544,18 @@ class TestnetInteroperability:
                                 if isinstance(source_tx_hash, dict):
                                     source_tx_hash = source_tx_hash.get("tx_hash") or source_tx_hash.get("txid") or source_tx_hash.get("hash")
                             
-                            # Remover prefixo 0x de hash Bitcoin se presente
-                            if source_tx_hash and source_chain.lower() == "bitcoin" and source_tx_hash.startswith("0x"):
-                                source_tx_hash = source_tx_hash[2:]  # Remover 0x
-                                print(f"⚠️  Removido prefixo 0x do hash Bitcoin: {source_tx_hash}")
+                            # Garantir formato correto do hash baseado na chain
+                            if source_tx_hash:
+                                if source_chain.lower() == "bitcoin":
+                                    # Bitcoin: remover 0x se presente (Bitcoin não usa 0x)
+                                    if source_tx_hash.startswith("0x"):
+                                        source_tx_hash = source_tx_hash[2:]
+                                        print(f"⚠️  Removido prefixo 0x do hash Bitcoin: {source_tx_hash}")
+                                elif source_chain.lower() in ["polygon", "ethereum", "bsc", "base"]:
+                                    # EVM chains: garantir que sempre tenha 0x
+                                    if not source_tx_hash.startswith("0x"):
+                                        source_tx_hash = "0x" + source_tx_hash
+                                        print(f"✅ Adicionado prefixo 0x ao hash {source_chain}: {source_tx_hash}")
                             
                             target_tx_hash = None
                             if isinstance(target_transaction, dict):
@@ -566,10 +574,18 @@ class TestnetInteroperability:
                                 if isinstance(target_tx_hash, dict):
                                     target_tx_hash = target_tx_hash.get("tx_hash") or target_tx_hash.get("txid") or target_tx_hash.get("hash")
                             
-                            # Remover prefixo 0x de hash Bitcoin se presente
-                            if target_tx_hash and target_chain.lower() == "bitcoin" and target_tx_hash.startswith("0x"):
-                                target_tx_hash = target_tx_hash[2:]  # Remover 0x
-                                print(f"⚠️  Removido prefixo 0x do hash Bitcoin: {target_tx_hash}")
+                            # Garantir formato correto do hash baseado na chain
+                            if target_tx_hash:
+                                if target_chain.lower() == "bitcoin":
+                                    # Bitcoin: remover 0x se presente (Bitcoin não usa 0x)
+                                    if target_tx_hash.startswith("0x"):
+                                        target_tx_hash = target_tx_hash[2:]
+                                        print(f"⚠️  Removido prefixo 0x do hash Bitcoin: {target_tx_hash}")
+                                elif target_chain.lower() in ["polygon", "ethereum", "bsc", "base"]:
+                                    # EVM chains: garantir que sempre tenha 0x
+                                    if not target_tx_hash.startswith("0x"):
+                                        target_tx_hash = "0x" + target_tx_hash
+                                        print(f"✅ Adicionado prefixo 0x ao hash {target_chain}: {target_tx_hash}")
                             
                             print(f"🔗 Source TX Hash extraído: {source_tx_hash}")
                             print(f"🔗 Target TX Hash extraído: {target_tx_hash}")
