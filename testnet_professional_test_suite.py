@@ -151,7 +151,6 @@ class ProfessionalTestSuite:
             # Teste ML-DSA-128
             if self.pqc_manager:
                 try:
-                    import time
                     key_id = f"ml_dsa_test_{int(time.time())}"
                     keypair_result = self.pqc_manager.generate_ml_dsa_keypair(key_id=key_id)
                     if isinstance(keypair_result, dict):
@@ -275,7 +274,6 @@ class ProfessionalTestSuite:
             # Assinatura ML-DSA
             if self.pqc_manager:
                 try:
-                    import time
                     key_id = f"ml_dsa_qrs3_{int(time.time())}"
                     keypair_result = self.pqc_manager.generate_ml_dsa_keypair(key_id=key_id)
                     if isinstance(keypair_result, dict):
@@ -401,7 +399,6 @@ class ProfessionalTestSuite:
             log_hash = hashlib.sha256(log_json.encode()).hexdigest()
             
             if self.pqc_manager:
-                import time
                 key_id = f"audit_key_{int(time.time())}"
                 keypair_result = self.pqc_manager.generate_ml_dsa_keypair(key_id=key_id)
                 if isinstance(keypair_result, dict):
@@ -562,7 +559,6 @@ class ProfessionalTestSuite:
             if self.pqc_manager:
                 bundle_json = json.dumps(bundle, sort_keys=True)
                 bundle_hash = hashlib.sha256(bundle_json.encode()).hexdigest()
-                import time
                 key_id = f"bundle_key_{int(time.time())}"
                 keypair_result = self.pqc_manager.generate_ml_dsa_keypair(key_id=key_id)
                 if isinstance(keypair_result, dict):
