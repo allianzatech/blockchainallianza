@@ -1340,12 +1340,6 @@ def api_download_qrs3_proof(proof_id):
             "error": f"Erro: {str(e)}",
             "traceback": traceback.format_exc()
         }), 500
-    
-    except Exception as e:
-        return jsonify({
-            "success": False,
-            "error": f"Erro interno: {str(e)}"
-        }), 500
 
 
 # =============================================================================
