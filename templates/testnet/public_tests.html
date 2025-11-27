@@ -99,17 +99,27 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({test_name: testName})
             })
-            .then(r => r.json())
+            .then(async r => {
+                // Verificar se a resposta é JSON
+                const contentType = r.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await r.text();
+                    throw new Error(`Resposta não é JSON. Status: ${r.status}. Resposta: ${text.substring(0, 200)}`);
+                }
+                return r.json();
+            })
             .then(data => {
                 if (data.success) {
                     addLog(`✅ Teste ${testName} concluído!`, 'success');
                     displayResult(data);
                 } else {
-                    addLog(`❌ Erro: ${data.error}`, 'error');
+                    addLog(`❌ Erro: ${data.error || 'Erro desconhecido'}`, 'error');
+                    displayResult(data);
                 }
             })
             .catch(e => {
                 addLog(`❌ Erro: ${e.message}`, 'error');
+                console.error('Erro completo:', e);
             });
         }
 
@@ -126,17 +136,27 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({})
             })
-            .then(r => r.json())
+            .then(async r => {
+                // Verificar se a resposta é JSON
+                const contentType = r.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await r.text();
+                    throw new Error(`Resposta não é JSON. Status: ${r.status}. Resposta: ${text.substring(0, 200)}`);
+                }
+                return r.json();
+            })
             .then(data => {
                 if (data.success) {
-                    addLog(`✅ Todos os testes concluídos! Taxa de sucesso: ${data.success_rate_percent}%`, 'success');
+                    addLog(`✅ Todos os testes concluídos! Taxa de sucesso: ${data.success_rate_percent || 0}%`, 'success');
                     displaySummary(data);
                 } else {
-                    addLog(`❌ Alguns testes falharam`, 'error');
+                    addLog(`❌ Alguns testes falharam: ${data.error || 'Erro desconhecido'}`, 'error');
+                    if (data) displaySummary(data);
                 }
             })
             .catch(e => {
                 addLog(`❌ Erro: ${e.message}`, 'error');
+                console.error('Erro completo:', e);
             })
             .finally(() => {
                 btn.disabled = false;
