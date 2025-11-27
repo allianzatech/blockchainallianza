@@ -2311,25 +2311,25 @@ def api_run_test_by_path(test_id):
             return jsonify({"success": False, "error": "Professional Test Suite não inicializada"}), 500
         
         test_methods = {
-        "1_1_pqc_key_generation": professional_suite.test_1_1_pqc_key_generation,
-        "1_2_qrs3_signature": professional_suite.test_1_2_qrs3_signature,
-        "1_3_pqc_audit_verification": professional_suite.test_1_3_pqc_audit_verification,
-        "2_1_proof_of_lock": professional_suite.test_2_1_proof_of_lock,
-        "2_2_gasless_interoperability": professional_suite.test_2_2_gasless_interoperability,
-        "2_3_bitcoin_evm_conversion": professional_suite.test_2_3_bitcoin_evm_conversion,
-        "3_quantum_attack": professional_suite.test_3_quantum_attack_simulation,
-        "4_1_consensus": professional_suite.test_4_1_consensus,
-        "4_2_node_sync": professional_suite.test_4_2_node_sync,
-        "4_3_transactions": professional_suite.test_4_3_transactions,
-        "5_smart_contracts": professional_suite.test_5_smart_contracts,
-        "6_infrastructure": professional_suite.test_6_infrastructure,
-        "7_auditor_tests": professional_suite.test_7_auditor_tests,
-        "8_1_fhe": professional_suite.test_8_1_fhe,
-        "8_2_qr_did": professional_suite.test_8_2_qr_did,
-        "8_3_wormhole_prevention": professional_suite.test_8_3_wormhole_prevention,
-        "8_optional_tests": professional_suite.test_8_optional_tests
-    }
-    
+            "1_1_pqc_key_generation": professional_suite.test_1_1_pqc_key_generation,
+            "1_2_qrs3_signature": professional_suite.test_1_2_qrs3_signature,
+            "1_3_pqc_audit_verification": professional_suite.test_1_3_pqc_audit_verification,
+            "2_1_proof_of_lock": professional_suite.test_2_1_proof_of_lock,
+            "2_2_gasless_interoperability": professional_suite.test_2_2_gasless_interoperability,
+            "2_3_bitcoin_evm_conversion": professional_suite.test_2_3_bitcoin_evm_conversion,
+            "3_quantum_attack": professional_suite.test_3_quantum_attack_simulation,
+            "4_1_consensus": professional_suite.test_4_1_consensus,
+            "4_2_node_sync": professional_suite.test_4_2_node_sync,
+            "4_3_transactions": professional_suite.test_4_3_transactions,
+            "5_smart_contracts": professional_suite.test_5_smart_contracts,
+            "6_infrastructure": professional_suite.test_6_infrastructure,
+            "7_auditor_tests": professional_suite.test_7_auditor_tests,
+            "8_1_fhe": professional_suite.test_8_1_fhe,
+            "8_2_qr_did": professional_suite.test_8_2_qr_did,
+            "8_3_wormhole_prevention": professional_suite.test_8_3_wormhole_prevention,
+            "8_optional_tests": professional_suite.test_8_optional_tests
+        }
+        
         if test_id not in test_methods:
             return jsonify({"success": False, "error": f"Teste '{test_id}' não encontrado"}), 404
         
