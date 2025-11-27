@@ -36,7 +36,8 @@ try:
     print(f"   Debug: {app.config['DEBUG']}")
     
 except Exception as e:
-    print(f"❌ Erro ao carregar Allianza Blockchain: {e}")
+    error_message = str(e)
+    print(f"❌ Erro ao carregar Allianza Blockchain: {error_message}")
     import traceback
     traceback.print_exc()
     
@@ -46,7 +47,7 @@ except Exception as e:
     
     @application.route('/')
     def error():
-        return f"Erro ao inicializar: {str(e)}", 500
+        return f"Erro ao inicializar: {error_message}", 500
 
 if __name__ == "__main__":
     # Executar diretamente (para testes)
