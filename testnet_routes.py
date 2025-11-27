@@ -3,7 +3,7 @@
 Faucet, Explorer, Verificador QRS-3, Testes Públicos
 """
 
-from flask import Blueprint, jsonify, request, render_template, send_file
+from flask import Blueprint, jsonify, request, render_template, send_file, make_response
 from pathlib import Path
 import json
 from datetime import datetime
@@ -989,17 +989,45 @@ def interoperability_guide():
 
 @testnet_bp.route('/api/proofs/interoperability/<proof_id>', methods=['GET'])
 def api_download_interoperability_proof(proof_id):
-    """Baixa prova de interoperabilidade em JSON"""
+    """Baixa prova de interoperabilidade em JSON (versão segura, sem dados sensíveis)"""
     try:
+        # Tentar versão segura primeiro (para download público)
+        safe_proof_file = Path("proofs/testnet/interoperability") / f"{proof_id}_safe.json"
+        
+        if safe_proof_file.exists():
+            return send_file(
+                str(safe_proof_file),
+                mimetype='application/json',
+                as_attachment=True,
+                download_name=f"allianza_interoperability_proof_{proof_id}.json"
+            )
+        
+        # Fallback: tentar versão completa (se versão segura não existir)
         proof_file = Path("proofs/testnet/interoperability") / f"{proof_id}.json"
         
         if proof_file.exists():
-            return send_file(
-                str(proof_file),
-                mimetype='application/json',
-                as_attachment=True,
-                download_name=f"interoperability_proof_{proof_id}.json"
-            )
+            # Gerar versão segura on-the-fly se não existir
+            try:
+                with open(proof_file, 'r', encoding='utf-8') as f:
+                    full_proof = json.load(f)
+                
+                # Importar classe para gerar versão segura
+                from testnet_interoperability import TestnetInteroperability
+                # Criar instância temporária apenas para usar o método
+                temp_interop = TestnetInteroperability(None)
+                safe_proof = temp_interop._generate_safe_proof(full_proof, proof_id)
+                
+                # Retornar JSON seguro diretamente
+                response = make_response(jsonify(safe_proof))
+                response.headers['Content-Type'] = 'application/json'
+                response.headers['Content-Disposition'] = f'attachment; filename=allianza_interoperability_proof_{proof_id}.json'
+                return response
+            except Exception as gen_error:
+                # Se falhar ao gerar versão segura, retornar erro
+                return jsonify({
+                    "success": False,
+                    "error": f"Erro ao gerar versão segura: {str(gen_error)}"
+                }), 500
         else:
             return jsonify({
                 "success": False,

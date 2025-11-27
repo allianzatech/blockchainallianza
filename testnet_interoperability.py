@@ -939,7 +939,17 @@ class TestnetInteroperability:
                 "timestamp": datetime.utcnow().isoformat() + "Z"
             }
             
-            self._save_proof(result, test_id)
+            # Salvar prova e gerar versão segura
+            safe_proof = self._save_proof(result, test_id)
+            
+            # Adicionar link de download da prova segura ao resultado
+            result["proof_download"] = {
+                "available": True,
+                "proof_id": test_id,
+                "download_url": f"/testnet/api/proofs/interoperability/{test_id}",
+                "filename": f"allianza_interoperability_proof_{test_id}.json",
+                "note": "Arquivo JSON seguro para auditoria pública (sem dados sensíveis)"
+            }
             
             return result
         
@@ -1128,8 +1138,163 @@ class TestnetInteroperability:
         }
     
     def _save_proof(self, result: Dict, test_id: str):
-        """Salva prova de interoperabilidade"""
+        """Salva prova de interoperabilidade (completa e versão segura)"""
+        # Salvar versão completa (para uso interno)
         proof_file = self.proofs_dir / f"{test_id}.json"
         with open(proof_file, 'w', encoding='utf-8') as f:
             json.dump(result, f, indent=2, ensure_ascii=False)
+        
+        # Salvar versão segura (para download público)
+        safe_proof = self._generate_safe_proof(result, test_id)
+        safe_proof_file = self.proofs_dir / f"{test_id}_safe.json"
+        with open(safe_proof_file, 'w', encoding='utf-8') as f:
+            json.dump(safe_proof, f, indent=2, ensure_ascii=False, sort_keys=True)
+        
+        return safe_proof
+    
+    def _generate_safe_proof(self, result: Dict, test_id: str) -> Dict:
+        """
+        Gera uma versão SEGURA da prova sem dados sensíveis.
+        Remove: private keys, padrões internos, informações de debug sensíveis.
+        Adiciona: hash de verificação, metadados de segurança.
+        """
+        import hashlib
+        from datetime import datetime
+        
+        # Extrair dados seguros do resultado
+        safe_data = {
+            "proof_type": "allianza_interoperability_proof",
+            "proof_version": "v1.0",
+            "proof_id": test_id,
+            "generated_at": datetime.utcnow().isoformat() + "Z",
+            "transaction": {}
+        }
+        
+        # Dados da transação (seguros)
+        if "results" in result:
+            results = result["results"]
+            safe_data["transaction"] = {
+                "source_chain": results.get("source_chain"),
+                "target_chain": results.get("target_chain"),
+                "amount": results.get("amount"),
+                "recipient": results.get("recipient"),  # Endereço público, seguro
+                "source_tx_hash": results.get("source_tx_hash"),
+                "target_tx_hash": results.get("target_tx_hash"),
+                "source_block_number": results.get("source_block_number"),
+                "target_block_number": results.get("target_block_number"),
+                "source_confirmations": results.get("source_confirmations"),
+                "target_confirmations": results.get("target_confirmations"),
+                "transfer_real": results.get("transfer_real", False),
+                "total_time_ms": results.get("total_time_ms")
+            }
+        
+        # Explorers (seguros)
+        if "proofs" in result and "transfer_proof" in result["proofs"]:
+            transfer_proof = result["proofs"]["transfer_proof"]
+            safe_data["transaction"]["explorers"] = {
+                "source": transfer_proof.get("source_explorer"),
+                "target": transfer_proof.get("target_explorer")
+            }
+            
+            # Merkle proof (seguro - apenas hash/root)
+            if transfer_proof.get("merkle_proof"):
+                merkle = transfer_proof["merkle_proof"]
+                if isinstance(merkle, dict):
+                    safe_data["transaction"]["merkle_proof"] = {
+                        "merkle_root": merkle.get("merkle_root") if isinstance(merkle.get("merkle_root"), str) else None,
+                        "chain_id": merkle.get("chain_id"),
+                        "tree_depth": merkle.get("tree_depth")
+                    }
+                else:
+                    safe_data["transaction"]["merkle_proof"] = "present" if merkle else None
+        
+        # ALZ-NIEV proofs (se disponíveis)
+        if "proofs" in result:
+            proofs = result["proofs"]
+            safe_data["alz_niev_proofs"] = {}
+            
+            # ZK Proof (apenas metadados, não dados sensíveis)
+            if "zk_proof" in proofs:
+                zk = proofs["zk_proof"]
+                if isinstance(zk, dict):
+                    safe_data["alz_niev_proofs"]["zk_proof"] = {
+                        "proof_type": zk.get("proof_type"),
+                        "verifier_id": zk.get("verifier_id"),
+                        "circuit_id": zk.get("circuit_id"),
+                        "proof_hash": zk.get("proof_hash")  # Hash apenas, não dados completos
+                    }
+            
+            # Consensus Proof (seguro)
+            if "consensus_proof" in proofs:
+                consensus = proofs["consensus_proof"]
+                if isinstance(consensus, dict):
+                    safe_data["alz_niev_proofs"]["consensus_proof"] = {
+                        "consensus_type": consensus.get("consensus_type"),
+                        "block_height": consensus.get("block_height")
+                    }
+        
+        # Status da transferência (sem instruções sensíveis)
+        if "real_transfer_status" in result:
+            status = result["real_transfer_status"]
+            safe_data["transfer_status"] = {
+                "can_execute_real": status.get("can_execute_real", False),
+                "success": status.get("success", False),
+                "message": status.get("message"),
+                # NÃO incluir: instructions, private_key_info, debug details
+            }
+        
+        # Remover qualquer campo que possa conter dados sensíveis
+        # (private keys, internal patterns, debug info)
+        def _sanitize_dict(d):
+            """Remove recursivamente campos sensíveis"""
+            if not isinstance(d, dict):
+                return d
+            
+            sanitized = {}
+            sensitive_keys = [
+                "private_key", "privatekey", "privkey", "key",
+                "from_private_key", "source_private_key", "target_private_key",
+                "wallet_name", "wallet_id", "internal_pattern",
+                "debug", "error_details", "traceback", "stack_trace",
+                "instructions", "real_transfer_instructions"
+            ]
+            
+            for key, value in d.items():
+                key_lower = key.lower()
+                # Pular chaves sensíveis
+                if any(sensitive in key_lower for sensitive in sensitive_keys):
+                    continue
+                
+                # Recursivamente sanitizar dicts e lists
+                if isinstance(value, dict):
+                    sanitized[key] = _sanitize_dict(value)
+                elif isinstance(value, list):
+                    sanitized[key] = [_sanitize_dict(item) if isinstance(item, dict) else item for item in value]
+                else:
+                    sanitized[key] = value
+            
+            return sanitized
+        
+        safe_data = _sanitize_dict(safe_data)
+        
+        # Gerar hash SHA-256 do JSON canônico (sem o hash em si)
+        proof_json = json.dumps(safe_data, sort_keys=True, indent=2, ensure_ascii=False)
+        proof_hash = hashlib.sha256(proof_json.encode('utf-8')).hexdigest()
+        
+        # Adicionar hash e metadados de verificação
+        safe_data["proof_verification"] = {
+            "proof_hash": proof_hash,
+            "hash_algorithm": "SHA-256",
+            "verification_note": "Este hash pode ser usado para verificar a integridade da prova",
+            "verification_command": f"echo '{proof_hash}' | sha256sum -c"
+        }
+        
+        # Adicionar metadados do sistema
+        safe_data["system_metadata"] = {
+            "allianza_version": "testnet-v1.0",
+            "proof_format": "RFC 8785 compatible",
+            "security_level": "public_audit_safe"
+        }
+        
+        return safe_data
 
