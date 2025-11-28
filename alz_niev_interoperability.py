@@ -800,41 +800,150 @@ class ALZNIEV:
                 )
                 proofs["zk_proof"] = zk_proof
             
-            # Merkle Proof
+            # Merkle Proof - MELHORADO: Tentar obter dados reais da blockchain
             if source_tx_hash:
-                # Atualizar timestamp
-                print(f"🔍 [LOG] Gerando Merkle Proof, atualizando timestamp...")
+                print(f"🔍 [LOG] Gerando Merkle Proof com dados reais da blockchain...")
                 try:
-                    current_timestamp = int(time_module.time())
-                    print(f"🔍 [LOG] current_timestamp atualizado: {current_timestamp}")
-                except Exception as merkle_time_error:
-                    print(f"❌ [LOG] ERRO ao atualizar timestamp para Merkle: {merkle_time_error}")
-                    raise
-                merkle_proof = self.upnmt.create_universal_merkle_proof(
-                    chain_id=source_chain,
-                    block_hash=hashlib.sha256(f"{source_chain}{source_tx_hash}".encode()).hexdigest(),
-                    transaction_hash=source_tx_hash,
-                    block_height=current_timestamp % 1000000
-                )
-                proofs["merkle_proof"] = merkle_proof
+                    # Tentar obter block_height real da blockchain
+                    real_block_height = None
+                    real_block_hash = None
+                    real_merkle_root = None
+                    
+                    if source_chain in ["polygon", "ethereum", "bsc", "base"]:
+                        # Para EVM chains, tentar obter dados reais via Web3
+                        try:
+                            from web3 import Web3
+                            import os
+                            from dotenv import load_dotenv
+                            load_dotenv()
+                            
+                            # Obter RPC URL
+                            rpc_url = None
+                            if source_chain == "polygon":
+                                rpc_url = os.getenv('POLYGON_RPC_URL') or "https://rpc-amoy.polygon.technology"
+                            elif source_chain == "ethereum":
+                                rpc_url = os.getenv('ETH_RPC_URL') or "https://sepolia.infura.io/v3/YOUR_KEY"
+                            elif source_chain == "bsc":
+                                rpc_url = os.getenv('BSC_RPC_URL') or "https://data-seed-prebsc-1-s1.binance.org:8545"
+                            
+                            if rpc_url and "YOUR_KEY" not in rpc_url:
+                                w3 = Web3(Web3.HTTPProvider(rpc_url))
+                                if w3.is_connected():
+                                    # Buscar transação para obter block_number
+                                    try:
+                                        tx = w3.eth.get_transaction(source_tx_hash)
+                                        if tx and tx.get('blockNumber'):
+                                            real_block_height = tx['blockNumber']
+                                            # Buscar block para obter block_hash e transactionsRoot
+                                            block = w3.eth.get_block(real_block_height)
+                                            if block:
+                                                real_block_hash = block['hash'].hex() if hasattr(block['hash'], 'hex') else str(block['hash'])
+                                                real_merkle_root = block.get('transactionsRoot', '').hex() if hasattr(block.get('transactionsRoot', ''), 'hex') else str(block.get('transactionsRoot', ''))
+                                                print(f"✅ Dados reais obtidos: block_height={real_block_height}, block_hash={real_block_hash[:16]}...")
+                                    except Exception as tx_error:
+                                        print(f"⚠️  Não foi possível obter dados da transação: {tx_error}")
+                        except Exception as w3_error:
+                            print(f"⚠️  Erro ao conectar Web3: {w3_error}")
+                    
+                    # Usar dados reais se disponíveis, senão usar calculados
+                    block_height = real_block_height if real_block_height else (int(time_module.time()) % 1000000)
+                    block_hash = real_block_hash if real_block_hash else hashlib.sha256(f"{source_chain}{source_tx_hash}".encode()).hexdigest()
+                    
+                    merkle_proof = self.upnmt.create_universal_merkle_proof(
+                        chain_id=source_chain,
+                        block_hash=block_hash,
+                        transaction_hash=source_tx_hash,
+                        block_height=block_height
+                    )
+                    
+                    # Adicionar flag indicando se dados são reais
+                    if real_block_height:
+                        merkle_proof.real_blockchain_data = True
+                        merkle_proof.real_block_height = real_block_height
+                        if real_merkle_root:
+                            merkle_proof.real_merkle_root = real_merkle_root
+                    else:
+                        merkle_proof.real_blockchain_data = False
+                        merkle_proof.note = "Dados calculados (blockchain não acessível ou transação pendente)"
+                    
+                    proofs["merkle_proof"] = merkle_proof
+                except Exception as merkle_error:
+                    print(f"❌ [LOG] ERRO ao gerar Merkle Proof: {merkle_error}")
+                    # Continuar mesmo com erro
+                    import traceback
+                    traceback.print_exc()
             
-            # Consensus Proof
-            # Atualizar timestamp
-            print(f"🔍 [LOG] Gerando Consensus Proof, atualizando timestamp...")
+            # Consensus Proof - MELHORADO: Usar block_height real se disponível
+            print(f"🔍 [LOG] Gerando Consensus Proof com dados reais...")
             try:
-                current_timestamp = int(time_module.time())
-                print(f"🔍 [LOG] current_timestamp atualizado para Consensus: {current_timestamp}")
+                # Tentar obter block_height real (já obtido no Merkle Proof acima)
+                real_block_height = None
+                real_block_hash = None
+                
+                if source_chain in ["polygon", "ethereum", "bsc", "base"]:
+                    try:
+                        from web3 import Web3
+                        import os
+                        from dotenv import load_dotenv
+                        load_dotenv()
+                        
+                        rpc_url = None
+                        if source_chain == "polygon":
+                            rpc_url = os.getenv('POLYGON_RPC_URL') or "https://rpc-amoy.polygon.technology"
+                        elif source_chain == "ethereum":
+                            rpc_url = os.getenv('ETH_RPC_URL') or "https://sepolia.infura.io/v3/YOUR_KEY"
+                        elif source_chain == "bsc":
+                            rpc_url = os.getenv('BSC_RPC_URL') or "https://data-seed-prebsc-1-s1.binance.org:8545"
+                        
+                        if rpc_url and "YOUR_KEY" not in rpc_url and source_tx_hash:
+                            w3 = Web3(Web3.HTTPProvider(rpc_url))
+                            if w3.is_connected():
+                                try:
+                                    tx = w3.eth.get_transaction(source_tx_hash)
+                                    if tx and tx.get('blockNumber'):
+                                        real_block_height = tx['blockNumber']
+                                        block = w3.eth.get_block(real_block_height)
+                                        if block:
+                                            real_block_hash = block['hash'].hex() if hasattr(block['hash'], 'hex') else str(block['hash'])
+                                except:
+                                    pass
+                    except:
+                        pass
+                
+                # Usar dados reais se disponíveis
+                block_height = real_block_height if real_block_height else (int(time_module.time()) % 1000000)
+                block_hash = real_block_hash if real_block_hash else hashlib.sha256(f"{source_chain}{source_tx_hash}".encode()).hexdigest()
+                
+                consensus_type = ConsensusType.POS if source_chain in ["polygon", "ethereum", "bsc", "base"] else ConsensusType.POW
+                consensus_proof = self.mcl.generate_consensus_proof(
+                    chain_id=source_chain,
+                    consensus_type=consensus_type,
+                    block_height=block_height,
+                    block_hash=block_hash
+                )
+                
+                # Adicionar flag indicando se dados são reais
+                if real_block_height:
+                    consensus_proof.real_blockchain_data = True
+                    consensus_proof.real_block_height = real_block_height
+                else:
+                    consensus_proof.real_blockchain_data = False
+                    consensus_proof.note = "Block height calculado (blockchain não acessível ou transação pendente)"
+                
+                proofs["consensus_proof"] = consensus_proof
             except Exception as consensus_time_error:
-                print(f"❌ [LOG] ERRO ao atualizar timestamp para Consensus: {consensus_time_error}")
-                raise
-            consensus_type = ConsensusType.POS if source_chain in ["polygon", "ethereum", "bsc", "base"] else ConsensusType.POW
-            consensus_proof = self.mcl.generate_consensus_proof(
-                chain_id=source_chain,
-                consensus_type=consensus_type,
-                block_height=current_timestamp % 1000000,
-                block_hash=hashlib.sha256(f"{source_chain}{source_tx_hash}".encode()).hexdigest()
-            )
-            proofs["consensus_proof"] = consensus_proof
+                print(f"❌ [LOG] ERRO ao gerar Consensus Proof: {consensus_time_error}")
+                import traceback
+                traceback.print_exc()
+                # Continuar mesmo com erro, usando dados calculados
+                consensus_type = ConsensusType.POS if source_chain in ["polygon", "ethereum", "bsc", "base"] else ConsensusType.POW
+                consensus_proof = self.mcl.generate_consensus_proof(
+                    chain_id=source_chain,
+                    consensus_type=consensus_type,
+                    block_height=int(time_module.time()) % 1000000,
+                    block_hash=hashlib.sha256(f"{source_chain}{source_tx_hash}".encode()).hexdigest()
+                )
+                proofs["consensus_proof"] = consensus_proof
             
             # Combinar resultado
             result = {
