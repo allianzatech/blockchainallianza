@@ -1661,12 +1661,25 @@ class RealCrossChainBridge:
                     # MELHORIA: Obter UTXOs via API BlockCypher se wallet não encontrar
                     if not utxos or len(utxos) == 0:
                         print(f"⚠️  Nenhum UTXO encontrado no wallet. Tentando via BlockCypher API...")
+                        print(f"   Endereço: {from_address}")
+                        print(f"   Saldo conhecido: {balance_btc} BTC")
+                        
                         try:
+                            # Tentar múltiplos endpoints da API BlockCypher
+                            # Endpoint 1: /addrs/{address} com unspentOnly
                             utxos_url = f"{self.btc_api_base}/addrs/{from_address}?unspentOnly=true"
+                            print(f"   🔍 Tentando: {utxos_url}")
                             utxos_response = requests.get(utxos_url, timeout=15)
+                            
                             if utxos_response.status_code == 200:
                                 utxos_data = utxos_response.json()
                                 txrefs = utxos_data.get('txrefs', [])
+                                
+                                # Se não encontrou em txrefs, tentar unspent_txrefs
+                                if not txrefs:
+                                    txrefs = utxos_data.get('unspent_txrefs', [])
+                                
+                                print(f"   📊 Resposta da API: {len(txrefs)} UTXOs encontrados")
                                 
                                 if txrefs:
                                     print(f"✅ {len(txrefs)} UTXOs encontrados via API BlockCypher")
@@ -1676,31 +1689,77 @@ class RealCrossChainBridge:
                                     # Criar UTXOs no formato esperado pelo bitcoinlib
                                     wallet_utxos = []
                                     for txref in txrefs:
-                                        wallet_utxos.append({
-                                            'txid': txref.get('tx_hash'),
-                                            'output_n': txref.get('tx_output_n', 0),
-                                            'value': txref.get('value', 0),
-                                            'address': from_address,
-                                            'confirmations': txref.get('confirmations', 0),
-                                            'script': txref.get('script', ''),
-                                            'spendable': txref.get('spendable', True)
-                                        })
+                                        # Filtrar apenas UTXOs não gastos (spendable)
+                                        if txref.get('spendable', True) and txref.get('value', 0) > 0:
+                                            wallet_utxos.append({
+                                                'txid': txref.get('tx_hash') or txref.get('txid'),
+                                                'output_n': txref.get('tx_output_n') or txref.get('output_n', 0),
+                                                'vout': txref.get('tx_output_n') or txref.get('output_n', 0),
+                                                'value': txref.get('value', 0),
+                                                'address': from_address,
+                                                'confirmations': txref.get('confirmations', 0),
+                                                'script': txref.get('script', ''),
+                                                'spendable': txref.get('spendable', True),
+                                                'tx_hash': txref.get('tx_hash') or txref.get('txid')
+                                            })
                                     
-                                    utxos = wallet_utxos
-                                    print(f"📦 UTXOs convertidos: {len(utxos)}")
-                                    
-                                    # Tentar adicionar UTXOs ao wallet manualmente
-                                    try:
-                                        # Atualizar wallet com UTXOs da API
-                                        wallet.utxos_update()
-                                        # Se ainda não funcionar, vamos usar os UTXOs diretamente
-                                    except Exception as wallet_update_error:
-                                        print(f"⚠️  Erro ao atualizar wallet: {wallet_update_error}")
-                                        print(f"   Usando UTXOs obtidos via API diretamente")
+                                    if wallet_utxos:
+                                        utxos = wallet_utxos
+                                        print(f"📦 UTXOs convertidos e filtrados: {len(utxos)} (de {len(txrefs)} totais)")
+                                        
+                                        # Log detalhado dos UTXOs
+                                        total_value = sum(u.get('value', 0) for u in utxos)
+                                        print(f"   💰 Valor total dos UTXOs: {total_value} satoshis ({total_value / 100000000} BTC)")
+                                        
+                                        # Tentar adicionar UTXOs ao wallet manualmente
+                                        try:
+                                            # Atualizar wallet com UTXOs da API
+                                            wallet.utxos_update()
+                                            # Se ainda não funcionar, vamos usar os UTXOs diretamente
+                                        except Exception as wallet_update_error:
+                                            print(f"⚠️  Erro ao atualizar wallet: {wallet_update_error}")
+                                            print(f"   Usando UTXOs obtidos via API diretamente")
+                                    else:
+                                        print(f"⚠️  Nenhum UTXO válido após filtragem")
                                 else:
-                                    print(f"⚠️  Nenhum UTXO encontrado via API também")
+                                    print(f"⚠️  Nenhum UTXO encontrado via API (txrefs vazio)")
+                                    # Tentar endpoint alternativo: /addrs/{address}/unspent
+                                    try:
+                                        alt_url = f"{self.btc_api_base}/addrs/{from_address}/unspent"
+                                        print(f"   🔍 Tentando endpoint alternativo: {alt_url}")
+                                        alt_response = requests.get(alt_url, timeout=15)
+                                        if alt_response.status_code == 200:
+                                            alt_data = alt_response.json()
+                                            alt_txrefs = alt_data.get('txrefs', [])
+                                            if alt_txrefs:
+                                                print(f"✅ {len(alt_txrefs)} UTXOs encontrados via endpoint alternativo")
+                                                # Processar da mesma forma
+                                                wallet_utxos = []
+                                                for txref in alt_txrefs:
+                                                    if txref.get('spendable', True) and txref.get('value', 0) > 0:
+                                                        wallet_utxos.append({
+                                                            'txid': txref.get('tx_hash') or txref.get('txid'),
+                                                            'output_n': txref.get('tx_output_n') or txref.get('output_n', 0),
+                                                            'vout': txref.get('tx_output_n') or txref.get('output_n', 0),
+                                                            'value': txref.get('value', 0),
+                                                            'address': from_address,
+                                                            'confirmations': txref.get('confirmations', 0),
+                                                            'script': txref.get('script', ''),
+                                                            'spendable': txref.get('spendable', True),
+                                                            'tx_hash': txref.get('tx_hash') or txref.get('txid')
+                                                        })
+                                                if wallet_utxos:
+                                                    utxos = wallet_utxos
+                                                    print(f"📦 UTXOs do endpoint alternativo: {len(utxos)}")
+                                    except Exception as alt_error:
+                                        print(f"⚠️  Erro no endpoint alternativo: {alt_error}")
+                            else:
+                                print(f"⚠️  API retornou status {utxos_response.status_code}")
+                                print(f"   Resposta: {utxos_response.text[:200]}")
                         except Exception as api_utxo_error:
                             print(f"⚠️  Erro ao obter UTXOs via API: {api_utxo_error}")
+                            import traceback
+                            traceback.print_exc()
                     
                     if utxos:
                         total_utxo_value = sum(utxo['value'] for utxo in utxos) / 100000000
