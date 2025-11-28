@@ -1859,12 +1859,26 @@ class RealCrossChainBridge:
                         print(f"⚠️  Nenhum UTXO encontrado no wallet nem via API")
                     
                     # MELHORIA: Calcular fee mais preciso baseado em UTXOs
-                    estimated_fee_btc = 0.0001  # Fee padrão
+                    # CORREÇÃO: Taxa fixa e baixa para testnet (500 satoshis = 0.000005 BTC)
+                    estimated_fee_btc = 0.000005  # 500 satoshis - taxa fixa e baixa para testnet
                     if utxos:
-                        # Fee estimado: ~147 sats para transação simples (conforme imagem)
-                        estimated_fee_btc = 0.00000147  # ~147 satoshis
+                        # Fee estimado baseado no número de UTXOs
+                        # Transação simples: ~147-500 satoshis
+                        # Usar 500 satoshis como padrão seguro para testnet
+                        estimated_fee_btc = 0.000005  # 500 satoshis
                     
                     total_needed = amount_btc + estimated_fee_btc
+                    
+                    # CORREÇÃO: Validar se o valor é muito pequeno (menor que dust limit + fee)
+                    min_btc_with_fee = 0.00000546 + estimated_fee_btc  # Dust limit (546 sats) + fee
+                    if amount_btc < 0.00000546:  # Menor que dust limit
+                        return {
+                            "success": False,
+                            "error": f"Valor muito pequeno: {amount_btc} BTC ({int(amount_btc * 100000000)} satoshis). Mínimo: 0.00000546 BTC (546 satoshis)",
+                            "amount": amount_btc,
+                            "min_required": 0.00000546,
+                            "note": "O valor convertido é menor que o dust limit do Bitcoin. Considere enviar um valor maior."
+                        }
                     
                     if balance_btc < total_needed:
                         # Não deletar wallet aqui - pode ser usado para debug
@@ -3718,14 +3732,14 @@ class RealCrossChainBridge:
                         print(f"⚠️  Valor convertido inválido ({target_amount} BTC). Usando valor mínimo...")
                         target_amount = 0.00001  # 1000 satoshis mínimo
                     
-                    # Garantir que não seja menor que o mínimo Bitcoin (dust limit: 546 satoshis)
-                    # MAS: Não forçar se o valor convertido for menor - deixar passar e validar depois
-                    min_btc = 0.00000546  # 546 satoshis
+                    # CORREÇÃO: Validar se o valor convertido é muito pequeno
+                    min_btc = 0.00000546  # 546 satoshis (dust limit)
                     if target_amount < min_btc:
-                        print(f"⚠️  Valor convertido muito pequeno ({target_amount} BTC), mas usando mesmo assim")
-                        print(f"   (Mínimo recomendado: {min_btc} BTC = 546 satoshis)")
-                        # NÃO forçar - deixar o valor convertido passar
-                        # A validação em send_bitcoin_transaction vai verificar se é válido
+                        print(f"⚠️  Valor convertido muito pequeno ({target_amount} BTC = {int(target_amount * 100000000)} satoshis)")
+                        print(f"   Mínimo Bitcoin: {min_btc} BTC (546 satoshis)")
+                        print(f"   ⚠️  Este valor está abaixo do dust limit e pode ser rejeitado pela rede")
+                        print(f"   💡 Recomendação: Envie um valor maior (ex: 0.01 MATIC ou mais)")
+                        # Ainda permitir, mas avisar que pode falhar
                     
                     print(f"🔄 Conversão baseada em valor equivalente (USD):")
                     print(f"   {amount} {token_symbol} × ${source_price_usd:,.2f} = ${value_usd:,.6f} USD")
