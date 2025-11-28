@@ -2331,10 +2331,55 @@ class RealCrossChainBridge:
                                             ]
                                             
                                             # Adicionar OP_RETURN - biblioteca 'bit' aceita formato especial
-                                            # Formato: ('OP_RETURN <dados>', 0, 'satoshi')
-                                            # OU usar parâmetro op_return diretamente
-                                            op_return_output = (f"OP_RETURN {op_return_data}", 0, 'satoshi')
-                                            outputs.append(op_return_output)
+                                            # Tentar múltiplos formatos para garantir compatibilidade
+                                            print(f"   🔗 Tentando adicionar OP_RETURN em múltiplos formatos...")
+                                            
+                                            # Formato 1: ('OP_RETURN <dados>', 0, 'satoshi')
+                                            op_return_output_1 = (f"OP_RETURN {op_return_data}", 0, 'satoshi')
+                                            
+                                            # Formato 2: Apenas os dados (sem prefixo OP_RETURN)
+                                            op_return_output_2 = (op_return_data, 0, 'satoshi')
+                                            
+                                            # Formato 3: Hex dos dados
+                                            op_return_output_3 = (op_return_data.encode('utf-8').hex(), 0, 'satoshi')
+                                            
+                                            # Tentar Formato 1 primeiro (mais comum)
+                                            try:
+                                                outputs_with_opreturn = outputs.copy()
+                                                outputs_with_opreturn.insert(1, op_return_output_1)  # Inserir após output principal
+                                                print(f"   📝 Tentando Formato 1: 'OP_RETURN {op_return_data[:30]}...'")
+                                                tx_hex = key.create_transaction(outputs=outputs_with_opreturn)
+                                                print(f"   ✅ Formato 1 funcionou!")
+                                            except Exception as fmt1_err:
+                                                print(f"   ⚠️  Formato 1 falhou: {fmt1_err}")
+                                                try:
+                                                    outputs_with_opreturn = outputs.copy()
+                                                    outputs_with_opreturn.insert(1, op_return_output_2)
+                                                    print(f"   📝 Tentando Formato 2: '{op_return_data[:30]}...' (sem prefixo)")
+                                                    tx_hex = key.create_transaction(outputs=outputs_with_opreturn)
+                                                    print(f"   ✅ Formato 2 funcionou!")
+                                                except Exception as fmt2_err:
+                                                    print(f"   ⚠️  Formato 2 falhou: {fmt2_err}")
+                                                    try:
+                                                        outputs_with_opreturn = outputs.copy()
+                                                        outputs_with_opreturn.insert(1, op_return_output_3)
+                                                        print(f"   📝 Tentando Formato 3: hex '{op_return_data.encode('utf-8').hex()[:30]}...'")
+                                                        tx_hex = key.create_transaction(outputs=outputs_with_opreturn)
+                                                        print(f"   ✅ Formato 3 funcionou!")
+                                                    except Exception as fmt3_err:
+                                                        print(f"   ⚠️  Formato 3 falhou: {fmt3_err}")
+                                                        # Tentar usar parâmetro op_return (se suportado)
+                                                        try:
+                                                            print(f"   📝 Tentando parâmetro op_return diretamente...")
+                                                            tx_hex = key.create_transaction(outputs=outputs, op_return=op_return_data)
+                                                            print(f"   ✅ Parâmetro op_return funcionou!")
+                                                        except Exception as op_param_err:
+                                                            print(f"   ❌ Todos os formatos falharam!")
+                                                            print(f"      Erro do parâmetro op_return: {op_param_err}")
+                                                            raise Exception(f"Não foi possível adicionar OP_RETURN em nenhum formato: {fmt1_err}, {fmt2_err}, {fmt3_err}, {op_param_err}")
+                                            
+                                            # Se chegou aqui, algum formato funcionou
+                                            outputs = outputs_with_opreturn if 'outputs_with_opreturn' in locals() else outputs
                                             
                                             # Adicionar change se necessário
                                             if change_value > 546:
