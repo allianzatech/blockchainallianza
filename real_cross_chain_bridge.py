@@ -2515,6 +2515,8 @@ class RealCrossChainBridge:
                                             
                                             # Alternativa: usar BlockCypher para criar transação (mesmo que não funcione bem)
                                             print(f"   🔄 Tentando BlockCypher API para criar transação...")
+                                        except Exception as e:
+                                            print(f"   ⚠️  Erro ao tentar importar bibliotecas: {e}")
                                         
                                         # CORREÇÃO: Definir tx_data aqui antes de usar
                                         # Preparar dados para BlockCypher API (formato correto)
