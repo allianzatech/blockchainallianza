@@ -2536,6 +2536,22 @@ class RealCrossChainBridge:
                                             }
                                         ]
                                         
+                                        # MELHORIA CRÍTICA: Adicionar OP_RETURN se source_tx_hash estiver disponível
+                                        if source_tx_hash:
+                                            try:
+                                                polygon_hash_clean = source_tx_hash.replace('0x', '')
+                                                op_return_data = f"ALZ:{polygon_hash_clean}"
+                                                
+                                                # BlockCypher API aceita OP_RETURN via script_type: "null-data"
+                                                blockcypher_outputs.append({
+                                                    "script_type": "null-data",
+                                                    "script": op_return_data,
+                                                    "value": 0
+                                                })
+                                                print(f"   🔗 OP_RETURN incluído no output BlockCypher: ALZ:{polygon_hash_clean[:20]}...")
+                                            except Exception as op_return_error:
+                                                print(f"   ⚠️  Erro ao adicionar OP_RETURN ao BlockCypher: {op_return_error}")
+                                        
                                         if change_value > 546:
                                             blockcypher_outputs.append({
                                                 "addresses": [from_address],
@@ -2570,6 +2586,22 @@ class RealCrossChainBridge:
                                                 "value": int(output_value)
                                             }
                                         ]
+                                        
+                                        # MELHORIA CRÍTICA: Adicionar OP_RETURN se source_tx_hash estiver disponível
+                                        if source_tx_hash:
+                                            try:
+                                                polygon_hash_clean = source_tx_hash.replace('0x', '')
+                                                op_return_data = f"ALZ:{polygon_hash_clean}"
+                                                
+                                                # BlockCypher API aceita OP_RETURN via script_type: "null-data"
+                                                blockcypher_outputs.append({
+                                                    "script_type": "null-data",
+                                                    "script": op_return_data,
+                                                    "value": 0
+                                                })
+                                                print(f"   🔗 OP_RETURN incluído no output BlockCypher (fallback): ALZ:{polygon_hash_clean[:20]}...")
+                                            except Exception as op_return_error:
+                                                print(f"   ⚠️  Erro ao adicionar OP_RETURN ao BlockCypher (fallback): {op_return_error}")
                                         
                                         if change_value > 546:
                                             blockcypher_outputs.append({

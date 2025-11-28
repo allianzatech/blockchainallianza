@@ -1359,7 +1359,9 @@ def verify_proof_public():
                 outputs = btc_data.get("outputs", [])
                 for output in outputs:
                     script = output.get("script", "")
-                    # OP_RETURN começa com "6a" (hex)
+                    script_type = output.get("script_type", "")
+                    
+                    # Método 1: Verificar script hex (OP_RETURN começa com "6a")
                     if script.startswith("6a"):
                         # Decodificar dados do OP_RETURN
                         try:
@@ -1371,6 +1373,19 @@ def verify_proof_public():
                             if op_return_text.startswith("ALZ:"):
                                 op_return_found = True
                                 op_return_polygon_hash = op_return_text.replace("ALZ:", "").strip()
+                                # Adicionar 0x se não tiver
+                                if not op_return_polygon_hash.startswith("0x"):
+                                    op_return_polygon_hash = "0x" + op_return_polygon_hash
+                        except:
+                            pass
+                    
+                    # Método 2: Verificar script_type "null-data" (formato BlockCypher)
+                    if script_type == "null-data" and script:
+                        try:
+                            # BlockCypher retorna o script diretamente como string quando é null-data
+                            if script.startswith("ALZ:"):
+                                op_return_found = True
+                                op_return_polygon_hash = script.replace("ALZ:", "").strip()
                                 # Adicionar 0x se não tiver
                                 if not op_return_polygon_hash.startswith("0x"):
                                     op_return_polygon_hash = "0x" + op_return_polygon_hash
