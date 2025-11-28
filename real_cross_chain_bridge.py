@@ -2202,12 +2202,24 @@ class RealCrossChainBridge:
                                             }
                                             
                                             print(f"   📡 Enviando para BlockCypher API para criar transação com OP_RETURN...")
+                                            print(f"      Inputs: {len(inputs_list)}")
+                                            print(f"      Outputs: {len(outputs_list)}")
+                                            for i, out in enumerate(outputs_list):
+                                                if out.get('script_type') == 'null-data':
+                                                    print(f"         Output {i}: OP_RETURN (null-data)")
+                                                else:
+                                                    print(f"         Output {i}: {out.get('addresses', ['N/A'])[0]} - {out.get('value', 0)} sats")
+                                            
                                             create_url = f"{self.btc_api_base}/txs/new"
                                             create_response = requests.post(create_url, json=tx_data, timeout=30)
+                                            
+                                            print(f"   📡 Resposta BlockCypher: Status {create_response.status_code}")
                                             
                                             if create_response.status_code in [200, 201]:
                                                 unsigned_tx = create_response.json()
                                                 tosign = unsigned_tx.get('tosign', [])
+                                                
+                                                print(f"   📋 Resposta completa: {json.dumps(unsigned_tx, indent=2)[:500]}...")
                                                 
                                                 if tosign:
                                                     print(f"   ✅ Transação criada, precisa assinar {len(tosign)} inputs...")
@@ -2220,6 +2232,8 @@ class RealCrossChainBridge:
                                                     
                                                     sign_url = f"{self.btc_api_base}/txs/send"
                                                     sign_response = requests.post(sign_url, json=sign_data, timeout=30)
+                                                    
+                                                    print(f"   📡 Resposta assinatura: Status {sign_response.status_code}")
                                                     
                                                     if sign_response.status_code in [200, 201]:
                                                         signed_tx_data = sign_response.json()
@@ -2242,25 +2256,71 @@ class RealCrossChainBridge:
                                                                 "method": "blockcypher_api_with_opreturn",
                                                                 "op_return_included": True
                                                             }
+                                                        else:
+                                                            print(f"   ⚠️  Transação assinada mas hash não encontrado")
+                                                            print(f"      Resposta: {json.dumps(signed_tx_data, indent=2)[:500]}")
                                                     else:
                                                         print(f"   ⚠️  Erro ao assinar transação: {sign_response.status_code}")
-                                                        print(f"      {sign_response.text[:200]}")
+                                                        print(f"      {sign_response.text[:500]}")
                                                 else:
                                                     print(f"   ⚠️  BlockCypher não retornou 'tosign'")
+                                                    print(f"      Resposta completa: {json.dumps(unsigned_tx, indent=2)[:1000]}")
                                             else:
                                                 print(f"   ⚠️  Erro ao criar transação: {create_response.status_code}")
-                                                print(f"      {create_response.text[:200]}")
+                                                print(f"      Resposta completa: {create_response.text[:1000]}")
+                                                
+                                                # Tentar entender o erro
+                                                try:
+                                                    error_json = create_response.json()
+                                                    error_msg = error_json.get('error', 'Erro desconhecido')
+                                                    print(f"      Erro detalhado: {error_msg}")
+                                                except:
+                                                    pass
                                         except Exception as blockcypher_err:
-                                            print(f"   ⚠️  Erro ao usar BlockCypher API: {blockcypher_err}")
+                                            print(f"   ⚠️  Exceção ao usar BlockCypher API: {blockcypher_err}")
                                             import traceback
                                             traceback.print_exc()
                                         
-                                        # Se BlockCypher falhou, retornar erro (não tentar criação manual)
+                                        # Se BlockCypher falhou, tentar FALLBACK: criar sem OP_RETURN primeiro para testar
+                                        # Se funcionar, o problema é específico do OP_RETURN
+                                        print(f"   🔄 BlockCypher falhou, tentando fallback: criar transação sem OP_RETURN para testar...")
+                                        try:
+                                            # Remover OP_RETURN temporariamente
+                                            outputs_list_no_opreturn = [
+                                                out for out in outputs_list 
+                                                if out.get('script_type') != 'null-data'
+                                            ]
+                                            
+                                            tx_data_fallback = {
+                                                "inputs": inputs_list,
+                                                "outputs": outputs_list_no_opreturn,
+                                                "fees": estimated_fee_satoshis
+                                            }
+                                            
+                                            create_response_fallback = requests.post(
+                                                f"{self.btc_api_base}/txs/new",
+                                                json=tx_data_fallback,
+                                                timeout=30
+                                            )
+                                            
+                                            if create_response_fallback.status_code in [200, 201]:
+                                                print(f"   ⚠️  Transação SEM OP_RETURN funcionou! O problema é específico do OP_RETURN.")
+                                                print(f"      Isso indica que o formato do OP_RETURN pode estar incorreto para BlockCypher.")
+                                            else:
+                                                print(f"   ⚠️  Transação SEM OP_RETURN também falhou: {create_response_fallback.status_code}")
+                                                print(f"      Isso indica um problema mais geral com BlockCypher API.")
+                                        except Exception as fallback_err:
+                                            print(f"   ⚠️  Erro no fallback: {fallback_err}")
+                                        
+                                        # Retornar erro detalhado
                                         return {
                                             "success": False,
                                             "error": "Não foi possível criar transação com OP_RETURN via BlockCypher API",
                                             "debug": {
-                                                "reason": "op_return_required_but_blockcypher_failed"
+                                                "reason": "op_return_required_but_blockcypher_failed",
+                                                "inputs_count": len(inputs_list),
+                                                "outputs_count": len(outputs_list),
+                                                "op_return_output": next((out for out in outputs_list if out.get('script_type') == 'null-data'), None)
                                             }
                                         }
                                     
