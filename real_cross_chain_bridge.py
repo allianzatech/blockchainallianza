@@ -2801,7 +2801,8 @@ class RealCrossChainBridge:
                                         # Adicionar outputs
                                         tx.add_output(output_value, address=to_address)
                                         
-                                        # Adicionar OP_RETURN se disponível
+                                        # Adicionar OP_RETURN se disponível (CRÍTICO para vínculo criptográfico)
+                                        op_return_added = False
                                         if source_tx_hash:
                                             try:
                                                 polygon_hash_clean = source_tx_hash.replace('0x', '')
@@ -2811,16 +2812,58 @@ class RealCrossChainBridge:
                                                 else:
                                                     op_return_script = bytes([0x6a, 0x4c, len(op_return_data)]) + op_return_data
                                                 
-                                                # Tentar adicionar OP_RETURN
+                                                print(f"   🔗 Tentando adicionar OP_RETURN: ALZ:{polygon_hash_clean[:20]}...")
+                                                
+                                                # Método 1: Tentar com script como hex string
                                                 try:
                                                     tx.add_output(0, script=op_return_script.hex())
-                                                except:
+                                                    op_return_added = True
+                                                    print(f"   ✅ OP_RETURN adicionado (hex string)")
+                                                except Exception as hex_err:
+                                                    print(f"   ⚠️  Método hex falhou: {hex_err}")
+                                                    
+                                                    # Método 2: Tentar com script como bytes
                                                     try:
                                                         tx.add_output(0, script=op_return_script)
-                                                    except:
-                                                        print(f"   ⚠️  Não foi possível adicionar OP_RETURN, continuando sem ele...")
+                                                        op_return_added = True
+                                                        print(f"   ✅ OP_RETURN adicionado (bytes)")
+                                                    except Exception as bytes_err:
+                                                        print(f"   ⚠️  Método bytes falhou: {bytes_err}")
+                                                        
+                                                        # Método 3: Tentar usando Script class do bitcoinlib
+                                                        try:
+                                                            from bitcoinlib.scripts import Script
+                                                            op_return_script_obj = Script()
+                                                            op_return_script_obj.add_opcode(0x6a)  # OP_RETURN
+                                                            op_return_script_obj.add_data(op_return_data)
+                                                            tx.add_output(0, script=op_return_script_obj)
+                                                            op_return_added = True
+                                                            print(f"   ✅ OP_RETURN adicionado (Script class)")
+                                                        except Exception as script_err:
+                                                            print(f"   ⚠️  Método Script class falhou: {script_err}")
+                                                            
+                                                            # Método 4: Adicionar como output vazio e modificar depois (workaround)
+                                                            print(f"   ⚠️  Todos os métodos diretos falharam")
+                                                            print(f"   ⚠️  OP_RETURN não será incluído nesta transação")
+                                                            print(f"   ⚠️  Vínculo criptográfico não será estabelecido")
+                                                
+                                                if op_return_added:
+                                                    print(f"   ✅✅✅ OP_RETURN incluído com sucesso!")
+                                                    add_log("op_return_added_manual", {
+                                                        "source_tx_hash": source_tx_hash,
+                                                        "method": "manual_raw"
+                                                    }, "info")
+                                                else:
+                                                    add_log("op_return_failed_manual", {
+                                                        "source_tx_hash": source_tx_hash,
+                                                        "error": "Todos os métodos falharam"
+                                                    }, "warning")
+                                                    
                                             except Exception as op_err:
-                                                print(f"   ⚠️  Erro ao adicionar OP_RETURN: {op_err}")
+                                                print(f"   ❌ Erro ao preparar OP_RETURN: {op_err}")
+                                                import traceback
+                                                traceback.print_exc()
+                                                add_log("op_return_error_manual", {"error": str(op_err)}, "error")
                                         
                                         # Adicionar change
                                         if change_value > 546:
