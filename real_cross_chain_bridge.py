@@ -2042,26 +2042,48 @@ class RealCrossChainBridge:
                                                 if len(op_return_data) > 80:
                                                     op_return_data = op_return_data[:80]
                                                 
-                                                # Criar script OP_RETURN manualmente
-                                                # OP_RETURN = 0x6a, seguido do tamanho dos dados e os dados
-                                                op_return_script = bytes([0x6a, len(op_return_data)]) + op_return_data
+                                                # Criar script OP_RETURN usando bitcoinlib Script
+                                                # OP_RETURN = 0x6a (OP_RETURN), seguido do tamanho (pushdata) e os dados
+                                                # bitcoinlib Script espera uma lista de opcodes e dados
+                                                try:
+                                                    # Método 1: Usar Script do bitcoinlib
+                                                    op_return_script = Script()
+                                                    # OP_RETURN (0x6a) + pushdata (tamanho) + dados
+                                                    op_return_script.add_opcode(0x6a)  # OP_RETURN
+                                                    op_return_script.add_data(op_return_data)
+                                                    
+                                                    # Adicionar output OP_RETURN (valor 0) com script
+                                                    tx.add_output(0, script=op_return_script)
+                                                    print(f"   🔗 OP_RETURN adicionado (via Script) com hash Polygon: {source_tx_hash[:20]}...")
+                                                except Exception as script_error:
+                                                    # Método 2: Criar script manualmente como bytes
+                                                    print(f"   ⚠️  Método Script falhou, tentando método manual: {script_error}")
+                                                    # OP_RETURN = 0x6a, seguido do tamanho (pushdata) e os dados
+                                                    # Para pushdata, se tamanho <= 75, é um byte direto
+                                                    if len(op_return_data) <= 75:
+                                                        op_return_script_bytes = bytes([0x6a, len(op_return_data)]) + op_return_data
+                                                    else:
+                                                        # Para tamanhos maiores, usar pushdata1 (0x4c) + tamanho (1 byte)
+                                                        op_return_script_bytes = bytes([0x6a, 0x4c, len(op_return_data)]) + op_return_data
+                                                    
+                                                    # Adicionar output OP_RETURN (valor 0) com script como hex
+                                                    tx.add_output(0, script=op_return_script_bytes.hex())
+                                                    print(f"   🔗 OP_RETURN adicionado (via manual) com hash Polygon: {source_tx_hash[:20]}...")
                                                 
-                                                # Adicionar output OP_RETURN (valor 0)
-                                                # bitcoinlib aceita script como bytes ou hex string
-                                                tx.add_output(0, script=op_return_script.hex())
-                                                print(f"   🔗 OP_RETURN adicionado com hash Polygon: {source_tx_hash[:20]}...")
                                                 print(f"      Dados: ALZ:{polygon_hash_clean[:20]}...")
+                                                print(f"      Tamanho: {len(op_return_data)} bytes")
                                                 add_log("op_return_added", {
                                                     "source_tx_hash": source_tx_hash,
                                                     "op_return_length": len(op_return_data),
                                                     "op_return_data": f"ALZ:{polygon_hash_clean[:20]}..."
                                                 })
                                             except Exception as op_return_error:
-                                                print(f"   ⚠️  Erro ao adicionar OP_RETURN: {op_return_error}")
+                                                print(f"   ❌ Erro ao adicionar OP_RETURN: {op_return_error}")
                                                 import traceback
                                                 traceback.print_exc()
-                                                add_log("op_return_error", {"error": str(op_return_error)}, "warning")
+                                                add_log("op_return_error", {"error": str(op_return_error)}, "error")
                                                 # Continuar mesmo sem OP_RETURN (não é crítico para funcionamento)
+                                                print(f"   ⚠️  Continuando sem OP_RETURN...")
                                         
                                         if change_value > 546:  # Dust limit
                                             print(f"   🔄 Adicionando change: {from_address} ({change_value} satoshis)")
