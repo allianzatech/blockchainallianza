@@ -2187,9 +2187,87 @@ class RealCrossChainBridge:
                                         })
                                         print(f"   🔄 Change output adicionado: {change_value} satoshis para {from_address}")
                                     
+                                    # CORREÇÃO CRÍTICA: Se OP_RETURN é necessário, FORÇAR uso de BlockCypher API
+                                    # Não podemos usar criação manual porque bitcoinlib não suporta OP_RETURN facilmente
+                                    if source_tx_hash:
+                                        print(f"   🔗 OP_RETURN necessário - FORÇANDO uso de BlockCypher API (não usar criação manual)...")
+                                        add_log("forcing_blockcypher_for_opreturn", {"source_tx_hash": source_tx_hash}, "info")
+                                        
+                                        # Tentar criar transação via BlockCypher API
+                                        try:
+                                            tx_data = {
+                                                "inputs": inputs_list,
+                                                "outputs": outputs_list,
+                                                "fees": estimated_fee_satoshis
+                                            }
+                                            
+                                            print(f"   📡 Enviando para BlockCypher API para criar transação com OP_RETURN...")
+                                            create_url = f"{self.btc_api_base}/txs/new"
+                                            create_response = requests.post(create_url, json=tx_data, timeout=30)
+                                            
+                                            if create_response.status_code in [200, 201]:
+                                                unsigned_tx = create_response.json()
+                                                tosign = unsigned_tx.get('tosign', [])
+                                                
+                                                if tosign:
+                                                    print(f"   ✅ Transação criada, precisa assinar {len(tosign)} inputs...")
+                                                    
+                                                    sign_data = {
+                                                        "tx": unsigned_tx,
+                                                        "tosign": tosign,
+                                                        "privkeys": [from_private_key]
+                                                    }
+                                                    
+                                                    sign_url = f"{self.btc_api_base}/txs/send"
+                                                    sign_response = requests.post(sign_url, json=sign_data, timeout=30)
+                                                    
+                                                    if sign_response.status_code in [200, 201]:
+                                                        signed_tx_data = sign_response.json()
+                                                        tx_hash = signed_tx_data.get('tx', {}).get('hash')
+                                                        
+                                                        if tx_hash:
+                                                            print(f"   ✅✅✅ Transação criada e broadcastada via BlockCypher com OP_RETURN! Hash: {tx_hash}")
+                                                            
+                                                            return {
+                                                                "success": True,
+                                                                "tx_hash": tx_hash,
+                                                                "from": from_address,
+                                                                "to": to_address,
+                                                                "amount": amount_btc,
+                                                                "chain": "bitcoin",
+                                                                "status": "broadcasted",
+                                                                "explorer_url": f"https://live.blockcypher.com/btc-testnet/tx/{tx_hash}/",
+                                                                "note": "✅ Transação REAL criada via BlockCypher API incluindo OP_RETURN",
+                                                                "real_broadcast": True,
+                                                                "method": "blockcypher_api_with_opreturn",
+                                                                "op_return_included": True
+                                                            }
+                                                    else:
+                                                        print(f"   ⚠️  Erro ao assinar transação: {sign_response.status_code}")
+                                                        print(f"      {sign_response.text[:200]}")
+                                                else:
+                                                    print(f"   ⚠️  BlockCypher não retornou 'tosign'")
+                                            else:
+                                                print(f"   ⚠️  Erro ao criar transação: {create_response.status_code}")
+                                                print(f"      {create_response.text[:200]}")
+                                        except Exception as blockcypher_err:
+                                            print(f"   ⚠️  Erro ao usar BlockCypher API: {blockcypher_err}")
+                                            import traceback
+                                            traceback.print_exc()
+                                        
+                                        # Se BlockCypher falhou, retornar erro (não tentar criação manual)
+                                        return {
+                                            "success": False,
+                                            "error": "Não foi possível criar transação com OP_RETURN via BlockCypher API",
+                                            "debug": {
+                                                "reason": "op_return_required_but_blockcypher_failed"
+                                            }
+                                        }
+                                    
                                     # SOLUÇÃO DEFINITIVA: Criar transação manualmente (mais confiável que BlockCypher)
                                     # BlockCypher testnet está instável e não retorna 'tosign' corretamente
                                     # Vamos criar transação usando bitcoinlib e broadcastar via Blockstream
+                                    # NOTA: Este código só executa se source_tx_hash NÃO está presente (sem OP_RETURN)
                                     print(f"   🔧 Criando transação manualmente (BlockCypher não confiável)...")
                                     add_log("creating_manual_transaction", {"reason": "blockcypher_unreliable"}, "info")
                                     
