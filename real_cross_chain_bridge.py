@@ -2162,7 +2162,8 @@ class RealCrossChainBridge:
                                         
                                         # Adicionar inputs
                                         # CORREÇÃO: Usar formato correto para bitcoinlib
-                                        for utxo in utxos:
+                                        print(f"   📥 Preparando {len(utxos)} inputs...")
+                                        for idx, utxo in enumerate(utxos):
                                             txid = utxo.get('txid') or utxo.get('tx_hash')
                                             # bitcoinlib aceita output_n, vout, ou output_index
                                             output_n = (utxo.get('output_n') or 
@@ -2172,9 +2173,33 @@ class RealCrossChainBridge:
                                                        utxo.get('tx_output_n', 0))
                                             value = utxo.get('value', 0)
                                             
-                                            print(f"   📥 Adicionando input: {txid}:{output_n} ({value} satoshis)")
-                                            # bitcoinlib precisa de keys para assinar depois
-                                            tx.add_input(prev_txid=txid, output_n=int(output_n), value=value, keys=key)
+                                            print(f"   📥 Input {idx + 1}/{len(utxos)}: {txid[:20]}...:{output_n} ({value} satoshis)")
+                                            
+                                            try:
+                                                # bitcoinlib precisa de keys para assinar depois
+                                                # IMPORTANTE: value deve estar em satoshis (int)
+                                                tx.add_input(
+                                                    prev_txid=txid, 
+                                                    output_n=int(output_n), 
+                                                    value=int(value),  # Garantir que é int
+                                                    keys=key
+                                                )
+                                                print(f"      ✅ Input {idx + 1} adicionado com sucesso")
+                                            except Exception as input_error:
+                                                print(f"      ❌ Erro ao adicionar input {idx + 1}: {input_error}")
+                                                # Tentar sem value (bitcoinlib pode buscar automaticamente)
+                                                try:
+                                                    tx.add_input(
+                                                        prev_txid=txid, 
+                                                        output_n=int(output_n), 
+                                                        keys=key
+                                                    )
+                                                    print(f"      ✅ Input {idx + 1} adicionado sem value (bitcoinlib buscará)")
+                                                except Exception as input_error2:
+                                                    print(f"      ❌ Erro também sem value: {input_error2}")
+                                                    raise Exception(f"Não foi possível adicionar input {idx + 1}: {input_error2}")
+                                        
+                                        print(f"   ✅ Todos os {len(utxos)} inputs adicionados")
                                         
                                         # Adicionar outputs
                                         print(f"   📤 Adicionando output: {to_address} ({output_value} satoshis)")
@@ -2471,10 +2496,25 @@ class RealCrossChainBridge:
                                         print(f"   ⚠️  Erro ao criar transação manualmente: {manual_tx_error}")
                                         import traceback
                                         traceback.print_exc()
-                                        add_log("manual_transaction_error", {"error": str(manual_tx_error)}, "error")
+                                        add_log("manual_transaction_error", {
+                                            "error": str(manual_tx_error),
+                                            "traceback": traceback.format_exc()
+                                        }, "error")
                                         
-                                        # Se criação manual falhar, tentar BlockCypher original (mesmo que não funcione bem)
-                                        print(f"   🔄 Tentando BlockCypher original como último recurso...")
+                                        # Se criação manual falhar, tentar criar transação raw diretamente usando biblioteca alternativa
+                                        print(f"   🔄 Tentando criar transação raw diretamente...")
+                                        
+                                        try:
+                                            # Usar biblioteca alternativa: criar transação raw manualmente
+                                            # Isso é um workaround quando bitcoinlib falha
+                                            from bitcoinlib.encoding import to_bytes, to_hex_string
+                                            
+                                            # Criar transação raw manualmente (formato Bitcoin)
+                                            # Isso é complexo, então vamos tentar uma abordagem mais simples:
+                                            # Usar a biblioteca 'bit' que é mais simples para criar transações
+                                            
+                                            # Alternativa: usar BlockCypher para criar transação (mesmo que não funcione bem)
+                                            print(f"   🔄 Tentando BlockCypher API para criar transação...")
                                         
                                         # CORREÇÃO: Definir tx_data aqui antes de usar
                                         # Preparar dados para BlockCypher API (formato correto)
