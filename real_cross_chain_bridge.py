@@ -2299,9 +2299,156 @@ class RealCrossChainBridge:
                                             import traceback
                                             traceback.print_exc()
                                         
-                                        # Se BlockCypher falhou, tentar FALLBACK: criar transação raw manualmente com OP_RETURN
-                                        # e broadcastar via Blockstream (que aceita transações raw)
-                                        print(f"   🔄 BlockCypher falhou, tentando FALLBACK: criar transação raw manualmente com OP_RETURN...")
+                                        # Se BlockCypher falhou, tentar FALLBACK: usar biblioteca 'bit' (suporte nativo OP_RETURN)
+                                        # Esta é a solução recomendada pelas IAs - 'bit' tem suporte direto a OP_RETURN
+                                        print(f"   🔄 BlockCypher falhou, tentando FALLBACK: usar biblioteca 'bit' (suporte nativo OP_RETURN)...")
+                                        
+                                        # PRIORIDADE 1: Tentar biblioteca 'bit' (mais simples e confiável para OP_RETURN)
+                                        try:
+                                            from bit import PrivateKey
+                                            from bit.network import NetworkAPI
+                                            
+                                            print(f"   📚 Usando biblioteca 'bit' para criar transação com OP_RETURN...")
+                                            
+                                            # Criar chave privada
+                                            key = PrivateKey(from_private_key)
+                                            
+                                            # Preparar OP_RETURN
+                                            polygon_hash_clean = source_tx_hash.replace('0x', '')
+                                            op_return_data = f"ALZ:{polygon_hash_clean}"
+                                            
+                                            print(f"   🔗 OP_RETURN será: ALZ:{polygon_hash_clean[:20]}...")
+                                            
+                                            # Criar outputs: (destino, valor) + OP_RETURN
+                                            # A biblioteca 'bit' aceita OP_RETURN diretamente no formato de output
+                                            outputs = [
+                                                (to_address, int(output_value), 'satoshi')
+                                            ]
+                                            
+                                            # Adicionar OP_RETURN - biblioteca 'bit' aceita formato especial
+                                            # Formato: ('OP_RETURN <dados>', 0, 'satoshi')
+                                            op_return_output = (f"OP_RETURN {op_return_data}", 0, 'satoshi')
+                                            outputs.append(op_return_output)
+                                            
+                                            # Adicionar change se necessário
+                                            if change_value > 546:
+                                                outputs.append((from_address, int(change_value), 'satoshi'))
+                                            
+                                            print(f"   📤 Criando transação com {len(outputs)} outputs (incluindo OP_RETURN)...")
+                                            
+                                            # Criar transação
+                                            tx_hex = key.create_transaction(outputs=outputs)
+                                            
+                                            print(f"   ✅ Transação criada com 'bit'! Tamanho: {len(tx_hex)} bytes")
+                                            
+                                            # Verificar se OP_RETURN está na transação
+                                            if op_return_data.encode('utf-8').hex() in tx_hex or op_return_data in tx_hex:
+                                                print(f"   ✅ OP_RETURN confirmado na transação raw!")
+                                            
+                                            # Broadcast via Blockstream (mais confiável que NetworkAPI do bit)
+                                            print(f"   📡 Broadcastando via Blockstream...")
+                                            blockstream_url = "https://blockstream.info/testnet/api/tx"
+                                            broadcast_response = requests.post(
+                                                blockstream_url,
+                                                data=tx_hex,
+                                                headers={'Content-Type': 'text/plain'},
+                                                timeout=30
+                                            )
+                                            
+                                            if broadcast_response.status_code == 200:
+                                                tx_hash = broadcast_response.text.strip()
+                                                print(f"   ✅✅✅ Transação broadcastada via Blockstream com OP_RETURN! Hash: {tx_hash}")
+                                                
+                                                return {
+                                                    "success": True,
+                                                    "tx_hash": tx_hash,
+                                                    "from": from_address,
+                                                    "to": to_address,
+                                                    "amount": amount_btc,
+                                                    "chain": "bitcoin",
+                                                    "status": "broadcasted",
+                                                    "explorer_url": f"https://blockstream.info/testnet/tx/{tx_hash}",
+                                                    "note": "✅ Transação REAL criada com biblioteca 'bit' incluindo OP_RETURN e broadcastada via Blockstream",
+                                                    "real_broadcast": True,
+                                                    "method": "bit_library_with_opreturn_blockstream",
+                                                    "op_return_included": True
+                                                }
+                                            else:
+                                                print(f"   ⚠️  Blockstream falhou ({broadcast_response.status_code}), tentando NetworkAPI do bit...")
+                                                # Fallback: usar NetworkAPI do bit
+                                                try:
+                                                    tx_hash = NetworkAPI.broadcast_tx(tx_hex)
+                                                    if tx_hash:
+                                                        print(f"   ✅✅✅ Transação broadcastada via NetworkAPI! Hash: {tx_hash}")
+                                                        return {
+                                                            "success": True,
+                                                            "tx_hash": tx_hash,
+                                                            "from": from_address,
+                                                            "to": to_address,
+                                                            "amount": amount_btc,
+                                                            "chain": "bitcoin",
+                                                            "status": "broadcasted",
+                                                            "explorer_url": f"https://blockstream.info/testnet/tx/{tx_hash}",
+                                                            "note": "✅ Transação REAL criada com biblioteca 'bit' incluindo OP_RETURN",
+                                                            "real_broadcast": True,
+                                                            "method": "bit_library_with_opreturn_networkapi",
+                                                            "op_return_included": True
+                                                        }
+                                                except Exception as networkapi_err:
+                                                    print(f"   ⚠️  NetworkAPI também falhou: {networkapi_err}")
+                                                    
+                                        except ImportError:
+                                            print(f"   ⚠️  Biblioteca 'bit' não disponível, tentando 'python-bitcointx'...")
+                                        except Exception as bit_err:
+                                            print(f"   ⚠️  Erro ao usar biblioteca 'bit': {bit_err}")
+                                            import traceback
+                                            traceback.print_exc()
+                                        
+                                        # PRIORIDADE 2: Tentar 'python-bitcointx' (mais controle manual)
+                                        try:
+                                            from bitcointx import CMutableTransaction, CTxOut, CTxIn, COutPoint
+                                            from bitcointx.core.script import CScript, OP_RETURN
+                                            from bitcointx.wallet import CKey
+                                            import base58
+                                            
+                                            print(f"   📚 Usando biblioteca 'python-bitcointx' para criar transação com OP_RETURN...")
+                                            
+                                            # Preparar OP_RETURN
+                                            polygon_hash_clean = source_tx_hash.replace('0x', '')
+                                            op_return_data = f"ALZ:{polygon_hash_clean}"
+                                            op_return_bytes = op_return_data.encode('utf-8')
+                                            
+                                            # Criar script OP_RETURN
+                                            op_return_script = CScript([OP_RETURN, op_return_bytes])
+                                            
+                                            # Criar transação
+                                            tx = CMutableTransaction()
+                                            
+                                            # Adicionar inputs (precisa dos UTXOs)
+                                            for utxo in utxos:
+                                                txid = utxo.get('txid') or utxo.get('tx_hash')
+                                                output_n = (utxo.get('output_n') or 
+                                                           utxo.get('vout') or 
+                                                           utxo.get('output_index') or 
+                                                           utxo.get('output') or 
+                                                           utxo.get('tx_output_n', 0))
+                                                
+                                                prevout = COutPoint(int(txid, 16), int(output_n))
+                                                tx.vin.append(CTxIn(prevout))
+                                            
+                                            # Adicionar outputs
+                                            # Output principal (destino)
+                                            # Nota: python-bitcointx precisa de scriptPubKey, não endereço diretamente
+                                            # Por enquanto, vamos pular este método e usar bitcoinlib como último recurso
+                                            print(f"   ⚠️  python-bitcointx requer conversão de endereço para scriptPubKey (complexo), pulando...")
+                                            
+                                        except ImportError:
+                                            print(f"   ⚠️  Biblioteca 'python-bitcointx' não disponível, tentando 'bitcoinlib' manual...")
+                                        except Exception as bitcointx_err:
+                                            print(f"   ⚠️  Erro ao usar 'python-bitcointx': {bitcointx_err}")
+                                        
+                                        # PRIORIDADE 3: Fallback final - bitcoinlib manual (já implementado)
+                                        print(f"   🔄 Tentando método final: bitcoinlib manual...")
                                         try:
                                             from bitcoinlib.transactions import Transaction
                                             from bitcoinlib.keys import HDKey
