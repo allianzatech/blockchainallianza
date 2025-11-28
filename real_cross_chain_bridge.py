@@ -1757,9 +1757,100 @@ class RealCrossChainBridge:
                                 print(f"⚠️  API retornou status {utxos_response.status_code}")
                                 print(f"   Resposta: {utxos_response.text[:200]}")
                         except Exception as api_utxo_error:
-                            print(f"⚠️  Erro ao obter UTXOs via API: {api_utxo_error}")
-                            import traceback
-                            traceback.print_exc()
+                            print(f"⚠️  Erro ao obter UTXOs via BlockCypher API: {api_utxo_error}")
+                        
+                        # Se BlockCypher não funcionou, tentar Blockstream API (mais confiável para testnet)
+                        if not utxos or len(utxos) == 0:
+                            print(f"🔄 Tentando Blockstream API como alternativa...")
+                            try:
+                                # Blockstream API para testnet
+                                blockstream_url = f"https://blockstream.info/testnet/api/address/{from_address}/utxo"
+                                print(f"   🔍 Blockstream: {blockstream_url}")
+                                blockstream_response = requests.get(blockstream_url, timeout=15)
+                                
+                                if blockstream_response.status_code == 200:
+                                    blockstream_utxos = blockstream_response.json()
+                                    
+                                    if blockstream_utxos and len(blockstream_utxos) > 0:
+                                        print(f"✅ {len(blockstream_utxos)} UTXOs encontrados via Blockstream API")
+                                        
+                                        # Converter formato Blockstream para formato bitcoinlib
+                                        wallet_utxos = []
+                                        for utxo in blockstream_utxos:
+                                            if utxo.get('value', 0) > 0:
+                                                wallet_utxos.append({
+                                                    'txid': utxo.get('txid'),
+                                                    'output_n': utxo.get('vout', 0),
+                                                    'vout': utxo.get('vout', 0),
+                                                    'value': utxo.get('value', 0),
+                                                    'address': from_address,
+                                                    'confirmations': utxo.get('status', {}).get('block_height', 0) if isinstance(utxo.get('status'), dict) else 0,
+                                                    'script': utxo.get('scriptpubkey', ''),
+                                                    'spendable': True,
+                                                    'tx_hash': utxo.get('txid')
+                                                })
+                                        
+                                        if wallet_utxos:
+                                            utxos = wallet_utxos
+                                            print(f"📦 UTXOs do Blockstream convertidos: {len(utxos)}")
+                                            
+                                            # Log detalhado
+                                            total_value = sum(u.get('value', 0) for u in utxos)
+                                            print(f"   💰 Valor total: {total_value} satoshis ({total_value / 100000000} BTC)")
+                                    else:
+                                        print(f"⚠️  Blockstream retornou lista vazia")
+                                else:
+                                    print(f"⚠️  Blockstream retornou status {blockstream_response.status_code}")
+                            except Exception as blockstream_error:
+                                print(f"⚠️  Erro ao obter UTXOs via Blockstream: {blockstream_error}")
+                        
+                        # Última tentativa: buscar transações do endereço e extrair UTXOs manualmente
+                        if not utxos or len(utxos) == 0:
+                            print(f"🔄 Última tentativa: buscar transações do endereço e extrair UTXOs...")
+                            try:
+                                # Buscar todas as transações do endereço via Blockstream
+                                txs_url = f"https://blockstream.info/testnet/api/address/{from_address}/txs"
+                                txs_response = requests.get(txs_url, timeout=15)
+                                
+                                if txs_response.status_code == 200:
+                                    txs_data = txs_response.json()
+                                    
+                                    # Extrair UTXOs das transações
+                                    wallet_utxos = []
+                                    for tx in txs_data[:10]:  # Limitar a 10 transações mais recentes
+                                        txid = tx.get('txid')
+                                        vouts = tx.get('vout', [])
+                                        
+                                        for vout in vouts:
+                                            # Verificar se este output foi gasto
+                                            if vout.get('status', {}).get('spent', False):
+                                                continue
+                                            
+                                            # Verificar se é para o nosso endereço
+                                            scriptpubkey_address = vout.get('scriptpubkey_address')
+                                            if scriptpubkey_address == from_address:
+                                                wallet_utxos.append({
+                                                    'txid': txid,
+                                                    'output_n': vout.get('vout', 0),
+                                                    'vout': vout.get('vout', 0),
+                                                    'value': vout.get('value', 0),
+                                                    'address': from_address,
+                                                    'confirmations': tx.get('status', {}).get('block_height', 0) if isinstance(tx.get('status'), dict) else 0,
+                                                    'script': vout.get('scriptpubkey', ''),
+                                                    'spendable': True,
+                                                    'tx_hash': txid
+                                                })
+                                    
+                                    if wallet_utxos:
+                                        utxos = wallet_utxos
+                                        print(f"📦 {len(utxos)} UTXOs extraídos das transações")
+                                        
+                                        total_value = sum(u.get('value', 0) for u in utxos)
+                                        print(f"   💰 Valor total: {total_value} satoshis ({total_value / 100000000} BTC)")
+                            except Exception as extract_error:
+                                print(f"⚠️  Erro ao extrair UTXOs das transações: {extract_error}")
+                                import traceback
+                                traceback.print_exc()
                     
                     if utxos:
                         total_utxo_value = sum(utxo['value'] for utxo in utxos) / 100000000
