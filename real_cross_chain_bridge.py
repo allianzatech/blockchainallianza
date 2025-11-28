@@ -2068,15 +2068,19 @@ class RealCrossChainBridge:
                                 "api_utxos_count": len(utxos) if utxos else 0
                             })
                             
-                            # SOLUÇÃO PRINCIPAL: Se temos source_tx_hash (OP_RETURN necessário), usar BlockCypher API PRIMEIRO
-                            # BlockCypher API suporta OP_RETURN via script_type: "null-data"
+                            # SOLUÇÃO PRINCIPAL: Se temos source_tx_hash (OP_RETURN necessário), usar BlockCypher API DIRETAMENTE
+                            # BlockCypher API suporta OP_RETURN via script_type: "null-data" de forma nativa e confiável
+                            # bitcoinlib não suporta OP_RETURN facilmente, então pulamos todas as tentativas com bitcoinlib
                             if source_tx_hash:
-                                print(f"🔗 OP_RETURN necessário - usando BlockCypher API (suporta OP_RETURN nativamente)...")
+                                print(f"🔗 OP_RETURN necessário - usando BlockCypher API DIRETAMENTE (suporta OP_RETURN nativamente)...")
                                 add_log("using_blockcypher_for_opreturn", {"source_tx_hash": source_tx_hash}, "info")
                             
                             # SOLUÇÃO ALTERNATIVA: Se wallet não tem UTXOs mas temos da API, usar BlockCypher ANTES de tentar wallet.send_to()
+                            # OU se OP_RETURN é necessário (source_tx_hash presente)
                             if (not wallet_utxos and utxos) or source_tx_hash:
-                                if not source_tx_hash:
+                                if source_tx_hash:
+                                    print(f"🔗 OP_RETURN necessário - pulando bitcoinlib e usando BlockCypher API diretamente...")
+                                elif not wallet_utxos:
                                     print(f"⚠️  Wallet não reconhece UTXOs, usando BlockCypher API ANTES de tentar wallet.send_to()...")
                                 add_log("using_blockcypher_api", {"utxos_count": len(utxos), "op_return_needed": bool(source_tx_hash)}, "info")
                                 
