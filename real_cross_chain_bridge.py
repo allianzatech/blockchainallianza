@@ -2396,16 +2396,32 @@ class RealCrossChainBridge:
                                             # Tentar Formato 1 primeiro (mais comum)
                                             tx_hex = None
                                             op_return_method_used = None
+                                            
+                                            # IMPORTANTE: A biblioteca 'bit' precisa que o endereço da PrivateKey corresponda ao endereço com UTXOs
+                                            # Se não corresponder, vamos tentar criar PrivateKey com o endereço correto
+                                            print(f"   🔍 Verificando correspondência de endereços...")
+                                            print(f"      Endereço da PrivateKey: {key.address}")
+                                            print(f"      Endereço esperado (com UTXOs): {from_address}")
+                                            
+                                            if key.address != from_address:
+                                                print(f"   ⚠️  Endereços não correspondem!")
+                                                print(f"   ⚠️  A biblioteca 'bit' pode não encontrar UTXOs automaticamente")
+                                                print(f"   🔄 Tentando criar transação mesmo assim (biblioteca pode buscar por rede)...")
+                                            
                                             try:
                                                 outputs_with_opreturn = outputs.copy()
                                                 outputs_with_opreturn.insert(1, op_return_output_1)  # Inserir após output principal
                                                 print(f"   📝 Tentando Formato 1: 'OP_RETURN {op_return_data[:30]}...'")
-                                                # Passar UTXOs explicitamente se disponíveis, senão deixar a biblioteca buscar
+                                                
+                                                # Tentar com UTXOs explícitos primeiro
                                                 if bit_unspents and len(bit_unspents) > 0:
+                                                    print(f"   📦 Usando {len(bit_unspents)} UTXOs explícitos...")
                                                     tx_hex = key.create_transaction(outputs=outputs_with_opreturn, unspents=bit_unspents)
                                                 else:
                                                     # Deixar a biblioteca buscar UTXOs automaticamente
+                                                    print(f"   🔄 Deixando biblioteca buscar UTXOs automaticamente...")
                                                     tx_hex = key.create_transaction(outputs=outputs_with_opreturn)
+                                                
                                                 op_return_method_used = "format_1_op_return_prefix"
                                                 print(f"   ✅ Formato 1 funcionou!")
                                             except Exception as fmt1_err:
