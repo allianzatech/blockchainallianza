@@ -11,3 +11,4 @@ base58==2.1.1
 setuptools>=65.0.0
 bitcoinlib==0.7.5
 bech32>=1.2.0
+python-bitcointx>=1.1.5

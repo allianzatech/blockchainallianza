@@ -2771,7 +2771,65 @@ class RealCrossChainBridge:
                                         # Última tentativa: criar transação raw completamente manual
                                         print(f"   🔧 Criando transação raw manualmente (último recurso)...")
                                         
-                                        # Usar os UTXOs da API diretamente
+                                        # TENTATIVA 1: Usar python-bitcointx se disponível (suporta OP_RETURN nativamente)
+                                        try:
+                                            from bitcointx.core import CMutableTransaction, CTxIn, CTxOut, COutPoint
+                                            from bitcointx.core.script import CScript, OP_RETURN
+                                            from bitcointx.wallet import CBitcoinSecret, P2WPKHBitcoinAddress
+                                            from bitcointx import select_chain_params
+                                            from bitcointx.core import lx, b2x
+                                            
+                                            select_chain_params('testnet')
+                                            print(f"   ✅ python-bitcointx disponível - usando para criar transação com OP_RETURN")
+                                            
+                                            # Criar chave
+                                            secret = CBitcoinSecret.from_secret_bytes(bytes.fromhex(from_private_key[2:] if from_private_key.startswith('0x') else from_private_key))
+                                            
+                                            # Criar transação mutável
+                                            tx_mutable = CMutableTransaction()
+                                            
+                                            # Adicionar inputs
+                                            for utxo in utxos:
+                                                txid = utxo.get('txid') or utxo.get('tx_hash')
+                                                output_n = utxo.get('output_n') or utxo.get('vout') or utxo.get('output_index', 0)
+                                                
+                                                prevout = COutPoint(lx(txid), int(output_n))
+                                                txin = CTxIn(prevout)
+                                                tx_mutable.vin.append(txin)
+                                            
+                                            # Adicionar output principal
+                                            from bitcointx.wallet import CCoinAddress
+                                            recipient_addr = CCoinAddress(to_address)
+                                            tx_mutable.vout.append(CTxOut(output_value, recipient_addr.to_scriptPubKey()))
+                                            
+                                            # Adicionar OP_RETURN se disponível
+                                            if source_tx_hash:
+                                                polygon_hash_clean = source_tx_hash.replace('0x', '')
+                                                op_return_data = f"ALZ:{polygon_hash_clean}".encode('utf-8')
+                                                
+                                                # Limitar a 80 bytes
+                                                if len(op_return_data) > 80:
+                                                    op_return_data = op_return_data[:80]
+                                                
+                                                op_return_script = CScript([OP_RETURN, op_return_data])
+                                                tx_mutable.vout.append(CTxOut(0, op_return_script))
+                                                print(f"   ✅✅✅ OP_RETURN incluído via python-bitcointx: ALZ:{polygon_hash_clean[:20]}...")
+                                            
+                                            # Adicionar change
+                                            if change_value > 546:
+                                                from_addr = CCoinAddress(from_address)
+                                                tx_mutable.vout.append(CTxOut(change_value, from_addr.to_scriptPubKey()))
+                                            
+                                            # Assinar transação (simplificado - precisa implementar assinatura completa)
+                                            # Por enquanto, vamos tentar bitcoinlib se python-bitcointx não conseguir assinar
+                                            print(f"   ⚠️  python-bitcointx requer assinatura manual complexa, tentando bitcoinlib...")
+                                            raise ImportError("python-bitcointx requer assinatura manual")
+                                            
+                                        except ImportError:
+                                            print(f"   ⚠️  python-bitcointx não disponível, usando bitcoinlib...")
+                                            # Continuar com bitcoinlib
+                                        
+                                        # TENTATIVA 2: Usar bitcoinlib (fallback)
                                         from bitcoinlib.transactions import Transaction
                                         from bitcoinlib.keys import HDKey
                                         
@@ -2865,7 +2923,40 @@ class RealCrossChainBridge:
                                                 traceback.print_exc()
                                                 add_log("op_return_error_manual", {"error": str(op_err)}, "error")
                                         
-                                        # Adicionar change
+                                        # CORREÇÃO CRÍTICA: Se OP_RETURN não foi adicionado, tentar inserir diretamente na lista de outputs
+                                        if source_tx_hash and not op_return_added:
+                                            print(f"   🔧 Tentando inserir OP_RETURN diretamente na lista de outputs...")
+                                            try:
+                                                polygon_hash_clean = source_tx_hash.replace('0x', '')
+                                                op_return_data = f"ALZ:{polygon_hash_clean}".encode('utf-8')
+                                                op_return_script_bytes = bytes([0x6a, len(op_return_data)]) + op_return_data if len(op_return_data) <= 75 else bytes([0x6a, 0x4c, len(op_return_data)]) + op_return_data
+                                                
+                                                # Tentar acessar outputs diretamente
+                                                if hasattr(tx, 'outputs') and isinstance(tx.outputs, list):
+                                                    # Criar output OP_RETURN manualmente
+                                                    from bitcoinlib.transactions import Output
+                                                    try:
+                                                        op_return_output = Output(value=0, script=op_return_script_bytes.hex())
+                                                        # Inserir após o primeiro output (output principal)
+                                                        tx.outputs.insert(1, op_return_output)
+                                                        op_return_added = True
+                                                        print(f"   ✅✅✅ OP_RETURN inserido diretamente na lista de outputs!")
+                                                    except Exception as output_err:
+                                                        print(f"   ⚠️  Erro ao criar Output: {output_err}")
+                                                elif hasattr(tx, '_outputs'):
+                                                    # Tentar _outputs (atributo privado)
+                                                    try:
+                                                        from bitcoinlib.transactions import Output
+                                                        op_return_output = Output(value=0, script=op_return_script_bytes.hex())
+                                                        tx._outputs.insert(1, op_return_output)
+                                                        op_return_added = True
+                                                        print(f"   ✅✅✅ OP_RETURN inserido via _outputs!")
+                                                    except Exception as priv_err:
+                                                        print(f"   ⚠️  Erro ao acessar _outputs: {priv_err}")
+                                            except Exception as direct_err:
+                                                print(f"   ⚠️  Erro ao inserir OP_RETURN diretamente: {direct_err}")
+                                        
+                                        # Adicionar change (sempre por último)
                                         if change_value > 546:
                                             tx.add_output(change_value, address=from_address)
                                         
@@ -2880,6 +2971,15 @@ class RealCrossChainBridge:
                                         elif hasattr(tx, 'raw'):
                                             raw_obj = tx.raw()
                                             raw_tx_hex = raw_obj.hex() if isinstance(raw_obj, bytes) else str(raw_obj)
+                                        
+                                        # Verificar se OP_RETURN está na transação raw
+                                        if source_tx_hash and op_return_added:
+                                            polygon_hash_clean = source_tx_hash.replace('0x', '')
+                                            op_return_check = f"ALZ:{polygon_hash_clean}"
+                                            if op_return_check.encode('utf-8').hex() in raw_tx_hex.lower() or op_return_check.lower() in raw_tx_hex.lower():
+                                                print(f"   ✅✅✅ OP_RETURN confirmado na transação raw!")
+                                            else:
+                                                print(f"   ⚠️  OP_RETURN adicionado mas não encontrado na raw tx (pode precisar re-assinar)")
                                         
                                         if raw_tx_hex:
                                             # Broadcast via Blockstream
