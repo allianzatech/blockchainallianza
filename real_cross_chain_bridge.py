@@ -2542,15 +2542,26 @@ class RealCrossChainBridge:
                                                 polygon_hash_clean = source_tx_hash.replace('0x', '')
                                                 op_return_data = f"ALZ:{polygon_hash_clean}"
                                                 
-                                                # BlockCypher API aceita OP_RETURN via script_type: "null-data"
+                                                # BlockCypher API: OP_RETURN precisa ser especificado como script hex
+                                                # OP_RETURN = 0x6a, seguido do tamanho e dados
+                                                op_return_bytes = op_return_data.encode('utf-8')
+                                                if len(op_return_bytes) <= 75:
+                                                    op_return_script_hex = "6a" + format(len(op_return_bytes), '02x') + op_return_bytes.hex()
+                                                else:
+                                                    op_return_script_hex = "6a4c" + format(len(op_return_bytes), '02x') + op_return_bytes.hex()
+                                                
+                                                # Tentar múltiplos formatos que BlockCypher pode aceitar
                                                 blockcypher_outputs.append({
                                                     "script_type": "null-data",
-                                                    "script": op_return_data,
+                                                    "script": op_return_script_hex,
                                                     "value": 0
                                                 })
                                                 print(f"   🔗 OP_RETURN incluído no output BlockCypher: ALZ:{polygon_hash_clean[:20]}...")
+                                                print(f"      Script hex: {op_return_script_hex[:80]}...")
                                             except Exception as op_return_error:
                                                 print(f"   ⚠️  Erro ao adicionar OP_RETURN ao BlockCypher: {op_return_error}")
+                                                import traceback
+                                                traceback.print_exc()
                                         
                                         if change_value > 546:
                                             blockcypher_outputs.append({
@@ -2593,15 +2604,26 @@ class RealCrossChainBridge:
                                                 polygon_hash_clean = source_tx_hash.replace('0x', '')
                                                 op_return_data = f"ALZ:{polygon_hash_clean}"
                                                 
-                                                # BlockCypher API aceita OP_RETURN via script_type: "null-data"
+                                                # BlockCypher API: OP_RETURN precisa ser especificado como script hex
+                                                # OP_RETURN = 0x6a, seguido do tamanho e dados
+                                                op_return_bytes = op_return_data.encode('utf-8')
+                                                if len(op_return_bytes) <= 75:
+                                                    op_return_script_hex = "6a" + format(len(op_return_bytes), '02x') + op_return_bytes.hex()
+                                                else:
+                                                    op_return_script_hex = "6a4c" + format(len(op_return_bytes), '02x') + op_return_bytes.hex()
+                                                
+                                                # Tentar múltiplos formatos que BlockCypher pode aceitar
                                                 blockcypher_outputs.append({
                                                     "script_type": "null-data",
-                                                    "script": op_return_data,
+                                                    "script": op_return_script_hex,
                                                     "value": 0
                                                 })
                                                 print(f"   🔗 OP_RETURN incluído no output BlockCypher (fallback): ALZ:{polygon_hash_clean[:20]}...")
+                                                print(f"      Script hex: {op_return_script_hex[:80]}...")
                                             except Exception as op_return_error:
                                                 print(f"   ⚠️  Erro ao adicionar OP_RETURN ao BlockCypher (fallback): {op_return_error}")
+                                                import traceback
+                                                traceback.print_exc()
                                         
                                         if change_value > 546:
                                             blockcypher_outputs.append({
@@ -2616,11 +2638,29 @@ class RealCrossChainBridge:
                                         }
                                     
                                     create_url = f"{self.btc_api_base}/txs/new"
+                                    print(f"   📤 Enviando requisição para BlockCypher com {len(blockcypher_outputs)} outputs...")
+                                    print(f"   📋 Outputs: {json.dumps([{'type': o.get('script_type', 'address'), 'value': o.get('value', 0)} for o in blockcypher_outputs], indent=2)}")
                                     create_response = requests.post(create_url, json=tx_data, timeout=30)
                                     
                                     if create_response.status_code in [200, 201]:
                                         unsigned_tx = create_response.json()
                                         print(f"   ✅ BlockCypher retornou transação (status {create_response.status_code})")
+                                        
+                                        # Verificar se OP_RETURN foi incluído na resposta
+                                        if source_tx_hash:
+                                            tx_outputs = unsigned_tx.get('tx', {}).get('outputs', [])
+                                            op_return_in_response = any(
+                                                out.get('script_type') == 'null-data' or 
+                                                (out.get('script', '').startswith('6a') if isinstance(out.get('script'), str) else False)
+                                                for out in tx_outputs
+                                            )
+                                            if op_return_in_response:
+                                                print(f"   ✅ OP_RETURN confirmado na resposta do BlockCypher!")
+                                            else:
+                                                print(f"   ⚠️  OP_RETURN NÃO encontrado na resposta do BlockCypher!")
+                                                print(f"      Outputs retornados: {len(tx_outputs)}")
+                                                for i, out in enumerate(tx_outputs):
+                                                    print(f"         Output {i}: type={out.get('script_type', 'N/A')}, script={str(out.get('script', ''))[:50]}...")
                                         
                                         # Verificar se tem tosign
                                         tosign = unsigned_tx.get('tosign', [])
