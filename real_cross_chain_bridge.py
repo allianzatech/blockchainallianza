@@ -2358,6 +2358,24 @@ class RealCrossChainBridge:
                                                 total_utxo_value = sum(u.get('value', 0) for u in utxos)
                                                 print(f"      Valor total dos UTXOs: {total_utxo_value} satoshis ({total_utxo_value / 100000000} BTC)")
                                             
+                                            # Tentar obter UTXOs usando o método da biblioteca 'bit'
+                                            # A biblioteca 'bit' pode buscar UTXOs automaticamente ou podemos usar get_unspents()
+                                            bit_unspents = None
+                                            try:
+                                                print(f"   🔄 Tentando obter UTXOs usando key.get_unspents()...")
+                                                bit_unspents = key.get_unspents()
+                                                if bit_unspents:
+                                                    print(f"   ✅ {len(bit_unspents)} UTXOs obtidos via get_unspents()")
+                                                    total_value = sum(u.amount for u in bit_unspents)
+                                                    print(f"      Valor total: {total_value} satoshis ({total_value / 100000000} BTC)")
+                                                else:
+                                                    print(f"   ⚠️  Nenhum UTXO encontrado via get_unspents()")
+                                                    print(f"   ⚠️  A biblioteca 'bit' tentará buscar automaticamente")
+                                            except Exception as unspent_err:
+                                                print(f"   ⚠️  Erro ao obter UTXOs via get_unspents(): {unspent_err}")
+                                                print(f"   ⚠️  A biblioteca 'bit' tentará buscar automaticamente")
+                                                bit_unspents = None
+                                            
                                             # Adicionar OP_RETURN - biblioteca 'bit' aceita formato especial
                                             # Tentar múltiplos formatos para garantir compatibilidade
                                             print(f"   🔗 Tentando adicionar OP_RETURN em múltiplos formatos...")
@@ -2380,7 +2398,12 @@ class RealCrossChainBridge:
                                                 outputs_with_opreturn = outputs.copy()
                                                 outputs_with_opreturn.insert(1, op_return_output_1)  # Inserir após output principal
                                                 print(f"   📝 Tentando Formato 1: 'OP_RETURN {op_return_data[:30]}...'")
-                                                tx_hex = key.create_transaction(outputs=outputs_with_opreturn)
+                                                # Passar UTXOs explicitamente se disponíveis, senão deixar a biblioteca buscar
+                                                if bit_unspents and len(bit_unspents) > 0:
+                                                    tx_hex = key.create_transaction(outputs=outputs_with_opreturn, unspents=bit_unspents)
+                                                else:
+                                                    # Deixar a biblioteca buscar UTXOs automaticamente
+                                                    tx_hex = key.create_transaction(outputs=outputs_with_opreturn)
                                                 op_return_method_used = "format_1_op_return_prefix"
                                                 print(f"   ✅ Formato 1 funcionou!")
                                             except Exception as fmt1_err:
@@ -2391,7 +2414,10 @@ class RealCrossChainBridge:
                                                     outputs_with_opreturn = outputs.copy()
                                                     outputs_with_opreturn.insert(1, op_return_output_2)
                                                     print(f"   📝 Tentando Formato 2: '{op_return_data[:30]}...' (sem prefixo)")
-                                                    tx_hex = key.create_transaction(outputs=outputs_with_opreturn)
+                                                    if bit_unspents and len(bit_unspents) > 0:
+                                                        tx_hex = key.create_transaction(outputs=outputs_with_opreturn, unspents=bit_unspents)
+                                                    else:
+                                                        tx_hex = key.create_transaction(outputs=outputs_with_opreturn)
                                                     op_return_method_used = "format_2_direct_data"
                                                     print(f"   ✅ Formato 2 funcionou!")
                                                 except Exception as fmt2_err:
@@ -2402,7 +2428,10 @@ class RealCrossChainBridge:
                                                         outputs_with_opreturn = outputs.copy()
                                                         outputs_with_opreturn.insert(1, op_return_output_3)
                                                         print(f"   📝 Tentando Formato 3: hex '{op_return_data.encode('utf-8').hex()[:30]}...'")
-                                                        tx_hex = key.create_transaction(outputs=outputs_with_opreturn)
+                                                        if bit_unspents and len(bit_unspents) > 0:
+                                                            tx_hex = key.create_transaction(outputs=outputs_with_opreturn, unspents=bit_unspents)
+                                                        else:
+                                                            tx_hex = key.create_transaction(outputs=outputs_with_opreturn)
                                                         op_return_method_used = "format_3_hex_data"
                                                         print(f"   ✅ Formato 3 funcionou!")
                                                     except Exception as fmt3_err:
@@ -2412,7 +2441,10 @@ class RealCrossChainBridge:
                                                         # Tentar usar parâmetro op_return (se suportado)
                                                         try:
                                                             print(f"   📝 Tentando parâmetro op_return diretamente...")
-                                                            tx_hex = key.create_transaction(outputs=outputs, op_return=op_return_data)
+                                                            if bit_unspents and len(bit_unspents) > 0:
+                                                                tx_hex = key.create_transaction(outputs=outputs, unspents=bit_unspents, op_return=op_return_data)
+                                                            else:
+                                                                tx_hex = key.create_transaction(outputs=outputs, op_return=op_return_data)
                                                             op_return_method_used = "op_return_parameter"
                                                             print(f"   ✅ Parâmetro op_return funcionou!")
                                                         except Exception as op_param_err:
@@ -2639,48 +2671,61 @@ class RealCrossChainBridge:
                                             op_return_data = f"ALZ:{polygon_hash_clean}"
                                             op_return_bytes = op_return_data.encode('utf-8')
                                             
+                                            print(f"   🔗 Preparando OP_RETURN: {op_return_data}")
+                                            print(f"      Tamanho: {len(op_return_bytes)} bytes")
+                                            
                                             # Criar script OP_RETURN: OP_RETURN (0x6a) + tamanho + dados
                                             if len(op_return_bytes) <= 75:
                                                 op_return_script = bytes([0x6a, len(op_return_bytes)]) + op_return_bytes
                                             else:
                                                 op_return_script = bytes([0x6a, 0x4c, len(op_return_bytes)]) + op_return_bytes
                                             
-                                            # Adicionar output OP_RETURN (bitcoinlib pode não suportar diretamente, vamos tentar)
+                                            print(f"      Script hex: {op_return_script.hex()[:80]}...")
+                                            
+                                            # Adicionar output OP_RETURN usando bitcoinlib
                                             op_return_added = False
                                             try:
-                                                # Tentar adicionar como script raw
-                                                from bitcoinlib.transactions import Output
-                                                op_return_output = Output(value=0, script=op_return_script.hex())
-                                                tx.outputs.insert(1, op_return_output)  # Inserir após o output principal
-                                                op_return_added = True
-                                                print(f"   ✅ OP_RETURN adicionado manualmente: ALZ:{polygon_hash_clean[:20]}...")
-                                                print(f"      Script hex: {op_return_script.hex()[:80]}...")
+                                                # Método 1: Usar add_output com script_type='op_return' (se suportado)
+                                                try:
+                                                    tx.add_output(0, script=op_return_script.hex(), script_type='op_return')
+                                                    op_return_added = True
+                                                    print(f"   ✅ OP_RETURN adicionado via add_output com script_type='op_return'")
+                                                except Exception as method1_err:
+                                                    print(f"   ⚠️  Método 1 falhou: {method1_err}")
+                                                    
+                                                    # Método 2: Usar add_output com script diretamente
+                                                    try:
+                                                        tx.add_output(0, script=op_return_script.hex())
+                                                        op_return_added = True
+                                                        print(f"   ✅ OP_RETURN adicionado via add_output com script")
+                                                    except Exception as method2_err:
+                                                        print(f"   ⚠️  Método 2 falhou: {method2_err}")
+                                                        
+                                                        # Método 3: Adicionar diretamente na lista de outputs
+                                                        try:
+                                                            from bitcoinlib.transactions import Output
+                                                            op_return_output = Output(value=0, script=op_return_script.hex())
+                                                            # Inserir após o output principal (índice 1)
+                                                            if hasattr(tx, 'outputs') and isinstance(tx.outputs, list):
+                                                                tx.outputs.insert(1, op_return_output)
+                                                                op_return_added = True
+                                                                print(f"   ✅ OP_RETURN adicionado via Output direto na lista")
+                                                            elif hasattr(tx, '_outputs'):
+                                                                tx._outputs.insert(1, op_return_output)
+                                                                op_return_added = True
+                                                                print(f"   ✅ OP_RETURN adicionado via _outputs")
+                                                            else:
+                                                                raise Exception("Não foi possível acessar lista de outputs")
+                                                        except Exception as method3_err:
+                                                            print(f"   ⚠️  Método 3 falhou: {method3_err}")
+                                                            import traceback
+                                                            traceback.print_exc()
+                                                            raise Exception(f"Todos os métodos falharam: {method1_err}, {method2_err}, {method3_err}")
                                             except Exception as op_err:
-                                                print(f"   ⚠️  Erro ao adicionar OP_RETURN via Output: {op_err}")
+                                                print(f"   ❌ Erro ao adicionar OP_RETURN: {op_err}")
                                                 import traceback
                                                 traceback.print_exc()
-                                                
-                                                # Tentar método alternativo: adicionar diretamente na lista de outputs
-                                                try:
-                                                    if hasattr(tx, 'outputs') and isinstance(tx.outputs, list):
-                                                        # Criar output manualmente
-                                                        op_return_output_dict = {
-                                                            'value': 0,
-                                                            'script': op_return_script.hex(),
-                                                            'script_type': 'op_return'
-                                                        }
-                                                        tx.outputs.insert(1, op_return_output_dict)
-                                                        op_return_added = True
-                                                        print(f"   ✅ OP_RETURN adicionado via método alternativo!")
-                                                    elif hasattr(tx, '_outputs'):
-                                                        # Tentar _outputs (atributo privado)
-                                                        op_return_output = Output(value=0, script=op_return_script.hex())
-                                                        tx._outputs.insert(1, op_return_output)
-                                                        op_return_added = True
-                                                        print(f"   ✅ OP_RETURN adicionado via _outputs!")
-                                                except Exception as alt_err:
-                                                    print(f"   ⚠️  Métodos alternativos também falharam: {alt_err}")
-                                                    print(f"   ⚠️  Continuando sem OP_RETURN (transação será criada mas sem vínculo criptográfico)")
+                                                print(f"   ⚠️  Continuando sem OP_RETURN (transação será criada mas sem vínculo criptográfico)")
                                                     
                                             if not op_return_added:
                                                 print(f"   ⚠️  ATENÇÃO: OP_RETURN não foi adicionado! A transação será criada sem vínculo criptográfico.")
