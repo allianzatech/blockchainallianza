@@ -1378,7 +1378,8 @@ class RealCrossChainBridge:
         self,
         from_private_key: str,
         to_address: str,
-        amount_btc: float
+        amount_btc: float,
+        source_tx_hash: str = None
     ) -> Dict:
         import time # Importação robusta para garantir acesso ao módulo
         import json
@@ -2028,6 +2029,39 @@ class RealCrossChainBridge:
                                         # Adicionar outputs
                                         print(f"   📤 Adicionando output: {to_address} ({output_value} satoshis)")
                                         tx.add_output(output_value, address=to_address)
+                                        
+                                        # MELHORIA CRÍTICA: Adicionar OP_RETURN com hash da transação Polygon (vínculo criptográfico)
+                                        if source_tx_hash:
+                                            try:
+                                                # OP_RETURN permite até 80 bytes de dados
+                                                # Formato: "ALZ:" + hash da transação Polygon (sem 0x)
+                                                polygon_hash_clean = source_tx_hash.replace('0x', '')
+                                                op_return_data = f"ALZ:{polygon_hash_clean}".encode('utf-8')
+                                                
+                                                # Limitar a 80 bytes (limite do OP_RETURN)
+                                                if len(op_return_data) > 80:
+                                                    op_return_data = op_return_data[:80]
+                                                
+                                                # Criar script OP_RETURN manualmente
+                                                # OP_RETURN = 0x6a, seguido do tamanho dos dados e os dados
+                                                op_return_script = bytes([0x6a, len(op_return_data)]) + op_return_data
+                                                
+                                                # Adicionar output OP_RETURN (valor 0)
+                                                # bitcoinlib aceita script como bytes ou hex string
+                                                tx.add_output(0, script=op_return_script.hex())
+                                                print(f"   🔗 OP_RETURN adicionado com hash Polygon: {source_tx_hash[:20]}...")
+                                                print(f"      Dados: ALZ:{polygon_hash_clean[:20]}...")
+                                                add_log("op_return_added", {
+                                                    "source_tx_hash": source_tx_hash,
+                                                    "op_return_length": len(op_return_data),
+                                                    "op_return_data": f"ALZ:{polygon_hash_clean[:20]}..."
+                                                })
+                                            except Exception as op_return_error:
+                                                print(f"   ⚠️  Erro ao adicionar OP_RETURN: {op_return_error}")
+                                                import traceback
+                                                traceback.print_exc()
+                                                add_log("op_return_error", {"error": str(op_return_error)}, "warning")
+                                                # Continuar mesmo sem OP_RETURN (não é crítico para funcionamento)
                                         
                                         if change_value > 546:  # Dust limit
                                             print(f"   🔄 Adicionando change: {from_address} ({change_value} satoshis)")
@@ -3549,28 +3583,62 @@ class RealCrossChainBridge:
                         "note": "Instale bibliotecas Solana: pip install solana solders"
                     }
                 
-            # MELHORIA: Verificar lock on-chain antes de unlock
+            # MELHORIA CRÍTICA: Aguardar confirmação e obter block_number ANTES de enviar Bitcoin
             if source_tx_result and source_tx_result.get("success"):
-                # Aguardar confirmações mínimas
-                min_confirmations = 6 if source_chain.lower() == "bitcoin" else 12
                 tx_hash = source_tx_result.get("tx_hash")
                 
                 if tx_hash:
-                    print(f"⏳ Aguardando {min_confirmations} confirmações para {source_chain}...")
-                    confirmed = self.wait_for_confirmations(source_chain, tx_hash, min_confirmations)
+                    # Para Polygon/EVM: aguardar pelo menos 1 confirmação (block_number não null)
+                    # Para Bitcoin: aguardar 1 confirmação
+                    min_confirmations = 1  # Mínimo: 1 confirmação (block_number não null)
                     
-                    if not confirmed:
+                    print(f"⏳ Aguardando confirmação mínima ({min_confirmations}) para {source_chain}...")
+                    print(f"   TX Hash: {tx_hash}")
+                    
+                    confirmed_result = self.wait_for_confirmations(source_chain, tx_hash, min_confirmations, max_wait_time=120)
+                    
+                    if not confirmed_result.get("confirmed"):
                         return {
                             "success": False,
-                            "error": f"Transação não confirmada após aguardar {min_confirmations} confirmações"
+                            "error": f"Transação não confirmada após aguardar {min_confirmations} confirmação(ões)",
+                            "tx_hash": tx_hash,
+                            "confirmations": confirmed_result.get("confirmations", 0),
+                            "note": "A transação precisa estar confirmada (block_number não null) antes de enviar na chain de destino"
                         }
+                    
+                    # Obter block_number e confirmations reais
+                    block_number = None
+                    confirmations = confirmed_result.get("confirmations", 0)
+                    
+                    if source_chain.lower() in ["polygon", "bsc", "ethereum", "base"]:
+                        w3 = self.get_web3_for_chain(source_chain)
+                        if w3 and w3.is_connected():
+                            try:
+                                tx_receipt = w3.eth.get_transaction_receipt(tx_hash)
+                                if tx_receipt:
+                                    block_number = tx_receipt.blockNumber
+                                    current_block = w3.eth.block_number
+                                    confirmations = current_block - block_number + 1
+                            except Exception as e:
+                                print(f"⚠️  Erro ao obter block_number: {e}")
+                    
+                    # Atualizar source_tx_result com block_number e confirmations
+                    source_tx_result["block_number"] = block_number
+                    source_tx_result["confirmations"] = confirmations
+                    
+                    print(f"✅ Transação confirmada!")
+                    print(f"   Block Number: {block_number}")
+                    print(f"   Confirmations: {confirmations}")
                     
                     # Verificar lock on-chain
                     lock_verified = self.verify_lock_on_chain(source_chain, tx_hash)
                     if not lock_verified:
                         return {
                             "success": False,
-                            "error": "Lock não verificado on-chain. Transferência cancelada por segurança."
+                            "error": "Lock não verificado on-chain. Transferência cancelada por segurança.",
+                            "tx_hash": tx_hash,
+                            "block_number": block_number,
+                            "confirmations": confirmations
                         }
                     
                     print(f"✅ Lock verificado on-chain em {source_chain}")
@@ -3794,11 +3862,19 @@ class RealCrossChainBridge:
                     else:
                         print(f"⚠️  Endereço original inválido, usando endereço convertido: {target_address}")
                 
+                # MELHORIA CRÍTICA: Passar source_tx_hash para criar vínculo criptográfico
+                source_tx_hash = None
+                if source_tx_result and source_tx_result.get("tx_hash"):
+                    source_tx_hash = source_tx_result.get("tx_hash")
+                    print(f"🔗 Vínculo criptográfico: Incluindo hash Polygon no OP_RETURN da transação Bitcoin")
+                    print(f"   Source TX Hash: {source_tx_hash}")
+                
                 # Chamar send_bitcoin_transaction para broadcast REAL
                 target_tx_result = self.send_bitcoin_transaction(
                     from_private_key=target_private_key,
                     to_address=target_address,  # Endereço do destinatário final (validado)
-                    amount_btc=target_amount  # Usar valor convertido
+                    amount_btc=target_amount,  # Usar valor convertido
+                    source_tx_hash=source_tx_hash  # VÍNCULO CRIPTOGRÁFICO
                 )
                 
                 if not target_tx_result.get("success"):

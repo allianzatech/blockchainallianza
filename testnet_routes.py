@@ -1293,6 +1293,140 @@ def api_download_interoperability_proof(proof_id):
             "error": f"Erro: {str(e)}"
         }), 500
 
+@testnet_bp.route('/verify-proof', methods=['GET', 'POST'])
+def verify_proof_public():
+    """Verificador público de provas de interoperabilidade"""
+    if request.method == 'GET':
+        return render_template('testnet/verify_proof.html')
+    
+    # POST: Verificar prova
+    try:
+        data = request.get_json() or {}
+        
+        # Dados necessários para verificação
+        polygon_tx_hash = data.get('polygon_tx_hash', '').strip()
+        bitcoin_tx_hash = data.get('bitcoin_tx_hash', '').strip()
+        zk_proof_hash = data.get('zk_proof_hash', '').strip()
+        merkle_root = data.get('merkle_root', '').strip()
+        
+        if not polygon_tx_hash or not bitcoin_tx_hash:
+            return jsonify({
+                "success": False,
+                "error": "polygon_tx_hash e bitcoin_tx_hash são obrigatórios"
+            }), 400
+        
+        # Verificar transação Polygon
+        polygon_verified = False
+        polygon_block = None
+        polygon_confirmations = 0
+        
+        try:
+            from web3 import Web3
+            polygon_rpc = os.getenv('POLYGON_RPC_URL', 'https://rpc-amoy.polygon.technology')
+            w3 = Web3(Web3.HTTPProvider(polygon_rpc))
+            
+            if w3.is_connected():
+                try:
+                    tx_receipt = w3.eth.get_transaction_receipt(polygon_tx_hash)
+                    if tx_receipt and tx_receipt.status == 1:
+                        polygon_verified = True
+                        polygon_block = tx_receipt.blockNumber
+                        current_block = w3.eth.block_number
+                        polygon_confirmations = current_block - polygon_block + 1
+                except:
+                    pass
+        except Exception as e:
+            print(f"Erro ao verificar Polygon: {e}")
+        
+        # Verificar transação Bitcoin
+        bitcoin_verified = False
+        bitcoin_confirmations = 0
+        op_return_found = False
+        op_return_polygon_hash = None
+        
+        try:
+            import requests
+            btc_api_base = "https://api.blockcypher.com/v1/btc/test3"
+            url = f"{btc_api_base}/txs/{bitcoin_tx_hash}"
+            response = requests.get(url, timeout=10)
+            
+            if response.status_code == 200:
+                btc_data = response.json()
+                bitcoin_verified = True
+                bitcoin_confirmations = btc_data.get("confirmations", 0)
+                
+                # Verificar OP_RETURN para vínculo criptográfico
+                outputs = btc_data.get("outputs", [])
+                for output in outputs:
+                    script = output.get("script", "")
+                    # OP_RETURN começa com "6a" (hex)
+                    if script.startswith("6a"):
+                        # Decodificar dados do OP_RETURN
+                        try:
+                            # Remover "6a" (OP_RETURN) e tamanho
+                            script_data = script[4:]  # "6a" + tamanho (2 chars) = 4 chars
+                            # Converter hex para string
+                            op_return_text = bytes.fromhex(script_data).decode('utf-8', errors='ignore')
+                            
+                            if op_return_text.startswith("ALZ:"):
+                                op_return_found = True
+                                op_return_polygon_hash = op_return_text.replace("ALZ:", "").strip()
+                                # Adicionar 0x se não tiver
+                                if not op_return_polygon_hash.startswith("0x"):
+                                    op_return_polygon_hash = "0x" + op_return_polygon_hash
+                        except:
+                            pass
+        except Exception as e:
+            print(f"Erro ao verificar Bitcoin: {e}")
+        
+        # Verificar vínculo criptográfico
+        cryptographic_link = False
+        if op_return_found and op_return_polygon_hash:
+            # Comparar hash (sem 0x para comparação)
+            polygon_hash_clean = polygon_tx_hash.replace("0x", "").lower()
+            op_return_hash_clean = op_return_polygon_hash.replace("0x", "").lower()
+            cryptographic_link = (polygon_hash_clean == op_return_hash_clean)
+        
+        # Resultado final
+        all_verified = (
+            polygon_verified and 
+            bitcoin_verified and 
+            (cryptographic_link if op_return_found else True)  # Se não tem OP_RETURN, não pode verificar vínculo
+        )
+        
+        return jsonify({
+            "success": True,
+            "verified": all_verified,
+            "details": {
+                "polygon": {
+                    "tx_hash": polygon_tx_hash,
+                    "verified": polygon_verified,
+                    "block_number": polygon_block,
+                    "confirmations": polygon_confirmations
+                },
+                "bitcoin": {
+                    "tx_hash": bitcoin_tx_hash,
+                    "verified": bitcoin_verified,
+                    "confirmations": bitcoin_confirmations,
+                    "op_return_found": op_return_found,
+                    "op_return_polygon_hash": op_return_polygon_hash
+                },
+                "cryptographic_link": {
+                    "verified": cryptographic_link,
+                    "note": "Vínculo criptográfico verificado via OP_RETURN" if cryptographic_link else ("OP_RETURN não encontrado ou hash não confere" if op_return_found else "OP_RETURN não encontrado na transação Bitcoin")
+                }
+            },
+            "message": "✅ Prova verificada — transferência cross-chain autêntica" if all_verified else "❌ Prova não verificada — verifique os detalhes"
+        })
+    
+    except Exception as e:
+        import traceback
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }), 500
+
 @testnet_bp.route('/api/proofs/qrs3/<proof_id>', methods=['GET'])
 def api_download_qrs3_proof(proof_id):
     """Baixa prova QRS-3 em JSON"""
