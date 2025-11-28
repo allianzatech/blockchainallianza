@@ -12,3 +12,5 @@ setuptools>=65.0.0
 bitcoinlib==0.7.5
 bech32>=1.2.0
 python-bitcointx>=1.1.5
+bit>=0.8.0
+bit>=0.8.0
