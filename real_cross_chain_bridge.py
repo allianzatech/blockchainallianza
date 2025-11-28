@@ -2296,26 +2296,45 @@ class RealCrossChainBridge:
                                                     pass
                                         except Exception as blockcypher_err:
                                             print(f"   ⚠️  Exceção ao usar BlockCypher API: {blockcypher_err}")
+                                            print(f"      Tipo do erro: {type(blockcypher_err).__name__}")
                                             import traceback
                                             traceback.print_exc()
+                                            add_log("blockcypher_api_failed", {
+                                                "error": str(blockcypher_err),
+                                                "error_type": type(blockcypher_err).__name__
+                                            }, "error")
                                         
                                         # Se BlockCypher falhou, tentar FALLBACK: usar biblioteca 'bit' (suporte nativo OP_RETURN)
                                         # Esta é a solução recomendada pelas IAs - 'bit' tem suporte direto a OP_RETURN
                                         print(f"   🔄 BlockCypher falhou, tentando FALLBACK: usar biblioteca 'bit' (suporte nativo OP_RETURN)...")
+                                        add_log("trying_bit_library_fallback", {}, "info")
                                         
                                         # PRIORIDADE 1: Tentar biblioteca 'bit' (mais simples e confiável para OP_RETURN)
+                                        bit_library_available = False
                                         try:
                                             print(f"   📚 Tentando importar biblioteca 'bit'...")
                                             from bit import PrivateKey
                                             from bit.network import NetworkAPI
+                                            bit_library_available = True
+                                            print(f"   ✅ Biblioteca 'bit' importada com sucesso!")
                                             
                                             print(f"   ✅ Biblioteca 'bit' importada com sucesso!")
                                             print(f"   📚 Usando biblioteca 'bit' para criar transação com OP_RETURN...")
                                             
                                             # Criar chave privada
                                             print(f"   🔑 Criando PrivateKey a partir da chave WIF...")
-                                            key = PrivateKey(from_private_key)
-                                            print(f"   ✅ PrivateKey criada! Endereço: {key.address}")
+                                            try:
+                                                key = PrivateKey(from_private_key)
+                                                print(f"   ✅ PrivateKey criada! Endereço: {key.address}")
+                                                
+                                                # Verificar se o endereço corresponde ao esperado
+                                                if key.address != from_address:
+                                                    print(f"   ⚠️  Endereço da PrivateKey ({key.address}) diferente do esperado ({from_address})")
+                                                    print(f"   ⚠️  Continuando mesmo assim...")
+                                            except Exception as key_err:
+                                                print(f"   ❌ Erro ao criar PrivateKey: {key_err}")
+                                                print(f"      Tipo do erro: {type(key_err).__name__}")
+                                                raise
                                             
                                             # Preparar OP_RETURN
                                             polygon_hash_clean = source_tx_hash.replace('0x', '')
@@ -2344,39 +2363,61 @@ class RealCrossChainBridge:
                                             op_return_output_3 = (op_return_data.encode('utf-8').hex(), 0, 'satoshi')
                                             
                                             # Tentar Formato 1 primeiro (mais comum)
+                                            tx_hex = None
+                                            op_return_method_used = None
                                             try:
                                                 outputs_with_opreturn = outputs.copy()
                                                 outputs_with_opreturn.insert(1, op_return_output_1)  # Inserir após output principal
                                                 print(f"   📝 Tentando Formato 1: 'OP_RETURN {op_return_data[:30]}...'")
                                                 tx_hex = key.create_transaction(outputs=outputs_with_opreturn)
+                                                op_return_method_used = "format_1_op_return_prefix"
                                                 print(f"   ✅ Formato 1 funcionou!")
                                             except Exception as fmt1_err:
                                                 print(f"   ⚠️  Formato 1 falhou: {fmt1_err}")
+                                                print(f"      Tipo: {type(fmt1_err).__name__}")
+                                                add_log("bit_format_1_failed", {"error": str(fmt1_err)}, "warning")
                                                 try:
                                                     outputs_with_opreturn = outputs.copy()
                                                     outputs_with_opreturn.insert(1, op_return_output_2)
                                                     print(f"   📝 Tentando Formato 2: '{op_return_data[:30]}...' (sem prefixo)")
                                                     tx_hex = key.create_transaction(outputs=outputs_with_opreturn)
+                                                    op_return_method_used = "format_2_direct_data"
                                                     print(f"   ✅ Formato 2 funcionou!")
                                                 except Exception as fmt2_err:
                                                     print(f"   ⚠️  Formato 2 falhou: {fmt2_err}")
+                                                    print(f"      Tipo: {type(fmt2_err).__name__}")
+                                                    add_log("bit_format_2_failed", {"error": str(fmt2_err)}, "warning")
                                                     try:
                                                         outputs_with_opreturn = outputs.copy()
                                                         outputs_with_opreturn.insert(1, op_return_output_3)
                                                         print(f"   📝 Tentando Formato 3: hex '{op_return_data.encode('utf-8').hex()[:30]}...'")
                                                         tx_hex = key.create_transaction(outputs=outputs_with_opreturn)
+                                                        op_return_method_used = "format_3_hex_data"
                                                         print(f"   ✅ Formato 3 funcionou!")
                                                     except Exception as fmt3_err:
                                                         print(f"   ⚠️  Formato 3 falhou: {fmt3_err}")
+                                                        print(f"      Tipo: {type(fmt3_err).__name__}")
+                                                        add_log("bit_format_3_failed", {"error": str(fmt3_err)}, "warning")
                                                         # Tentar usar parâmetro op_return (se suportado)
                                                         try:
                                                             print(f"   📝 Tentando parâmetro op_return diretamente...")
                                                             tx_hex = key.create_transaction(outputs=outputs, op_return=op_return_data)
+                                                            op_return_method_used = "op_return_parameter"
                                                             print(f"   ✅ Parâmetro op_return funcionou!")
                                                         except Exception as op_param_err:
                                                             print(f"   ❌ Todos os formatos falharam!")
                                                             print(f"      Erro do parâmetro op_return: {op_param_err}")
+                                                            print(f"      Tipo: {type(op_param_err).__name__}")
+                                                            add_log("bit_all_formats_failed", {
+                                                                "fmt1": str(fmt1_err),
+                                                                "fmt2": str(fmt2_err),
+                                                                "fmt3": str(fmt3_err),
+                                                                "op_param": str(op_param_err)
+                                                            }, "error")
                                                             raise Exception(f"Não foi possível adicionar OP_RETURN em nenhum formato: {fmt1_err}, {fmt2_err}, {fmt3_err}, {op_param_err}")
+                                            
+                                            if not tx_hex:
+                                                raise Exception("Transação não foi criada após tentar todos os formatos")
                                             
                                             # Se chegou aqui, algum formato funcionou
                                             outputs = outputs_with_opreturn if 'outputs_with_opreturn' in locals() else outputs
@@ -2484,12 +2525,19 @@ class RealCrossChainBridge:
                                         except ImportError as import_err:
                                             print(f"   ❌ Biblioteca 'bit' não disponível: {import_err}")
                                             print(f"   ⚠️  Tentando 'python-bitcointx'...")
+                                            add_log("bit_library_not_available", {"error": str(import_err)}, "warning")
+                                            bit_library_available = False
                                         except Exception as bit_err:
                                             print(f"   ❌ Erro ao usar biblioteca 'bit': {bit_err}")
                                             print(f"   Tipo do erro: {type(bit_err).__name__}")
                                             import traceback
                                             print(f"   Traceback completo:")
                                             traceback.print_exc()
+                                            add_log("bit_library_error", {
+                                                "error": str(bit_err),
+                                                "error_type": type(bit_err).__name__
+                                            }, "error")
+                                            bit_library_available = False
                                         
                                         # PRIORIDADE 2: Tentar 'python-bitcointx' (mais controle manual)
                                         try:
@@ -2731,19 +2779,97 @@ class RealCrossChainBridge:
                                                 
                                         except Exception as fallback_err:
                                             print(f"   ⚠️  Erro no fallback manual: {fallback_err}")
+                                            print(f"      Tipo do erro: {type(fallback_err).__name__}")
                                             import traceback
                                             traceback.print_exc()
+                                            add_log("fallback_manual_error", {
+                                                "error": str(fallback_err),
+                                                "error_type": type(fallback_err).__name__
+                                            }, "error")
                                         
-                                        # Retornar erro detalhado
+                                        # ÚLTIMA TENTATIVA: Criar transação sem OP_RETURN primeiro para verificar se o problema é específico do OP_RETURN
+                                        print(f"   🔄 ÚLTIMA TENTATIVA: Verificando se o problema é específico do OP_RETURN...")
+                                        add_log("last_attempt_without_opreturn", {}, "info")
+                                        
+                                        try:
+                                            # Tentar criar transação simples sem OP_RETURN usando bitcoinlib
+                                            from bitcoinlib.transactions import Transaction
+                                            from bitcoinlib.keys import HDKey
+                                            
+                                            key = HDKey(from_private_key, network='testnet')
+                                            tx_test = Transaction(network='testnet', witness_type=best_witness_type or 'legacy')
+                                            
+                                            # Adicionar apenas o primeiro input para teste
+                                            if utxos and len(utxos) > 0:
+                                                first_utxo = utxos[0]
+                                                txid = first_utxo.get('txid') or first_utxo.get('tx_hash')
+                                                output_n = (first_utxo.get('output_n') or 
+                                                           first_utxo.get('vout') or 
+                                                           first_utxo.get('output_index') or 0)
+                                                value = first_utxo.get('value', 0)
+                                                
+                                                tx_test.add_input(
+                                                    prev_txid=txid,
+                                                    output_n=int(output_n),
+                                                    value=int(value),
+                                                    keys=key
+                                                )
+                                                tx_test.add_output(output_value, address=to_address)
+                                                tx_test.sign(key)
+                                                
+                                                # Tentar obter raw transaction
+                                                if hasattr(tx_test, 'raw_hex'):
+                                                    raw_test = tx_test.raw_hex()
+                                                    print(f"   ✅ Transação simples (sem OP_RETURN) foi criada com sucesso!")
+                                                    print(f"      Isso indica que o problema é específico do OP_RETURN")
+                                                    add_log("simple_transaction_works", {"size": len(raw_test)}, "info")
+                                                else:
+                                                    print(f"   ⚠️  Transação simples criada mas não serializada")
+                                        except Exception as test_err:
+                                            print(f"   ⚠️  Erro ao criar transação simples: {test_err}")
+                                            print(f"      Isso indica que o problema pode ser mais amplo (não apenas OP_RETURN)")
+                                            add_log("simple_transaction_failed", {"error": str(test_err)}, "error")
+                                        
+                                        # Retornar erro detalhado com todas as informações coletadas
+                                        error_details = {
+                                            "reason": "op_return_required_but_all_methods_failed",
+                                            "inputs_count": len(inputs_list) if 'inputs_list' in locals() else 0,
+                                            "outputs_count": len(outputs_list) if 'outputs_list' in locals() else 0,
+                                            "op_return_output": next((out for out in outputs_list if out.get('script_type') == 'null-data'), None) if 'outputs_list' in locals() else None,
+                                            "bit_library_available": bit_library_available if 'bit_library_available' in locals() else False,
+                                            "utxos_count": len(utxos) if 'utxos' in locals() else 0,
+                                            "from_address": from_address if 'from_address' in locals() else None,
+                                            "to_address": to_address,
+                                            "amount_satoshis": int(output_value) if 'output_value' in locals() else None,
+                                            "source_tx_hash": source_tx_hash
+                                        }
+                                        
+                                        print(f"   ❌ TODOS OS MÉTODOS FALHARAM")
+                                        print(f"      Detalhes do erro:")
+                                        print(f"      - Inputs: {error_details['inputs_count']}")
+                                        print(f"      - Outputs: {error_details['outputs_count']}")
+                                        print(f"      - UTXOs disponíveis: {error_details['utxos_count']}")
+                                        print(f"      - Biblioteca 'bit' disponível: {error_details['bit_library_available']}")
+                                        print(f"      - OP_RETURN output: {error_details['op_return_output']}")
+                                        
+                                        proof_data["final_result"] = {
+                                            "success": False,
+                                            "error": "Não foi possível criar transação com OP_RETURN",
+                                            "debug": error_details
+                                        }
+                                        proof_file = self._save_transaction_proof(proof_data)
+                                        
                                         return {
                                             "success": False,
                                             "error": "Não foi possível criar transação com OP_RETURN via BlockCypher API ou fallback manual",
-                                            "debug": {
-                                                "reason": "op_return_required_but_all_methods_failed",
-                                                "inputs_count": len(inputs_list),
-                                                "outputs_count": len(outputs_list),
-                                                "op_return_output": next((out for out in outputs_list if out.get('script_type') == 'null-data'), None)
-                                            }
+                                            "debug": error_details,
+                                            "proof_file": proof_file,
+                                            "suggestions": [
+                                                "Verifique se a biblioteca 'bit' está instalada: pip install bit",
+                                                "Verifique se há UTXOs suficientes no endereço de origem",
+                                                "Verifique se o endereço Bitcoin de destino é válido",
+                                                "Tente novamente em alguns minutos (APIs podem estar temporariamente indisponíveis)"
+                                            ]
                                         }
                                     
                                     # SOLUÇÃO DEFINITIVA: Criar transação manualmente (mais confiável que BlockCypher)
