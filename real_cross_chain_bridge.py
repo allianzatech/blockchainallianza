@@ -2358,22 +2358,24 @@ class RealCrossChainBridge:
                                                 total_utxo_value = sum(u.get('value', 0) for u in utxos)
                                                 print(f"      Valor total dos UTXOs: {total_utxo_value} satoshis ({total_utxo_value / 100000000} BTC)")
                                             
-                                            # Tentar obter UTXOs usando o método da biblioteca 'bit'
-                                            # A biblioteca 'bit' pode buscar UTXOs automaticamente ou podemos usar get_unspents()
+                                            # A biblioteca 'bit' pode buscar UTXOs automaticamente via get_unspents()
+                                            # ou podemos deixar ela buscar automaticamente ao criar a transação
                                             bit_unspents = None
+                                            
+                                            print(f"   🔄 Tentando obter UTXOs usando key.get_unspents()...")
                                             try:
-                                                print(f"   🔄 Tentando obter UTXOs usando key.get_unspents()...")
                                                 bit_unspents = key.get_unspents()
-                                                if bit_unspents:
-                                                    print(f"   ✅ {len(bit_unspents)} UTXOs obtidos via get_unspents()")
+                                                if bit_unspents and len(bit_unspents) > 0:
                                                     total_value = sum(u.amount for u in bit_unspents)
+                                                    print(f"   ✅ {len(bit_unspents)} UTXOs obtidos via get_unspents()")
                                                     print(f"      Valor total: {total_value} satoshis ({total_value / 100000000} BTC)")
                                                 else:
                                                     print(f"   ⚠️  Nenhum UTXO encontrado via get_unspents()")
-                                                    print(f"   ⚠️  A biblioteca 'bit' tentará buscar automaticamente")
+                                                    print(f"   ⚠️  A biblioteca 'bit' tentará buscar automaticamente ao criar transação")
+                                                    bit_unspents = None
                                             except Exception as unspent_err:
                                                 print(f"   ⚠️  Erro ao obter UTXOs via get_unspents(): {unspent_err}")
-                                                print(f"   ⚠️  A biblioteca 'bit' tentará buscar automaticamente")
+                                                print(f"   ⚠️  A biblioteca 'bit' tentará buscar automaticamente ao criar transação")
                                                 bit_unspents = None
                                             
                                             # Adicionar OP_RETURN - biblioteca 'bit' aceita formato especial
@@ -2818,43 +2820,59 @@ class RealCrossChainBridge:
                                             print(f"   📤 Output 1 (destino): {output_value} satoshis para {to_address}")
                                             
                                             # 2. OP_RETURN (CRÍTICO - deve ser o segundo output)
+                                            # bitcoinlib.add_output() NÃO aceita script diretamente
+                                            # Precisamos criar Output manualmente e adicionar à lista
                                             op_return_added = False
                                             try:
-                                                # Tentar adicionar OP_RETURN usando script diretamente
-                                                # bitcoinlib pode aceitar script como hex string
-                                                tx.add_output(0, script=op_return_script.hex())
-                                                op_return_added = True
-                                                print(f"   ✅ OP_RETURN adicionado como output 2 via add_output com script")
-                                            except Exception as method1_err:
-                                                print(f"   ⚠️  Método 1 (add_output com script) falhou: {method1_err}")
-                                                try:
-                                                    # Método alternativo: adicionar diretamente na lista de outputs
-                                                    from bitcoinlib.transactions import Output
-                                                    op_return_output = Output(value=0, script=op_return_script.hex())
+                                                from bitcoinlib.transactions import Output
+                                                
+                                                # Criar Output com OP_RETURN script
+                                                # O script deve ser passado como hex string
+                                                op_return_output = Output(
+                                                    value=0,
+                                                    script=op_return_script.hex(),
+                                                    script_type='op_return'
+                                                )
+                                                
+                                                print(f"   🔧 Criando Output OP_RETURN...")
+                                                print(f"      Value: 0")
+                                                print(f"      Script hex: {op_return_script.hex()[:80]}...")
+                                                
+                                                # Verificar estrutura da transação e adicionar OP_RETURN
+                                                if hasattr(tx, 'outputs') and isinstance(tx.outputs, list):
+                                                    # Inserir após o output principal (índice 1)
+                                                    tx.outputs.insert(1, op_return_output)
+                                                    op_return_added = True
+                                                    print(f"   ✅ OP_RETURN adicionado via tx.outputs.insert(1, ...)")
+                                                elif hasattr(tx, '_outputs') and isinstance(tx._outputs, list):
+                                                    tx._outputs.insert(1, op_return_output)
+                                                    op_return_added = True
+                                                    print(f"   ✅ OP_RETURN adicionado via tx._outputs.insert(1, ...)")
+                                                else:
+                                                    # Tentar descobrir o atributo correto
+                                                    print(f"   🔍 Procurando atributo de outputs...")
+                                                    for attr in dir(tx):
+                                                        if 'output' in attr.lower() and not attr.startswith('__'):
+                                                            print(f"      Encontrado: {attr} = {type(getattr(tx, attr))}")
+                                                            try:
+                                                                outputs_list = getattr(tx, attr)
+                                                                if isinstance(outputs_list, list):
+                                                                    outputs_list.insert(1, op_return_output)
+                                                                    op_return_added = True
+                                                                    print(f"   ✅ OP_RETURN adicionado via {attr}.insert(1, ...)")
+                                                                    break
+                                                            except:
+                                                                pass
                                                     
-                                                    # Verificar estrutura da transação
-                                                    if hasattr(tx, 'outputs') and isinstance(tx.outputs, list):
-                                                        # Inserir após o output principal (índice 1)
-                                                        tx.outputs.insert(1, op_return_output)
-                                                        op_return_added = True
-                                                        print(f"   ✅ OP_RETURN adicionado via Output direto na lista (índice 1)")
-                                                    elif hasattr(tx, '_outputs') and isinstance(tx._outputs, list):
-                                                        tx._outputs.insert(1, op_return_output)
-                                                        op_return_added = True
-                                                        print(f"   ✅ OP_RETURN adicionado via _outputs (índice 1)")
-                                                    else:
-                                                        # Tentar adicionar como último output antes de change
-                                                        if hasattr(tx, 'outputs'):
-                                                            tx.outputs.append(op_return_output)
-                                                            op_return_added = True
-                                                            print(f"   ✅ OP_RETURN adicionado como último output antes de change")
-                                                        else:
-                                                            raise Exception("Não foi possível acessar lista de outputs")
-                                                except Exception as method2_err:
-                                                    print(f"   ❌ Método 2 também falhou: {method2_err}")
-                                                    import traceback
-                                                    traceback.print_exc()
-                                                    raise Exception(f"Falha ao adicionar OP_RETURN: {method1_err}, {method2_err}")
+                                                    if not op_return_added:
+                                                        raise Exception(f"Não foi possível acessar lista de outputs. Atributos disponíveis: {[a for a in dir(tx) if 'output' in a.lower() and not a.startswith('__')]}")
+                                                
+                                            except Exception as op_err:
+                                                print(f"   ❌ Erro ao adicionar OP_RETURN: {op_err}")
+                                                print(f"      Tipo: {type(op_err).__name__}")
+                                                import traceback
+                                                traceback.print_exc()
+                                                raise Exception(f"Falha crítica ao adicionar OP_RETURN: {op_err}")
                                             
                                             if not op_return_added:
                                                 raise Exception("OP_RETURN não foi adicionado! Não é seguro continuar sem vínculo criptográfico.")
