@@ -2305,19 +2305,24 @@ class RealCrossChainBridge:
                                         
                                         # PRIORIDADE 1: Tentar biblioteca 'bit' (mais simples e confiável para OP_RETURN)
                                         try:
+                                            print(f"   📚 Tentando importar biblioteca 'bit'...")
                                             from bit import PrivateKey
                                             from bit.network import NetworkAPI
                                             
+                                            print(f"   ✅ Biblioteca 'bit' importada com sucesso!")
                                             print(f"   📚 Usando biblioteca 'bit' para criar transação com OP_RETURN...")
                                             
                                             # Criar chave privada
+                                            print(f"   🔑 Criando PrivateKey a partir da chave WIF...")
                                             key = PrivateKey(from_private_key)
+                                            print(f"   ✅ PrivateKey criada! Endereço: {key.address}")
                                             
                                             # Preparar OP_RETURN
                                             polygon_hash_clean = source_tx_hash.replace('0x', '')
                                             op_return_data = f"ALZ:{polygon_hash_clean}"
                                             
-                                            print(f"   🔗 OP_RETURN será: ALZ:{polygon_hash_clean[:20]}...")
+                                            print(f"   🔗 OP_RETURN será: {op_return_data}")
+                                            print(f"      Tamanho: {len(op_return_data)} bytes (limite: 80 bytes)")
                                             
                                             # Criar outputs: (destino, valor) + OP_RETURN
                                             # A biblioteca 'bit' aceita OP_RETURN diretamente no formato de output
@@ -2327,6 +2332,7 @@ class RealCrossChainBridge:
                                             
                                             # Adicionar OP_RETURN - biblioteca 'bit' aceita formato especial
                                             # Formato: ('OP_RETURN <dados>', 0, 'satoshi')
+                                            # OU usar parâmetro op_return diretamente
                                             op_return_output = (f"OP_RETURN {op_return_data}", 0, 'satoshi')
                                             outputs.append(op_return_output)
                                             
@@ -2334,30 +2340,60 @@ class RealCrossChainBridge:
                                             if change_value > 546:
                                                 outputs.append((from_address, int(change_value), 'satoshi'))
                                             
-                                            print(f"   📤 Criando transação com {len(outputs)} outputs (incluindo OP_RETURN)...")
+                                            print(f"   📤 Criando transação com {len(outputs)} outputs:")
+                                            for i, out in enumerate(outputs):
+                                                if isinstance(out[0], str) and out[0].startswith('OP_RETURN'):
+                                                    print(f"      Output {i}: OP_RETURN ({len(out[0])} chars)")
+                                                else:
+                                                    print(f"      Output {i}: {out[0][:20]}... - {out[1]} satoshis")
                                             
                                             # Criar transação
-                                            tx_hex = key.create_transaction(outputs=outputs)
-                                            
-                                            print(f"   ✅ Transação criada com 'bit'! Tamanho: {len(tx_hex)} bytes")
+                                            print(f"   🔧 Chamando key.create_transaction()...")
+                                            try:
+                                                # Tentar com parâmetro op_return também (se suportado)
+                                                tx_hex = key.create_transaction(outputs=outputs, op_return=op_return_data)
+                                                print(f"   ✅ Transação criada com 'bit' usando parâmetro op_return! Tamanho: {len(tx_hex)} bytes")
+                                            except TypeError:
+                                                # Se não aceitar parâmetro op_return, usar apenas outputs
+                                                print(f"   ⚠️  create_transaction não aceita parâmetro op_return, usando apenas outputs...")
+                                                tx_hex = key.create_transaction(outputs=outputs)
+                                                print(f"   ✅ Transação criada com 'bit'! Tamanho: {len(tx_hex)} bytes")
                                             
                                             # Verificar se OP_RETURN está na transação
-                                            if op_return_data.encode('utf-8').hex() in tx_hex or op_return_data in tx_hex:
-                                                print(f"   ✅ OP_RETURN confirmado na transação raw!")
+                                            op_return_found = False
+                                            if op_return_data.encode('utf-8').hex() in tx_hex:
+                                                op_return_found = True
+                                                print(f"   ✅ OP_RETURN confirmado na transação raw (hex)!")
+                                            elif op_return_data in tx_hex:
+                                                op_return_found = True
+                                                print(f"   ✅ OP_RETURN confirmado na transação raw (string)!")
+                                            else:
+                                                print(f"   ⚠️  OP_RETURN não encontrado na transação raw!")
+                                                print(f"      Procurando por: {op_return_data[:30]}...")
+                                                print(f"      Primeiros 200 chars da tx: {tx_hex[:200]}...")
                                             
                                             # Broadcast via Blockstream (mais confiável que NetworkAPI do bit)
                                             print(f"   📡 Broadcastando via Blockstream...")
                                             blockstream_url = "https://blockstream.info/testnet/api/tx"
+                                            
+                                            # Blockstream espera hex string, não bytes
+                                            if isinstance(tx_hex, bytes):
+                                                tx_hex_str = tx_hex.hex()
+                                            else:
+                                                tx_hex_str = tx_hex
+                                            
                                             broadcast_response = requests.post(
                                                 blockstream_url,
-                                                data=tx_hex,
+                                                data=tx_hex_str,
                                                 headers={'Content-Type': 'text/plain'},
                                                 timeout=30
                                             )
                                             
+                                            print(f"   📡 Resposta Blockstream: Status {broadcast_response.status_code}")
+                                            
                                             if broadcast_response.status_code == 200:
                                                 tx_hash = broadcast_response.text.strip()
-                                                print(f"   ✅✅✅ Transação broadcastada via Blockstream com OP_RETURN! Hash: {tx_hash}")
+                                                print(f"   ✅✅✅ Transação broadcastada via Blockstream! Hash: {tx_hash}")
                                                 
                                                 return {
                                                     "success": True,
@@ -2368,16 +2404,17 @@ class RealCrossChainBridge:
                                                     "chain": "bitcoin",
                                                     "status": "broadcasted",
                                                     "explorer_url": f"https://blockstream.info/testnet/tx/{tx_hash}",
-                                                    "note": "✅ Transação REAL criada com biblioteca 'bit' incluindo OP_RETURN e broadcastada via Blockstream",
+                                                    "note": f"✅ Transação REAL criada com biblioteca 'bit' {'incluindo OP_RETURN' if op_return_found else 'OP_RETURN pode não estar incluído'} e broadcastada via Blockstream",
                                                     "real_broadcast": True,
                                                     "method": "bit_library_with_opreturn_blockstream",
-                                                    "op_return_included": True
+                                                    "op_return_included": op_return_found
                                                 }
                                             else:
-                                                print(f"   ⚠️  Blockstream falhou ({broadcast_response.status_code}), tentando NetworkAPI do bit...")
+                                                print(f"   ⚠️  Blockstream falhou ({broadcast_response.status_code}): {broadcast_response.text[:300]}")
                                                 # Fallback: usar NetworkAPI do bit
                                                 try:
-                                                    tx_hash = NetworkAPI.broadcast_tx(tx_hex)
+                                                    print(f"   🔄 Tentando broadcast alternativo via NetworkAPI do bit...")
+                                                    tx_hash = NetworkAPI.broadcast_tx(tx_hex_str if isinstance(tx_hex, str) else tx_hex)
                                                     if tx_hash:
                                                         print(f"   ✅✅✅ Transação broadcastada via NetworkAPI! Hash: {tx_hash}")
                                                         return {
@@ -2389,19 +2426,24 @@ class RealCrossChainBridge:
                                                             "chain": "bitcoin",
                                                             "status": "broadcasted",
                                                             "explorer_url": f"https://blockstream.info/testnet/tx/{tx_hash}",
-                                                            "note": "✅ Transação REAL criada com biblioteca 'bit' incluindo OP_RETURN",
+                                                            "note": f"✅ Transação REAL criada com biblioteca 'bit' {'incluindo OP_RETURN' if op_return_found else 'OP_RETURN pode não estar incluído'}",
                                                             "real_broadcast": True,
                                                             "method": "bit_library_with_opreturn_networkapi",
-                                                            "op_return_included": True
+                                                            "op_return_included": op_return_found
                                                         }
                                                 except Exception as networkapi_err:
                                                     print(f"   ⚠️  NetworkAPI também falhou: {networkapi_err}")
+                                                    import traceback
+                                                    traceback.print_exc()
                                                     
-                                        except ImportError:
-                                            print(f"   ⚠️  Biblioteca 'bit' não disponível, tentando 'python-bitcointx'...")
+                                        except ImportError as import_err:
+                                            print(f"   ❌ Biblioteca 'bit' não disponível: {import_err}")
+                                            print(f"   ⚠️  Tentando 'python-bitcointx'...")
                                         except Exception as bit_err:
-                                            print(f"   ⚠️  Erro ao usar biblioteca 'bit': {bit_err}")
+                                            print(f"   ❌ Erro ao usar biblioteca 'bit': {bit_err}")
+                                            print(f"   Tipo do erro: {type(bit_err).__name__}")
                                             import traceback
+                                            print(f"   Traceback completo:")
                                             traceback.print_exc()
                                         
                                         # PRIORIDADE 2: Tentar 'python-bitcointx' (mais controle manual)
