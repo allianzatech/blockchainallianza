@@ -2162,20 +2162,23 @@ class RealCrossChainBridge:
                                             op_return_data = f"ALZ:{polygon_hash_clean}"
                                             op_return_bytes = op_return_data.encode('utf-8')
                                             
-                                            # Criar script OP_RETURN em hex
+                                            # BlockCypher aceita OP_RETURN via script_type: "null-data"
+                                            # Tentar múltiplos formatos para garantir compatibilidade
+                                            # Formato 1: Usar campo "data" diretamente (recomendado pela documentação)
+                                            outputs_list.append({
+                                                "script_type": "null-data",
+                                                "data": op_return_data,  # String direta, BlockCypher constrói o script
+                                                "value": 0
+                                            })
+                                            print(f"   🔗 OP_RETURN incluído no BlockCypher (formato 'data'): ALZ:{polygon_hash_clean[:20]}...")
+                                            print(f"      Dados: {op_return_data}")
+                                            
+                                            # Também criar script hex como backup (caso BlockCypher não aceite 'data')
                                             if len(op_return_bytes) <= 75:
                                                 op_return_script_hex = "6a" + format(len(op_return_bytes), '02x') + op_return_bytes.hex()
                                             else:
                                                 op_return_script_hex = "6a4c" + format(len(op_return_bytes), '02x') + op_return_bytes.hex()
-                                            
-                                            # BlockCypher aceita OP_RETURN via script_type: "null-data" e script em hex
-                                            outputs_list.append({
-                                                "script_type": "null-data",
-                                                "script": op_return_script_hex,
-                                                "value": 0
-                                            })
-                                            print(f"   🔗 OP_RETURN incluído no BlockCypher: ALZ:{polygon_hash_clean[:20]}...")
-                                            print(f"      Script hex: {op_return_script_hex[:80]}...")
+                                            print(f"      Script hex (backup): {op_return_script_hex[:80]}...")
                                         except Exception as op_err:
                                             print(f"   ⚠️  Erro ao adicionar OP_RETURN: {op_err}")
                                     
@@ -2224,10 +2227,25 @@ class RealCrossChainBridge:
                                                 if tosign:
                                                     print(f"   ✅ Transação criada, precisa assinar {len(tosign)} inputs...")
                                                     
+                                                    # BlockCypher espera chave privada em formato HEX, não WIF
+                                                    # Converter WIF para hex se necessário
+                                                    privkey_for_blockcypher = from_private_key
+                                                    try:
+                                                        # Verificar se é WIF (começa com 'L', 'K', '5', 'c' para mainnet ou 'c' para testnet)
+                                                        if from_private_key[0] in ['L', 'K', '5', 'c']:
+                                                            print(f"   🔧 Convertendo chave privada de WIF para HEX...")
+                                                            from bitcoinlib.keys import HDKey
+                                                            key_obj = HDKey(from_private_key, network='testnet')
+                                                            privkey_for_blockcypher = key_obj.private_hex
+                                                            print(f"   ✅ Chave convertida: {privkey_for_blockcypher[:20]}...")
+                                                    except Exception as key_conv_err:
+                                                        print(f"   ⚠️  Erro ao converter chave: {key_conv_err}")
+                                                        print(f"   ⚠️  Tentando usar chave original (pode falhar se BlockCypher não aceitar WIF)")
+                                                    
                                                     sign_data = {
                                                         "tx": unsigned_tx,
                                                         "tosign": tosign,
-                                                        "privkeys": [from_private_key]
+                                                        "privkeys": [privkey_for_blockcypher]
                                                     }
                                                     
                                                     sign_url = f"{self.btc_api_base}/txs/send"
