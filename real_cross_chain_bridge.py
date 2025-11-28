@@ -2344,15 +2344,44 @@ class RealCrossChainBridge:
                                                 op_return_script = bytes([0x6a, 0x4c, len(op_return_bytes)]) + op_return_bytes
                                             
                                             # Adicionar output OP_RETURN (bitcoinlib pode não suportar diretamente, vamos tentar)
+                                            op_return_added = False
                                             try:
                                                 # Tentar adicionar como script raw
                                                 from bitcoinlib.transactions import Output
                                                 op_return_output = Output(value=0, script=op_return_script.hex())
                                                 tx.outputs.insert(1, op_return_output)  # Inserir após o output principal
+                                                op_return_added = True
                                                 print(f"   ✅ OP_RETURN adicionado manualmente: ALZ:{polygon_hash_clean[:20]}...")
+                                                print(f"      Script hex: {op_return_script.hex()[:80]}...")
                                             except Exception as op_err:
-                                                print(f"   ⚠️  Erro ao adicionar OP_RETURN: {op_err}")
-                                                # Continuar sem OP_RETURN se não conseguir
+                                                print(f"   ⚠️  Erro ao adicionar OP_RETURN via Output: {op_err}")
+                                                import traceback
+                                                traceback.print_exc()
+                                                
+                                                # Tentar método alternativo: adicionar diretamente na lista de outputs
+                                                try:
+                                                    if hasattr(tx, 'outputs') and isinstance(tx.outputs, list):
+                                                        # Criar output manualmente
+                                                        op_return_output_dict = {
+                                                            'value': 0,
+                                                            'script': op_return_script.hex(),
+                                                            'script_type': 'op_return'
+                                                        }
+                                                        tx.outputs.insert(1, op_return_output_dict)
+                                                        op_return_added = True
+                                                        print(f"   ✅ OP_RETURN adicionado via método alternativo!")
+                                                    elif hasattr(tx, '_outputs'):
+                                                        # Tentar _outputs (atributo privado)
+                                                        op_return_output = Output(value=0, script=op_return_script.hex())
+                                                        tx._outputs.insert(1, op_return_output)
+                                                        op_return_added = True
+                                                        print(f"   ✅ OP_RETURN adicionado via _outputs!")
+                                                except Exception as alt_err:
+                                                    print(f"   ⚠️  Métodos alternativos também falharam: {alt_err}")
+                                                    print(f"   ⚠️  Continuando sem OP_RETURN (transação será criada mas sem vínculo criptográfico)")
+                                                    
+                                            if not op_return_added:
+                                                print(f"   ⚠️  ATENÇÃO: OP_RETURN não foi adicionado! A transação será criada sem vínculo criptográfico.")
                                             
                                             # Adicionar change
                                             if change_value > 546:
@@ -2362,23 +2391,57 @@ class RealCrossChainBridge:
                                             tx.sign(key)
                                             
                                             # Obter raw transaction
-                                            raw_tx_hex = tx.raw_hex() if hasattr(tx, 'raw_hex') else tx.raw()
+                                            raw_tx_hex = None
+                                            try:
+                                                if hasattr(tx, 'raw_hex'):
+                                                    raw_tx_hex = tx.raw_hex()
+                                                elif hasattr(tx, 'raw'):
+                                                    raw_tx_hex = tx.raw()
+                                                elif hasattr(tx, 'serialize'):
+                                                    raw_tx_hex = tx.serialize()
+                                                else:
+                                                    print(f"   ⚠️  Transação não tem método para obter raw hex")
+                                                    print(f"      Métodos disponíveis: {[m for m in dir(tx) if not m.startswith('_')]}")
+                                            except Exception as raw_err:
+                                                print(f"   ⚠️  Erro ao obter raw transaction: {raw_err}")
+                                                import traceback
+                                                traceback.print_exc()
                                             
                                             if raw_tx_hex:
                                                 print(f"   ✅ Transação raw criada manualmente!")
+                                                print(f"      Tamanho: {len(raw_tx_hex)} bytes")
+                                                print(f"      Primeiros 100 chars: {raw_tx_hex[:100]}...")
+                                                
+                                                # Verificar se OP_RETURN está na transação raw
+                                                if op_return_added:
+                                                    op_return_check = op_return_data.encode('utf-8')
+                                                    if op_return_check in raw_tx_hex.encode('utf-8') if isinstance(raw_tx_hex, str) else op_return_check in raw_tx_hex:
+                                                        print(f"   ✅ OP_RETURN confirmado na transação raw!")
+                                                    else:
+                                                        print(f"   ⚠️  OP_RETURN não encontrado na transação raw (pode ter sido removido durante serialização)")
                                                 
                                                 # Broadcast via Blockstream
                                                 blockstream_url = "https://blockstream.info/testnet/api/tx"
+                                                
+                                                # Blockstream espera hex string, não bytes
+                                                if isinstance(raw_tx_hex, bytes):
+                                                    raw_tx_hex_str = raw_tx_hex.hex()
+                                                else:
+                                                    raw_tx_hex_str = raw_tx_hex
+                                                
+                                                print(f"   📡 Broadcastando via Blockstream...")
                                                 broadcast_response = requests.post(
                                                     blockstream_url,
-                                                    data=raw_tx_hex,
+                                                    data=raw_tx_hex_str,
                                                     headers={'Content-Type': 'text/plain'},
                                                     timeout=30
                                                 )
                                                 
+                                                print(f"   📡 Resposta Blockstream: Status {broadcast_response.status_code}")
+                                                
                                                 if broadcast_response.status_code == 200:
                                                     tx_hash = broadcast_response.text.strip()
-                                                    print(f"   ✅✅✅ Transação broadcastada via Blockstream com OP_RETURN! Hash: {tx_hash}")
+                                                    print(f"   ✅✅✅ Transação broadcastada via Blockstream! Hash: {tx_hash}")
                                                     
                                                     return {
                                                         "success": True,
@@ -2389,16 +2452,48 @@ class RealCrossChainBridge:
                                                         "chain": "bitcoin",
                                                         "status": "broadcasted",
                                                         "explorer_url": f"https://blockstream.info/testnet/tx/{tx_hash}",
-                                                        "note": "✅ Transação REAL criada manualmente incluindo OP_RETURN e broadcastada via Blockstream",
+                                                        "note": f"✅ Transação REAL criada manualmente {'incluindo OP_RETURN' if op_return_added else 'SEM OP_RETURN'} e broadcastada via Blockstream",
                                                         "real_broadcast": True,
-                                                        "method": "manual_raw_with_opreturn_blockstream",
-                                                        "op_return_included": True
+                                                        "method": "manual_raw_with_opreturn_blockstream" if op_return_added else "manual_raw_blockstream",
+                                                        "op_return_included": op_return_added
                                                     }
                                                 else:
                                                     print(f"   ⚠️  Erro ao broadcastar via Blockstream: {broadcast_response.status_code}")
-                                                    print(f"      {broadcast_response.text[:200]}")
+                                                    print(f"      Resposta: {broadcast_response.text[:500]}")
+                                                    
+                                                    # Tentar também via BlockCypher broadcast
+                                                    try:
+                                                        print(f"   🔄 Tentando broadcast alternativo via BlockCypher...")
+                                                        blockcypher_broadcast_url = f"{self.btc_api_base}/txs/push"
+                                                        bc_response = requests.post(
+                                                            blockcypher_broadcast_url,
+                                                            json={"tx": raw_tx_hex_str},
+                                                            timeout=30
+                                                        )
+                                                        if bc_response.status_code in [200, 201]:
+                                                            bc_data = bc_response.json()
+                                                            bc_tx_hash = bc_data.get('tx', {}).get('hash')
+                                                            if bc_tx_hash:
+                                                                print(f"   ✅✅✅ Broadcast alternativo via BlockCypher funcionou! Hash: {bc_tx_hash}")
+                                                                return {
+                                                                    "success": True,
+                                                                    "tx_hash": bc_tx_hash,
+                                                                    "from": from_address,
+                                                                    "to": to_address,
+                                                                    "amount": amount_btc,
+                                                                    "chain": "bitcoin",
+                                                                    "status": "broadcasted",
+                                                                    "explorer_url": f"https://blockstream.info/testnet/tx/{bc_tx_hash}",
+                                                                    "note": f"✅ Transação REAL criada manualmente {'incluindo OP_RETURN' if op_return_added else 'SEM OP_RETURN'} e broadcastada via BlockCypher",
+                                                                    "real_broadcast": True,
+                                                                    "method": "manual_raw_with_opreturn_blockcypher" if op_return_added else "manual_raw_blockcypher",
+                                                                    "op_return_included": op_return_added
+                                                                }
+                                                    except Exception as bc_broadcast_err:
+                                                        print(f"   ⚠️  Broadcast alternativo também falhou: {bc_broadcast_err}")
                                             else:
                                                 print(f"   ⚠️  Não foi possível obter raw transaction")
+                                                print(f"      Transação criada mas não serializada")
                                                 
                                         except Exception as fallback_err:
                                             print(f"   ⚠️  Erro no fallback manual: {fallback_err}")
