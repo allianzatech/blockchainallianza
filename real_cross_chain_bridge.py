@@ -2759,15 +2759,40 @@ class RealCrossChainBridge:
                                                 print(f"      Tamanho: {len(raw_tx_hex)} bytes")
                                                 print(f"      Primeiros 100 chars: {raw_tx_hex[:100]}...")
                                                 
-                                                # Verificar se OP_RETURN está na transação raw
+                                                # Verificar se OP_RETURN está na transação raw ANTES de broadcastar
+                                                op_return_verified = False
                                                 if op_return_added:
-                                                    op_return_check = op_return_data.encode('utf-8')
-                                                    if op_return_check in raw_tx_hex.encode('utf-8') if isinstance(raw_tx_hex, str) else op_return_check in raw_tx_hex:
-                                                        print(f"   ✅ OP_RETURN confirmado na transação raw!")
+                                                    # Converter raw_tx_hex para bytes se necessário
+                                                    if isinstance(raw_tx_hex, str):
+                                                        raw_tx_bytes = bytes.fromhex(raw_tx_hex)
                                                     else:
-                                                        print(f"   ⚠️  OP_RETURN não encontrado na transação raw (pode ter sido removido durante serialização)")
+                                                        raw_tx_bytes = raw_tx_hex
+                                                    
+                                                    # Verificar se os dados do OP_RETURN estão na transação
+                                                    op_return_check_bytes = op_return_data.encode('utf-8')
+                                                    op_return_script_bytes = op_return_script
+                                                    
+                                                    # Verificar se os dados estão presentes
+                                                    if op_return_check_bytes in raw_tx_bytes:
+                                                        op_return_verified = True
+                                                        print(f"   ✅ OP_RETURN confirmado na transação raw (dados encontrados)!")
+                                                    elif op_return_script_bytes in raw_tx_bytes:
+                                                        op_return_verified = True
+                                                        print(f"   ✅ OP_RETURN confirmado na transação raw (script encontrado)!")
+                                                    else:
+                                                        print(f"   ⚠️  OP_RETURN não encontrado na transação raw!")
+                                                        print(f"      Procurando por: {op_return_data[:50]}...")
+                                                        print(f"      Script hex: {op_return_script.hex()[:80]}...")
+                                                        print(f"      Primeiros 200 bytes da tx: {raw_tx_bytes[:200].hex()}...")
+                                                        
+                                                        # Se OP_RETURN não foi encontrado, NÃO broadcastar
+                                                        print(f"   ❌ NÃO VAI BROADCASTAR: OP_RETURN não está na transação!")
+                                                        raise Exception("OP_RETURN não foi incluído na transação. Não é seguro broadcastar sem o vínculo criptográfico.")
+                                                else:
+                                                    print(f"   ⚠️  OP_RETURN não foi adicionado à transação!")
+                                                    raise Exception("OP_RETURN não foi adicionado à transação. Não é seguro broadcastar sem o vínculo criptográfico.")
                                                 
-                                                # Broadcast via Blockstream
+                                                # Broadcast via Blockstream (só se OP_RETURN foi verificado)
                                                 blockstream_url = "https://blockstream.info/testnet/api/tx"
                                                 
                                                 # Blockstream espera hex string, não bytes
