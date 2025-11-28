@@ -1852,9 +1852,17 @@ class RealCrossChainBridge:
                                 import traceback
                                 traceback.print_exc()
                     
+                    # CORREÇÃO CRÍTICA: Calcular saldo a partir dos UTXOs se balance_btc for 0
                     if utxos:
-                        total_utxo_value = sum(utxo['value'] for utxo in utxos) / 100000000
-                        print(f"📦 UTXOs encontrados: {len(utxos)} (Total: {total_utxo_value} BTC)")
+                        total_utxo_value_satoshis = sum(utxo.get('value', 0) for utxo in utxos)
+                        total_utxo_value_btc = total_utxo_value_satoshis / 100000000
+                        print(f"📦 UTXOs encontrados: {len(utxos)} (Total: {total_utxo_value_btc} BTC = {total_utxo_value_satoshis} satoshis)")
+                        
+                        # Se balance_btc é 0 mas temos UTXOs, usar o valor dos UTXOs
+                        if balance_btc == 0.0 and total_utxo_value_btc > 0:
+                            print(f"   ⚠️  balance_btc era 0.0, mas UTXOs têm {total_utxo_value_btc} BTC")
+                            print(f"   ✅ Atualizando balance_btc para {total_utxo_value_btc} BTC baseado nos UTXOs")
+                            balance_btc = total_utxo_value_btc
                     else:
                         print(f"⚠️  Nenhum UTXO encontrado no wallet nem via API")
                     
@@ -1868,6 +1876,12 @@ class RealCrossChainBridge:
                         estimated_fee_btc = 0.000005  # 500 satoshis
                     
                     total_needed = amount_btc + estimated_fee_btc
+                    
+                    print(f"💰 Verificação de saldo:")
+                    print(f"   Saldo disponível: {balance_btc} BTC")
+                    print(f"   Valor a enviar: {amount_btc} BTC")
+                    print(f"   Fee estimado: {estimated_fee_btc} BTC")
+                    print(f"   Total necessário: {total_needed} BTC")
                     
                     # CORREÇÃO: Validar se o valor é muito pequeno (menor que dust limit + fee)
                     min_btc_with_fee = 0.00000546 + estimated_fee_btc  # Dust limit (546 sats) + fee
