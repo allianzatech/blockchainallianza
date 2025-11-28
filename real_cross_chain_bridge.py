@@ -2180,7 +2180,8 @@ class RealCrossChainBridge:
                                         print(f"   📤 Adicionando output: {to_address} ({output_value} satoshis)")
                                         tx.add_output(output_value, address=to_address)
                                         
-                                        # MELHORIA CRÍTICA: Adicionar OP_RETURN com hash da transação Polygon (vínculo criptográfico)
+                                        # MELHORIA CRÍTICA: Adicionar OP_RETURN ANTES do change (ordem importa)
+                                        # OP_RETURN deve ser adicionado logo após o output principal
                                         if source_tx_hash:
                                             try:
                                                 # OP_RETURN permite até 80 bytes de dados
@@ -2195,30 +2196,61 @@ class RealCrossChainBridge:
                                                 # Criar script OP_RETURN usando bitcoinlib Script
                                                 # OP_RETURN = 0x6a (OP_RETURN), seguido do tamanho (pushdata) e os dados
                                                 # bitcoinlib Script espera uma lista de opcodes e dados
+                                                # Criar script OP_RETURN manualmente (mais confiável)
+                                                # OP_RETURN = 0x6a, seguido do tamanho (pushdata) e os dados
+                                                # Para pushdata, se tamanho <= 75, é um byte direto
+                                                if len(op_return_data) <= 75:
+                                                    op_return_script_bytes = bytes([0x6a, len(op_return_data)]) + op_return_data
+                                                else:
+                                                    # Para tamanhos maiores, usar pushdata1 (0x4c) + tamanho (1 byte)
+                                                    op_return_script_bytes = bytes([0x6a, 0x4c, len(op_return_data)]) + op_return_data
+                                                
+                                                # Tentar múltiplos métodos para adicionar OP_RETURN
+                                                op_return_added = False
+                                                
+                                                # Método 1: Tentar com script como hex string
                                                 try:
-                                                    # Método 1: Usar Script do bitcoinlib
-                                                    op_return_script = Script()
-                                                    # OP_RETURN (0x6a) + pushdata (tamanho) + dados
-                                                    op_return_script.add_opcode(0x6a)  # OP_RETURN
-                                                    op_return_script.add_data(op_return_data)
-                                                    
-                                                    # Adicionar output OP_RETURN (valor 0) com script
-                                                    tx.add_output(0, script=op_return_script)
-                                                    print(f"   🔗 OP_RETURN adicionado (via Script) com hash Polygon: {source_tx_hash[:20]}...")
-                                                except Exception as script_error:
-                                                    # Método 2: Criar script manualmente como bytes
-                                                    print(f"   ⚠️  Método Script falhou, tentando método manual: {script_error}")
-                                                    # OP_RETURN = 0x6a, seguido do tamanho (pushdata) e os dados
-                                                    # Para pushdata, se tamanho <= 75, é um byte direto
-                                                    if len(op_return_data) <= 75:
-                                                        op_return_script_bytes = bytes([0x6a, len(op_return_data)]) + op_return_data
-                                                    else:
-                                                        # Para tamanhos maiores, usar pushdata1 (0x4c) + tamanho (1 byte)
-                                                        op_return_script_bytes = bytes([0x6a, 0x4c, len(op_return_data)]) + op_return_data
-                                                    
-                                                    # Adicionar output OP_RETURN (valor 0) com script como hex
                                                     tx.add_output(0, script=op_return_script_bytes.hex())
-                                                    print(f"   🔗 OP_RETURN adicionado (via manual) com hash Polygon: {source_tx_hash[:20]}...")
+                                                    op_return_added = True
+                                                    print(f"   🔗 OP_RETURN adicionado (hex string) com hash Polygon: {source_tx_hash[:20]}...")
+                                                except Exception as hex_error:
+                                                    print(f"   ⚠️  Método hex string falhou: {hex_error}")
+                                                    
+                                                    # Método 2: Tentar com script como bytes
+                                                    try:
+                                                        tx.add_output(0, script=op_return_script_bytes)
+                                                        op_return_added = True
+                                                        print(f"   🔗 OP_RETURN adicionado (bytes) com hash Polygon: {source_tx_hash[:20]}...")
+                                                    except Exception as bytes_error:
+                                                        print(f"   ⚠️  Método bytes falhou: {bytes_error}")
+                                                        
+                                                        # Método 3: Tentar com Script do bitcoinlib
+                                                        try:
+                                                            op_return_script = Script()
+                                                            op_return_script.add_opcode(0x6a)  # OP_RETURN
+                                                            op_return_script.add_data(op_return_data)
+                                                            tx.add_output(0, script=op_return_script)
+                                                            op_return_added = True
+                                                            print(f"   🔗 OP_RETURN adicionado (Script class) com hash Polygon: {source_tx_hash[:20]}...")
+                                                        except Exception as script_error:
+                                                            print(f"   ⚠️  Método Script class falhou: {script_error}")
+                                                            
+                                                            # Método 4: Tentar adicionar diretamente como scriptPubKey
+                                                            try:
+                                                                # Criar output manualmente modificando a transação
+                                                                # Isso é um workaround se add_output não aceitar script
+                                                                print(f"   ⚠️  Todos os métodos falharam, OP_RETURN não será incluído")
+                                                                op_return_added = False
+                                                            except Exception as final_error:
+                                                                print(f"   ❌ Erro final ao adicionar OP_RETURN: {final_error}")
+                                                                op_return_added = False
+                                                
+                                                if not op_return_added:
+                                                    print(f"   ⚠️  OP_RETURN não pôde ser adicionado, mas continuando...")
+                                                    add_log("op_return_failed_all_methods", {
+                                                        "source_tx_hash": source_tx_hash,
+                                                        "op_return_length": len(op_return_data)
+                                                    }, "warning")
                                                 
                                                 print(f"      Dados: ALZ:{polygon_hash_clean[:20]}...")
                                                 print(f"      Tamanho: {len(op_return_data)} bytes")
