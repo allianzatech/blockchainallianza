@@ -2068,12 +2068,17 @@ class RealCrossChainBridge:
                                 "api_utxos_count": len(utxos) if utxos else 0
                             })
                             
+                            # SOLUÇÃO PRINCIPAL: Se temos source_tx_hash (OP_RETURN necessário), usar BlockCypher API PRIMEIRO
+                            # BlockCypher API suporta OP_RETURN via script_type: "null-data"
+                            if source_tx_hash:
+                                print(f"🔗 OP_RETURN necessário - usando BlockCypher API (suporta OP_RETURN nativamente)...")
+                                add_log("using_blockcypher_for_opreturn", {"source_tx_hash": source_tx_hash}, "info")
+                            
                             # SOLUÇÃO ALTERNATIVA: Se wallet não tem UTXOs mas temos da API, usar BlockCypher ANTES de tentar wallet.send_to()
-                            if not wallet_utxos and utxos:
-                                print(f"⚠️  Wallet não reconhece UTXOs, usando BlockCypher API ANTES de tentar wallet.send_to()...")
-                                add_log("using_blockcypher_api", {"utxos_count": len(utxos)}, "info")
-                                print(f"⚠️  Wallet não reconhece UTXOs, usando BlockCypher API para criar transação...")
-                                add_log("using_blockcypher_api", {"utxos_count": len(utxos)}, "info")
+                            if (not wallet_utxos and utxos) or source_tx_hash:
+                                if not source_tx_hash:
+                                    print(f"⚠️  Wallet não reconhece UTXOs, usando BlockCypher API ANTES de tentar wallet.send_to()...")
+                                add_log("using_blockcypher_api", {"utxos_count": len(utxos), "op_return_needed": bool(source_tx_hash)}, "info")
                                 
                                 try:
                                     # Usar BlockCypher API para criar e assinar transação
@@ -2146,7 +2151,31 @@ class RealCrossChainBridge:
                                         }
                                     ]
                                     
-                                    # Adicionar change output se necessário
+                                    # CORREÇÃO CRÍTICA: Adicionar OP_RETURN ANTES do change (ordem importa!)
+                                    if source_tx_hash:
+                                        try:
+                                            polygon_hash_clean = source_tx_hash.replace('0x', '')
+                                            op_return_data = f"ALZ:{polygon_hash_clean}"
+                                            op_return_bytes = op_return_data.encode('utf-8')
+                                            
+                                            # Criar script OP_RETURN em hex
+                                            if len(op_return_bytes) <= 75:
+                                                op_return_script_hex = "6a" + format(len(op_return_bytes), '02x') + op_return_bytes.hex()
+                                            else:
+                                                op_return_script_hex = "6a4c" + format(len(op_return_bytes), '02x') + op_return_bytes.hex()
+                                            
+                                            # BlockCypher aceita OP_RETURN via script_type: "null-data" e script em hex
+                                            outputs_list.append({
+                                                "script_type": "null-data",
+                                                "script": op_return_script_hex,
+                                                "value": 0
+                                            })
+                                            print(f"   🔗 OP_RETURN incluído no BlockCypher: ALZ:{polygon_hash_clean[:20]}...")
+                                            print(f"      Script hex: {op_return_script_hex[:80]}...")
+                                        except Exception as op_err:
+                                            print(f"   ⚠️  Erro ao adicionar OP_RETURN: {op_err}")
+                                    
+                                    # Adicionar change output se necessário (sempre por último)
                                     if change_value > 546:  # Dust limit
                                         outputs_list.append({
                                             "addresses": [from_address],  # Change volta para o endereço de origem
