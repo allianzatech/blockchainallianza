@@ -2750,29 +2750,140 @@ class RealCrossChainBridge:
                                             "request_data": tx_data
                                         }, "error")
                                     
-                                    # Se BlockCypher falhar completamente, retornar erro (não tentar wallet.send_to que sabemos que vai falhar)
-                                    print(f"   ❌ BlockCypher falhou completamente, não há mais alternativas")
-                                    proof_data["final_result"] = {
-                                        "success": False,
-                                        "error": "BlockCypher API falhou e bitcoinlib não reconhece UTXOs",
-                                        "blockcypher_attempted": True,
-                                        "wallet_utxos": 0,
-                                        "api_utxos": len(utxos)
-                                    }
-                                    proof_file = self._save_transaction_proof(proof_data)
+                                    # Se BlockCypher falhar completamente, tentar criar transação raw manualmente como último recurso
+                                    print(f"   ⚠️  BlockCypher falhou, tentando criar transação raw manualmente como último recurso...")
                                     
-                                    return {
-                                        "success": False,
-                                        "error": "Não foi possível criar transação: BlockCypher API falhou e bitcoinlib não reconhece UTXOs",
-                                        "from_address": from_address,
-                                        "to_address": to_address,
-                                        "amount": amount_btc,
-                                        "balance": balance_btc,
-                                        "utxos_from_api": len(utxos) if utxos else 0,
-                                        "utxos_from_wallet": 0,
-                                        "note": "Tente usar wallet.scan() ou aguardar sincronização do wallet",
-                                        "proof_file": proof_file
-                                    }
+                                    try:
+                                        # Última tentativa: criar transação raw completamente manual
+                                        print(f"   🔧 Criando transação raw manualmente (último recurso)...")
+                                        
+                                        # Usar os UTXOs da API diretamente
+                                        from bitcoinlib.transactions import Transaction
+                                        from bitcoinlib.keys import HDKey
+                                        
+                                        key = HDKey(from_private_key, network='testnet')
+                                        tx = Transaction(network='testnet', witness_type='segwit')
+                                        
+                                        # Adicionar inputs
+                                        for utxo in utxos:
+                                            txid = utxo.get('txid') or utxo.get('tx_hash')
+                                            output_n = utxo.get('output_n') or utxo.get('vout') or utxo.get('output_index', 0)
+                                            value = utxo.get('value', 0)
+                                            
+                                            try:
+                                                tx.add_input(
+                                                    prev_txid=txid,
+                                                    output_n=int(output_n),
+                                                    value=int(value),
+                                                    keys=key
+                                                )
+                                            except:
+                                                tx.add_input(
+                                                    prev_txid=txid,
+                                                    output_n=int(output_n),
+                                                    keys=key
+                                                )
+                                        
+                                        # Adicionar outputs
+                                        tx.add_output(output_value, address=to_address)
+                                        
+                                        # Adicionar OP_RETURN se disponível
+                                        if source_tx_hash:
+                                            try:
+                                                polygon_hash_clean = source_tx_hash.replace('0x', '')
+                                                op_return_data = f"ALZ:{polygon_hash_clean}".encode('utf-8')
+                                                if len(op_return_data) <= 75:
+                                                    op_return_script = bytes([0x6a, len(op_return_data)]) + op_return_data
+                                                else:
+                                                    op_return_script = bytes([0x6a, 0x4c, len(op_return_data)]) + op_return_data
+                                                
+                                                # Tentar adicionar OP_RETURN
+                                                try:
+                                                    tx.add_output(0, script=op_return_script.hex())
+                                                except:
+                                                    try:
+                                                        tx.add_output(0, script=op_return_script)
+                                                    except:
+                                                        print(f"   ⚠️  Não foi possível adicionar OP_RETURN, continuando sem ele...")
+                                            except Exception as op_err:
+                                                print(f"   ⚠️  Erro ao adicionar OP_RETURN: {op_err}")
+                                        
+                                        # Adicionar change
+                                        if change_value > 546:
+                                            tx.add_output(change_value, address=from_address)
+                                        
+                                        # Assinar
+                                        tx.sign(key)
+                                        
+                                        # Obter raw transaction
+                                        raw_tx_hex = None
+                                        if hasattr(tx, 'raw_hex'):
+                                            raw_hex_attr = tx.raw_hex
+                                            raw_tx_hex = raw_hex_attr() if callable(raw_hex_attr) else str(raw_hex_attr)
+                                        elif hasattr(tx, 'raw'):
+                                            raw_obj = tx.raw()
+                                            raw_tx_hex = raw_obj.hex() if isinstance(raw_obj, bytes) else str(raw_obj)
+                                        
+                                        if raw_tx_hex:
+                                            # Broadcast via Blockstream
+                                            print(f"   📡 Broadcastando via Blockstream API...")
+                                            blockstream_url = "https://blockstream.info/testnet/api/tx"
+                                            broadcast_response = requests.post(blockstream_url, data=raw_tx_hex, headers={'Content-Type': 'text/plain'}, timeout=30)
+                                            
+                                            if broadcast_response.status_code == 200:
+                                                tx_hash = broadcast_response.text.strip()
+                                                print(f"   ✅ Transação broadcastada! Hash: {tx_hash}")
+                                                
+                                                return {
+                                                    "success": True,
+                                                    "tx_hash": tx_hash,
+                                                    "from": from_address,
+                                                    "to": to_address,
+                                                    "amount": amount_btc,
+                                                    "chain": "bitcoin",
+                                                    "status": "broadcasted",
+                                                    "explorer_url": f"https://live.blockcypher.com/btc-testnet/tx/{tx_hash}/",
+                                                    "note": "✅ Transação REAL criada manualmente e broadcastada via Blockstream",
+                                                    "real_broadcast": True,
+                                                    "method": "manual_raw_blockstream"
+                                                }
+                                        
+                                        raise Exception("Não foi possível obter raw transaction")
+                                        
+                                    except Exception as manual_error:
+                                        print(f"   ❌ Criação manual também falhou: {manual_error}")
+                                        import traceback
+                                        traceback.print_exc()
+                                        
+                                        # Retornar erro final
+                                        proof_data["final_result"] = {
+                                            "success": False,
+                                            "error": f"Todos os métodos falharam: BlockCypher e criação manual",
+                                            "blockcypher_attempted": True,
+                                            "manual_attempted": True,
+                                            "wallet_utxos": 0,
+                                            "api_utxos": len(utxos),
+                                            "last_error": str(manual_error)
+                                        }
+                                        proof_file = self._save_transaction_proof(proof_data)
+                                        
+                                        return {
+                                            "success": False,
+                                            "error": "Não foi possível criar transação: BlockCypher API falhou e criação manual também falhou",
+                                            "from_address": from_address,
+                                            "to_address": to_address,
+                                            "amount": amount_btc,
+                                            "balance": balance_btc,
+                                            "utxos_from_api": len(utxos) if utxos else 0,
+                                            "utxos_from_wallet": 0,
+                                            "note": "Todos os métodos falharam. Verifique logs para detalhes.",
+                                            "proof_file": proof_file,
+                                            "debug": {
+                                                "blockcypher_attempted": True,
+                                                "manual_attempted": True,
+                                                "last_error": str(manual_error)
+                                            }
+                                        }
                                     
                                 except Exception as blockcypher_error:
                                     print(f"   ⚠️  Erro ao usar BlockCypher API: {blockcypher_error}")
