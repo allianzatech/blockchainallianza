@@ -3721,8 +3721,13 @@ class RealCrossChainBridge:
                     # CORREÇÃO: Garantir que os preços são válidos antes de calcular
                     if source_price_usd <= 0 or target_price_usd <= 0:
                         print(f"⚠️  Preços de câmbio inválidos. Usando valores padrão...")
-                        source_price_usd = self.exchange_rates_usd.get(token_symbol, 1.0)
-                        target_price_usd = self.exchange_rates_usd.get("BTC", 45000.0)
+                        # Valores padrão mais realistas
+                        if token_symbol == "MATIC":
+                            source_price_usd = 0.5  # ~$0.50 por MATIC
+                        else:
+                            source_price_usd = self.exchange_rates_usd.get(token_symbol, 1.0)
+                        target_price_usd = self.exchange_rates_usd.get("BTC", 45000.0)  # ~$45,000 por BTC
+                        print(f"   Usando preços padrão: {token_symbol} = ${source_price_usd}, BTC = ${target_price_usd}")
                     
                     value_usd = amount * source_price_usd
                     target_amount = value_usd / target_price_usd
@@ -3732,14 +3737,22 @@ class RealCrossChainBridge:
                         print(f"⚠️  Valor convertido inválido ({target_amount} BTC). Usando valor mínimo...")
                         target_amount = 0.00001  # 1000 satoshis mínimo
                     
-                    # CORREÇÃO: Validar se o valor convertido é muito pequeno
+                    # CORREÇÃO CRÍTICA: Se valor convertido for muito pequeno, ajustar para mínimo viável
                     min_btc = 0.00000546  # 546 satoshis (dust limit)
+                    min_recommended_btc = 0.00001  # 1000 satoshis (recomendado para evitar problemas)
+                    
                     if target_amount < min_btc:
                         print(f"⚠️  Valor convertido muito pequeno ({target_amount} BTC = {int(target_amount * 100000000)} satoshis)")
                         print(f"   Mínimo Bitcoin: {min_btc} BTC (546 satoshis)")
-                        print(f"   ⚠️  Este valor está abaixo do dust limit e pode ser rejeitado pela rede")
-                        print(f"   💡 Recomendação: Envie um valor maior (ex: 0.01 MATIC ou mais)")
-                        # Ainda permitir, mas avisar que pode falhar
+                        print(f"   ⚠️  Este valor está abaixo do dust limit")
+                        
+                        # CORREÇÃO: Ajustar para valor mínimo recomendado se muito pequeno
+                        if target_amount < min_recommended_btc:
+                            print(f"   🔧 Ajustando para valor mínimo recomendado: {min_recommended_btc} BTC (1000 satoshis)")
+                            target_amount = min_recommended_btc
+                            print(f"   💡 Nota: Valor ajustado para garantir que a transação seja aceita pela rede")
+                        else:
+                            print(f"   ⚠️  Valor está entre dust limit e mínimo recomendado - pode funcionar, mas não é garantido")
                     
                     print(f"🔄 Conversão baseada em valor equivalente (USD):")
                     print(f"   {amount} {token_symbol} × ${source_price_usd:,.2f} = ${value_usd:,.6f} USD")
