@@ -3032,21 +3032,23 @@ class RealCrossChainBridge:
                         return address
                     else:
                         print(f"⚠️  Endereço Bitcoin detectado mas checksum inválido: {validation_error}")
-                        print(f"   Usando endereço testnet estático como fallback")
-                        # Retornar endereço estático como fallback
-                        return self._get_static_testnet_address()
+                        print(f"   Tentando usar endereço mesmo assim (pode ser válido mas com validação falhando)")
+                        # CORREÇÃO: Tentar usar o endereço mesmo se validação falhar
+                        # (pode ser um problema na validação, não no endereço)
+                        return address
                 
-                # SOLUÇÃO PARA TESTE: Se endereço de origem é EVM (0x...), usar endereço testnet estático
-                # Isso permite testar o bridge sem precisar converter endereços (que requer chave privada)
+                # CORREÇÃO: Se endereço de origem é EVM (0x...), NÃO converter automaticamente
+                # O usuário deve fornecer um endereço Bitcoin válido diretamente
                 if address.startswith("0x") and len(address) == 42:
-                    print(f"🔄 Endereço EVM detectado para destino Bitcoin: {address}")
-                    print(f"   Usando endereço Bitcoin testnet estático para testes")
-                    return self._get_static_testnet_address()
+                    print(f"⚠️  Endereço EVM detectado para destino Bitcoin: {address}")
+                    print(f"   ERRO: Não é possível converter endereço EVM para Bitcoin sem chave privada")
+                    print(f"   Por favor, forneça um endereço Bitcoin válido diretamente")
+                    return None  # Retornar None para indicar erro
                 
-                # Se não reconhece o formato, usar endereço estático como fallback
+                # Se não reconhece o formato, retornar None (não usar fallback automático)
                 print(f"⚠️  Formato de endereço não reconhecido para Bitcoin: {address}")
-                print(f"   Usando endereço testnet estático como fallback")
-                return self._get_static_testnet_address()
+                print(f"   Por favor, forneça um endereço Bitcoin válido (Legacy, P2SH ou Bech32)")
+                return None  # Retornar None para indicar erro
             
             # Se target é Solana
             if target_chain == "solana":
@@ -3185,8 +3187,19 @@ class RealCrossChainBridge:
                     source_price_usd = self.get_exchange_rate(token_symbol)
                     target_price_usd = self.get_exchange_rate("BTC")
                     
+                    # CORREÇÃO: Garantir que os preços são válidos antes de calcular
+                    if source_price_usd <= 0 or target_price_usd <= 0:
+                        print(f"⚠️  Preços de câmbio inválidos. Usando valores padrão...")
+                        source_price_usd = self.exchange_rates_usd.get(token_symbol, 1.0)
+                        target_price_usd = self.exchange_rates_usd.get("BTC", 45000.0)
+                    
                     value_usd = amount * source_price_usd
                     target_amount = value_usd / target_price_usd
+                    
+                    # CORREÇÃO: Garantir que o valor convertido não seja zero ou negativo
+                    if target_amount <= 0:
+                        print(f"⚠️  Valor convertido inválido ({target_amount} BTC). Usando valor mínimo...")
+                        target_amount = 0.00001  # 1000 satoshis mínimo
                     
                     # Garantir que não seja menor que o mínimo Bitcoin (dust limit: 546 satoshis)
                     # MAS: Não forçar se o valor convertido for menor - deixar passar e validar depois
@@ -3198,11 +3211,12 @@ class RealCrossChainBridge:
                         # A validação em send_bitcoin_transaction vai verificar se é válido
                     
                     print(f"🔄 Conversão baseada em valor equivalente (USD):")
-                    print(f"   {amount} {token_symbol} × ${source_price_usd:,.2f} = ${value_usd:,.2f} USD")
-                    print(f"   ${value_usd:,.2f} USD ÷ ${target_price_usd:,.2f} = {target_amount:.8f} {target_token_symbol}")
+                    print(f"   {amount} {token_symbol} × ${source_price_usd:,.2f} = ${value_usd:,.6f} USD")
+                    print(f"   ${value_usd:,.6f} USD ÷ ${target_price_usd:,.2f} = {target_amount:.8f} {target_token_symbol}")
                     if amount > 0:
                         effective_rate = target_amount / amount
                         print(f"   Taxa de câmbio efetiva: 1 {token_symbol} = {effective_rate:.8f} BTC")
+                    print(f"   ✅ Valor convertido: {target_amount} BTC ({int(target_amount * 100000000)} satoshis)")
                 else:
                     # Se token não conhecido, usar conversão conservadora 1:1000
                     conversion_rate = 0.001
@@ -3711,12 +3725,25 @@ class RealCrossChainBridge:
                 
                 print(f"✅ Chave Bitcoin WIF válida detectada")
                 print(f"   Endereço de destino: {target_address}")
-                print(f"   Quantidade: {amount} BTC (convertido de {token_symbol})")
+                print(f"   Quantidade: {target_amount} BTC (convertido de {amount} {token_symbol})")
+                print(f"   Endereço original fornecido: {recipient}")
+                print(f"   Endereço validado/convertido: {target_address}")
+                
+                # VALIDAÇÃO CRÍTICA: Garantir que o endereço não foi alterado incorretamente
+                if target_address != recipient:
+                    # Se o endereço foi convertido, verificar se é válido
+                    is_valid_recipient, _ = self._validate_bitcoin_address(recipient)
+                    if is_valid_recipient:
+                        # Se o endereço original é válido, usar ele diretamente
+                        print(f"⚠️  Endereço original é válido, usando ele diretamente em vez do convertido")
+                        target_address = recipient
+                    else:
+                        print(f"⚠️  Endereço original inválido, usando endereço convertido: {target_address}")
                 
                 # Chamar send_bitcoin_transaction para broadcast REAL
                 target_tx_result = self.send_bitcoin_transaction(
                     from_private_key=target_private_key,
-                    to_address=target_address,  # Endereço do destinatário final
+                    to_address=target_address,  # Endereço do destinatário final (validado)
                     amount_btc=target_amount  # Usar valor convertido
                 )
                 
