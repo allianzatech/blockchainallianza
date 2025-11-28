@@ -2192,6 +2192,9 @@ class RealCrossChainBridge:
                                     
                                     # CORREÇÃO CRÍTICA: Se OP_RETURN é necessário, FORÇAR uso de BlockCypher API
                                     # Não podemos usar criação manual porque bitcoinlib não suporta OP_RETURN facilmente
+                                    # Inicializar variável de controle antes do bloco if para garantir escopo correto
+                                    bit_library_available = False
+                                    
                                     if source_tx_hash:
                                         print(f"   🔗 OP_RETURN necessário - FORÇANDO uso de BlockCypher API (não usar criação manual)...")
                                         add_log("forcing_blockcypher_for_opreturn", {"source_tx_hash": source_tx_hash}, "info")
@@ -2310,14 +2313,13 @@ class RealCrossChainBridge:
                                         add_log("trying_bit_library_fallback", {}, "info")
                                         
                                         # PRIORIDADE 1: Tentar biblioteca 'bit' (mais simples e confiável para OP_RETURN)
-                                        bit_library_available = False
+                                        # bit_library_available já foi inicializada antes do bloco if
+                                        bit_library_success = False
                                         try:
                                             print(f"   📚 Tentando importar biblioteca 'bit'...")
                                             from bit import PrivateKey
                                             from bit.network import NetworkAPI
                                             bit_library_available = True
-                                            print(f"   ✅ Biblioteca 'bit' importada com sucesso!")
-                                            
                                             print(f"   ✅ Biblioteca 'bit' importada com sucesso!")
                                             print(f"   📚 Usando biblioteca 'bit' para criar transação com OP_RETURN...")
                                             
@@ -2349,9 +2351,18 @@ class RealCrossChainBridge:
                                                 (to_address, int(output_value), 'satoshi')
                                             ]
                                             
+                                            # Verificar UTXOs antes de criar transação
+                                            print(f"   📦 Verificando UTXOs disponíveis...")
+                                            print(f"      Total de UTXOs: {len(utxos)}")
+                                            if utxos:
+                                                total_utxo_value = sum(u.get('value', 0) for u in utxos)
+                                                print(f"      Valor total dos UTXOs: {total_utxo_value} satoshis ({total_utxo_value / 100000000} BTC)")
+                                            
                                             # Adicionar OP_RETURN - biblioteca 'bit' aceita formato especial
                                             # Tentar múltiplos formatos para garantir compatibilidade
                                             print(f"   🔗 Tentando adicionar OP_RETURN em múltiplos formatos...")
+                                            print(f"      Dados OP_RETURN: {op_return_data}")
+                                            print(f"      Tamanho: {len(op_return_data)} bytes")
                                             
                                             # Formato 1: ('OP_RETURN <dados>', 0, 'satoshi')
                                             op_return_output_1 = (f"OP_RETURN {op_return_data}", 0, 'satoshi')
@@ -2417,33 +2428,42 @@ class RealCrossChainBridge:
                                                             raise Exception(f"Não foi possível adicionar OP_RETURN em nenhum formato: {fmt1_err}, {fmt2_err}, {fmt3_err}, {op_param_err}")
                                             
                                             if not tx_hex:
-                                                raise Exception("Transação não foi criada após tentar todos os formatos")
+                                                # Se nenhum formato funcionou, tentar criar transação sem OP_RETURN primeiro para verificar se o problema é específico do OP_RETURN
+                                                print(f"   ⚠️  Nenhum formato de OP_RETURN funcionou. Tentando criar transação sem OP_RETURN para diagnóstico...")
+                                                try:
+                                                    test_outputs = [(to_address, int(output_value), 'satoshi')]
+                                                    if change_value > 546:
+                                                        test_outputs.append((from_address, int(change_value), 'satoshi'))
+                                                    test_tx_hex = key.create_transaction(outputs=test_outputs)
+                                                    print(f"   ✅ Transação sem OP_RETURN foi criada com sucesso!")
+                                                    print(f"      Isso confirma que o problema é específico do OP_RETURN")
+                                                    add_log("bit_transaction_without_opreturn_works", {}, "info")
+                                                except Exception as test_err:
+                                                    print(f"   ❌ Erro ao criar transação sem OP_RETURN: {test_err}")
+                                                    print(f"      Isso indica que o problema pode ser mais amplo")
+                                                    add_log("bit_transaction_without_opreturn_failed", {"error": str(test_err)}, "error")
+                                                
+                                                raise Exception("Transação não foi criada após tentar todos os formatos de OP_RETURN")
                                             
                                             # Se chegou aqui, algum formato funcionou
                                             outputs = outputs_with_opreturn if 'outputs_with_opreturn' in locals() else outputs
                                             
-                                            # Adicionar change se necessário
+                                            # Adicionar change se necessário (após OP_RETURN)
                                             if change_value > 546:
                                                 outputs.append((from_address, int(change_value), 'satoshi'))
                                             
-                                            print(f"   📤 Criando transação com {len(outputs)} outputs:")
+                                            print(f"   📤 Transação criada com {len(outputs)} outputs:")
                                             for i, out in enumerate(outputs):
                                                 if isinstance(out[0], str) and out[0].startswith('OP_RETURN'):
                                                     print(f"      Output {i}: OP_RETURN ({len(out[0])} chars)")
                                                 else:
                                                     print(f"      Output {i}: {out[0][:20]}... - {out[1]} satoshis")
                                             
-                                            # Criar transação
-                                            print(f"   🔧 Chamando key.create_transaction()...")
-                                            try:
-                                                # Tentar com parâmetro op_return também (se suportado)
-                                                tx_hex = key.create_transaction(outputs=outputs, op_return=op_return_data)
-                                                print(f"   ✅ Transação criada com 'bit' usando parâmetro op_return! Tamanho: {len(tx_hex)} bytes")
-                                            except TypeError:
-                                                # Se não aceitar parâmetro op_return, usar apenas outputs
-                                                print(f"   ⚠️  create_transaction não aceita parâmetro op_return, usando apenas outputs...")
-                                                tx_hex = key.create_transaction(outputs=outputs)
-                                                print(f"   ✅ Transação criada com 'bit'! Tamanho: {len(tx_hex)} bytes")
+                                            # Verificar se tx_hex foi criado corretamente
+                                            if not tx_hex:
+                                                raise Exception("tx_hex não foi criado mesmo após sucesso aparente")
+                                            
+                                            print(f"   ✅ Transação raw criada! Tamanho: {len(tx_hex) if isinstance(tx_hex, str) else len(tx_hex.hex())} bytes")
                                             
                                             # Verificar se OP_RETURN está na transação
                                             op_return_found = False
