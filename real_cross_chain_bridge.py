@@ -4688,27 +4688,56 @@ class RealCrossChainBridge:
                                         }
                                     
                                 except Exception as blockcypher_error:
-                                    print(f"   ⚠️  Erro ao usar BlockCypher API: {blockcypher_error}")
+                                    error_msg = str(blockcypher_error)
+                                    error_type = type(blockcypher_error).__name__
+                                    print(f"   ⚠️  Erro ao usar BlockCypher API: {error_msg}")
+                                    print(f"      Tipo: {error_type}")
                                     import traceback
-                                    traceback.print_exc()
-                                    add_log("blockcypher_error", {"error": str(blockcypher_error)}, "error")
+                                    full_traceback = traceback.format_exc()
+                                    print(f"      Traceback completo:")
+                                    print(f"      {full_traceback}")
+                                    add_log("blockcypher_error", {
+                                        "error": error_msg,
+                                        "error_type": error_type,
+                                        "traceback": full_traceback
+                                    }, "error")
+                                    
+                                    # Calcular informações de diagnóstico (garantir que estão no escopo)
+                                    try:
+                                        total_utxo_value = sum(utxo.get('value', 0) for utxo in utxos) if utxos else 0
+                                        total_utxo_btc = total_utxo_value / 100000000 if total_utxo_value > 0 else 0.0
+                                    except:
+                                        total_utxo_value = 0
+                                        total_utxo_btc = 0.0
                                     
                                     # Se BlockCypher falhou, retornar erro (não tentar wallet.send_to que sabemos que vai falhar)
                                     proof_data["final_result"] = {
                                         "success": False,
-                                        "error": f"BlockCypher API erro: {str(blockcypher_error)}",
-                                        "blockcypher_attempted": True
+                                        "error": f"BlockCypher API erro: {error_msg}",
+                                        "blockcypher_attempted": True,
+                                        "debug": {
+                                            "error_type": error_type,
+                                            "utxos_count": len(utxos) if utxos else 0,
+                                            "total_utxo_value_btc": total_utxo_btc,
+                                            "total_utxo_value_satoshis": total_utxo_value
+                                        }
                                     }
                                     proof_file = self._save_transaction_proof(proof_data)
                                     
                                     return {
                                         "success": False,
-                                        "error": f"Erro ao usar BlockCypher API: {str(blockcypher_error)}",
+                                        "error": f"Erro ao usar BlockCypher API: {error_msg}",
                                         "from_address": from_address,
                                         "to_address": to_address,
                                         "amount": amount_btc,
                                         "note": "BlockCypher API falhou. Verifique logs para detalhes.",
-                                        "proof_file": proof_file
+                                        "proof_file": proof_file,
+                                        "debug": {
+                                            "error_type": error_type,
+                                            "utxos_count": len(utxos) if utxos else 0,
+                                            "total_utxo_value_btc": total_utxo_btc,
+                                            "total_utxo_value_satoshis": total_utxo_value
+                                        }
                                     }
                             
                             # Só tentar wallet.send_to() se wallet TEM UTXOs
