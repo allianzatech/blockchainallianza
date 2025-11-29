@@ -2350,141 +2350,63 @@ class RealCrossChainBridge:
                                         # REMOVIDO: Todas as tentativas de OP_RETURN com bitcoinlib manual
                                         
                                         # OP_RETURN DESABILITADO - não tentar mais nada relacionado a OP_RETURN
-                                        # Continuar com métodos normais de criação de transação
+                                        # Continuar com métodos normais de criação de transação (sem OP_RETURN)
                                         
-                                        # Se chegou aqui, todos os métodos falharam
-                                        # Retornar erro informando que OP_RETURN está desabilitado
+                                        # Mesmo com source_tx_hash, criar transação normalmente sem OP_RETURN
+                                        print(f"   ⚠️  OP_RETURN está desabilitado. Criando transação normal (sem OP_RETURN)...")
+                                        if source_tx_hash:
+                                            print(f"      source_tx_hash presente: {source_tx_hash}")
+                                            print(f"      Continuando com transação Bitcoin normal (sem vínculo OP_RETURN)...")
+                                        else:
+                                            print(f"      Criando transação Bitcoin normal...")
                                         
-                                        # OP_RETURN DESABILITADO - remover todo código relacionado
-                                        # Não tentar mais python-bitcointx ou bitcoinlib manual para OP_RETURN
-                                        
-                                        # Retornar erro informando que todos os métodos falharam
-                                        error_details = {
-                                            "reason": "transaction_creation_failed",
-                                            "op_return_disabled": True,
-                                            "inputs_count": len(inputs_list) if 'inputs_list' in locals() else 0,
-                                            "outputs_count": len(outputs_list) if 'outputs_list' in locals() else 0,
-                                            "utxos_count": len(utxos) if 'utxos' in locals() else 0,
-                                            "from_address": from_address if 'from_address' in locals() else None,
-                                            "to_address": to_address,
-                                            "amount_satoshis": int(output_value) if 'output_value' in locals() else None,
-                                            "source_tx_hash": source_tx_hash,
-                                            "note": "OP_RETURN está desabilitado temporariamente"
-                                        }
-                                        
-                                        print(f"   ❌ TODOS OS MÉTODOS FALHARAM (OP_RETURN desabilitado)")
-                                        print(f"      Detalhes do erro:")
-                                        print(f"      - Inputs: {error_details['inputs_count']}")
-                                        print(f"      - Outputs: {error_details['outputs_count']}")
-                                        print(f"      - UTXOs disponíveis: {error_details['utxos_count']}")
-                                        print(f"      - OP_RETURN: Desabilitado temporariamente")
-                                        
-                                        proof_data["final_result"] = {
-                                            "success": False,
-                                            "error": "Não foi possível criar transação Bitcoin (OP_RETURN desabilitado)",
-                                            "debug": error_details
-                                        }
-                                        proof_file = self._save_transaction_proof(proof_data)
-                                        
-                                        return {
-                                            "success": False,
-                                            "error": "Não foi possível criar transação Bitcoin (OP_RETURN desabilitado)",
-                                            "debug": error_details,
-                                            "proof_file": proof_file,
-                                            "suggestions": [
-                                                "OP_RETURN está temporariamente desabilitado",
-                                                "Verifique se há UTXOs suficientes no endereço de origem",
-                                                "Verifique se o endereço Bitcoin de destino é válido",
-                                                "Tente novamente em alguns minutos (APIs podem estar temporariamente indisponíveis)"
-                                            ]
-                                        }
+                                        # Continuar com criação de transação normal (sem OP_RETURN)
+                                        # O código abaixo cria transação normalmente mesmo quando há source_tx_hash
                                     
                                     # SOLUÇÃO DEFINITIVA: Criar transação manualmente (mais confiável que BlockCypher)
                                     # BlockCypher testnet está instável e não retorna 'tosign' corretamente
                                     # Vamos criar transação usando bitcoinlib e broadcastar via Blockstream
-                                    # NOTA: Este código só executa se source_tx_hash NÃO está presente (sem OP_RETURN)
+                                    # NOTA: OP_RETURN está desabilitado, então criamos transação normal mesmo com source_tx_hash
                                     
-                                    # REMOVIDO: Todo código relacionado a OP_RETURN abaixo foi removido
-                                    # O código abaixo só executa quando NÃO há source_tx_hash (transação normal)
-                                    
-                                    # Continuar com código normal de criação de transação (sem OP_RETURN)
-                                    # Este código só executa quando NÃO há source_tx_hash (transação normal sem OP_RETURN)
-                                    
-                                    # Se chegou aqui e não há source_tx_hash, criar transação normal
-                                    if not source_tx_hash:
-                                        # Criar transação normal usando wallet.send_to() ou BlockCypher
-                                        try:
-                                            print(f"   📝 Criando transação normal (sem OP_RETURN)...")
-                                            amount_satoshis = int(output_value)
-                                            tx_result = wallet.send_to(
-                                                to_address,
-                                                amount_satoshis,
-                                                network='testnet',
-                                                fee=5  # 5 sat/vB
-                                            )
+                                    # Criar transação normal (com ou sem source_tx_hash, sempre sem OP_RETURN)
+                                    # Tentar primeiro com wallet.send_to() se disponível
+                                    try:
+                                        print(f"   📝 Criando transação normal (sem OP_RETURN)...")
+                                        amount_satoshis = int(output_value)
+                                        tx_result = wallet.send_to(
+                                            to_address,
+                                            amount_satoshis,
+                                            network='testnet',
+                                            fee=5  # 5 sat/vB
+                                        )
+                                        
+                                        if tx_result:
+                                            tx_hash = tx_result if isinstance(tx_result, str) else tx_result.get('txid') or tx_result.get('hash')
                                             
-                                            if tx_result:
-                                                tx_hash = tx_result if isinstance(tx_result, str) else tx_result.get('txid') or tx_result.get('hash')
+                                            if tx_hash:
+                                                print(f"   ✅✅✅ Transação criada SEM OP_RETURN! Hash: {tx_hash}")
                                                 
-                                                if tx_hash:
-                                                    print(f"   ✅✅✅ Transação criada SEM OP_RETURN! Hash: {tx_hash}")
-                                                    
-                                                    return {
-                                                        "success": True,
-                                                        "tx_hash": tx_hash,
-                                                        "from": from_address,
-                                                        "to": to_address,
-                                                        "amount": amount_btc,
-                                                        "chain": "bitcoin",
-                                                        "status": "broadcasted",
-                                                        "explorer_url": f"https://live.blockcypher.com/btc-testnet/tx/{tx_hash}/",
-                                                        "note": "✅ Transação REAL criada (OP_RETURN não necessário)",
-                                                        "real_broadcast": True,
-                                                        "method": "wallet_send_to_normal",
-                                                        "op_return_included": False
-                                                    }
-                                        except Exception as wallet_err:
-                                            print(f"   ⚠️  wallet.send_to() falhou: {wallet_err}")
-                                            add_log("wallet_send_to_failed", {"error": str(wallet_err)}, "error")
+                                                return {
+                                                    "success": True,
+                                                    "tx_hash": tx_hash,
+                                                    "from": from_address,
+                                                    "to": to_address,
+                                                    "amount": amount_btc,
+                                                    "chain": "bitcoin",
+                                                    "status": "broadcasted",
+                                                    "explorer_url": f"https://live.blockcypher.com/btc-testnet/tx/{tx_hash}/",
+                                                    "note": "✅ Transação REAL criada (OP_RETURN desabilitado temporariamente)" + (f" - source_tx: {source_tx_hash}" if source_tx_hash else ""),
+                                                    "real_broadcast": True,
+                                                    "method": "wallet_send_to_normal",
+                                                    "op_return_included": False,
+                                                    "op_return_note": "OP_RETURN temporariamente desabilitado" if source_tx_hash else None
+                                                }
+                                    except Exception as wallet_err:
+                                        print(f"   ⚠️  wallet.send_to() falhou: {wallet_err}")
+                                        add_log("wallet_send_to_failed", {"error": str(wallet_err)}, "error")
                                     
-                                    # Se chegou aqui, todos os métodos falharam
-                                    # Retornar erro
-                                    error_details = {
-                                        "reason": "transaction_creation_failed",
-                                        "op_return_disabled": bool(source_tx_hash),
-                                        "inputs_count": len(inputs_list) if 'inputs_list' in locals() else 0,
-                                        "outputs_count": len(outputs_list) if 'outputs_list' in locals() else 0,
-                                        "utxos_count": len(utxos) if 'utxos' in locals() else 0,
-                                        "from_address": from_address if 'from_address' in locals() else None,
-                                        "to_address": to_address,
-                                        "amount_satoshis": int(output_value) if 'output_value' in locals() else None,
-                                        "source_tx_hash": source_tx_hash
-                                    }
-                                    
-                                    print(f"   ❌ TODOS OS MÉTODOS FALHARAM")
-                                    print(f"      Detalhes do erro:")
-                                    print(f"      - Inputs: {error_details['inputs_count']}")
-                                    print(f"      - Outputs: {error_details['outputs_count']}")
-                                    print(f"      - UTXOs disponíveis: {error_details['utxos_count']}")
-                                    
-                                    proof_data["final_result"] = {
-                                        "success": False,
-                                        "error": "Não foi possível criar transação Bitcoin",
-                                        "debug": error_details
-                                    }
-                                    proof_file = self._save_transaction_proof(proof_data)
-                                    
-                                    return {
-                                        "success": False,
-                                        "error": "Não foi possível criar transação Bitcoin",
-                                        "debug": error_details,
-                                        "proof_file": proof_file,
-                                        "suggestions": [
-                                            "Verifique se há UTXOs suficientes no endereço de origem",
-                                            "Verifique se o endereço Bitcoin de destino é válido",
-                                            "Tente novamente em alguns minutos (APIs podem estar temporariamente indisponíveis)"
-                                        ]
-                                    }
+                                    # Se wallet.send_to() falhou, tentar método manual
+                                    # Continuar com criação manual mesmo quando há source_tx_hash (sem OP_RETURN)
                                     
                                     # REMOVIDO: Todo código relacionado a OP_RETURN foi removido
                                     # O código abaixo só executa quando NÃO há source_tx_hash (transação normal)
