@@ -3578,17 +3578,45 @@ class RealCrossChainBridge:
                                             add_log("simple_transaction_failed", {"error": str(test_err)}, "error")
                                         
                                         # Retornar erro detalhado com todas as informações coletadas
+                                        # Calcular saldo total dos UTXOs para diagnóstico (garantir que está no escopo correto)
+                                        try:
+                                            total_utxo_value = sum(utxo.get('value', 0) for utxo in utxos) if utxos else 0
+                                            total_utxo_btc = total_utxo_value / 100000000 if total_utxo_value > 0 else 0.0
+                                        except:
+                                            total_utxo_value = 0
+                                            total_utxo_btc = 0.0
+                                        
+                                        # Garantir que todas as variáveis necessárias estão definidas
+                                        try:
+                                            estimated_fee_satoshis_val = estimated_fee_satoshis if 'estimated_fee_satoshis' in locals() else 500
+                                            estimated_fee_btc_val = estimated_fee_satoshis_val / 100000000
+                                        except:
+                                            estimated_fee_satoshis_val = 500
+                                            estimated_fee_btc_val = 0.000005
+                                        
+                                        try:
+                                            output_value_val = int(output_value) if 'output_value' in locals() else None
+                                        except:
+                                            output_value_val = None
+                                        
                                         error_details = {
                                             "reason": "op_return_required_but_all_methods_failed",
                                             "inputs_count": len(inputs_list) if 'inputs_list' in locals() else 0,
                                             "outputs_count": len(outputs_list) if 'outputs_list' in locals() else 0,
-                                            "op_return_output": next((out for out in outputs_list if out.get('script_type') == 'null-data'), None) if 'outputs_list' in locals() else None,
+                                            "op_return_output": next((out for out in outputs_list if out.get('script_type') == 'null-data'), None) if 'outputs_list' in locals() and outputs_list else None,
                                             "bit_library_available": bit_library_available if 'bit_library_available' in locals() else False,
-                                            "utxos_count": len(utxos) if 'utxos' in locals() else 0,
+                                            "utxos_count": len(utxos) if utxos else 0,
+                                            "total_utxo_value_satoshis": total_utxo_value,
+                                            "total_utxo_value_btc": total_utxo_btc,
                                             "from_address": from_address if 'from_address' in locals() else None,
                                             "to_address": to_address,
-                                            "amount_satoshis": int(output_value) if 'output_value' in locals() else None,
-                                            "source_tx_hash": source_tx_hash
+                                            "amount_satoshis": output_value_val,
+                                            "amount_btc": amount_btc,
+                                            "estimated_fee_satoshis": estimated_fee_satoshis_val,
+                                            "estimated_fee_btc": estimated_fee_btc_val,
+                                            "total_needed_btc": amount_btc + estimated_fee_btc_val,
+                                            "source_tx_hash": source_tx_hash,
+                                            "balance_sufficient": total_utxo_btc >= (amount_btc + estimated_fee_btc_val) if total_utxo_btc > 0 else False
                                         }
                                         
                                         print(f"   ❌ TODOS OS MÉTODOS FALHARAM")
@@ -3612,10 +3640,10 @@ class RealCrossChainBridge:
                                             "Tente novamente em alguns minutos (APIs podem estar temporariamente indisponíveis)"
                                         ]
                                         
-                                        if not error_details['balance_sufficient']:
+                                        if not error_details.get('balance_sufficient', False):
                                             suggestions.insert(0, f"⚠️  SALDO INSUFICIENTE: Disponível: {error_details['total_utxo_value_btc']} BTC, Necessário: {error_details['total_needed_btc']} BTC")
                                             suggestions.insert(1, f"Use um faucet Bitcoin testnet: https://testnet-faucet.mempool.co/")
-                                            suggestions.insert(2, f"Adicione Bitcoin teste ao endereço: {error_details['from_address']}")
+                                            suggestions.insert(2, f"Adicione Bitcoin teste ao endereço: {error_details.get('from_address', 'N/A')}")
                                         
                                         proof_data["final_result"] = {
                                             "success": False,
