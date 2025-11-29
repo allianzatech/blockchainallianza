@@ -229,39 +229,99 @@ class TestnetExplorer:
                 if tx:  # Ignorar None ou vazios
                     formatted_txs.append(self._format_transaction(tx))
             
+            # Calcular estatísticas do bloco
+            total_amount = 0.0
+            cross_chain_count = 0
+            quantum_signed_count = 0
+            
+            for tx in formatted_txs:
+                # Total amount
+                tx_amount = tx.get("amount", 0)
+                if isinstance(tx_amount, (int, float)):
+                    total_amount += float(tx_amount)
+                
+                # Cross-chain count
+                if tx.get("is_cross_chain") or tx.get("source_chain"):
+                    cross_chain_count += 1
+                
+                # Quantum signed count
+                if tx.get("qrs3_signature") or tx.get("quantum_signature") or tx.get("qrs3_verified"):
+                    quantum_signed_count += 1
+            
+            # Criar objeto statistics
+            statistics = {
+                "total_amount": total_amount,
+                "cross_chain_count": cross_chain_count,
+                "quantum_signed_count": quantum_signed_count,
+                "avg_amount": total_amount / len(formatted_txs) if formatted_txs else 0
+            }
+            
+            # Estimar tamanho do bloco
+            size_bytes = 256  # Tamanho base do bloco
+            size_bytes += len(formatted_txs) * 200  # ~200 bytes por transação
+            
             if isinstance(block, dict):
                 return {
                     "index": block.get("index", 0),
                     "hash": block.get("hash", "unknown"),
                     "previous_hash": block.get("previous_hash", "unknown"),
                     "timestamp": timestamp,
-                    "timestamp_readable": datetime.fromtimestamp(timestamp).isoformat() if timestamp else "unknown",
+                    "timestamp_readable": datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S") if timestamp else "unknown",
                     "merkle_root": block.get("merkle_root", "unknown"),
                     "shard_id": block.get("shard_id", 0),
                     "validator": block.get("validator", "unknown"),
                     "transaction_count": len(formatted_txs),
                     "transactions": formatted_txs,
                     "signature": block.get("signature", {}),
-                    "qrs3_verified": self._check_qrs3_signature(block.get("signature", {}))
+                    "qrs3_verified": self._check_qrs3_signature(block.get("signature", {})),
+                    "statistics": statistics,
+                    "size_bytes": size_bytes
                 }
             else:
                 # Se for um objeto Block
+                # Calcular estatísticas (mesmo cálculo acima)
+                total_amount = 0.0
+                cross_chain_count = 0
+                quantum_signed_count = 0
+                
+                for tx in formatted_txs:
+                    tx_amount = tx.get("amount", 0)
+                    if isinstance(tx_amount, (int, float)):
+                        total_amount += float(tx_amount)
+                    if tx.get("is_cross_chain") or tx.get("source_chain"):
+                        cross_chain_count += 1
+                    if tx.get("qrs3_signature") or tx.get("quantum_signature") or tx.get("qrs3_verified"):
+                        quantum_signed_count += 1
+                
+                statistics = {
+                    "total_amount": total_amount,
+                    "cross_chain_count": cross_chain_count,
+                    "quantum_signed_count": quantum_signed_count,
+                    "avg_amount": total_amount / len(formatted_txs) if formatted_txs else 0
+                }
+                
+                size_bytes = 256 + (len(formatted_txs) * 200)
+                
                 return {
                     "index": getattr(block, 'index', 0),
                     "hash": getattr(block, 'hash', 'unknown'),
                     "previous_hash": getattr(block, 'previous_hash', 'unknown'),
                     "timestamp": timestamp,
-                    "timestamp_readable": datetime.fromtimestamp(timestamp).isoformat() if timestamp else "unknown",
+                    "timestamp_readable": datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S") if timestamp else "unknown",
                     "merkle_root": getattr(block, 'merkle_root', 'unknown'),
                     "shard_id": getattr(block, 'shard_id', 0),
                     "validator": getattr(block, 'validator', 'unknown'),
                     "transaction_count": len(formatted_txs),
                     "transactions": formatted_txs,
                     "signature": getattr(block, 'signature', {}),
-                    "qrs3_verified": self._check_qrs3_signature(getattr(block, 'signature', {}))
+                    "qrs3_verified": self._check_qrs3_signature(getattr(block, 'signature', {})),
+                    "statistics": statistics,
+                    "size_bytes": size_bytes
                 }
         except Exception as e:
             # Em caso de erro, retornar bloco básico
+            import traceback
+            traceback.print_exc()
             return {
                 "index": 0,
                 "hash": "error",
@@ -274,7 +334,14 @@ class TestnetExplorer:
                 "transaction_count": 0,
                 "transactions": [],
                 "signature": {},
-                "qrs3_verified": False
+                "qrs3_verified": False,
+                "statistics": {
+                    "total_amount": 0.0,
+                    "cross_chain_count": 0,
+                    "quantum_signed_count": 0,
+                    "avg_amount": 0.0
+                },
+                "size_bytes": 256
             }
     
     def _format_transaction(self, tx: Dict) -> Dict:
