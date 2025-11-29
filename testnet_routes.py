@@ -1695,6 +1695,48 @@ def api_alz_niev_execute():
             "error": str(e)
         }), 500
 
+@testnet_bp.route('/api/alz-niev/test/atomicity-failure', methods=['POST'])
+def api_test_atomicity_failure():
+    """Endpoint para testar atomicidade com falha"""
+    try:
+        from test_atomicity_failure import test_atomicity_with_failure
+        
+        proof = test_atomicity_with_failure()
+        
+        return jsonify({
+            "success": True,
+            "test": "atomicity_failure",
+            "proof": proof,
+            "message": "Teste de atomicidade com falha executado com sucesso"
+        }), 200
+    
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+@testnet_bp.route('/api/alz-niev/test/write-cross-chain', methods=['POST'])
+def api_test_write_cross_chain():
+    """Endpoint para testar execução cross-chain de escrita"""
+    try:
+        from test_write_cross_chain import test_write_cross_chain
+        
+        proof = test_write_cross_chain()
+        
+        return jsonify({
+            "success": True,
+            "test": "write_cross_chain",
+            "proof": proof,
+            "message": "Teste de escrita cross-chain executado com sucesso"
+        }), 200
+    
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
 @testnet_bp.route('/api/alz-niev/atomic', methods=['POST'])
 def api_alz_niev_atomic():
     """Executa transação atômica multi-chain com ALZ-NIEV (modo real)"""
