@@ -2311,11 +2311,154 @@ class RealCrossChainBridge:
                                         })
                                         print(f"   🔄 Change output adicionado: {change_value} satoshis para {from_address}")
                                     
-                                    # CORREÇÃO CRÍTICA: Se OP_RETURN é necessário, FORÇAR uso de BlockCypher API
-                                    # Não podemos usar criação manual porque bitcoinlib não suporta OP_RETURN facilmente
+                                    # CORREÇÃO CRÍTICA: Se OP_RETURN é necessário, tentar múltiplos métodos
                                     # Inicializar variável de controle antes do bloco if para garantir escopo correto
                                     bit_library_available = False
                                     
+                                    # PRIORIDADE: Tentar bitcoinlib manual PRIMEIRO (mais confiável, não depende de bibliotecas externas)
+                                    if source_tx_hash:
+                                        print(f"   🔗 OP_RETURN necessário - tentando bitcoinlib manual PRIMEIRO (mais confiável)...")
+                                        add_log("trying_bitcoinlib_manual_first", {"source_tx_hash": source_tx_hash}, "info")
+                                        
+                                        try:
+                                            # Usar método bitcoinlib manual (PRIORIDADE 3) que já está implementado
+                                            # Este método funciona SEM biblioteca 'bit' ou 'python-bitcointx'
+                                            from bitcoinlib.transactions import Transaction, Output
+                                            from bitcoinlib.keys import HDKey
+                                            
+                                            print(f"   📚 Usando bitcoinlib para criar transação com OP_RETURN...")
+                                            
+                                            # Converter chave privada
+                                            key = HDKey(from_private_key, network='testnet')
+                                            
+                                            # Criar transação
+                                            tx = Transaction(network='testnet', witness_type='segwit')
+                                            
+                                            # Adicionar inputs
+                                            for utxo in utxos:
+                                                txid = utxo.get('txid') or utxo.get('tx_hash')
+                                                output_n = (utxo.get('output_n') or 
+                                                           utxo.get('vout') or 
+                                                           utxo.get('output_index') or 
+                                                           utxo.get('output') or 
+                                                           utxo.get('tx_output_n', 0))
+                                                value = utxo.get('value', 0)
+                                                
+                                                tx.add_input(
+                                                    prev_txid=txid,
+                                                    output_n=int(output_n),
+                                                    value=int(value),
+                                                    keys=key
+                                                )
+                                            
+                                            # Preparar OP_RETURN
+                                            polygon_hash_clean = source_tx_hash.replace('0x', '')
+                                            op_return_data = f"ALZ:{polygon_hash_clean}"
+                                            op_return_bytes = op_return_data.encode('utf-8')
+                                            
+                                            print(f"   🔗 Preparando OP_RETURN: {op_return_data}")
+                                            
+                                            # Criar script OP_RETURN: OP_RETURN (0x6a) + tamanho + dados
+                                            if len(op_return_bytes) <= 75:
+                                                op_return_script = bytes([0x6a, len(op_return_bytes)]) + op_return_bytes
+                                            else:
+                                                op_return_script = bytes([0x6a, 0x4c, len(op_return_bytes)]) + op_return_bytes
+                                            
+                                            # Adicionar outputs na ordem correta: destino, OP_RETURN, change
+                                            tx.add_output(output_value, address=to_address)
+                                            
+                                            # Adicionar OP_RETURN
+                                            op_return_output = Output(
+                                                value=0,
+                                                script=op_return_script.hex(),
+                                                script_type='op_return'
+                                            )
+                                            
+                                            if hasattr(tx, 'outputs') and isinstance(tx.outputs, list):
+                                                tx.outputs.insert(1, op_return_output)
+                                            elif hasattr(tx, '_outputs') and isinstance(tx._outputs, list):
+                                                tx._outputs.insert(1, op_return_output)
+                                            else:
+                                                # Tentar descobrir o atributo correto
+                                                for attr in dir(tx):
+                                                    if 'output' in attr.lower() and not attr.startswith('__'):
+                                                        outputs_list = getattr(tx, attr)
+                                                        if isinstance(outputs_list, list):
+                                                            outputs_list.insert(1, op_return_output)
+                                                            break
+                                            
+                                            # Adicionar change se necessário
+                                            if change_value > 546:
+                                                tx.add_output(change_value, address=from_address)
+                                            
+                                            # Assinar
+                                            tx.sign(key)
+                                            
+                                            # Obter raw transaction
+                                            raw_tx_hex = None
+                                            if hasattr(tx, 'raw_hex'):
+                                                raw_tx_hex = tx.raw_hex()
+                                            elif hasattr(tx, 'raw'):
+                                                raw_tx_hex = tx.raw()
+                                            elif hasattr(tx, 'serialize'):
+                                                raw_tx_hex = tx.serialize()
+                                            
+                                            if raw_tx_hex:
+                                                # Verificar OP_RETURN na transação
+                                                if isinstance(raw_tx_hex, str):
+                                                    raw_tx_bytes = bytes.fromhex(raw_tx_hex)
+                                                else:
+                                                    raw_tx_bytes = raw_tx_hex
+                                                
+                                                op_return_verified = (
+                                                    op_return_data.encode('utf-8') in raw_tx_bytes or
+                                                    op_return_script in raw_tx_bytes
+                                                )
+                                                
+                                                if not op_return_verified:
+                                                    raise Exception("OP_RETURN não encontrado na transação raw")
+                                                
+                                                # Broadcast via Blockstream
+                                                blockstream_url = "https://blockstream.info/testnet/api/tx"
+                                                raw_tx_hex_str = raw_tx_hex.hex() if isinstance(raw_tx_hex, bytes) else raw_tx_hex
+                                                
+                                                broadcast_response = requests.post(
+                                                    blockstream_url,
+                                                    data=raw_tx_hex_str,
+                                                    headers={'Content-Type': 'text/plain'},
+                                                    timeout=30
+                                                )
+                                                
+                                                if broadcast_response.status_code == 200:
+                                                    tx_hash = broadcast_response.text.strip()
+                                                    print(f"   ✅✅✅ Transação broadcastada via Blockstream! Hash: {tx_hash}")
+                                                    
+                                                    return {
+                                                        "success": True,
+                                                        "tx_hash": tx_hash,
+                                                        "from": from_address,
+                                                        "to": to_address,
+                                                        "amount": amount_btc,
+                                                        "chain": "bitcoin",
+                                                        "status": "broadcasted",
+                                                        "explorer_url": f"https://blockstream.info/testnet/tx/{tx_hash}",
+                                                        "note": "✅ Transação REAL criada com bitcoinlib incluindo OP_RETURN e broadcastada via Blockstream",
+                                                        "real_broadcast": True,
+                                                        "method": "bitcoinlib_manual_with_opreturn_blockstream",
+                                                        "op_return_included": True
+                                                    }
+                                                else:
+                                                    print(f"   ⚠️  Blockstream falhou: {broadcast_response.status_code}")
+                                                    raise Exception(f"Blockstream retornou {broadcast_response.status_code}")
+                                            else:
+                                                raise Exception("Não foi possível obter raw transaction")
+                                                
+                                        except Exception as bitcoinlib_err:
+                                            print(f"   ⚠️  bitcoinlib manual falhou: {bitcoinlib_err}")
+                                            print(f"   🔄 Tentando BlockCypher API...")
+                                            add_log("bitcoinlib_manual_failed", {"error": str(bitcoinlib_err)}, "warning")
+                                    
+                                    # Se bitcoinlib manual falhou ou não foi tentado, tentar BlockCypher API
                                     if source_tx_hash:
                                         print(f"   🔗 OP_RETURN necessário - FORÇANDO uso de BlockCypher API (não usar criação manual)...")
                                         add_log("forcing_blockcypher_for_opreturn", {"source_tx_hash": source_tx_hash}, "info")
