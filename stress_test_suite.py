@@ -83,9 +83,17 @@ class StressTestSuite:
         sender_wallet = self.blockchain.create_wallet()
         receiver_wallet = self.blockchain.create_wallet()
         
-        sender_address = sender_wallet["address"]
-        receiver_address = receiver_wallet["address"]
-        sender_private_key = sender_wallet["private_key"]
+        # create_wallet retorna uma tupla (address, private_key) ou dict
+        if isinstance(sender_wallet, tuple):
+            sender_address, sender_private_key = sender_wallet
+        else:
+            sender_address = sender_wallet["address"]
+            sender_private_key = sender_wallet["private_key"]
+        
+        if isinstance(receiver_wallet, tuple):
+            receiver_address, _ = receiver_wallet
+        else:
+            receiver_address = receiver_wallet["address"]
         
         # Gerar chave QRS-3 se necessário
         qrs3_keypair_id = None
