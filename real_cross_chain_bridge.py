@@ -2426,9 +2426,11 @@ class RealCrossChainBridge:
                                     # SOLUÇÃO DEFINITIVA: Criar transação manualmente (mais confiável que BlockCypher)
                                     # BlockCypher testnet está instável e não retorna 'tosign' corretamente
                                     # Vamos criar transação usando bitcoinlib e broadcastar via Blockstream
-                                    # NOTA: Este código só executa se source_tx_hash NÃO está presente (sem OP_RETURN)
+                                    # NOTA: OP_RETURN está desabilitado, então criamos transação normal mesmo com source_tx_hash
                                     print(f"   🔧 Criando transação manualmente (BlockCypher não confiável)...")
-                                    add_log("creating_manual_transaction", {"reason": "blockcypher_unreliable"}, "info")
+                                    if source_tx_hash:
+                                        print(f"      ⚠️  OP_RETURN desabilitado - criando transação normal sem vínculo criptográfico")
+                                    add_log("creating_manual_transaction", {"reason": "blockcypher_unreliable", "op_return_disabled": bool(source_tx_hash)}, "info")
                                     
                                     try:
                                         # Criar transação manualmente usando bitcoinlib
