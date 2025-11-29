@@ -1069,7 +1069,13 @@ class RealCrossChainBridge:
             # MELHORIA: Adicionar assinatura quântica à transação (com estratégia inteligente)
             # Adicionar assinatura quântica (armazenar separadamente)
             quantum_signature_data = None
-            transaction_with_quantum = self._add_quantum_signature(transaction.copy(), transaction_value_usd=transaction_value_usd)
+            # MELHORIA CRÍTICA: Adicionar assinatura quântica com otimizador híbrido
+            # Passa target_chain para otimizador escolher melhor algoritmo (resolve custos altos)
+            transaction_with_quantum = self._add_quantum_signature(
+                transaction.copy(), 
+                transaction_value_usd=transaction_value_usd,
+                target_chain=chain  # Passar chain para otimizador escolher algoritmo
+            )
             
             # Extrair assinatura quântica se presente (não pode ir na transação EVM)
             if "quantum_signature" in transaction_with_quantum:
