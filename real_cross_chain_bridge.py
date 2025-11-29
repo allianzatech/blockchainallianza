@@ -2082,16 +2082,16 @@ class RealCrossChainBridge:
                                 "api_utxos_count": len(utxos) if utxos else 0
                             })
                             
-                            # SOLUÇÃO PRINCIPAL: Se temos source_tx_hash (OP_RETURN necessário), usar BlockCypher API DIRETAMENTE
-                            # BlockCypher API suporta OP_RETURN via script_type: "null-data" de forma nativa e confiável
-                            # bitcoinlib não suporta OP_RETURN facilmente, então pulamos todas as tentativas com bitcoinlib
+                            # TEMPORÁRIO: OP_RETURN desabilitado por problemas de compatibilidade
+                            # Se temos source_tx_hash, apenas logar mas não forçar OP_RETURN
                             if source_tx_hash:
-                                print(f"🔗 OP_RETURN necessário - usando BlockCypher API DIRETAMENTE (suporta OP_RETURN nativamente)...")
-                                add_log("using_blockcypher_for_opreturn", {"source_tx_hash": source_tx_hash}, "info")
+                                print(f"⚠️  OP_RETURN temporariamente desabilitado (source_tx_hash presente mas não será incluído)")
+                                print(f"   Hash da transação Polygon: {source_tx_hash}")
+                                add_log("op_return_temporarily_disabled", {"source_tx_hash": source_tx_hash}, "warning")
                             
                             # SOLUÇÃO ALTERNATIVA: Se wallet não tem UTXOs mas temos da API, usar BlockCypher ANTES de tentar wallet.send_to()
-                            # OU se OP_RETURN é necessário (source_tx_hash presente)
-                            if (not wallet_utxos and utxos) or source_tx_hash:
+                            # OP_RETURN não é mais obrigatório
+                            if (not wallet_utxos and utxos):
                                 if source_tx_hash:
                                     print(f"🔗 OP_RETURN necessário - pulando bitcoinlib e usando BlockCypher API diretamente...")
                                 elif not wallet_utxos:
@@ -2204,14 +2204,15 @@ class RealCrossChainBridge:
                                         })
                                         print(f"   🔄 Change output adicionado: {change_value} satoshis para {from_address}")
                                     
-                                    # CORREÇÃO CRÍTICA: Se OP_RETURN é necessário, FORÇAR uso de BlockCypher API
-                                    # Não podemos usar criação manual porque bitcoinlib não suporta OP_RETURN facilmente
+                                    # TEMPORÁRIO: OP_RETURN desabilitado - transações funcionam sem ele
                                     # Inicializar variável de controle antes do bloco if para garantir escopo correto
                                     bit_library_available = False
                                     
+                                    # OP_RETURN temporariamente desabilitado - criar transação normal
                                     if source_tx_hash:
-                                        print(f"   🔗 OP_RETURN necessário - FORÇANDO uso de BlockCypher API (não usar criação manual)...")
-                                        add_log("forcing_blockcypher_for_opreturn", {"source_tx_hash": source_tx_hash}, "info")
+                                        print(f"   ⚠️  OP_RETURN temporariamente desabilitado (source_tx_hash: {source_tx_hash})")
+                                        print(f"   📝 Criando transação Bitcoin SEM OP_RETURN (funcionalidade temporariamente desativada)")
+                                        add_log("op_return_disabled_creating_normal_tx", {"source_tx_hash": source_tx_hash}, "warning")
                                         
                                         # Tentar criar transação via BlockCypher API
                                         try:
