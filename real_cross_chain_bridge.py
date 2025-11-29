@@ -2516,68 +2516,78 @@ class RealCrossChainBridge:
                                             tx.add_output(output_value, address=to_address)
                                             print(f"      ✅ Output destino: {output_value} satoshis para {to_address}")
                                             
-                                            # Adicionar OP_RETURN - tentar múltiplas formas
+                                            # Adicionar OP_RETURN - SOLUÇÃO SIMPLIFICADA E ROBUSTA
                                             print(f"   🔗 Adicionando OP_RETURN...")
                                             op_return_added = False
                                             
-                                            # Método 1: Criar Output e inserir na lista
+                                            # SOLUÇÃO PRINCIPAL: Usar add_output com data diretamente (bitcoinlib suporta isso)
                                             try:
-                                                op_return_output = Output(
-                                                    value=0,
-                                                    script=op_return_script.hex(),
-                                                    script_type='op_return'
-                                                )
+                                                print(f"      🔄 Tentando método direto: add_output com data...")
+                                                # bitcoinlib aceita 'data' como parâmetro para OP_RETURN
+                                                tx.add_output(0, data=op_return_bytes)
+                                                op_return_added = True
+                                                print(f"      ✅ OP_RETURN adicionado via add_output(0, data=...)")
+                                            except Exception as direct_err:
+                                                print(f"      ⚠️  Método direto falhou: {direct_err}")
                                                 
-                                                # Verificar estrutura da transação
-                                                if hasattr(tx, 'outputs') and isinstance(tx.outputs, list):
-                                                    tx.outputs.insert(1, op_return_output)
-                                                    op_return_added = True
-                                                    print(f"      ✅ OP_RETURN adicionado via tx.outputs.insert(1, ...)")
-                                                elif hasattr(tx, '_outputs') and isinstance(tx._outputs, list):
-                                                    tx._outputs.insert(1, op_return_output)
-                                                    op_return_added = True
-                                                    print(f"      ✅ OP_RETURN adicionado via tx._outputs.insert(1, ...)")
-                                                else:
-                                                    # Tentar descobrir o atributo correto
-                                                    print(f"      🔍 Procurando atributo de outputs...")
-                                                    for attr in dir(tx):
-                                                        if 'output' in attr.lower() and not attr.startswith('__'):
-                                                            try:
-                                                                outputs_list = getattr(tx, attr)
-                                                                if isinstance(outputs_list, list):
-                                                                    outputs_list.insert(1, op_return_output)
-                                                                    op_return_added = True
-                                                                    print(f"      ✅ OP_RETURN adicionado via {attr}.insert(1, ...)")
-                                                                    break
-                                                            except:
-                                                                pass
-                                                
-                                                if not op_return_added:
-                                                    raise Exception("Não foi possível adicionar OP_RETURN via Output object")
-                                                    
-                                            except Exception as method1_err:
-                                                print(f"      ⚠️  Método 1 falhou: {method1_err}")
-                                                
-                                                # Método 2: Tentar usar add_output com script diretamente
+                                                # Método 1: Criar Output e inserir na lista
                                                 try:
-                                                    print(f"      🔄 Tentando método 2: add_output com script...")
-                                                    # bitcoinlib pode aceitar script como string hex
-                                                    tx.add_output(0, script=op_return_script.hex())
-                                                    op_return_added = True
-                                                    print(f"      ✅ OP_RETURN adicionado via add_output(0, script=...)")
-                                                except Exception as method2_err:
-                                                    print(f"      ⚠️  Método 2 falhou: {method2_err}")
+                                                    op_return_output = Output(
+                                                        value=0,
+                                                        script=op_return_script.hex(),
+                                                        script_type='op_return'
+                                                    )
                                                     
-                                                    # Método 3: Tentar criar script como string
-                                                    try:
-                                                        print(f"      🔄 Tentando método 3: script como string...")
-                                                        script_str = f"OP_RETURN {op_return_data}"
-                                                        tx.add_output(0, address=script_str)
+                                                    # Verificar estrutura da transação
+                                                    if hasattr(tx, 'outputs') and isinstance(tx.outputs, list):
+                                                        tx.outputs.insert(1, op_return_output)
                                                         op_return_added = True
-                                                        print(f"      ✅ OP_RETURN adicionado via add_output(0, address='OP_RETURN ...')")
-                                                    except Exception as method3_err:
-                                                        print(f"      ⚠️  Método 3 falhou: {method3_err}")
-                                                        raise Exception(f"Todos os métodos de adicionar OP_RETURN falharam: {method1_err}, {method2_err}, {method3_err}")
+                                                        print(f"      ✅ OP_RETURN adicionado via tx.outputs.insert(1, ...)")
+                                                    elif hasattr(tx, '_outputs') and isinstance(tx._outputs, list):
+                                                        tx._outputs.insert(1, op_return_output)
+                                                        op_return_added = True
+                                                        print(f"      ✅ OP_RETURN adicionado via tx._outputs.insert(1, ...)")
+                                                    else:
+                                                        # Tentar descobrir o atributo correto
+                                                        print(f"      🔍 Procurando atributo de outputs...")
+                                                        for attr in dir(tx):
+                                                            if 'output' in attr.lower() and not attr.startswith('__'):
+                                                                try:
+                                                                    outputs_list = getattr(tx, attr)
+                                                                    if isinstance(outputs_list, list):
+                                                                        outputs_list.insert(1, op_return_output)
+                                                                        op_return_added = True
+                                                                        print(f"      ✅ OP_RETURN adicionado via {attr}.insert(1, ...)")
+                                                                        break
+                                                                except:
+                                                                    pass
+                                                    
+                                                    if not op_return_added:
+                                                        raise Exception("Não foi possível adicionar OP_RETURN via Output object")
+                                                        
+                                                except Exception as method1_err:
+                                                    print(f"      ⚠️  Método 1 falhou: {method1_err}")
+                                                    
+                                                    # Método 2: Tentar usar add_output com script diretamente
+                                                    try:
+                                                        print(f"      🔄 Tentando método 2: add_output com script...")
+                                                        # bitcoinlib pode aceitar script como string hex
+                                                        tx.add_output(0, script=op_return_script.hex())
+                                                        op_return_added = True
+                                                        print(f"      ✅ OP_RETURN adicionado via add_output(0, script=...)")
+                                                    except Exception as method2_err:
+                                                        print(f"      ⚠️  Método 2 falhou: {method2_err}")
+                                                        
+                                                        # Método 3: Tentar criar script como string
+                                                        try:
+                                                            print(f"      🔄 Tentando método 3: script como string...")
+                                                            script_str = f"OP_RETURN {op_return_data}"
+                                                            tx.add_output(0, address=script_str)
+                                                            op_return_added = True
+                                                            print(f"      ✅ OP_RETURN adicionado via add_output(0, address='OP_RETURN ...')")
+                                                        except Exception as method3_err:
+                                                            print(f"      ⚠️  Método 3 falhou: {method3_err}")
+                                                            raise Exception(f"Todos os métodos de adicionar OP_RETURN falharam: {direct_err}, {method1_err}, {method2_err}, {method3_err}")
                                             
                                             if not op_return_added:
                                                 raise Exception("OP_RETURN não foi adicionado! Não é seguro continuar sem vínculo criptográfico.")
