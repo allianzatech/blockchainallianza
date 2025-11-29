@@ -59,6 +59,18 @@ class RealCrossChainBridge:
             self.quantum_enabled = False
             print("⚠️  Segurança Quântica: Não disponível")
         
+        # NOVA MELHORIA: Otimizador Híbrido Inteligente
+        try:
+            from quantum_hybrid_optimizer import QuantumHybridOptimizer
+            self.quantum_optimizer = QuantumHybridOptimizer(gas_analyzer=None)
+            self.quantum_optimizer_enabled = True
+            print("🧠 Otimizador Híbrido Quântico: Ativado!")
+            print("   ✅ Escolhe algoritmo automaticamente baseado na chain e custo")
+        except ImportError:
+            self.quantum_optimizer = None
+            self.quantum_optimizer_enabled = False
+            print("⚠️  Otimizador Híbrido: Não disponível")
+        
         # NOVA OTIMIZAÇÃO: Connection Pool Inteligente e Processamento Paralelo
         try:
             from performance_optimizations import (
@@ -726,21 +738,50 @@ class RealCrossChainBridge:
         }
         return chain_ids.get(chain)
     
-    def _add_quantum_signature(self, transaction_data: Dict, transaction_value_usd: float = 0.0) -> Dict:
+    def _add_quantum_signature(self, transaction_data: Dict, transaction_value_usd: float = 0.0, target_chain: str = None) -> Dict:
         """
-        MELHORIA: Adicionar assinatura quântica à transação com estratégia inteligente
+        MELHORIA CRÍTICA: Adicionar assinatura quântica com otimizador híbrido inteligente
         Proteção contra ataques quânticos futuros
         
-        NOVA OTIMIZAÇÃO: Usa assinatura inteligente baseada no valor da transação
-        - Transações pequenas: ML-DSA apenas (rápido)
-        - Transações médias: QRS-2 (ECDSA + ML-DSA)
-        - Transações grandes: QRS-3 (máxima segurança)
+        NOVA OTIMIZAÇÃO: Usa otimizador híbrido que escolhe algoritmo baseado na chain
+        - Resolve problema de custos altos de QRS-3 no Ethereum ($61 USD)
+        - Escolhe automaticamente: QRS-3 (Polygon/BSC) ou ML-DSA (Ethereum)
+        - Otimiza custos mantendo segurança quântica
         """
         if not self.quantum_enabled or not self.quantum_security:
             return transaction_data
         
         try:
-            # NOVA OTIMIZAÇÃO: Usar assinatura inteligente
+            # PRIORIDADE 1: Usar otimizador híbrido se disponível e target_chain fornecido
+            if self.quantum_optimizer_enabled and self.quantum_optimizer and target_chain:
+                try:
+                    algorithm_selection = self.quantum_optimizer.select_algorithm(
+                        target_chain=target_chain,
+                        transaction_value=transaction_value_usd,
+                        strategy="cost_optimized"
+                    )
+                    
+                    selected_algorithm = algorithm_selection["algorithm"]
+                    cost_usd = algorithm_selection["cost_usd"]
+                    reason = algorithm_selection.get("reason", "")
+                    
+                    if self.logger:
+                        self.logger.info(f"🧠 Otimizador selecionou: {selected_algorithm.upper()} para {target_chain} (${cost_usd:.4f} USD)")
+                    
+                    # Usar algoritmo selecionado
+                    if selected_algorithm == "qrs3":
+                        return self._add_qrs3_signature(transaction_data, transaction_value_usd)
+                    elif selected_algorithm == "ml_dsa":
+                        return self._add_ml_dsa_signature(transaction_data)
+                    elif selected_algorithm == "sphincs":
+                        return self._add_sphincs_signature(transaction_data)
+                    else:
+                        return self._add_ml_dsa_signature(transaction_data)
+                except Exception as e:
+                    if self.logger:
+                        self.logger.warning(f"Erro no otimizador híbrido: {e}, usando fallback")
+            
+            # PRIORIDADE 2: Usar assinatura inteligente (método antigo)
             if not hasattr(self, '_intelligent_signing'):
                 try:
                     from performance_optimizations import IntelligentSigningIntegration
@@ -749,20 +790,80 @@ class RealCrossChainBridge:
                     self._intelligent_signing = None
             
             if self._intelligent_signing:
-                # Usar assinatura inteligente
                 return self._intelligent_signing.sign_transaction_intelligent(
                     transaction_data,
                     transaction_value_usd=transaction_value_usd,
                     transaction_type="cross_chain"
                 )
-            else:
-                # Fallback: método antigo (ML-DSA simples)
-                return self._add_quantum_signature_fallback(transaction_data)
+            
+            # PRIORIDADE 3: Fallback para ML-DSA simples
+            return self._add_quantum_signature_fallback(transaction_data)
         
         except Exception as e:
             if self.logger:
                 self.logger.warning(f"Erro ao adicionar assinatura quântica: {e}")
             return transaction_data
+    
+    def _add_qrs3_signature(self, transaction_data: Dict, transaction_value_usd: float = 0.0) -> Dict:
+        """Adicionar assinatura QRS-3 completa (tripla redundância)"""
+        try:
+            qrs3_result = self.quantum_security.generate_qrs3_keypair()
+            if not qrs3_result.get("success"):
+                return self._add_ml_dsa_signature(transaction_data)
+            
+            message = json.dumps(transaction_data, sort_keys=True).encode()
+            signature_result = self.quantum_security.sign_qrs3(
+                qrs3_result["keypair_id"],
+                message,
+                optimized=True,
+                parallel=True
+            )
+            
+            if signature_result.get("success"):
+                transaction_data["quantum_signature"] = {
+                    "algorithm": "QRS-3",
+                    "keypair_id": qrs3_result["keypair_id"],
+                    "signature": signature_result,
+                    "transaction_value_usd": transaction_value_usd,
+                    "reason": "QRS-3 completo - Máxima segurança quântica"
+                }
+                return transaction_data
+            else:
+                return self._add_ml_dsa_signature(transaction_data)
+        except Exception as e:
+            if self.logger:
+                self.logger.warning(f"Erro ao adicionar QRS-3: {e}, usando ML-DSA")
+            return self._add_ml_dsa_signature(transaction_data)
+    
+    def _add_ml_dsa_signature(self, transaction_data: Dict) -> Dict:
+        """Adicionar assinatura ML-DSA (quantum-safe, mais barato)"""
+        return self._add_quantum_signature_fallback(transaction_data)
+    
+    def _add_sphincs_signature(self, transaction_data: Dict) -> Dict:
+        """Adicionar assinatura SPHINCS+ (hash-based)"""
+        try:
+            sphincs_result = self.quantum_security.generate_sphincs_keypair()
+            if not sphincs_result.get("success"):
+                return self._add_ml_dsa_signature(transaction_data)
+            
+            message = json.dumps(transaction_data, sort_keys=True).encode()
+            signature_result = self.quantum_security.sign_with_sphincs(
+                sphincs_result["keypair_id"],
+                message
+            )
+            
+            if signature_result.get("success"):
+                transaction_data["quantum_signature"] = {
+                    "algorithm": "SPHINCS+",
+                    "keypair_id": sphincs_result["keypair_id"],
+                    "signature": signature_result["signature"],
+                    "reason": "SPHINCS+ (hash-based, quantum-safe)"
+                }
+            return transaction_data
+        except Exception as e:
+            if self.logger:
+                self.logger.warning(f"Erro ao adicionar SPHINCS+: {e}, usando ML-DSA")
+            return self._add_ml_dsa_signature(transaction_data)
     
     def _add_quantum_signature_fallback(self, transaction_data: Dict) -> Dict:
         """Fallback: método antigo de assinatura"""
