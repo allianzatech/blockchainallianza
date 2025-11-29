@@ -2355,410 +2355,79 @@ class RealCrossChainBridge:
                                         # Se chegou aqui, todos os métodos falharam
                                         # Retornar erro informando que OP_RETURN está desabilitado
                                         
-                                        except ImportError as import_err:
-                                            print(f"   ❌ Biblioteca 'bit' não disponível: {import_err}")
-                                            print(f"   💡 Para instalar: pip install bit")
-                                            print(f"   ⚠️  Tentando 'python-bitcointx'...")
-                                            add_log("bit_library_not_available", {
-                                                "error": str(import_err),
-                                                "installation_command": "pip install bit"
-                                            }, "warning")
-                                            bit_library_available = False
-                                        except Exception as bit_err:
-                                            print(f"   ❌ Erro ao usar biblioteca 'bit': {bit_err}")
-                                            print(f"   Tipo do erro: {type(bit_err).__name__}")
-                                            import traceback
-                                            print(f"   Traceback completo:")
-                                            traceback.print_exc()
-                                            add_log("bit_library_error", {
-                                                "error": str(bit_err),
-                                                "error_type": type(bit_err).__name__
-                                            }, "error")
-                                            bit_library_available = False
+                                        # OP_RETURN DESABILITADO - remover todo código relacionado
+                                        # Não tentar mais python-bitcointx ou bitcoinlib manual para OP_RETURN
                                         
-                                        # Log final do status da biblioteca bit
-                                        print(f"   📊 Status final da biblioteca 'bit': {'✅ Disponível' if bit_library_available else '❌ Não disponível'}")
+                                        # Retornar erro informando que todos os métodos falharam
+                                        error_details = {
+                                            "reason": "transaction_creation_failed",
+                                            "op_return_disabled": True,
+                                            "inputs_count": len(inputs_list) if 'inputs_list' in locals() else 0,
+                                            "outputs_count": len(outputs_list) if 'outputs_list' in locals() else 0,
+                                            "utxos_count": len(utxos) if 'utxos' in locals() else 0,
+                                            "from_address": from_address if 'from_address' in locals() else None,
+                                            "to_address": to_address,
+                                            "amount_satoshis": int(output_value) if 'output_value' in locals() else None,
+                                            "source_tx_hash": source_tx_hash,
+                                            "note": "OP_RETURN está desabilitado temporariamente"
+                                        }
                                         
-                                        # PRIORIDADE 2: Tentar 'python-bitcointx' (mais controle manual e confiável)
+                                        print(f"   ❌ TODOS OS MÉTODOS FALHARAM (OP_RETURN desabilitado)")
+                                        print(f"      Detalhes do erro:")
+                                        print(f"      - Inputs: {error_details['inputs_count']}")
+                                        print(f"      - Outputs: {error_details['outputs_count']}")
+                                        print(f"      - UTXOs disponíveis: {error_details['utxos_count']}")
+                                        print(f"      - OP_RETURN: Desabilitado temporariamente")
+                                        
+                                        proof_data["final_result"] = {
+                                            "success": False,
+                                            "error": "Não foi possível criar transação Bitcoin (OP_RETURN desabilitado)",
+                                            "debug": error_details
+                                        }
+                                        proof_file = self._save_transaction_proof(proof_data)
+                                        
+                                        return {
+                                            "success": False,
+                                            "error": "Não foi possível criar transação Bitcoin (OP_RETURN desabilitado)",
+                                            "debug": error_details,
+                                            "proof_file": proof_file,
+                                            "suggestions": [
+                                                "OP_RETURN está temporariamente desabilitado",
+                                                "Verifique se há UTXOs suficientes no endereço de origem",
+                                                "Verifique se o endereço Bitcoin de destino é válido",
+                                                "Tente novamente em alguns minutos (APIs podem estar temporariamente indisponíveis)"
+                                            ]
+                                        }
+                                    
+                                    # SOLUÇÃO DEFINITIVA: Criar transação manualmente (mais confiável que BlockCypher)
+                                    # BlockCypher testnet está instável e não retorna 'tosign' corretamente
+                                    # Vamos criar transação usando bitcoinlib e broadcastar via Blockstream
+                                    # NOTA: Este código só executa se source_tx_hash NÃO está presente (sem OP_RETURN)
+                                    
+                                    # REMOVIDO: Todo código relacionado a OP_RETURN abaixo foi removido
+                                    # O código abaixo só executa quando NÃO há source_tx_hash (transação normal)
+                                    
+                                    # Continuar com código normal de criação de transação (sem OP_RETURN)
+                                    # Este código só executa quando NÃO há source_tx_hash (transação normal sem OP_RETURN)
+                                    
+                                    # Se chegou aqui e não há source_tx_hash, criar transação normal
+                                    if not source_tx_hash:
+                                        # Criar transação normal usando wallet.send_to() ou BlockCypher
                                         try:
-                                            from bitcointx import select_chain_params
-                                            from bitcointx.core import CMutableTransaction, CTxOut, CTxIn, COutPoint, CTransaction
-                                            from bitcointx.core.script import CScript, OP_RETURN
-                                            from bitcointx.wallet import P2PKHBitcoinAddress, P2WPKHBitcoinAddress, P2SHBitcoinAddress
-                                            from bitcointx import CKey
-                                            import hashlib
+                                            print(f"   📝 Criando transação normal (sem OP_RETURN)...")
+                                            amount_satoshis = int(output_value)
+                                            tx_result = wallet.send_to(
+                                                to_address,
+                                                amount_satoshis,
+                                                network='testnet',
+                                                fee=5  # 5 sat/vB
+                                            )
                                             
-                                            # Configurar testnet
-                                            select_chain_params('testnet')
-                                            
-                                            print(f"   📚 Usando biblioteca 'python-bitcointx' para criar transação com OP_RETURN...")
-                                            
-                                            # Preparar OP_RETURN
-                                            polygon_hash_clean = source_tx_hash.replace('0x', '')
-                                            op_return_data = f"ALZ:{polygon_hash_clean}"
-                                            op_return_bytes = op_return_data.encode('utf-8')
-                                            
-                                            print(f"   🔗 OP_RETURN será: {op_return_data}")
-                                            print(f"      Tamanho: {len(op_return_bytes)} bytes")
-                                            
-                                            # Criar script OP_RETURN
-                                            op_return_script = CScript([OP_RETURN, op_return_bytes])
-                                            
-                                            # Criar transação
-                                            tx = CMutableTransaction()
-                                            
-                                            # Adicionar inputs dos UTXOs
-                                            print(f"   📥 Adicionando {len(utxos)} inputs...")
-                                            total_input_value = 0
-                                            for utxo in utxos:
-                                                txid = utxo.get('txid') or utxo.get('tx_hash')
-                                                output_n = (utxo.get('output_n') or 
-                                                           utxo.get('vout') or 
-                                                           utxo.get('output_index') or 
-                                                           utxo.get('tx_output_n', 0))
-                                                value = utxo.get('value', 0)
-                                                total_input_value += value
+                                            if tx_result:
+                                                tx_hash = tx_result if isinstance(tx_result, str) else tx_result.get('txid') or tx_result.get('hash')
                                                 
-                                                # Converter txid de hex string para bytes (reverso)
-                                                txid_bytes = bytes.fromhex(txid)
-                                                txid_bytes_reversed = txid_bytes[::-1]  # Bitcoin usa little-endian
-                                                
-                                                prevout = COutPoint(txid_bytes_reversed, int(output_n))
-                                                tx.vin.append(CTxIn(prevout))
-                                                print(f"      Input: {txid}:{output_n} = {value} satoshis")
-                                            
-                                            print(f"   💰 Total inputs: {total_input_value} satoshis")
-                                            
-                                            # Converter endereço de destino para scriptPubKey
-                                            print(f"   🔄 Convertendo endereço de destino para scriptPubKey...")
-                                            try:
-                                                # Tentar diferentes tipos de endereço
-                                                if to_address.startswith('tb1'):
-                                                    # Bech32 (SegWit)
-                                                    dest_addr = P2WPKHBitcoinAddress.from_string(to_address)
-                                                elif to_address.startswith('2') or to_address.startswith('3'):
-                                                    # P2SH
-                                                    dest_addr = P2SHBitcoinAddress.from_string(to_address)
-                                                else:
-                                                    # Legacy P2PKH
-                                                    dest_addr = P2PKHBitcoinAddress.from_string(to_address)
-                                                
-                                                dest_script = dest_addr.to_scriptPubKey()
-                                                print(f"   ✅ Endereço convertido: {type(dest_addr).__name__}")
-                                            except Exception as addr_err:
-                                                print(f"   ❌ Erro ao converter endereço: {addr_err}")
-                                                raise
-                                            
-                                            # Adicionar output principal (destino)
-                                            output_value_satoshis = int(output_value)
-                                            tx.vout.append(CTxOut(output_value_satoshis, dest_script))
-                                            print(f"   📤 Output principal: {output_value_satoshis} satoshis para {to_address}")
-                                            
-                                            # Adicionar output OP_RETURN
-                                            tx.vout.append(CTxOut(0, op_return_script))
-                                            print(f"   ✅ OP_RETURN adicionado: {op_return_data}")
-                                            
-                                            # Adicionar change output se necessário
-                                            if change_value > 546:
-                                                # Converter endereço de origem para scriptPubKey
-                                                try:
-                                                    if from_address.startswith('tb1'):
-                                                        change_addr = P2WPKHBitcoinAddress.from_string(from_address)
-                                                    elif from_address.startswith('2') or from_address.startswith('3'):
-                                                        change_addr = P2SHBitcoinAddress.from_string(from_address)
-                                                    else:
-                                                        change_addr = P2PKHBitcoinAddress.from_string(from_address)
-                                                    
-                                                    change_script = change_addr.to_scriptPubKey()
-                                                    tx.vout.append(CTxOut(int(change_value), change_script))
-                                                    print(f"   🔄 Change output: {int(change_value)} satoshis para {from_address}")
-                                                except Exception as change_addr_err:
-                                                    print(f"   ⚠️  Erro ao converter endereço de change: {change_addr_err}")
-                                                    # Continuar sem change se não conseguir converter
-                                            
-                                            # Calcular fee real (pode precisar ajustar)
-                                            estimated_size = len(tx.serialize()) + 100  # Estimativa conservadora
-                                            fee_per_byte = 1  # 1 sat/byte para testnet
-                                            estimated_fee = estimated_size * fee_per_byte
-                                            
-                                            # Verificar se há fundos suficientes
-                                            total_output_value = output_value_satoshis + (int(change_value) if change_value > 546 else 0)
-                                            if total_input_value < total_output_value + estimated_fee:
-                                                raise Exception(f"Fundos insuficientes. Inputs: {total_input_value}, Outputs: {total_output_value}, Fee: {estimated_fee}")
-                                            
-                                            # Assinar transação
-                                            print(f"   ✍️  Assinando transação...")
-                                            
-                                            # Converter chave privada WIF para CKey
-                                            try:
-                                                # python-bitcointx precisa da chave privada em formato específico
-                                                from bitcoinlib.keys import HDKey as BitcoinlibHDKey
-                                                # Usar bitcoinlib para converter WIF para bytes
-                                                temp_key = BitcoinlibHDKey(from_private_key, network='testnet')
-                                                privkey_bytes = temp_key.private_byte
-                                                
-                                                # Criar CKey
-                                                key_obj = CKey(privkey_bytes)
-                                                
-                                                # Assinar cada input
-                                                for i, utxo in enumerate(utxos):
-                                                    # Obter scriptPubKey do UTXO (precisa buscar da transação anterior)
-                                                    # Por enquanto, vamos usar o script do UTXO se disponível
-                                                    script_hex = utxo.get('script', '')
-                                                    if script_hex:
-                                                        prev_script = CScript(bytes.fromhex(script_hex))
-                                                    else:
-                                                        # Se não tiver script, tentar derivar do endereço
-                                                        if from_address.startswith('tb1'):
-                                                            from_addr = P2WPKHBitcoinAddress.from_string(from_address)
-                                                        else:
-                                                            from_addr = P2PKHBitcoinAddress.from_string(from_address)
-                                                        prev_script = from_addr.to_scriptPubKey()
-                                                    
-                                                    # Criar script de assinatura
-                                                    sighash = CTransaction(tx).GetHash()
-                                                    # Assinar (simplificado - pode precisar ajustar para diferentes tipos de script)
-                                                    # Por enquanto, vamos serializar e tentar broadcast
-                                                    print(f"      Input {i+1} preparado para assinatura")
-                                                
-                                                print(f"   ⚠️  Assinatura completa requer scriptPubKey dos UTXOs anteriores")
-                                                print(f"   ⚠️  Tentando serializar transação não assinada para diagnóstico...")
-                                                
-                                                # Serializar transação (mesmo não assinada, para verificar estrutura)
-                                                tx_hex = tx.serialize().hex()
-                                                print(f"   ✅ Transação serializada! Tamanho: {len(tx_hex)} bytes")
-                                                
-                                                # Verificar se OP_RETURN está na transação
-                                                if op_return_bytes in bytes.fromhex(tx_hex):
-                                                    print(f"   ✅ OP_RETURN confirmado na transação serializada!")
-                                                else:
-                                                    print(f"   ⚠️  OP_RETURN não encontrado na transação serializada")
-                                                
-                                                # Por enquanto, vamos usar bitcoinlib para assinar (mais simples)
-                                                print(f"   🔄 Usando bitcoinlib para assinatura final...")
-                                                raise Exception("python-bitcointx requer assinatura mais complexa, usando bitcoinlib como fallback")
-                                                
-                                            except Exception as sign_err:
-                                                print(f"   ⚠️  Erro na assinatura com python-bitcointx: {sign_err}")
-                                                print(f"   🔄 Continuando com bitcoinlib...")
-                                                raise
-                                            
-                                        except ImportError:
-                                            print(f"   ⚠️  Biblioteca 'python-bitcointx' não disponível, tentando 'bitcoinlib' manual...")
-                                        except Exception as bitcointx_err:
-                                            print(f"   ⚠️  Erro ao usar 'python-bitcointx': {bitcointx_err}")
-                                            print(f"      Tipo: {type(bitcointx_err).__name__}")
-                                            import traceback
-                                            traceback.print_exc()
-                                            add_log("python_bitcointx_error", {
-                                                "error": str(bitcointx_err),
-                                                "error_type": type(bitcointx_err).__name__
-                                            }, "error")
-                                        
-                                        # PRIORIDADE 3: Fallback final - bitcoinlib manual (já implementado)
-                                        print(f"   🔄 Tentando método final: bitcoinlib manual...")
-                                        try:
-                                            from bitcoinlib.transactions import Transaction
-                                            from bitcoinlib.keys import HDKey
-                                            
-                                            # Converter chave privada
-                                            key = HDKey(from_private_key, network='testnet')
-                                            
-                                            # Criar transação
-                                            tx = Transaction(network='testnet', witness_type='segwit')
-                                            
-                                            # Adicionar inputs
-                                            for utxo in utxos:
-                                                txid = utxo.get('txid') or utxo.get('tx_hash')
-                                                output_n = (utxo.get('output_n') or 
-                                                           utxo.get('vout') or 
-                                                           utxo.get('output_index') or 
-                                                           utxo.get('output') or 
-                                                           utxo.get('tx_output_n', 0))
-                                                value = utxo.get('value', 0)
-                                                
-                                                tx.add_input(
-                                                    prev_txid=txid,
-                                                    output_n=int(output_n),
-                                                    value=int(value),
-                                                    keys=key
-                                                )
-                                            
-                                            # Preparar OP_RETURN ANTES de adicionar outputs
-                                            polygon_hash_clean = source_tx_hash.replace('0x', '')
-                                            op_return_data = f"ALZ:{polygon_hash_clean}"
-                                            op_return_bytes = op_return_data.encode('utf-8')
-                                            
-                                            print(f"   🔗 Preparando OP_RETURN: {op_return_data}")
-                                            print(f"      Tamanho: {len(op_return_bytes)} bytes")
-                                            
-                                            # Criar script OP_RETURN: OP_RETURN (0x6a) + tamanho + dados
-                                            if len(op_return_bytes) <= 75:
-                                                op_return_script = bytes([0x6a, len(op_return_bytes)]) + op_return_bytes
-                                            else:
-                                                op_return_script = bytes([0x6a, 0x4c, len(op_return_bytes)]) + op_return_bytes
-                                            
-                                            print(f"      Script hex: {op_return_script.hex()[:80]}...")
-                                            
-                                            # Adicionar outputs na ordem correta: destino, OP_RETURN, change
-                                            # 1. Output principal (destino)
-                                            tx.add_output(output_value, address=to_address)
-                                            print(f"   📤 Output 1 (destino): {output_value} satoshis para {to_address}")
-                                            
-                                            # 2. OP_RETURN (CRÍTICO - deve ser o segundo output)
-                                            # bitcoinlib.add_output() NÃO aceita script diretamente
-                                            # Precisamos criar Output manualmente e adicionar à lista
-                                            op_return_added = False
-                                            try:
-                                                from bitcoinlib.transactions import Output
-                                                
-                                                # Criar Output com OP_RETURN script
-                                                # O script deve ser passado como hex string
-                                                op_return_output = Output(
-                                                    value=0,
-                                                    script=op_return_script.hex(),
-                                                    script_type='op_return'
-                                                )
-                                                
-                                                print(f"   🔧 Criando Output OP_RETURN...")
-                                                print(f"      Value: 0")
-                                                print(f"      Script hex: {op_return_script.hex()[:80]}...")
-                                                
-                                                # Verificar estrutura da transação e adicionar OP_RETURN
-                                                if hasattr(tx, 'outputs') and isinstance(tx.outputs, list):
-                                                    # Inserir após o output principal (índice 1)
-                                                    tx.outputs.insert(1, op_return_output)
-                                                    op_return_added = True
-                                                    print(f"   ✅ OP_RETURN adicionado via tx.outputs.insert(1, ...)")
-                                                elif hasattr(tx, '_outputs') and isinstance(tx._outputs, list):
-                                                    tx._outputs.insert(1, op_return_output)
-                                                    op_return_added = True
-                                                    print(f"   ✅ OP_RETURN adicionado via tx._outputs.insert(1, ...)")
-                                                else:
-                                                    # Tentar descobrir o atributo correto
-                                                    print(f"   🔍 Procurando atributo de outputs...")
-                                                    for attr in dir(tx):
-                                                        if 'output' in attr.lower() and not attr.startswith('__'):
-                                                            print(f"      Encontrado: {attr} = {type(getattr(tx, attr))}")
-                                                            try:
-                                                                outputs_list = getattr(tx, attr)
-                                                                if isinstance(outputs_list, list):
-                                                                    outputs_list.insert(1, op_return_output)
-                                                                    op_return_added = True
-                                                                    print(f"   ✅ OP_RETURN adicionado via {attr}.insert(1, ...)")
-                                                                    break
-                                                            except:
-                                                                pass
-                                                    
-                                                    if not op_return_added:
-                                                        raise Exception(f"Não foi possível acessar lista de outputs. Atributos disponíveis: {[a for a in dir(tx) if 'output' in a.lower() and not a.startswith('__')]}")
-                                                
-                                            except Exception as op_err:
-                                                print(f"   ❌ Erro ao adicionar OP_RETURN: {op_err}")
-                                                print(f"      Tipo: {type(op_err).__name__}")
-                                                import traceback
-                                                traceback.print_exc()
-                                                raise Exception(f"Falha crítica ao adicionar OP_RETURN: {op_err}")
-                                            
-                                            if not op_return_added:
-                                                raise Exception("OP_RETURN não foi adicionado! Não é seguro continuar sem vínculo criptográfico.")
-                                            
-                                            # 3. Change output (se necessário) - sempre por último
-                                            if change_value > 546:
-                                                tx.add_output(change_value, address=from_address)
-                                                print(f"   🔄 Output 3 (change): {change_value} satoshis para {from_address}")
-                                            
-                                            # Verificar estrutura antes de assinar
-                                            print(f"   📊 Estrutura da transação antes de assinar:")
-                                            print(f"      Inputs: {len(tx.inputs)}")
-                                            print(f"      Outputs: {len(tx.outputs) if hasattr(tx, 'outputs') else 'N/A'}")
-                                            if hasattr(tx, 'outputs'):
-                                                for i, out in enumerate(tx.outputs):
-                                                    if hasattr(out, 'value'):
-                                                        print(f"         Output {i+1}: {out.value} satoshis, script_type: {getattr(out, 'script_type', 'N/A')}")
-                                                    else:
-                                                        print(f"         Output {i+1}: {out}")
-                                            
-                                            # Assinar
-                                            tx.sign(key)
-                                            
-                                            # Obter raw transaction
-                                            raw_tx_hex = None
-                                            try:
-                                                if hasattr(tx, 'raw_hex'):
-                                                    raw_tx_hex = tx.raw_hex()
-                                                elif hasattr(tx, 'raw'):
-                                                    raw_tx_hex = tx.raw()
-                                                elif hasattr(tx, 'serialize'):
-                                                    raw_tx_hex = tx.serialize()
-                                                else:
-                                                    print(f"   ⚠️  Transação não tem método para obter raw hex")
-                                                    print(f"      Métodos disponíveis: {[m for m in dir(tx) if not m.startswith('_')]}")
-                                            except Exception as raw_err:
-                                                print(f"   ⚠️  Erro ao obter raw transaction: {raw_err}")
-                                                import traceback
-                                                traceback.print_exc()
-                                            
-                                            if raw_tx_hex:
-                                                print(f"   ✅ Transação raw criada manualmente!")
-                                                print(f"      Tamanho: {len(raw_tx_hex)} bytes")
-                                                print(f"      Primeiros 100 chars: {raw_tx_hex[:100]}...")
-                                                
-                                                # Verificar se OP_RETURN está na transação raw ANTES de broadcastar
-                                                op_return_verified = False
-                                                if op_return_added:
-                                                    # Converter raw_tx_hex para bytes se necessário
-                                                    if isinstance(raw_tx_hex, str):
-                                                        raw_tx_bytes = bytes.fromhex(raw_tx_hex)
-                                                    else:
-                                                        raw_tx_bytes = raw_tx_hex
-                                                    
-                                                    # Verificar se os dados do OP_RETURN estão na transação
-                                                    op_return_check_bytes = op_return_data.encode('utf-8')
-                                                    op_return_script_bytes = op_return_script
-                                                    
-                                                    # Verificar se os dados estão presentes
-                                                    if op_return_check_bytes in raw_tx_bytes:
-                                                        op_return_verified = True
-                                                        print(f"   ✅ OP_RETURN confirmado na transação raw (dados encontrados)!")
-                                                    elif op_return_script_bytes in raw_tx_bytes:
-                                                        op_return_verified = True
-                                                        print(f"   ✅ OP_RETURN confirmado na transação raw (script encontrado)!")
-                                                    else:
-                                                        print(f"   ⚠️  OP_RETURN não encontrado na transação raw!")
-                                                        print(f"      Procurando por: {op_return_data[:50]}...")
-                                                        print(f"      Script hex: {op_return_script.hex()[:80]}...")
-                                                        print(f"      Primeiros 200 bytes da tx: {raw_tx_bytes[:200].hex()}...")
-                                                        
-                                                        # Se OP_RETURN não foi encontrado, NÃO broadcastar
-                                                        print(f"   ❌ NÃO VAI BROADCASTAR: OP_RETURN não está na transação!")
-                                                        raise Exception("OP_RETURN não foi incluído na transação. Não é seguro broadcastar sem o vínculo criptográfico.")
-                                                else:
-                                                    print(f"   ⚠️  OP_RETURN não foi adicionado à transação!")
-                                                    raise Exception("OP_RETURN não foi adicionado à transação. Não é seguro broadcastar sem o vínculo criptográfico.")
-                                                
-                                                # Broadcast via Blockstream (só se OP_RETURN foi verificado)
-                                                blockstream_url = "https://blockstream.info/testnet/api/tx"
-                                                
-                                                # Blockstream espera hex string, não bytes
-                                                if isinstance(raw_tx_hex, bytes):
-                                                    raw_tx_hex_str = raw_tx_hex.hex()
-                                                else:
-                                                    raw_tx_hex_str = raw_tx_hex
-                                                
-                                                print(f"   📡 Broadcastando via Blockstream...")
-                                                broadcast_response = requests.post(
-                                                    blockstream_url,
-                                                    data=raw_tx_hex_str,
-                                                    headers={'Content-Type': 'text/plain'},
-                                                    timeout=30
-                                                )
-                                                
-                                                print(f"   📡 Resposta Blockstream: Status {broadcast_response.status_code}")
-                                                
-                                                if broadcast_response.status_code == 200:
-                                                    tx_hash = broadcast_response.text.strip()
-                                                    print(f"   ✅✅✅ Transação broadcastada via Blockstream! Hash: {tx_hash}")
+                                                if tx_hash:
+                                                    print(f"   ✅✅✅ Transação criada SEM OP_RETURN! Hash: {tx_hash}")
                                                     
                                                     return {
                                                         "success": True,
@@ -2768,144 +2437,69 @@ class RealCrossChainBridge:
                                                         "amount": amount_btc,
                                                         "chain": "bitcoin",
                                                         "status": "broadcasted",
-                                                        "explorer_url": f"https://blockstream.info/testnet/tx/{tx_hash}",
-                                                        "note": f"✅ Transação REAL criada manualmente {'incluindo OP_RETURN' if op_return_added else 'SEM OP_RETURN'} e broadcastada via Blockstream",
+                                                        "explorer_url": f"https://live.blockcypher.com/btc-testnet/tx/{tx_hash}/",
+                                                        "note": "✅ Transação REAL criada (OP_RETURN não necessário)",
                                                         "real_broadcast": True,
-                                                        "method": "manual_raw_with_opreturn_blockstream" if op_return_added else "manual_raw_blockstream",
-                                                        "op_return_included": op_return_added
+                                                        "method": "wallet_send_to_normal",
+                                                        "op_return_included": False
                                                     }
-                                                else:
-                                                    print(f"   ⚠️  Erro ao broadcastar via Blockstream: {broadcast_response.status_code}")
-                                                    print(f"      Resposta: {broadcast_response.text[:500]}")
-                                                    
-                                                    # Tentar também via BlockCypher broadcast
-                                                    try:
-                                                        print(f"   🔄 Tentando broadcast alternativo via BlockCypher...")
-                                                        blockcypher_broadcast_url = f"{self.btc_api_base}/txs/push"
-                                                        bc_response = requests.post(
-                                                            blockcypher_broadcast_url,
-                                                            json={"tx": raw_tx_hex_str},
-                                                            timeout=30
-                                                        )
-                                                        if bc_response.status_code in [200, 201]:
-                                                            bc_data = bc_response.json()
-                                                            bc_tx_hash = bc_data.get('tx', {}).get('hash')
-                                                            if bc_tx_hash:
-                                                                print(f"   ✅✅✅ Broadcast alternativo via BlockCypher funcionou! Hash: {bc_tx_hash}")
-                                                                return {
-                                                                    "success": True,
-                                                                    "tx_hash": bc_tx_hash,
-                                                                    "from": from_address,
-                                                                    "to": to_address,
-                                                                    "amount": amount_btc,
-                                                                    "chain": "bitcoin",
-                                                                    "status": "broadcasted",
-                                                                    "explorer_url": f"https://blockstream.info/testnet/tx/{bc_tx_hash}",
-                                                                    "note": f"✅ Transação REAL criada manualmente {'incluindo OP_RETURN' if op_return_added else 'SEM OP_RETURN'} e broadcastada via BlockCypher",
-                                                                    "real_broadcast": True,
-                                                                    "method": "manual_raw_with_opreturn_blockcypher" if op_return_added else "manual_raw_blockcypher",
-                                                                    "op_return_included": op_return_added
-                                                                }
-                                                    except Exception as bc_broadcast_err:
-                                                        print(f"   ⚠️  Broadcast alternativo também falhou: {bc_broadcast_err}")
-                                            else:
-                                                print(f"   ⚠️  Não foi possível obter raw transaction")
-                                                print(f"      Transação criada mas não serializada")
-                                                
-                                        except Exception as fallback_err:
-                                            print(f"   ⚠️  Erro no fallback manual: {fallback_err}")
-                                            print(f"      Tipo do erro: {type(fallback_err).__name__}")
-                                            import traceback
-                                            traceback.print_exc()
-                                            add_log("fallback_manual_error", {
-                                                "error": str(fallback_err),
-                                                "error_type": type(fallback_err).__name__
-                                            }, "error")
-                                        
-                                        # ÚLTIMA TENTATIVA: Criar transação sem OP_RETURN primeiro para verificar se o problema é específico do OP_RETURN
-                                        print(f"   🔄 ÚLTIMA TENTATIVA: Verificando se o problema é específico do OP_RETURN...")
-                                        add_log("last_attempt_without_opreturn", {}, "info")
-                                        
-                                        try:
-                                            # Tentar criar transação simples sem OP_RETURN usando bitcoinlib
-                                            from bitcoinlib.transactions import Transaction
-                                            from bitcoinlib.keys import HDKey
-                                            
-                                            key = HDKey(from_private_key, network='testnet')
-                                            tx_test = Transaction(network='testnet', witness_type=best_witness_type or 'legacy')
-                                            
-                                            # Adicionar apenas o primeiro input para teste
-                                            if utxos and len(utxos) > 0:
-                                                first_utxo = utxos[0]
-                                                txid = first_utxo.get('txid') or first_utxo.get('tx_hash')
-                                                output_n = (first_utxo.get('output_n') or 
-                                                           first_utxo.get('vout') or 
-                                                           first_utxo.get('output_index') or 0)
-                                                value = first_utxo.get('value', 0)
-                                                
-                                                tx_test.add_input(
-                                                    prev_txid=txid,
-                                                    output_n=int(output_n),
-                                                    value=int(value),
-                                                    keys=key
-                                                )
-                                                tx_test.add_output(output_value, address=to_address)
-                                                tx_test.sign(key)
-                                                
-                                                # Tentar obter raw transaction
-                                                if hasattr(tx_test, 'raw_hex'):
-                                                    raw_test = tx_test.raw_hex()
-                                                    print(f"   ✅ Transação simples (sem OP_RETURN) foi criada com sucesso!")
-                                                    print(f"      Isso indica que o problema é específico do OP_RETURN")
-                                                    add_log("simple_transaction_works", {"size": len(raw_test)}, "info")
-                                                else:
-                                                    print(f"   ⚠️  Transação simples criada mas não serializada")
-                                        except Exception as test_err:
-                                            print(f"   ⚠️  Erro ao criar transação simples: {test_err}")
-                                            print(f"      Isso indica que o problema pode ser mais amplo (não apenas OP_RETURN)")
-                                            add_log("simple_transaction_failed", {"error": str(test_err)}, "error")
-                                        
-                                        # Retornar erro detalhado com todas as informações coletadas
-                                        error_details = {
-                                            "reason": "op_return_required_but_all_methods_failed",
-                                            "inputs_count": len(inputs_list) if 'inputs_list' in locals() else 0,
-                                            "outputs_count": len(outputs_list) if 'outputs_list' in locals() else 0,
-                                            "op_return_output": next((out for out in outputs_list if out.get('script_type') == 'null-data'), None) if 'outputs_list' in locals() else None,
-                                            "bit_library_available": bit_library_available if 'bit_library_available' in locals() else False,
-                                            "utxos_count": len(utxos) if 'utxos' in locals() else 0,
-                                            "from_address": from_address if 'from_address' in locals() else None,
-                                            "to_address": to_address,
-                                            "amount_satoshis": int(output_value) if 'output_value' in locals() else None,
-                                            "source_tx_hash": source_tx_hash
-                                        }
-                                        
-                                        print(f"   ❌ TODOS OS MÉTODOS FALHARAM")
-                                        print(f"      Detalhes do erro:")
-                                        print(f"      - Inputs: {error_details['inputs_count']}")
-                                        print(f"      - Outputs: {error_details['outputs_count']}")
-                                        print(f"      - UTXOs disponíveis: {error_details['utxos_count']}")
-                                        print(f"      - Biblioteca 'bit' disponível: {error_details['bit_library_available']}")
-                                        print(f"      - OP_RETURN output: {error_details['op_return_output']}")
-                                        
-                                        proof_data["final_result"] = {
-                                            "success": False,
-                                            "error": "Não foi possível criar transação com OP_RETURN",
-                                            "debug": error_details
-                                        }
-                                        proof_file = self._save_transaction_proof(proof_data)
-                                        
-                                        return {
-                                            "success": False,
-                                            "error": "Não foi possível criar transação com OP_RETURN via BlockCypher API ou fallback manual",
-                                            "debug": error_details,
-                                            "proof_file": proof_file,
-                                            "suggestions": [
-                                                "Verifique se a biblioteca 'bit' está instalada: pip install bit",
-                                                "Verifique se há UTXOs suficientes no endereço de origem",
-                                                "Verifique se o endereço Bitcoin de destino é válido",
-                                                "Tente novamente em alguns minutos (APIs podem estar temporariamente indisponíveis)"
-                                            ]
-                                        }
+                                        except Exception as wallet_err:
+                                            print(f"   ⚠️  wallet.send_to() falhou: {wallet_err}")
+                                            add_log("wallet_send_to_failed", {"error": str(wallet_err)}, "error")
+                                    
+                                    # Se chegou aqui, todos os métodos falharam
+                                    # Retornar erro
+                                    error_details = {
+                                        "reason": "transaction_creation_failed",
+                                        "op_return_disabled": bool(source_tx_hash),
+                                        "inputs_count": len(inputs_list) if 'inputs_list' in locals() else 0,
+                                        "outputs_count": len(outputs_list) if 'outputs_list' in locals() else 0,
+                                        "utxos_count": len(utxos) if 'utxos' in locals() else 0,
+                                        "from_address": from_address if 'from_address' in locals() else None,
+                                        "to_address": to_address,
+                                        "amount_satoshis": int(output_value) if 'output_value' in locals() else None,
+                                        "source_tx_hash": source_tx_hash
+                                    }
+                                    
+                                    print(f"   ❌ TODOS OS MÉTODOS FALHARAM")
+                                    print(f"      Detalhes do erro:")
+                                    print(f"      - Inputs: {error_details['inputs_count']}")
+                                    print(f"      - Outputs: {error_details['outputs_count']}")
+                                    print(f"      - UTXOs disponíveis: {error_details['utxos_count']}")
+                                    
+                                    proof_data["final_result"] = {
+                                        "success": False,
+                                        "error": "Não foi possível criar transação Bitcoin",
+                                        "debug": error_details
+                                    }
+                                    proof_file = self._save_transaction_proof(proof_data)
+                                    
+                                    return {
+                                        "success": False,
+                                        "error": "Não foi possível criar transação Bitcoin",
+                                        "debug": error_details,
+                                        "proof_file": proof_file,
+                                        "suggestions": [
+                                            "Verifique se há UTXOs suficientes no endereço de origem",
+                                            "Verifique se o endereço Bitcoin de destino é válido",
+                                            "Tente novamente em alguns minutos (APIs podem estar temporariamente indisponíveis)"
+                                        ]
+                                    }
+                                    
+                                    # REMOVIDO: Todo código relacionado a OP_RETURN foi removido
+                                    # O código abaixo só executa quando NÃO há source_tx_hash (transação normal)
+                                    
+                                    # Continuar com código normal de criação de transação (sem OP_RETURN)
+                                    # Este código só executa quando NÃO há source_tx_hash
+                                    
+                                    # REMOVIDO: Todo código relacionado a OP_RETURN foi removido
+                                    # O código abaixo só executa quando NÃO há source_tx_hash (transação normal)
+                                    
+                                    # Continuar com código normal de criação de transação (sem OP_RETURN)
+                                    # Este código só executa quando NÃO há source_tx_hash
+                                    
+                                    # REMOVIDO: Todo código relacionado a OP_RETURN foi removido
+                                    # Continuar com código normal de criação de transação (sem OP_RETURN)
                                     
                                     # SOLUÇÃO DEFINITIVA: Criar transação manualmente (mais confiável que BlockCypher)
                                     # BlockCypher testnet está instável e não retorna 'tosign' corretamente
