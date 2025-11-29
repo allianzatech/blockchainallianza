@@ -122,6 +122,8 @@ class StressTestSuite:
             
             try:
                 # Criar transação
+                # create_transaction retorna a transação diretamente (dict com "id", "sender", etc)
+                # ou levanta exceção se falhar
                 tx_result = self.blockchain.create_transaction(
                     sender=sender_address,
                     receiver=receiver_address,
@@ -133,22 +135,33 @@ class StressTestSuite:
                 
                 tx_latency = (time.time() - tx_start) * 1000  # ms
                 
-                if tx_result.get("success"):
+                # create_transaction retorna dict com a transação (tem "id", "sender", "receiver", etc)
+                if tx_result and isinstance(tx_result, dict) and "id" in tx_result:
                     return {
                         "tx_id": tx_id,
                         "success": True,
                         "latency_ms": tx_latency,
-                        "transaction_id": tx_result.get("transaction", {}).get("id"),
+                        "transaction_id": tx_result["id"],
                         "timestamp": datetime.now().isoformat()
                     }
                 else:
                     return {
                         "tx_id": tx_id,
                         "success": False,
-                        "error": tx_result.get("error", "Unknown error"),
+                        "error": f"Transação inválida: {type(tx_result)}",
                         "latency_ms": tx_latency,
                         "timestamp": datetime.now().isoformat()
                     }
+            except ValueError as e:
+                # Erro de saldo insuficiente ou validação
+                tx_latency = (time.time() - tx_start) * 1000
+                return {
+                    "tx_id": tx_id,
+                    "success": False,
+                    "error": f"Validação: {str(e)}",
+                    "latency_ms": tx_latency,
+                    "timestamp": datetime.now().isoformat()
+                }
             except Exception as e:
                 tx_latency = (time.time() - tx_start) * 1000
                 return {
