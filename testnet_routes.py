@@ -268,6 +268,104 @@ def faucet_stats():
     return jsonify(stats), 200
 
 # =============================================================================
+# API - GERENCIADOR AUTOMÁTICO DE FAUCET
+# =============================================================================
+
+@testnet_bp.route('/api/auto-faucet/status', methods=['GET'])
+def auto_faucet_status():
+    """Retorna status do gerenciador automático de faucet"""
+    try:
+        from auto_faucet_manager import AutoFaucetManager
+        
+        manager = AutoFaucetManager()
+        last_requests = manager._load_last_requests()
+        
+        status = {
+            "enabled": True,
+            "addresses_configured": len(manager.addresses_config),
+            "addresses": {},
+            "last_requests": last_requests,
+            "interval_hours": 12
+        }
+        
+        # Adicionar informações de cada endereço
+        for chain, config in manager.addresses_config.items():
+            address = config["address"]
+            balance = manager.get_balance(chain, address)
+            can_request = manager._can_request_faucet(chain, address)
+            
+            status["addresses"][chain] = {
+                "address": address,
+                "enabled": config.get("enabled", True),
+                "balance": balance,
+                "min_threshold": manager.min_balance_threshold.get(chain, 0),
+                "can_request": can_request,
+                "needs_faucet": balance is not None and balance < manager.min_balance_threshold.get(chain, 0)
+            }
+        
+        return jsonify(status), 200
+    
+    except Exception as e:
+        return jsonify({
+            "enabled": False,
+            "error": str(e)
+        }), 500
+
+@testnet_bp.route('/api/auto-faucet/check', methods=['POST'])
+def auto_faucet_check():
+    """Força verificação e solicitação de faucet para todos os endereços"""
+    try:
+        from auto_faucet_manager import AutoFaucetManager
+        
+        manager = AutoFaucetManager()
+        results = manager.check_all_addresses()
+        
+        return jsonify({
+            "success": True,
+            "results": results,
+            "timestamp": datetime.now().isoformat()
+        }), 200
+    
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+@testnet_bp.route('/api/auto-faucet/request/<chain>', methods=['POST'])
+def auto_faucet_request_chain(chain):
+    """Força solicitação de faucet para uma chain específica"""
+    try:
+        from auto_faucet_manager import AutoFaucetManager
+        
+        manager = AutoFaucetManager()
+        
+        if chain not in manager.addresses_config:
+            return jsonify({
+                "success": False,
+                "error": f"Chain '{chain}' não configurada"
+            }), 404
+        
+        config = manager.addresses_config[chain]
+        address = config["address"]
+        
+        result = manager.check_and_request(chain, address)
+        
+        return jsonify({
+            "success": result.get("success", False),
+            "chain": chain,
+            "address": address,
+            "result": result,
+            "timestamp": datetime.now().isoformat()
+        }), 200
+    
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+# =============================================================================
 # API - EXPLORER
 # =============================================================================
 

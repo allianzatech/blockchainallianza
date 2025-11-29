@@ -4210,6 +4210,28 @@ try:
     print("   • GET  /api/transactions - API de transações")
     print("   • GET  /api/network/stats - Estatísticas da rede")
     
+    # =============================================================================
+    # INICIALIZAR GERENCIADOR AUTOMÁTICO DE FAUCET
+    # =============================================================================
+    try:
+        from auto_faucet_manager import AutoFaucetManager
+        
+        # Inicializar gerenciador de faucet automático
+        auto_faucet = AutoFaucetManager()
+        
+        # Iniciar agendador (verifica a cada 12 horas)
+        auto_faucet.start_scheduler(interval_hours=12)
+        
+        logger.info("🚰 GERENCIADOR AUTOMÁTICO DE FAUCET: Inicializado!")
+        print("🚰 GERENCIADOR AUTOMÁTICO DE FAUCET: Inicializado!")
+        print("   • Verifica saldos automaticamente a cada 12 horas")
+        print("   • Solicita faucet quando saldo está baixo")
+        print("   • Suporta: Bitcoin, Polygon, Ethereum, BSC")
+        
+    except Exception as e:
+        logger.warning(f"⚠️  Gerenciador automático de faucet não disponível: {e}")
+        print(f"⚠️  Gerenciador automático de faucet não disponível: {e}")
+    
     # Verificar se o blueprint foi registrado
     registered_blueprints = [bp.name for bp in app.blueprints.values()]
     if 'testnet' in registered_blueprints:
