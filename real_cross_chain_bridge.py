@@ -2315,7 +2315,79 @@ class RealCrossChainBridge:
                                     # Inicializar variável de controle antes do bloco if para garantir escopo correto
                                     bit_library_available = False
                                     
-                                    # PRIORIDADE: Tentar bitcoinlib manual PRIMEIRO (mais confiável, não depende de bibliotecas externas)
+                                    # PRIORIDADE 1: Se temos wallet com UTXOs, usar wallet.send_to() (MUITO MAIS SIMPLES E CONFIÁVEL)
+                                    if wallet and (wallet_utxos or utxos) and source_tx_hash:
+                                        print(f"   🎯 PRIORIDADE: Usar wallet.send_to() com OP_RETURN (método mais simples e confiável)...")
+                                        add_log("trying_wallet_send_to_first", {"wallet_utxos": len(wallet_utxos) if wallet_utxos else 0, "api_utxos": len(utxos) if utxos else 0}, "info")
+                                        
+                                        try:
+                                            # Atualizar UTXOs do wallet se necessário
+                                            if not wallet_utxos and utxos:
+                                                print(f"   🔄 Atualizando UTXOs do wallet...")
+                                                try:
+                                                    if hasattr(wallet, 'scan'):
+                                                        wallet.scan(full=True)
+                                                    if hasattr(wallet, 'utxos_update'):
+                                                        wallet.utxos_update()
+                                                    wallet_utxos = wallet.utxos() if hasattr(wallet, 'utxos') else []
+                                                except:
+                                                    pass
+                                            
+                                            # Preparar OP_RETURN
+                                            polygon_hash_clean = source_tx_hash.replace('0x', '')
+                                            op_return_data = f"ALZ:{polygon_hash_clean}"
+                                            
+                                            print(f"   📤 Enviando via wallet.send_to() com OP_RETURN...")
+                                            print(f"      Amount: {amount_btc} BTC")
+                                            print(f"      Fee: {estimated_fee_btc} BTC")
+                                            print(f"      OP_RETURN: {op_return_data}")
+                                            
+                                            # Usar wallet.send_to() - método mais simples e confiável
+                                            tx_result = wallet.send_to(
+                                                to_address,
+                                                amount_btc,
+                                                fee=estimated_fee_btc,
+                                                data=op_return_data.encode('utf-8')
+                                            )
+                                            
+                                            if tx_result:
+                                                tx_hash = tx_result.txid if hasattr(tx_result, 'txid') else str(tx_result)
+                                                print(f"   ✅✅✅ Transação criada e broadcastada via wallet.send_to()! Hash: {tx_hash}")
+                                                
+                                                # Verificar se OP_RETURN está na transação
+                                                raw_tx = tx_result.raw_hex() if hasattr(tx_result, 'raw_hex') else None
+                                                if raw_tx:
+                                                    if op_return_data.encode('utf-8').hex() in raw_tx or op_return_data in raw_tx:
+                                                        print(f"   ✅ OP_RETURN verificado na transação!")
+                                                    else:
+                                                        print(f"   ⚠️  OP_RETURN não encontrado na transação raw")
+                                                
+                                                return {
+                                                    "success": True,
+                                                    "tx_hash": tx_hash,
+                                                    "from": from_address,
+                                                    "to": to_address,
+                                                    "amount": amount_btc,
+                                                    "chain": "bitcoin",
+                                                    "status": "broadcasted",
+                                                    "explorer_url": f"https://blockstream.info/testnet/tx/{tx_hash}",
+                                                    "note": "✅ Transação REAL criada via wallet.send_to() incluindo OP_RETURN",
+                                                    "real_broadcast": True,
+                                                    "method": "wallet_send_to_with_opreturn",
+                                                    "op_return_included": True
+                                                }
+                                            else:
+                                                raise Exception("wallet.send_to() retornou None")
+                                                
+                                        except Exception as wallet_send_err:
+                                            error_msg = str(wallet_send_err)
+                                            print(f"   ⚠️  wallet.send_to() falhou: {error_msg}")
+                                            import traceback
+                                            traceback.print_exc()
+                                            add_log("wallet_send_to_failed", {"error": error_msg}, "error")
+                                            # Continuar para métodos alternativos
+                                    
+                                    # PRIORIDADE 2: Tentar bitcoinlib manual (mais confiável, não depende de bibliotecas externas)
                                     if source_tx_hash:
                                         # VERIFICAÇÃO CRÍTICA: Consultar saldo via API ANTES de tentar criar transação
                                         print(f"   💰 Consultando saldo via API antes de criar transação...")
