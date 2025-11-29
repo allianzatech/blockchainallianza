@@ -4180,13 +4180,6 @@ try:
     
     quantum_sys = QuantumSecuritySystem()
     
-    # Obter uec_system se disponível
-    uec_sys = None
-    if UEC_AVAILABLE:
-        try:
-            uec_sys = allianza_uec if 'allianza_uec' in locals() else None
-        except:
-            pass
     
     # Obter bridge instance se disponível
     bridge_instance = None

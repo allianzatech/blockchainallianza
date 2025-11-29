@@ -50,23 +50,8 @@
     <!-- Sidebar -->
     <div class="w-72 p-6 flex-shrink-0 bg-slate-900 border-r border-slate-700 shadow-2xl">
         <h1 class="text-4xl font-black mb-10 flex items-center">
-            <span class="text-purple-400 mr-2">⟁</span> Allianza 
-            <span class="uec-badge ml-2">UEC</span>
+            <span class="text-purple-400 mr-2">⟁</span> Allianza
         </h1>
-        
-        <!-- 🔥 NOVA SEÇÃO UEC -->
-        <div class="mb-8 pb-4 border-b border-slate-700">
-            <h2 class="text-xs font-bold uppercase tracking-wider text-purple-400 mb-3">Universal Execution Chain</h2>
-            <button onclick="openModal('uec-wallet-modal')" class="sidebar-button w-full text-left p-3 rounded-xl mb-2 flex items-center bg-slate-800 text-purple-300 hover:bg-slate-700">
-                <span class="mr-3 text-xl">👛</span> Carteira UEC
-            </button>
-            <button onclick="openModal('uec-bridge-modal')" class="sidebar-button w-full text-left p-3 rounded-xl mb-2 flex items-center bg-slate-800 text-purple-300 hover:bg-slate-700">
-                <span class="mr-3 text-xl">🌉</span> Bridge UEC
-            </button>
-            <button onclick="openModal('uec-tokens-modal')" class="sidebar-button w-full text-left p-3 rounded-xl flex items-center bg-slate-800 text-purple-300 hover:bg-slate-700">
-                <span class="mr-3 text-xl">🎯</span> Tokens UEC
-            </button>
-        </div>
 
         <!-- Seção Original -->
         <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Blockchain Core</h2>
@@ -96,34 +81,14 @@
             <p class="text-sm text-slate-400 mb-1">Seu Saldo Atual</p>
             <p id="current-balance" class="text-2xl font-bold text-green-400">Carregando... ALZ</p>
         </div>
-        
-        <button onclick="checkUECStatus()" class="w-full text-left p-4 rounded-xl mt-6 bg-purple-600 hover:bg-purple-500 font-semibold shadow-lg transition duration-200">
-            Status UEC
-        </button>
     </div>
 
     <!-- Dashboard -->
     <div class="flex-grow p-10 overflow-y-auto">
         <h1 class="text-3xl font-bold mb-8 text-slate-100">Dashboard da Rede</h1>
 
-        <!-- 🔥 NOVO PAINEL UEC -->
-        <div id="uec-status" class="card-modern p-6 rounded-xl shadow-xl mb-8 border-purple-500/50">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h2 class="text-xl font-semibold text-purple-300 flex items-center">
-                        <span class="mr-2 text-2xl">🌌</span> Universal Execution Chain
-                    </h2>
-                    <p id="uec-status-text" class="text-slate-400 mt-1">Verificando status UEC...</p>
-                </div>
-                <div class="text-right">
-                    <p id="uec-tokens-count" class="text-slate-300 text-lg font-medium">Tokens: <span class="text-purple-400">Carregando...</span></p>
-                    <p id="uec-bridge-stats" class="text-slate-300 text-lg font-medium">Bridge: <span class="text-purple-400">Carregando...</span></p>
-                </div>
-            </div>
-        </div>
-
         <!-- Status da Rede -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div class="card-modern p-6 rounded-xl">
                 <p class="text-sm text-slate-400">Nós Ativos</p>
                 <p class="text-3xl font-bold mt-1 text-blue-400">2</p>
@@ -131,10 +96,6 @@
             <div class="card-modern p-6 rounded-xl">
                 <p class="text-sm text-slate-400">Blocos Totais</p>
                 <p id="total-blocks" class="text-3xl font-bold mt-1 text-yellow-400">0</p>
-            </div>
-            <div class="card-modern p-6 rounded-xl">
-                <p class="text-sm text-slate-400">Status UEC</p>
-                <p id="uec-enabled" class="text-3xl font-bold mt-1 text-green-400">Verificando...</p>
             </div>
         </div>
         
@@ -150,88 +111,7 @@
         </div>
     </div>
 
-    <!-- ========================================================================= -->
-    <!-- MODAIS UEC -->
-    <!-- ========================================================================= -->
-
-    <!-- Modal Carteira UEC -->
-    <div id="uec-wallet-modal" class="modal">
-        <div class="modal-content modal-content-dark">
-            <span class="close-btn" onclick="closeModal('uec-wallet-modal')">×</span>
-            <h2 class="text-3xl font-bold mb-4 text-purple-400">🌌 Carteira UEC</h2>
-            <p class="text-slate-400 mb-6">Carteira Universal Execution Chain com PQC e Bitcoin CLM</p>
-            
-            <button onclick="createUECWallet()" class="w-full bg-purple-600 p-4 rounded-xl hover:bg-purple-500 mb-4 font-semibold text-lg transition duration-200">
-                🚀 Criar Carteira UEC
-            </button>
-            
-            <div id="uec-wallet-result" class="mt-6 p-4 bg-slate-800 rounded-xl hidden border border-slate-700">
-                <h3 class="font-semibold mb-2 text-green-400">✅ Carteira UEC Criada:</h3>
-                <pre id="uec-wallet-details" class="text-sm whitespace-pre-wrap text-slate-300 p-2 bg-slate-900 rounded-lg"></pre>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Bridge UEC -->
-    <div id="uec-bridge-modal" class="modal">
-        <div class="modal-content modal-content-dark">
-            <span class="close-btn" onclick="closeModal('uec-bridge-modal')">×</span>
-            <h2 class="text-3xl font-bold mb-4 text-purple-400">🌉 Bridge UEC</h2>
-            <p class="text-slate-400 mb-6">Transfira ativos entre Allianza e outras redes.</p>
-            
-            <select id="uec-token" class="w-full p-3 bg-slate-800 text-white border border-slate-700 rounded-lg mb-3 focus:ring-purple-500 focus:border-purple-500">
-                <option value="BTCa">BTCa (Synthetic Bitcoin)</option>
-                <option value="ETHa">ETHa (Synthetic Ethereum)</option>
-                <option value="USDa">USDa (Synthetic USD)</option>
-            </select>
-            
-            <input id="uec-amount" type="number" class="w-full p-3 bg-slate-800 text-white border border-slate-700 rounded-lg mb-3 focus:ring-purple-500 focus:border-purple-500" placeholder="Quantidade" step="0.001">
-            
-            <select id="uec-target-chain" class="w-full p-3 bg-slate-800 text-white border border-slate-700 rounded-lg mb-3 focus:ring-purple-500 focus:border-purple-500">
-                <option value="bitcoin">Bitcoin</option>
-                <option value="ethereum">Ethereum</option>
-            </select>
-            
-            <input id="uec-external-address" class="w-full p-3 bg-slate-800 text-white border border-slate-700 rounded-lg mb-3 focus:ring-purple-500 focus:border-purple-500" placeholder="Endereço Externo (ex: 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa)">
-            
-            <textarea id="uec-private-key" class="w-full p-3 bg-slate-800 text-white border border-slate-700 rounded-lg mb-4 focus:ring-purple-500 focus:border-purple-500" placeholder="Chave Privada UEC"></textarea>
-            
-            <div class="flex space-x-4">
-                <button onclick="validateUECAddress()" class="flex-1 bg-blue-600 p-3 rounded-xl hover:bg-blue-500 font-semibold transition duration-200">
-                    🔍 Validar Endereço
-                </button>
-                
-                <button onclick="transferUEC()" class="flex-1 bg-green-600 p-3 rounded-xl hover:bg-green-500 font-semibold transition duration-200">
-                    🌉 Transferir via UEC
-                </button>
-            </div>
-            
-            <div id="uec-bridge-result" class="mt-6 p-4 bg-slate-800 rounded-xl hidden border border-slate-700">
-                <h3 class="font-semibold mb-2 text-blue-400">📋 Status da Bridge:</h3>
-                <pre id="uec-bridge-details" class="text-sm whitespace-pre-wrap text-slate-300 p-2 bg-slate-900 rounded-lg"></pre>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Tokens UEC -->
-    <div id="uec-tokens-modal" class="modal">
-        <div class="modal-content modal-content-dark">
-            <span class="close-btn" onclick="closeModal('uec-tokens-modal')">×</span>
-            <h2 class="text-3xl font-bold mb-4 text-purple-400">🎯 Tokens UEC</h2>
-            <p class="text-slate-400 mb-6">Gerencie seus tokens sintéticos e ativos UEC.</p>
-            
-            <button onclick="loadUECTokens()" class="w-full bg-purple-600 p-4 rounded-xl hover:bg-purple-500 mb-4 font-semibold text-lg transition duration-200">
-                🔄 Carregar Tokens UEC
-            </button>
-            
-            <div id="uec-tokens-result" class="mt-6 p-4 bg-slate-800 rounded-xl hidden border border-slate-700">
-                <h3 class="font-semibold mb-2 text-green-400">📊 Tokens UEC:</h3>
-                <pre id="uec-tokens-details" class="text-sm whitespace-pre-wrap text-slate-300 p-2 bg-slate-900 rounded-lg"></pre>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modais originais (mantidos para compatibilidade) -->
+    <!-- Modais -->
     <div id="wallet-modal" class="modal">
         <div class="modal-content modal-content-dark">
             <span class="close-btn" onclick="closeModal('wallet-modal')">×</span>
@@ -426,122 +306,7 @@
 
         // Funções de Comunicação com o Backend (Flask/SocketIO)
 
-        // 🔥 FUNÇÕES UEC - NOVAS
-        async function checkUECStatus() {
-            try {
-                const response = await fetch('/uec/system/status');
-                const data = await response.json();
-                
-                if (data.status === 'online') {
-                    document.getElementById('uec-status-text').innerHTML = '✅ <strong>UEC ONLINE</strong> - Universal Execution Chain Ativa';
-                    document.getElementById('uec-tokens-count').innerHTML = `Tokens: <span class="text-purple-400">${data.supported_tokens.length}</span>`;
-                    document.getElementById('uec-bridge-stats').innerHTML = `Bridge: <span class="text-purple-400">${data.pending_transfers}P ${data.completed_transfers}C</span>`;
-                    document.getElementById('uec-enabled').textContent = '🌌 ATIVA';
-                    document.getElementById('uec-enabled').classList.remove('text-yellow-400', 'text-red-400');
-                    document.getElementById('uec-enabled').classList.add('text-green-400');
-                } else {
-                    document.getElementById('uec-status-text').innerHTML = '❌ UEC OFFLINE';
-                    document.getElementById('uec-enabled').textContent = '⚠️ OFFLINE';
-                    document.getElementById('uec-enabled').classList.remove('text-green-400', 'text-red-400');
-                    document.getElementById('uec-enabled').classList.add('text-yellow-400');
-                }
-            } catch (error) {
-                document.getElementById('uec-status-text').innerHTML = '❌ UEC INDISPONÍVEL';
-                document.getElementById('uec-enabled').textContent = '❌ INDISPONÍVEL';
-                document.getElementById('uec-enabled').classList.remove('text-green-400', 'text-yellow-400');
-                document.getElementById('uec-enabled').classList.add('text-red-400');
-            }
-        }
-
-        async function createUECWallet() {
-            try {
-                const response = await fetch('/uec/create_wallet', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({})
-                });
-                
-                const data = await response.json();
-                
-                document.getElementById('uec-wallet-result').classList.remove('hidden');
-                document.getElementById('uec-wallet-details').textContent = 
-                    `Endereço: ${data.address}\n` +
-                    `Chave Pública: ${data.public_key}\n` +
-                    `Chave Privada (Mantenha Segura!): ${data.private_key}`;
-            } catch (error) {
-                document.getElementById('uec-wallet-result').classList.remove('hidden');
-                document.getElementById('uec-wallet-details').textContent = `Erro ao criar carteira UEC: ${error.message}`;
-            }
-        }
-
-        async function validateUECAddress() {
-            const externalAddress = document.getElementById('uec-external-address').value;
-            try {
-                const response = await fetch('/uec/validate_address', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ address: externalAddress })
-                });
-                
-                const data = await response.json();
-                
-                document.getElementById('uec-bridge-result').classList.remove('hidden');
-                document.getElementById('uec-bridge-details').textContent = JSON.stringify(data, null, 2);
-            } catch (error) {
-                document.getElementById('uec-bridge-result').classList.remove('hidden');
-                document.getElementById('uec-bridge-details').textContent = `Erro ao validar endereço: ${error.message}`;
-            }
-        }
-
-        async function transferUEC() {
-            const token = document.getElementById('uec-token').value;
-            const amount = parseFloat(document.getElementById('uec-amount').value);
-            const targetChain = document.getElementById('uec-target-chain').value;
-            const externalAddress = document.getElementById('uec-external-address').value;
-            const privateKey = document.getElementById('uec-private-key').value;
-
-            if (!amount || !privateKey || !externalAddress) {
-                alert("Preencha todos os campos.");
-                return;
-            }
-
-            try {
-                const response = await fetch('/uec/transfer', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ 
-                        token: token,
-                        amount: amount,
-                        target_chain: targetChain,
-                        external_address: externalAddress,
-                        private_key: privateKey
-                    })
-                });
-                
-                const data = await response.json();
-                
-                document.getElementById('uec-bridge-result').classList.remove('hidden');
-                document.getElementById('uec-bridge-details').textContent = JSON.stringify(data, null, 2);
-            } catch (error) {
-                document.getElementById('uec-bridge-result').classList.remove('hidden');
-                document.getElementById('uec-bridge-details').textContent = `Erro na transferência UEC: ${error.message}`;
-            }
-        }
-
-        async function loadUECTokens() {
-            try {
-                const response = await fetch('/uec/tokens');
-                const data = await response.json();
-                
-                document.getElementById('uec-tokens-result').classList.remove('hidden');
-                document.getElementById('uec-tokens-details').textContent = JSON.stringify(data, null, 2);
-            } catch (error) {
-                document.getElementById('uec-tokens-result').classList.remove('hidden');
-                document.getElementById('uec-tokens-details').textContent = `Erro ao carregar tokens UEC: ${error.message}`;
-            }
-        }
-
-        // Funções Originais (Apenas ajustando o uso de IDs e classes)
+        // Funções de Comunicação com o Backend
         
         async function createWallet() {
             const response = await fetch('/wallet/new', { method: 'POST' });
@@ -708,7 +473,6 @@
         });
 
         // Chamadas iniciais
-        checkUECStatus();
         if (currentAddress) {
             checkBalance();
         }
