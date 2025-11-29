@@ -2317,59 +2317,133 @@ class RealCrossChainBridge:
                                     
                                     # PRIORIDADE: Tentar bitcoinlib manual PRIMEIRO (mais confiável, não depende de bibliotecas externas)
                                     if source_tx_hash:
-                                        # VERIFICAÇÃO CRÍTICA: Verificar saldo ANTES de tentar criar transação
-                                        print(f"   💰 Verificando saldo disponível antes de criar transação...")
-                                        total_input_value = sum(utxo.get('value', 0) for utxo in utxos)
+                                        # VERIFICAÇÃO CRÍTICA: Consultar saldo via API ANTES de tentar criar transação
+                                        print(f"   💰 Consultando saldo via API antes de criar transação...")
+                                        add_log("checking_balance_via_api", {"from_address": from_address}, "info")
+                                        
+                                        # Consultar saldo via Blockstream API (mais confiável)
+                                        balance_from_api = None
+                                        balance_from_api_btc = 0.0
+                                        try:
+                                            print(f"   📡 Consultando saldo via Blockstream API...")
+                                            blockstream_balance_url = f"https://blockstream.info/testnet/api/address/{from_address}"
+                                            balance_response = requests.get(blockstream_balance_url, timeout=15)
+                                            
+                                            if balance_response.status_code == 200:
+                                                balance_data = balance_response.json()
+                                                # Blockstream retorna chain_stats com funded_txo_sum e spent_txo_sum
+                                                funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
+                                                spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
+                                                balance_from_api = funded - spent
+                                                balance_from_api_btc = balance_from_api / 100000000
+                                                
+                                                print(f"      ✅ Saldo via Blockstream: {balance_from_api_btc} BTC ({balance_from_api} satoshis)")
+                                                add_log("balance_from_blockstream", {
+                                                    "balance_btc": balance_from_api_btc,
+                                                    "balance_satoshis": balance_from_api
+                                                }, "info")
+                                            else:
+                                                print(f"      ⚠️  Blockstream retornou status {balance_response.status_code}")
+                                        except Exception as balance_api_err:
+                                            print(f"      ⚠️  Erro ao consultar saldo via Blockstream: {balance_api_err}")
+                                        
+                                        # Se Blockstream falhou, tentar BlockCypher
+                                        if balance_from_api is None:
+                                            try:
+                                                print(f"   📡 Consultando saldo via BlockCypher API...")
+                                                blockcypher_balance_url = f"{self.btc_api_base}/addrs/{from_address}/balance"
+                                                balance_response = requests.get(blockcypher_balance_url, timeout=15)
+                                                
+                                                if balance_response.status_code == 200:
+                                                    balance_data = balance_response.json()
+                                                    balance_from_api = balance_data.get('balance', 0)
+                                                    balance_from_api_btc = balance_from_api / 100000000
+                                                    
+                                                    print(f"      ✅ Saldo via BlockCypher: {balance_from_api_btc} BTC ({balance_from_api} satoshis)")
+                                                    add_log("balance_from_blockcypher", {
+                                                        "balance_btc": balance_from_api_btc,
+                                                        "balance_satoshis": balance_from_api
+                                                    }, "info")
+                                                else:
+                                                    print(f"      ⚠️  BlockCypher retornou status {balance_response.status_code}")
+                                            except Exception as balance_api_err2:
+                                                print(f"      ⚠️  Erro ao consultar saldo via BlockCypher: {balance_api_err2}")
+                                        
+                                        # Calcular saldo dos UTXOs locais
+                                        total_input_value = sum(utxo.get('value', 0) for utxo in utxos) if utxos else 0
                                         total_input_btc = total_input_value / 100000000
+                                        
+                                        # Usar saldo da API se disponível, senão usar UTXOs
+                                        if balance_from_api is not None:
+                                            final_balance_btc = balance_from_api_btc
+                                            final_balance_satoshis = balance_from_api
+                                            balance_source = "API (Blockstream/BlockCypher)"
+                                        else:
+                                            final_balance_btc = total_input_btc
+                                            final_balance_satoshis = total_input_value
+                                            balance_source = "UTXOs locais"
+                                        
                                         estimated_fee_btc = estimated_fee_satoshis / 100000000
                                         total_needed_btc = amount_btc + estimated_fee_btc
                                         
-                                        print(f"      Total inputs: {total_input_btc} BTC ({total_input_value} satoshis)")
+                                        print(f"   📊 RESUMO DE SALDO:")
+                                        print(f"      Saldo disponível ({balance_source}): {final_balance_btc} BTC ({final_balance_satoshis} satoshis)")
                                         print(f"      Amount: {amount_btc} BTC ({output_value} satoshis)")
                                         print(f"      Fee estimado: {estimated_fee_btc} BTC ({estimated_fee_satoshis} satoshis)")
-                                        print(f"      Total necessário: {total_needed_btc} BTC")
+                                        print(f"      Total necessário: {total_needed_btc} BTC ({output_value + estimated_fee_satoshis} satoshis)")
                                         
-                                        if total_input_value < (output_value + estimated_fee_satoshis):
-                                            error_msg = f"Saldo insuficiente. Disponível: {total_input_btc} BTC ({total_input_value} satoshis), Necessário: {total_needed_btc} BTC ({output_value + estimated_fee_satoshis} satoshis)"
+                                        if final_balance_satoshis < (output_value + estimated_fee_satoshis):
+                                            error_msg = f"Saldo insuficiente. Disponível: {final_balance_btc} BTC ({final_balance_satoshis} satoshis) via {balance_source}, Necessário: {total_needed_btc} BTC ({output_value + estimated_fee_satoshis} satoshis)"
                                             print(f"   ❌ {error_msg}")
                                             add_log("insufficient_balance", {
-                                                "available_btc": total_input_btc,
-                                                "available_satoshis": total_input_value,
+                                                "available_btc": final_balance_btc,
+                                                "available_satoshis": final_balance_satoshis,
+                                                "balance_source": balance_source,
                                                 "required_btc": total_needed_btc,
                                                 "required_satoshis": output_value + estimated_fee_satoshis,
                                                 "amount_btc": amount_btc,
-                                                "fee_btc": estimated_fee_btc
+                                                "fee_btc": estimated_fee_btc,
+                                                "balance_from_api_btc": balance_from_api_btc if balance_from_api is not None else None,
+                                                "balance_from_utxos_btc": total_input_btc
                                             }, "error")
                                             
                                             proof_data["final_result"] = {
                                                 "success": False,
                                                 "error": error_msg,
                                                 "debug": {
-                                                    "available_btc": total_input_btc,
+                                                    "available_btc": final_balance_btc,
+                                                    "available_satoshis": final_balance_satoshis,
+                                                    "balance_source": balance_source,
                                                     "required_btc": total_needed_btc,
-                                                    "utxos_count": len(utxos)
+                                                    "utxos_count": len(utxos) if utxos else 0,
+                                                    "balance_from_api": balance_from_api_btc if balance_from_api is not None else None,
+                                                    "balance_from_utxos": total_input_btc
                                                 }
                                             }
                                             proof_file = self._save_transaction_proof(proof_data)
                                             
                                             return {
                                                 "success": False,
-                                                "error": f"Saldo insuficiente. Disponível: {total_input_btc} BTC, Necessário: {total_needed_btc} BTC (amount: {amount_btc} + fee: {estimated_fee_btc})",
-                                                "balance": total_input_btc,
+                                                "error": f"Saldo insuficiente. Disponível: {final_balance_btc} BTC (via {balance_source}), Necessário: {total_needed_btc} BTC (amount: {amount_btc} + fee: {estimated_fee_btc})",
+                                                "balance": final_balance_btc,
+                                                "balance_source": balance_source,
                                                 "required": total_needed_btc,
                                                 "amount": amount_btc,
                                                 "fee_estimated": estimated_fee_btc,
                                                 "from_address": from_address,
-                                                "utxos_count": len(utxos),
+                                                "utxos_count": len(utxos) if utxos else 0,
+                                                "balance_from_api": balance_from_api_btc if balance_from_api is not None else None,
+                                                "balance_from_utxos": total_input_btc,
                                                 "proof_file": proof_file,
                                                 "suggestions": [
                                                     f"Adicione Bitcoin teste ao endereço {from_address}",
                                                     "Use um faucet Bitcoin testnet: https://testnet-faucet.mempool.co/",
-                                                    f"Necessário: {total_needed_btc} BTC mínimo"
+                                                    f"Necessário: {total_needed_btc} BTC mínimo",
+                                                    f"Saldo atual: {final_balance_btc} BTC (consultado via {balance_source})"
                                                 ]
                                             }
                                         
-                                        print(f"   ✅ Saldo suficiente! Prosseguindo com criação da transação...")
+                                        print(f"   ✅ Saldo suficiente! ({final_balance_btc} BTC via {balance_source}) Prosseguindo com criação da transação...")
                                         
                                         print(f"   🔗 OP_RETURN necessário - tentando bitcoinlib manual PRIMEIRO (mais confiável)...")
                                         add_log("trying_bitcoinlib_manual_first", {"source_tx_hash": source_tx_hash, "balance_btc": total_input_btc}, "info")
