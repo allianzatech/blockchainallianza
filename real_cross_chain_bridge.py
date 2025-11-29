@@ -2255,7 +2255,7 @@ class RealCrossChainBridge:
                                                         tx_hash = signed_tx_data.get('tx', {}).get('hash')
                                                         
                                                         if tx_hash:
-                                                            print(f"   ✅✅✅ Transação criada e broadcastada via BlockCypher com OP_RETURN! Hash: {tx_hash}")
+                                                            print(f"   ✅✅✅ Transação criada e broadcastada via BlockCypher SEM OP_RETURN! Hash: {tx_hash}")
                                                             
                                                             return {
                                                                 "success": True,
@@ -2266,10 +2266,11 @@ class RealCrossChainBridge:
                                                                 "chain": "bitcoin",
                                                                 "status": "broadcasted",
                                                                 "explorer_url": f"https://live.blockcypher.com/btc-testnet/tx/{tx_hash}/",
-                                                                "note": "✅ Transação REAL criada via BlockCypher API incluindo OP_RETURN",
+                                                                "note": "✅ Transação REAL criada via BlockCypher API (OP_RETURN temporariamente desabilitado)",
                                                                 "real_broadcast": True,
-                                                                "method": "blockcypher_api_with_opreturn",
-                                                                "op_return_included": True
+                                                                "method": "blockcypher_api_normal",
+                                                                "op_return_included": False,
+                                                                "op_return_note": "OP_RETURN temporariamente desabilitado por problemas de compatibilidade"
                                                             }
                                                         else:
                                                             print(f"   ⚠️  Transação assinada mas hash não encontrado")
@@ -2301,50 +2302,54 @@ class RealCrossChainBridge:
                                                 "error_type": type(blockcypher_err).__name__
                                             }, "error")
                                         
-                                        # Se BlockCypher falhou, tentar FALLBACK: usar biblioteca 'bit' (suporte nativo OP_RETURN)
-                                        # Esta é a solução recomendada pelas IAs - 'bit' tem suporte direto a OP_RETURN
-                                        print(f"   🔄 BlockCypher falhou, tentando FALLBACK: usar biblioteca 'bit' (suporte nativo OP_RETURN)...")
-                                        add_log("trying_bit_library_fallback", {}, "info")
+                                        # OP_RETURN DESABILITADO - criar transação normal usando wallet.send_to()
+                                        print(f"   ⚠️  OP_RETURN desabilitado - criando transação normal...")
+                                        add_log("op_return_disabled_using_wallet_send_to", {}, "warning")
                                         
-                                        # PRIORIDADE 1: Tentar biblioteca 'bit' (mais simples e confiável para OP_RETURN)
-                                        # CORREÇÃO: Inicializar bit_library_available no escopo correto
-                                        bit_library_available = False
-                                        bit_library_success = False
+                                        # Tentar criar transação normal usando wallet.send_to() (sem OP_RETURN)
                                         try:
-                                            print(f"   📚 Tentando importar biblioteca 'bit'...")
-                                            from bit import PrivateKey
-                                            from bit.network import NetworkAPI
-                                            bit_library_available = True
-                                            print(f"   ✅ Biblioteca 'bit' importada com sucesso!")
-                                            print(f"   📚 Usando biblioteca 'bit' para criar transação com OP_RETURN...")
+                                            print(f"   📝 Criando transação normal (sem OP_RETURN)...")
+                                            amount_satoshis = int(output_value)
+                                            tx_result = wallet.send_to(
+                                                to_address,
+                                                amount_satoshis,
+                                                network='testnet',
+                                                fee=5  # 5 sat/vB
+                                            )
                                             
-                                            # Criar chave privada
-                                            print(f"   🔑 Criando PrivateKey a partir da chave WIF...")
-                                            try:
-                                                key = PrivateKey(from_private_key)
-                                                print(f"   ✅ PrivateKey criada! Endereço: {key.address}")
+                                            if tx_result:
+                                                tx_hash = tx_result if isinstance(tx_result, str) else tx_result.get('txid') or tx_result.get('hash')
                                                 
-                                                # Verificar se o endereço corresponde ao esperado
-                                                if key.address != from_address:
-                                                    print(f"   ⚠️  Endereço da PrivateKey ({key.address}) diferente do esperado ({from_address})")
-                                                    print(f"   ⚠️  Continuando mesmo assim...")
-                                            except Exception as key_err:
-                                                print(f"   ❌ Erro ao criar PrivateKey: {key_err}")
-                                                print(f"      Tipo do erro: {type(key_err).__name__}")
-                                                raise
-                                            
-                                            # Preparar OP_RETURN
-                                            polygon_hash_clean = source_tx_hash.replace('0x', '')
-                                            op_return_data = f"ALZ:{polygon_hash_clean}"
-                                            
-                                            print(f"   🔗 OP_RETURN será: {op_return_data}")
-                                            print(f"      Tamanho: {len(op_return_data)} bytes (limite: 80 bytes)")
-                                            
-                                            # Criar outputs: (destino, valor) + OP_RETURN
-                                            # A biblioteca 'bit' aceita OP_RETURN diretamente no formato de output
-                                            outputs = [
-                                                (to_address, int(output_value), 'satoshi')
-                                            ]
+                                                if tx_hash:
+                                                    print(f"   ✅✅✅ Transação criada SEM OP_RETURN! Hash: {tx_hash}")
+                                                    
+                                                    return {
+                                                        "success": True,
+                                                        "tx_hash": tx_hash,
+                                                        "from": from_address,
+                                                        "to": to_address,
+                                                        "amount": amount_btc,
+                                                        "chain": "bitcoin",
+                                                        "status": "broadcasted",
+                                                        "explorer_url": f"https://live.blockcypher.com/btc-testnet/tx/{tx_hash}/",
+                                                        "note": "✅ Transação REAL criada (OP_RETURN temporariamente desabilitado)",
+                                                        "real_broadcast": True,
+                                                        "method": "wallet_send_to_normal",
+                                                        "op_return_included": False,
+                                                        "op_return_note": "OP_RETURN temporariamente desabilitado por problemas de compatibilidade"
+                                                    }
+                                        except Exception as wallet_err:
+                                            print(f"   ⚠️  wallet.send_to() falhou: {wallet_err}")
+                                            add_log("wallet_send_to_failed", {"error": str(wallet_err)}, "error")
+                                        
+                                        # Se wallet.send_to() falhou, pular todas as tentativas de OP_RETURN
+                                        print(f"   ⚠️  OP_RETURN está desabilitado. Pulando todas as tentativas de OP_RETURN...")
+                                        
+                                        # REMOVIDO: Todas as tentativas de OP_RETURN com biblioteca 'bit'
+                                        # REMOVIDO: Todas as tentativas de OP_RETURN com python-bitcointx
+                                        # REMOVIDO: Todas as tentativas de OP_RETURN com bitcoinlib manual
+                                        
+                                        # OP_RETURN DESABILITADO - não tentar mais nada relacionado a OP_RETURN
                                             
                                             # Verificar UTXOs antes de criar transação
                                             print(f"   📦 Verificando UTXOs disponíveis...")
