@@ -2749,6 +2749,135 @@ class RealCrossChainBridge:
                                             if "insufficient" in error_msg.lower() or "saldo" in error_msg.lower() or "balance" in error_msg.lower():
                                                 print(f"   ❌ Erro de saldo detectado - não tentar outros métodos")
                                                 raise  # Re-raise para não tentar outros métodos
+                                            
+                                            # Tentar python-bitcointx como fallback adicional
+                                            print(f"   🔄 Tentando python-bitcointx como fallback...")
+                                            try:
+                                                from bitcointx import CTransaction, CTxIn, CTxOut, COutPoint
+                                                from bitcointx.core import script
+                                                from bitcointx.wallet import CBitcoinAddress
+                                                from bitcointx import select_chain_params
+                                                from bitcointx.core import b2lx, lx
+                                                import hashlib
+                                                
+                                                # Configurar para testnet
+                                                select_chain_params('bitcoin/testnet')
+                                                
+                                                print(f"   📚 Usando python-bitcointx para criar transação...")
+                                                
+                                                # Criar transação
+                                                tx = CTransaction()
+                                                
+                                                # Adicionar inputs
+                                                for utxo in utxos:
+                                                    txid = utxo.get('txid') or utxo.get('tx_hash')
+                                                    output_n = (utxo.get('output_n') or 
+                                                               utxo.get('vout') or 
+                                                               utxo.get('output_index') or 
+                                                               utxo.get('output') or 
+                                                               utxo.get('tx_output_n', 0))
+                                                    
+                                                    prevout = COutPoint(lx(txid), int(output_n))
+                                                    txin = CTxIn(prevout)
+                                                    tx.vin.append(txin)
+                                                
+                                                # Adicionar output principal (destino)
+                                                dest_addr = CBitcoinAddress(to_address)
+                                                dest_script = dest_addr.to_scriptPubKey()
+                                                txout_dest = CTxOut(output_value, dest_script)
+                                                tx.vout.append(txout_dest)
+                                                
+                                                # Adicionar OP_RETURN
+                                                polygon_hash_clean = source_tx_hash.replace('0x', '')
+                                                op_return_data = f"ALZ:{polygon_hash_clean}".encode('utf-8')
+                                                
+                                                # Criar script OP_RETURN
+                                                op_return_script = script.CScript([script.OP_RETURN, op_return_data])
+                                                txout_opreturn = CTxOut(0, op_return_script)
+                                                tx.vout.append(txout_opreturn)
+                                                
+                                                # Adicionar change se necessário
+                                                change_value = total_input_value - output_value - estimated_fee_satoshis
+                                                if change_value > 546:
+                                                    from_addr = CBitcoinAddress(from_address)
+                                                    from_script = from_addr.to_scriptPubKey()
+                                                    txout_change = CTxOut(change_value, from_script)
+                                                    tx.vout.append(txout_change)
+                                                
+                                                # Assinar transação
+                                                from bitcointx.core.key import CKey
+                                                from bitcoinlib.keys import HDKey
+                                                
+                                                # Converter chave privada
+                                                key_obj = HDKey(from_private_key, network='testnet')
+                                                privkey_bytes = bytes.fromhex(key_obj.private_hex)
+                                                
+                                                # Assinar cada input
+                                                for i, txin in enumerate(tx.vin):
+                                                    utxo = utxos[i]
+                                                    utxo_value = utxo.get('value', 0)
+                                                    
+                                                    # Criar script de saída do UTXO
+                                                    utxo_script = CBitcoinAddress(from_address).to_scriptPubKey()
+                                                    
+                                                    # Assinar
+                                                    sighash = script.SignatureHash(utxo_script, tx, i, script.SIGHASH_ALL, amount=utxo_value)
+                                                    key = CKey()
+                                                    key.set(privkey_bytes, True)
+                                                    sig = key.sign(sighash) + bytes([script.SIGHASH_ALL])
+                                                    
+                                                    # Criar script de assinatura
+                                                    pubkey = key.get_pubkey()
+                                                    txin.scriptSig = script.CScript([sig, pubkey])
+                                                
+                                                # Serializar transação
+                                                raw_tx_hex = b2lx(tx.serialize())
+                                                
+                                                print(f"   ✅ Transação criada com python-bitcointx!")
+                                                
+                                                # Verificar OP_RETURN
+                                                if op_return_data.hex() not in raw_tx_hex and op_return_data not in raw_tx_hex.encode():
+                                                    print(f"   ⚠️  OP_RETURN não encontrado na transação serializada")
+                                                else:
+                                                    print(f"   ✅ OP_RETURN verificado na transação!")
+                                                
+                                                # Broadcast via Blockstream
+                                                print(f"   📡 Broadcastando via Blockstream...")
+                                                blockstream_url = "https://blockstream.info/testnet/api/tx"
+                                                broadcast_response = requests.post(
+                                                    blockstream_url,
+                                                    data=raw_tx_hex,
+                                                    headers={'Content-Type': 'text/plain'},
+                                                    timeout=30
+                                                )
+                                                
+                                                if broadcast_response.status_code == 200:
+                                                    tx_hash = broadcast_response.text.strip()
+                                                    print(f"   ✅✅✅ Transação broadcastada via Blockstream! Hash: {tx_hash}")
+                                                    
+                                                    return {
+                                                        "success": True,
+                                                        "tx_hash": tx_hash,
+                                                        "from": from_address,
+                                                        "to": to_address,
+                                                        "amount": amount_btc,
+                                                        "chain": "bitcoin",
+                                                        "status": "broadcasted",
+                                                        "explorer_url": f"https://blockstream.info/testnet/tx/{tx_hash}",
+                                                        "note": "✅ Transação REAL criada com python-bitcointx incluindo OP_RETURN",
+                                                        "real_broadcast": True,
+                                                        "method": "python_bitcointx_with_opreturn",
+                                                        "op_return_included": True
+                                                    }
+                                                else:
+                                                    raise Exception(f"Blockstream retornou {broadcast_response.status_code}: {broadcast_response.text[:200]}")
+                                                    
+                                            except ImportError as import_err:
+                                                print(f"   ⚠️  python-bitcointx não disponível: {import_err}")
+                                            except Exception as bitcointx_err:
+                                                print(f"   ⚠️  python-bitcointx também falhou: {bitcointx_err}")
+                                                import traceback
+                                                traceback.print_exc()
                                     
                                     # Se bitcoinlib manual falhou ou não foi tentado, tentar BlockCypher API
                                     if source_tx_hash:
