@@ -2317,8 +2317,62 @@ class RealCrossChainBridge:
                                     
                                     # PRIORIDADE: Tentar bitcoinlib manual PRIMEIRO (mais confiável, não depende de bibliotecas externas)
                                     if source_tx_hash:
+                                        # VERIFICAÇÃO CRÍTICA: Verificar saldo ANTES de tentar criar transação
+                                        print(f"   💰 Verificando saldo disponível antes de criar transação...")
+                                        total_input_value = sum(utxo.get('value', 0) for utxo in utxos)
+                                        total_input_btc = total_input_value / 100000000
+                                        estimated_fee_btc = estimated_fee_satoshis / 100000000
+                                        total_needed_btc = amount_btc + estimated_fee_btc
+                                        
+                                        print(f"      Total inputs: {total_input_btc} BTC ({total_input_value} satoshis)")
+                                        print(f"      Amount: {amount_btc} BTC ({output_value} satoshis)")
+                                        print(f"      Fee estimado: {estimated_fee_btc} BTC ({estimated_fee_satoshis} satoshis)")
+                                        print(f"      Total necessário: {total_needed_btc} BTC")
+                                        
+                                        if total_input_value < (output_value + estimated_fee_satoshis):
+                                            error_msg = f"Saldo insuficiente. Disponível: {total_input_btc} BTC ({total_input_value} satoshis), Necessário: {total_needed_btc} BTC ({output_value + estimated_fee_satoshis} satoshis)"
+                                            print(f"   ❌ {error_msg}")
+                                            add_log("insufficient_balance", {
+                                                "available_btc": total_input_btc,
+                                                "available_satoshis": total_input_value,
+                                                "required_btc": total_needed_btc,
+                                                "required_satoshis": output_value + estimated_fee_satoshis,
+                                                "amount_btc": amount_btc,
+                                                "fee_btc": estimated_fee_btc
+                                            }, "error")
+                                            
+                                            proof_data["final_result"] = {
+                                                "success": False,
+                                                "error": error_msg,
+                                                "debug": {
+                                                    "available_btc": total_input_btc,
+                                                    "required_btc": total_needed_btc,
+                                                    "utxos_count": len(utxos)
+                                                }
+                                            }
+                                            proof_file = self._save_transaction_proof(proof_data)
+                                            
+                                            return {
+                                                "success": False,
+                                                "error": f"Saldo insuficiente. Disponível: {total_input_btc} BTC, Necessário: {total_needed_btc} BTC (amount: {amount_btc} + fee: {estimated_fee_btc})",
+                                                "balance": total_input_btc,
+                                                "required": total_needed_btc,
+                                                "amount": amount_btc,
+                                                "fee_estimated": estimated_fee_btc,
+                                                "from_address": from_address,
+                                                "utxos_count": len(utxos),
+                                                "proof_file": proof_file,
+                                                "suggestions": [
+                                                    f"Adicione Bitcoin teste ao endereço {from_address}",
+                                                    "Use um faucet Bitcoin testnet: https://testnet-faucet.mempool.co/",
+                                                    f"Necessário: {total_needed_btc} BTC mínimo"
+                                                ]
+                                            }
+                                        
+                                        print(f"   ✅ Saldo suficiente! Prosseguindo com criação da transação...")
+                                        
                                         print(f"   🔗 OP_RETURN necessário - tentando bitcoinlib manual PRIMEIRO (mais confiável)...")
-                                        add_log("trying_bitcoinlib_manual_first", {"source_tx_hash": source_tx_hash}, "info")
+                                        add_log("trying_bitcoinlib_manual_first", {"source_tx_hash": source_tx_hash, "balance_btc": total_input_btc}, "info")
                                         
                                         try:
                                             # Usar método bitcoinlib manual (PRIORIDADE 1) - mais confiável
@@ -2606,12 +2660,21 @@ class RealCrossChainBridge:
                                             print(f"   ⚠️  bitcoinlib manual falhou: {error_msg}")
                                             print(f"      Tipo: {error_type}")
                                             import traceback
-                                            traceback.print_exc()
+                                            full_traceback = traceback.format_exc()
+                                            print(f"      Traceback completo:")
+                                            print(f"      {full_traceback}")
                                             add_log("bitcoinlib_manual_failed", {
                                                 "error": error_msg,
                                                 "error_type": error_type,
-                                                "traceback": traceback.format_exc()
+                                                "traceback": full_traceback,
+                                                "utxos_count": len(utxos) if 'utxos' in locals() else 0,
+                                                "total_input_value": total_input_value if 'total_input_value' in locals() else 0
                                             }, "error")
+                                            
+                                            # NÃO continuar para BlockCypher se o erro for de saldo insuficiente
+                                            if "insufficient" in error_msg.lower() or "saldo" in error_msg.lower() or "balance" in error_msg.lower():
+                                                print(f"   ❌ Erro de saldo detectado - não tentar outros métodos")
+                                                raise  # Re-raise para não tentar outros métodos
                                     
                                     # Se bitcoinlib manual falhou ou não foi tentado, tentar BlockCypher API
                                     if source_tx_hash:
@@ -3533,8 +3596,26 @@ class RealCrossChainBridge:
                                         print(f"      - Inputs: {error_details['inputs_count']}")
                                         print(f"      - Outputs: {error_details['outputs_count']}")
                                         print(f"      - UTXOs disponíveis: {error_details['utxos_count']}")
+                                        print(f"      - Valor total UTXOs: {error_details['total_utxo_value_btc']} BTC ({error_details['total_utxo_value_satoshis']} satoshis)")
+                                        print(f"      - Amount necessário: {error_details['amount_btc']} BTC ({error_details['amount_satoshis']} satoshis)")
+                                        print(f"      - Fee estimado: {error_details['estimated_fee_btc']} BTC ({error_details['estimated_fee_satoshis']} satoshis)")
+                                        print(f"      - Total necessário: {error_details['total_needed_btc']} BTC")
+                                        print(f"      - Saldo suficiente: {error_details['balance_sufficient']}")
                                         print(f"      - Biblioteca 'bit' disponível: {error_details['bit_library_available']}")
                                         print(f"      - OP_RETURN output: {error_details['op_return_output']}")
+                                        
+                                        # Adicionar sugestões baseadas no diagnóstico
+                                        suggestions = [
+                                            "Verifique se a biblioteca 'bit' está instalada: pip install bit",
+                                            "Verifique se há UTXOs suficientes no endereço de origem",
+                                            "Verifique se o endereço Bitcoin de destino é válido",
+                                            "Tente novamente em alguns minutos (APIs podem estar temporariamente indisponíveis)"
+                                        ]
+                                        
+                                        if not error_details['balance_sufficient']:
+                                            suggestions.insert(0, f"⚠️  SALDO INSUFICIENTE: Disponível: {error_details['total_utxo_value_btc']} BTC, Necessário: {error_details['total_needed_btc']} BTC")
+                                            suggestions.insert(1, f"Use um faucet Bitcoin testnet: https://testnet-faucet.mempool.co/")
+                                            suggestions.insert(2, f"Adicione Bitcoin teste ao endereço: {error_details['from_address']}")
                                         
                                         proof_data["final_result"] = {
                                             "success": False,
@@ -3548,7 +3629,7 @@ class RealCrossChainBridge:
                                             "error": "Não foi possível criar transação com OP_RETURN via BlockCypher API ou fallback manual",
                                             "debug": error_details,
                                             "proof_file": proof_file,
-                                            "suggestions": [
+                                            "suggestions": suggestions if 'suggestions' in locals() else [
                                                 "Verifique se a biblioteca 'bit' está instalada: pip install bit",
                                                 "Verifique se há UTXOs suficientes no endereço de origem",
                                                 "Verifique se o endereço Bitcoin de destino é válido",
