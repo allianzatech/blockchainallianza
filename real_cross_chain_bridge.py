@@ -2169,32 +2169,11 @@ class RealCrossChainBridge:
                                         }
                                     ]
                                     
-                                    # CORREÇÃO CRÍTICA: Adicionar OP_RETURN ANTES do change (ordem importa!)
+                                    # TEMPORÁRIO: OP_RETURN desabilitado - não adicionar aos outputs
                                     if source_tx_hash:
-                                        try:
-                                            polygon_hash_clean = source_tx_hash.replace('0x', '')
-                                            op_return_data = f"ALZ:{polygon_hash_clean}"
-                                            op_return_bytes = op_return_data.encode('utf-8')
-                                            
-                                            # BlockCypher aceita OP_RETURN via script_type: "null-data"
-                                            # Tentar múltiplos formatos para garantir compatibilidade
-                                            # Formato 1: Usar campo "data" diretamente (recomendado pela documentação)
-                                            outputs_list.append({
-                                                "script_type": "null-data",
-                                                "data": op_return_data,  # String direta, BlockCypher constrói o script
-                                                "value": 0
-                                            })
-                                            print(f"   🔗 OP_RETURN incluído no BlockCypher (formato 'data'): ALZ:{polygon_hash_clean[:20]}...")
-                                            print(f"      Dados: {op_return_data}")
-                                            
-                                            # Também criar script hex como backup (caso BlockCypher não aceite 'data')
-                                            if len(op_return_bytes) <= 75:
-                                                op_return_script_hex = "6a" + format(len(op_return_bytes), '02x') + op_return_bytes.hex()
-                                            else:
-                                                op_return_script_hex = "6a4c" + format(len(op_return_bytes), '02x') + op_return_bytes.hex()
-                                            print(f"      Script hex (backup): {op_return_script_hex[:80]}...")
-                                        except Exception as op_err:
-                                            print(f"   ⚠️  Erro ao adicionar OP_RETURN: {op_err}")
+                                        print(f"   ⚠️  OP_RETURN temporariamente desabilitado (source_tx_hash: {source_tx_hash})")
+                                        print(f"   📝 Transação será criada SEM OP_RETURN")
+                                        add_log("op_return_disabled", {"source_tx_hash": source_tx_hash}, "warning")
                                     
                                     # Adicionar change output se necessário (sempre por último)
                                     if change_value > 546:  # Dust limit
