@@ -27,6 +27,80 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
         
+        /* Botão Voltar */
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .btn-back:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateX(-3px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        
+        /* Container para código com botão copiar */
+        .code-container {
+            position: relative;
+            margin: 15px 0;
+        }
+        
+        .code-wrapper {
+            position: relative;
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 15px;
+            overflow-x: auto;
+        }
+        
+        .code-wrapper pre {
+            margin: 0;
+            color: #e2e8f0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .btn-copy {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(59, 130, 246, 0.8);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        
+        .btn-copy:hover {
+            background: rgba(59, 130, 246, 1);
+            transform: scale(1.05);
+        }
+        
+        .btn-copy.copied {
+            background: #10b981;
+        }
+        
+        .btn-copy.copied::after {
+            content: " ✓ Copiado!";
+        }
+        
         h1 {
             color: #333;
             margin-bottom: 10px;
@@ -161,6 +235,10 @@
 </head>
 <body>
     <div class="container">
+        <a href="/" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
+        </a>
+        
         <h1>🔍 Verificador Público de Provas</h1>
         <p class="subtitle">Verifique a autenticidade de transferências cross-chain sem confiar no backend</p>
         
@@ -232,9 +310,18 @@
                 
                 if (data.success && data.verified) {
                     resultDiv.className = 'result success';
+                    const jsonData = JSON.stringify(data, null, 2);
                     resultDiv.innerHTML = `
                         <h2>✅ Prova Verificada</h2>
                         <p><strong>Transferência cross-chain autêntica verificada!</strong></p>
+                        <div class="code-container">
+                            <div class="code-wrapper">
+                                <button class="btn-copy" onclick="copyCode('proof-json')" title="Copiar JSON">
+                                    <i class="fas fa-copy"></i> Copiar
+                                </button>
+                                <pre id="proof-json"><code>${jsonData}</code></pre>
+                            </div>
+                        </div>
                         <div class="details">
                             <div class="detail-item">
                                 <strong>Polygon:</strong> 
@@ -259,9 +346,18 @@
                     `;
                 } else {
                     resultDiv.className = 'result error';
+                    const jsonData = JSON.stringify(data, null, 2);
                     resultDiv.innerHTML = `
                         <h2>❌ Prova Não Verificada</h2>
                         <p>${data.message || 'Erro ao verificar prova'}</p>
+                        <div class="code-container">
+                            <div class="code-wrapper">
+                                <button class="btn-copy" onclick="copyCode('proof-json-error')" title="Copiar JSON">
+                                    <i class="fas fa-copy"></i> Copiar
+                                </button>
+                                <pre id="proof-json-error"><code>${jsonData}</code></pre>
+                            </div>
+                        </div>
                         <div class="details">
                             <div class="detail-item">
                                 <strong>Polygon:</strong> 
@@ -285,10 +381,53 @@
                 }
             } catch (error) {
                 resultDiv.className = 'result error';
-                resultDiv.innerHTML = `<h2>❌ Erro</h2><p>Erro ao verificar: ${error.message}</p>`;
+                const errorJson = JSON.stringify({error: error.message}, null, 2);
+                resultDiv.innerHTML = `
+                    <h2>❌ Erro</h2>
+                    <p>Erro ao verificar: ${error.message}</p>
+                    <div class="code-container">
+                        <div class="code-wrapper">
+                            <button class="btn-copy" onclick="copyCode('proof-json-error-catch')" title="Copiar JSON">
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
+                            <pre id="proof-json-error-catch"><code>${errorJson}</code></pre>
+                        </div>
+                    </div>
+                `;
             }
         });
+        
+        // Função para copiar código
+        function copyCode(elementId) {
+            const element = document.getElementById(elementId);
+            if (!element) {
+                console.error('Elemento não encontrado:', elementId);
+                return;
+            }
+            
+            let textToCopy = '';
+            if (element.tagName === 'PRE' || element.tagName === 'CODE') {
+                textToCopy = element.textContent || element.innerText;
+            } else {
+                textToCopy = element.textContent || element.innerText || element.value;
+            }
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const btn = document.querySelector(`[onclick*="${elementId}"]`);
+                if (btn) {
+                    const originalText = btn.innerHTML;
+                    btn.classList.add('copied');
+                    setTimeout(() => {
+                        btn.classList.remove('copied');
+                        btn.innerHTML = originalText;
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+            });
+        }
     </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </body>
 </html>
 

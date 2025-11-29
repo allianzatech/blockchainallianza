@@ -197,8 +197,14 @@
                     
                     <div class="mt-3 flex gap-2">
                         <a href="/api/proofs/block/{{ block.index }}?format=json" 
-                           class="text-xs bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">
-                            <i class="fas fa-file-code mr-1"></i>JSON
+                           class="text-xs bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded"
+                           onclick="copyBlockJSON({{ block.index }}); return false;">
+                            <i class="fas fa-copy mr-1"></i>Copiar JSON
+                        </a>
+                        <a href="/api/proofs/block/{{ block.index }}?format=json" 
+                           target="_blank"
+                           class="text-xs bg-gray-600 hover:bg-gray-700 px-3 py-1 rounded">
+                            <i class="fas fa-external-link-alt mr-1"></i>Abrir JSON
                         </a>
                         {% if block.transaction_count > 0 %}
                         <button onclick="toggleBlockTransactions({{ block.index }})" 
@@ -298,9 +304,14 @@
                     </div>
                     
                     <div class="mt-3 flex gap-2 flex-wrap">
+                        <button onclick="copyTransactionJSON('{{ tx.tx_hash }}')" 
+                                class="text-xs bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">
+                            <i class="fas fa-copy mr-1"></i>Copiar JSON
+                        </button>
                         <a href="/api/proofs/transaction/{{ tx.tx_hash }}?format=json" 
-                           class="text-xs bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">
-                            <i class="fas fa-file-code mr-1"></i>JSON
+                           target="_blank"
+                           class="text-xs bg-gray-600 hover:bg-gray-700 px-3 py-1 rounded">
+                            <i class="fas fa-external-link-alt mr-1"></i>Abrir JSON
                         </a>
                         {% if tx.explorer_url %}
                         <a href="{{ tx.explorer_url }}" target="_blank"
