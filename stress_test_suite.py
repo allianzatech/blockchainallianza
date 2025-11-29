@@ -80,20 +80,23 @@ class StressTestSuite:
         latencies = []
         
         # Criar wallets de teste
-        sender_wallet = self.blockchain.create_wallet()
-        receiver_wallet = self.blockchain.create_wallet()
+        # create_wallet() retorna uma tupla: (address, private_key)
+        sender_address, sender_private_key = self.blockchain.create_wallet()
+        receiver_address, _ = self.blockchain.create_wallet()
         
-        # create_wallet retorna uma tupla (address, private_key) ou dict
-        if isinstance(sender_wallet, tuple):
-            sender_address, sender_private_key = sender_wallet
-        else:
-            sender_address = sender_wallet["address"]
-            sender_private_key = sender_wallet["private_key"]
-        
-        if isinstance(receiver_wallet, tuple):
-            receiver_address, _ = receiver_wallet
-        else:
-            receiver_address = receiver_wallet["address"]
+        # Serializar chave privada para formato PEM (string) se necessário
+        try:
+            from cryptography.hazmat.primitives import serialization
+            if hasattr(sender_private_key, 'private_bytes'):
+                sender_private_key_pem = sender_private_key.private_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PrivateFormat.PKCS8,
+                    encryption_algorithm=serialization.NoEncryption()
+                ).decode('utf-8')
+            else:
+                sender_private_key_pem = str(sender_private_key)
+        except:
+            sender_private_key_pem = str(sender_private_key)
         
         # Gerar chave QRS-3 se necessário
         qrs3_keypair_id = None
@@ -122,46 +125,34 @@ class StressTestSuite:
             
             try:
                 # Criar transação
-                # create_transaction retorna a transação diretamente (dict com "id", "sender", etc)
-                # ou levanta exceção se falhar
+                # create_transaction espera private_key como objeto ou string PEM
                 tx_result = self.blockchain.create_transaction(
                     sender=sender_address,
                     receiver=receiver_address,
                     amount=0.001,
-                    private_key=sender_private_key,
+                    private_key=sender_private_key_pem,
                     is_public=True,
                     network="allianza"
                 )
                 
                 tx_latency = (time.time() - tx_start) * 1000  # ms
                 
-                # create_transaction retorna dict com a transação (tem "id", "sender", "receiver", etc)
-                if tx_result and isinstance(tx_result, dict) and "id" in tx_result:
+                if tx_result.get("success"):
                     return {
                         "tx_id": tx_id,
                         "success": True,
                         "latency_ms": tx_latency,
-                        "transaction_id": tx_result["id"],
+                        "transaction_id": tx_result.get("transaction", {}).get("id"),
                         "timestamp": datetime.now().isoformat()
                     }
                 else:
                     return {
                         "tx_id": tx_id,
                         "success": False,
-                        "error": f"Transação inválida: {type(tx_result)}",
+                        "error": tx_result.get("error", "Unknown error"),
                         "latency_ms": tx_latency,
                         "timestamp": datetime.now().isoformat()
                     }
-            except ValueError as e:
-                # Erro de saldo insuficiente ou validação
-                tx_latency = (time.time() - tx_start) * 1000
-                return {
-                    "tx_id": tx_id,
-                    "success": False,
-                    "error": f"Validação: {str(e)}",
-                    "latency_ms": tx_latency,
-                    "timestamp": datetime.now().isoformat()
-                }
             except Exception as e:
                 tx_latency = (time.time() - tx_start) * 1000
                 return {
