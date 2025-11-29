@@ -129,6 +129,10 @@ class ELNI:
                 "timestamp": time.time()
             }
             
+            # Detectar se é função de escrita
+            is_write = isinstance(result, dict) and result.get("is_write_function", False)
+            state_changed = isinstance(result, dict) and result.get("state_changed", False)
+            
             return ExecutionResult(
                 success=True,
                 return_value=result,
@@ -137,7 +141,9 @@ class ELNI:
                 consensus_proof=None,  # Será gerado pela camada MCL
                 execution_time_ms=execution_time,
                 gas_used=None,
-                block_number=None
+                block_number=None,
+                is_write_function=is_write,
+                state_changed=state_changed
             )
             
         except Exception as e:
@@ -612,11 +618,15 @@ class AES:
         print(f"   Execution ID: {execution_id}")
         print(f"   Chains: {', '.join(results.keys())}")
         
-        # Atualizar resultados com provas
+        # Atualizar resultados com provas e métricas
         for chain, result in results.items():
             result.zk_proof = zk_proofs[chain]
             result.merkle_proof = merkle_proofs[chain]
             result.consensus_proof = consensus_proofs[chain]
+            
+            # Adicionar métricas de performance
+            if hasattr(result, 'execution_time_ms'):
+                print(f"   ⏱️  {chain}: {result.execution_time_ms:.2f}ms")
         
         self.atomic_executions[execution_id] = {
             "chains": [chain for chain, _, _ in chains],
