@@ -2327,7 +2327,8 @@ class RealCrossChainBridge:
                                         add_log("trying_bit_library_fallback", {}, "info")
                                         
                                         # PRIORIDADE 1: Tentar biblioteca 'bit' (mais simples e confiável para OP_RETURN)
-                                        # bit_library_available já foi inicializada antes do bloco if
+                                        # CORREÇÃO: Inicializar bit_library_available no escopo correto
+                                        bit_library_available = False
                                         bit_library_success = False
                                         try:
                                             print(f"   📚 Tentando importar biblioteca 'bit'...")
@@ -2608,8 +2609,12 @@ class RealCrossChainBridge:
                                                     
                                         except ImportError as import_err:
                                             print(f"   ❌ Biblioteca 'bit' não disponível: {import_err}")
+                                            print(f"   💡 Para instalar: pip install bit")
                                             print(f"   ⚠️  Tentando 'python-bitcointx'...")
-                                            add_log("bit_library_not_available", {"error": str(import_err)}, "warning")
+                                            add_log("bit_library_not_available", {
+                                                "error": str(import_err),
+                                                "installation_command": "pip install bit"
+                                            }, "warning")
                                             bit_library_available = False
                                         except Exception as bit_err:
                                             print(f"   ❌ Erro ao usar biblioteca 'bit': {bit_err}")
@@ -2622,6 +2627,9 @@ class RealCrossChainBridge:
                                                 "error_type": type(bit_err).__name__
                                             }, "error")
                                             bit_library_available = False
+                                        
+                                        # Log final do status da biblioteca bit
+                                        print(f"   📊 Status final da biblioteca 'bit': {'✅ Disponível' if bit_library_available else '❌ Não disponível'}")
                                         
                                         # PRIORIDADE 2: Tentar 'python-bitcointx' (mais controle manual e confiável)
                                         try:
