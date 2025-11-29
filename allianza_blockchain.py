@@ -3921,11 +3921,6 @@ def network_status():
         "status": "online"
     }
     
-    # Adicionar info UEC se disponível
-    if UEC_AVAILABLE:
-        status_data["uec_enabled"] = True
-        status_data["uec_tokens"] = ["BTCa", "ETHa", "USDa"]  # Tokens simulados
-        status_data["uec_bridge_status"] = "active"
     
     # Adicionar info DEMO REAL se disponível
     if WEB3_AVAILABLE:
@@ -4018,7 +4013,6 @@ def health_check():
         "version": "1.0.0",
         "timestamp": datetime.now().isoformat(),
         "blockchain_online": True,
-        "uec_available": UEC_AVAILABLE,
         "real_demo_available": WEB3_AVAILABLE,
         "real_interoperability_available": REAL_BRIDGE_AVAILABLE,
         "metaprogramming_available": METAPROGRAMMING_AVAILABLE,
@@ -4052,12 +4046,6 @@ def handle_network_info():
         'status': 'online'
     }
     
-    if UEC_AVAILABLE:
-        network_info['uec'] = {
-            'enabled': True,
-            'tokens': ["BTCa", "ETHa", "USDa"],
-            'supported_chains': ["bitcoin", "ethereum", "polygon", "bsc", "solana", "allianza"]
-        }
     
     if WEB3_AVAILABLE:
         network_info['real_demo'] = {
@@ -4248,12 +4236,7 @@ if __name__ == "__main__":
     logger.info("🔮 ORACLE: INTEGRADO")
     logger.info("⚡ CONSENSO: HÍBRIDO")
     
-    if UEC_AVAILABLE:
-        logger.info("🚀 UEC: UNIVERSAL EXECUTION CHAIN ACTIVATED")
-        logger.info("🎯 TOKENS METAPROGRAMÁVEIS: BTCa, ETHa, USDa")
-        logger.info("🔗 BITCOIN CLM: OPERATIONAL")
-    else:
-        logger.info("⚠️  UEC: NOT AVAILABLE - RUNNING IN LEGACY MODE")
+    # UEC removido - não é mais necessário
     
     if WEB3_AVAILABLE:
         logger.info("🎬 REAL DEMO: SISTEMA DE DEMONSTRAÇÃO ATIVO")
