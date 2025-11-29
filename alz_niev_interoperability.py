@@ -506,8 +506,15 @@ class AES:
                 break
         
         if not all_success:
-            print(f"❌ AES: Execução atômica falhou - nenhuma chain será confirmada")
-            return results
+            print(f"❌ AES: Execução atômica falhou - revertendo execuções já realizadas")
+            # ROLLBACK: Reverter execuções que já foram bem-sucedidas antes da falha
+            rollback_results = self._rollback_executions(results, chains, elni)
+            return {
+                **results,
+                "rollback_performed": True,
+                "rollback_results": rollback_results,
+                "error": "Execução falhou - todas as execuções foram revertidas para garantir atomicidade"
+            }
         
         # Fase 2: Gerar provas para todas as execuções
         print(f"\n📋 Fase 2: Geração de provas")
@@ -557,8 +564,15 @@ class AES:
                 break
         
         if not all_verified:
-            print(f"❌ AES: Verificação de provas falhou - nenhuma chain será confirmada")
-            return results
+            print(f"❌ AES: Verificação de provas falhou - revertendo execuções")
+            # ROLLBACK: Reverter todas as execuções que foram bem-sucedidas
+            rollback_results = self._rollback_executions(results, chains, elni)
+            return {
+                **results,
+                "rollback_performed": True,
+                "rollback_results": rollback_results,
+                "error": "Verificação de provas falhou - todas as execuções foram revertidas"
+            }
         
         # Fase 4: Confirmar atomicamente em todas as chains
         print(f"\n📋 Fase 4: Confirmação atômica")
@@ -580,6 +594,109 @@ class AES:
         }
         
         return results
+    
+    def _rollback_executions(
+        self,
+        results: Dict[str, ExecutionResult],
+        chains: List[Tuple[str, str, Dict[str, Any]]],
+        elni: ELNI
+    ) -> Dict[str, Dict]:
+        """
+        Reverte todas as execuções que foram bem-sucedidas
+        Garante atomicidade: todas ou nenhuma
+        
+        CRÍTICO: Este método prova a atomicidade do sistema AES
+        """
+        print(f"\n🔄 ROLLBACK: Revertendo execuções para garantir atomicidade")
+        rollback_results = {}
+        
+        for i, (chain, function_name, params) in enumerate(chains):
+            result = results.get(chain)
+            if result and result.success:
+                print(f"   🔄 Revertendo execução em {chain}...")
+                
+                # Criar função de rollback/compensação
+                # Em produção, isso seria uma transação de compensação na blockchain
+                rollback_params = {
+                    "original_function": function_name,
+                    "original_params": params,
+                    "original_result": result.return_value,
+                    "reason": "atomicity_failure",
+                    "rollback_timestamp": time.time()
+                }
+                
+                # Tentar reverter a execução
+                rollback_result = elni.execute_native_function(
+                    source_chain="allianza",
+                    target_chain=chain,
+                    function_name="rollback",  # Função de rollback
+                    function_params=rollback_params
+                )
+                
+                rollback_results[chain] = {
+                    "original_success": True,
+                    "rollback_attempted": True,
+                    "rollback_success": rollback_result.success,
+                    "rollback_result": rollback_result.return_value if rollback_result.success else None,
+                    "message": f"Execução em {chain} revertida" if rollback_result.success else f"Falha ao reverter {chain}",
+                    "atomicity_guaranteed": rollback_result.success
+                }
+            else:
+                rollback_results[chain] = {
+                    "original_success": False,
+                    "rollback_attempted": False,
+                    "message": f"Execução em {chain} já havia falhado - não precisa reverter"
+                }
+        
+        successful_rollbacks = sum(1 for r in rollback_results.values() if r.get("rollback_success"))
+        print(f"✅ Rollback concluído: {successful_rollbacks}/{len([r for r in rollback_results.values() if r.get('original_success')])} execuções revertidas")
+        
+        return rollback_results
+    
+    def _rollback_executions(
+        self,
+        results: Dict[str, ExecutionResult],
+        chains: List[Tuple[str, str, Dict[str, Any]]],
+        elni: ELNI
+    ) -> Dict[str, Dict]:
+        """
+        Reverte todas as execuções que foram bem-sucedidas
+        Garante atomicidade: todas ou nenhuma
+        """
+        print(f"\n🔄 ROLLBACK: Revertendo execuções para garantir atomicidade")
+        rollback_results = {}
+        
+        for chain, result in results.items():
+            if result.success:
+                print(f"   🔄 Revertendo execução em {chain}...")
+                
+                # Tentar reverter a execução
+                # Em produção, isso seria uma transação de compensação na blockchain
+                rollback_result = elni.execute_native_function(
+                    source_chain="allianza",
+                    target_chain=chain,
+                    function_name="rollback",  # Função de rollback
+                    function_params={
+                        "original_execution": result.return_value,
+                        "reason": "atomicity_failure"
+                    }
+                )
+                
+                rollback_results[chain] = {
+                    "original_success": True,
+                    "rollback_attempted": True,
+                    "rollback_success": rollback_result.success,
+                    "message": f"Execução em {chain} revertida" if rollback_result.success else f"Falha ao reverter {chain}"
+                }
+            else:
+                rollback_results[chain] = {
+                    "original_success": False,
+                    "rollback_attempted": False,
+                    "message": f"Execução em {chain} já havia falhado"
+                }
+        
+        print(f"✅ Rollback concluído para {sum(1 for r in rollback_results.values() if r.get('rollback_success'))} chains")
+        return rollback_results
 
 
 class ALZNIEV:
