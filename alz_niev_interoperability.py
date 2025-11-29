@@ -74,6 +74,8 @@ class ExecutionResult:
     execution_time_ms: float
     gas_used: Optional[int]
     block_number: Optional[int]
+    is_write_function: bool = False  # Indica se é função de escrita que altera estado
+    state_changed: bool = False  # Indica se o estado foi alterado
 
 class ELNI:
     """
@@ -152,7 +154,9 @@ class ELNI:
                 consensus_proof=None,
                 execution_time_ms=execution_time_ms,
                 gas_used=None,
-                block_number=None
+                block_number=None,
+                is_write_function=False,
+                state_changed=False
             )
     
     def _execute_on_target_chain(
