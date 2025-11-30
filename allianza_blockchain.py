@@ -4166,6 +4166,20 @@ try:
     from testnet_routes import init_testnet_routes
     from quantum_security import QuantumSecuritySystem
     
+    # Importar e inicializar Quantum Security Service (QSS)
+    try:
+        from qss_api_service import qss_bp, init_qss_service
+        init_qss_service()
+        app.register_blueprint(qss_bp)
+        print("🔐 Quantum Security Service (QSS) - API registrada!")
+        print("   Endpoints disponíveis:")
+        print("   - POST /api/qss/generate-proof")
+        print("   - POST /api/qss/verify-proof")
+        print("   - POST /api/qss/anchor-proof")
+        print("   - GET  /api/qss/status")
+    except ImportError as e:
+        print(f"⚠️  QSS Service não disponível: {e}")
+    
     quantum_sys = QuantumSecuritySystem()
     
     

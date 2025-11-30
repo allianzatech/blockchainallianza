@@ -1889,6 +1889,11 @@ def api_quantum_attack_simulator_statistics():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@testnet_bp.route('/qss', methods=['GET'])
+def qss_dashboard_page():
+    """Dashboard do Quantum Security Service (QSS)"""
+    return render_template('testnet/qss_dashboard.html')
+
 @testnet_bp.route('/api/alz-niev/status', methods=['GET'])
 def api_alz_niev_status():
     """Status do ALZ-NIEV"""

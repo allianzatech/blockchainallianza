@@ -1,0 +1,176 @@
+{
+  "ml_dsa": {
+    "polygon": {
+      "success": true,
+      "chain": "polygon",
+      "chain_name": "Polygon Mainnet",
+      "algorithm": "ML-DSA (Dilithium2)",
+      "public_key_size_bytes": 1952,
+      "signature_size_bytes": 2420,
+      "gas_estimates": {
+        "base_gas": 21000,
+        "storage_gas": 20000,
+        "data_gas": 218600,
+        "computation_gas": 100000,
+        "total_gas": 359600
+      },
+      "gas_price": {
+        "gwei": 26.250000063,
+        "wei": 26250000063
+      },
+      "cost": {
+        "wei": 9439500022654800,
+        "native": 0.0094395000226548,
+        "usd": 0.00755160001812384
+      },
+      "timestamp": "2025-11-28T22:28:12.130651"
+    },
+    "ethereum": {
+      "success": true,
+      "chain": "ethereum",
+      "chain_name": "Ethereum Mainnet",
+      "algorithm": "ML-DSA (Dilithium2)",
+      "public_key_size_bytes": 1952,
+      "signature_size_bytes": 2420,
+      "gas_estimates": {
+        "base_gas": 21000,
+        "storage_gas": 20000,
+        "data_gas": 218600,
+        "computation_gas": 100000,
+        "total_gas": 359600
+      },
+      "gas_price": {
+        "gwei": 0.001,
+        "wei": 1000000
+      },
+      "cost": {
+        "wei": 359600000000,
+        "native": 3.596e-07,
+        "usd": 0.0010788
+      },
+      "timestamp": "2025-11-28T22:28:13.561277"
+    }
+  },
+  "sphincs": {
+    "polygon": {
+      "success": true,
+      "chain": "polygon",
+      "chain_name": "Polygon Mainnet",
+      "algorithm": "SPHINCS+-SHAKE-128f",
+      "public_key_size_bytes": 32,
+      "signature_size_bytes": 17088,
+      "gas_estimates": {
+        "base_gas": 21000,
+        "storage_gas": 20000,
+        "data_gas": 856000,
+        "computation_gas": 50000,
+        "total_gas": 947000
+      },
+      "gas_price": {
+        "gwei": 26.250000063,
+        "wei": 26250000063
+      },
+      "cost": {
+        "wei": 24858750059661000,
+        "native": 0.024858750059661,
+        "usd": 0.019887000047728802
+      },
+      "warning": "\u26a0\ufe0f  SPHINCS+ tem assinaturas muito grandes - custo de gas alto!",
+      "recommendation": "Considere usar ML-DSA para transa\u00e7\u00f5es frequentes, SPHINCS+ apenas para cr\u00edticas",
+      "timestamp": "2025-11-28T22:28:12.435231"
+    },
+    "ethereum": {
+      "success": true,
+      "chain": "ethereum",
+      "chain_name": "Ethereum Mainnet",
+      "algorithm": "SPHINCS+-SHAKE-128f",
+      "public_key_size_bytes": 32,
+      "signature_size_bytes": 17088,
+      "gas_estimates": {
+        "base_gas": 21000,
+        "storage_gas": 20000,
+        "data_gas": 856000,
+        "computation_gas": 50000,
+        "total_gas": 947000
+      },
+      "gas_price": {
+        "gwei": 0.001,
+        "wei": 1000000
+      },
+      "cost": {
+        "wei": 947000000000,
+        "native": 9.47e-07,
+        "usd": 0.0028409999999999998
+      },
+      "warning": "\u26a0\ufe0f  SPHINCS+ tem assinaturas muito grandes - custo de gas alto!",
+      "recommendation": "Considere usar ML-DSA para transa\u00e7\u00f5es frequentes, SPHINCS+ apenas para cr\u00edticas",
+      "timestamp": "2025-11-28T22:28:13.767269"
+    }
+  },
+  "qrs3": {
+    "polygon": {
+      "success": true,
+      "chain": "polygon",
+      "chain_name": "Polygon Mainnet",
+      "algorithm": "QRS-3 (Tripla Redund\u00e2ncia)",
+      "components": {
+        "ecdsa": 147450,
+        "ml_dsa": 359600,
+        "sphincs": 947000
+      },
+      "gas_estimates": {
+        "total_gas_sequential": 1454050,
+        "total_gas_optimized": 1017834,
+        "optimization_savings_percent": 30
+      },
+      "cost": {
+        "wei": 30535020000000000,
+        "native": 0.03053502,
+        "usd": 0.024428016
+      },
+      "recommendation": "QRS-3 \u00e9 caro mas oferece m\u00e1xima seguran\u00e7a. Use apenas para transa\u00e7\u00f5es cr\u00edticas.",
+      "timestamp": "2025-11-28T22:28:13.356520"
+    },
+    "ethereum": {
+      "success": true,
+      "chain": "ethereum",
+      "chain_name": "Ethereum Mainnet",
+      "algorithm": "QRS-3 (Tripla Redund\u00e2ncia)",
+      "components": {
+        "ecdsa": 147450,
+        "ml_dsa": 359600,
+        "sphincs": 947000
+      },
+      "gas_estimates": {
+        "total_gas_sequential": 1454050,
+        "total_gas_optimized": 1017834,
+        "optimization_savings_percent": 30
+      },
+      "cost": {
+        "wei": 20356680000000000,
+        "native": 0.02035668,
+        "usd": 61.07004
+      },
+      "recommendation": "QRS-3 \u00e9 caro mas oferece m\u00e1xima seguran\u00e7a. Use apenas para transa\u00e7\u00f5es cr\u00edticas.",
+      "timestamp": "2025-11-28T22:28:14.370731"
+    }
+  },
+  "summary": {
+    "ml_dsa": {
+      "average_usd": 0.00431520000906192,
+      "min_usd": 0.0010788,
+      "max_usd": 0.00755160001812384
+    },
+    "sphincs": {
+      "average_usd": 0.011364000023864401,
+      "min_usd": 0.0028409999999999998,
+      "max_usd": 0.019887000047728802
+    },
+    "qrs3": {
+      "average_usd": 30.547234008,
+      "min_usd": 0.024428016,
+      "max_usd": 61.07004
+    },
+    "timestamp": "2025-11-28T22:28:14.371209"
+  }
+}
