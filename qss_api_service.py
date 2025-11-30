@@ -125,10 +125,22 @@ def generate_quantum_proof():
                 "error": "Quantum security system not available"
             }), 503
         
-        # Gerar keypair se não existir
+        # Gerar keypair ML-DSA se não existir
         keypair_id = f"qss_{chain}_{tx_hash[:16]}"
         if keypair_id not in quantum_system.pqc_keypairs:
-            quantum_system.generate_qrs3_keypair(keypair_id)
+            # Gerar keypair ML-DSA diretamente
+            ml_dsa_result = quantum_system.generate_ml_dsa_keypair(keypair_id)
+            if not ml_dsa_result or not ml_dsa_result.get('success'):
+                # Se falhar, gerar QRS-3 e usar o ML-DSA dele
+                qrs3_result = quantum_system.generate_qrs3_keypair()
+                if qrs3_result and qrs3_result.get('success'):
+                    # Usar o ML-DSA do QRS-3
+                    qrs3_keypair_id = qrs3_result.get('keypair_id')
+                    if qrs3_keypair_id and qrs3_keypair_id in quantum_system.pqc_keypairs:
+                        qrs3_keypair = quantum_system.pqc_keypairs[qrs3_keypair_id]
+                        ml_dsa_keypair_id = qrs3_keypair.get('ml_dsa_keypair_id')
+                        if ml_dsa_keypair_id:
+                            keypair_id = ml_dsa_keypair_id
         
         # Assinar com ML-DSA
         signature_result = quantum_system.sign_with_ml_dsa(keypair_id, message_hash)
