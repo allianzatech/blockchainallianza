@@ -553,6 +553,48 @@ def anchor_quantum_proof():
             "error": str(e)
         }), 500
 
+@qss_bp.route('/key/<keypair_id>', methods=['GET'])
+def get_public_key(keypair_id):
+    """
+    🔑 Obter chave pública PQC para verificação
+    
+    Retorna a chave pública associada a um keypair_id
+    para permitir verificação independente de assinaturas
+    """
+    try:
+        if not quantum_system:
+            return jsonify({
+                "success": False,
+                "error": "Quantum security system not available"
+            }), 503
+        
+        if keypair_id not in quantum_system.pqc_keypairs:
+            return jsonify({
+                "success": False,
+                "error": "Keypair not found"
+            }), 404
+        
+        keypair = quantum_system.pqc_keypairs[keypair_id]
+        
+        return jsonify({
+            "success": True,
+            "keypair_id": keypair_id,
+            "algorithm": keypair.get('algorithm', 'ML-DSA'),
+            "public_key": keypair.get('public_key', ''),
+            "security_level": keypair.get('security_level', 3),
+            "created_at": keypair.get('created_at', ''),
+            "nist_standard": keypair.get('nist_standard', True),
+            "quantum_resistant": keypair.get('quantum_resistant', True),
+            "implementation": keypair.get('implementation', 'simulated')
+        }), 200
+        
+    except Exception as e:
+        print(f"❌ Erro ao obter chave pública: {e}")
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
 @qss_bp.route('/status', methods=['GET'])
 def qss_status():
     """📊 Status do serviço QSS"""
