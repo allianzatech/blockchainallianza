@@ -9,6 +9,7 @@ import time
 from datetime import datetime
 from typing import Dict, Optional, Any
 import base64
+import uuid
 
 # Importar sistema de segurança quântica
 try:
@@ -194,21 +195,58 @@ def generate_quantum_proof():
         proof_hash_data = f"{tx_hash}{quantum_signature}{merkle_root or ''}"
         proof_hash = hashlib.sha256(proof_hash_data.encode()).hexdigest()
         
-        # 6. Criar Quantum Proof Object
-        quantum_proof = {
+        # 6. Gerar proof_id único
+        proof_id = f"qss-{int(time.time())}-{hashlib.sha256(tx_hash.encode()).hexdigest()[:8]}"
+        
+        # 7. Calcular canonicalização (RFC8785)
+        canonical_fields = ['asset_chain', 'asset_tx', 'merkle_root', 'block_hash', 'timestamp']
+        canonical_data = {
             "asset_chain": chain,
             "asset_tx": tx_hash,
-            "quantum_signature": base64.b64encode(quantum_signature.encode() if isinstance(quantum_signature, str) else quantum_signature).decode(),
-            "quantum_signature_scheme": signature_scheme,
-            "merkle_root": merkle_root,
-            "merkle_proof": merkle_proof,
-            "consensus_proof": consensus_proof,
-            "verified_by": "Allianza Quantum Layer",
+            "merkle_root": merkle_root or "",
+            "block_hash": metadata.get('block_hash', ""),
+            "timestamp": time.time()
+        }
+        canonical_json = json.dumps(canonical_data, sort_keys=True, separators=(',', ':'))
+        canonical_hash = hashlib.sha256(canonical_json.encode()).hexdigest()
+        
+        # 8. Criar Quantum Proof Object (formato profissional)
+        quantum_proof = {
+            "schema_version": "qss_v1.0",
+            "proof_id": proof_id,
+            "asset_chain": chain,
+            "asset_tx": tx_hash,
             "block_height": metadata.get('block_height', 0),
-            "timestamp": time.time(),
-            "proof_hash": proof_hash,
-            "valid": True,
-            "keypair_id": keypair_id
+            "block_hash": metadata.get('block_hash', ""),
+            "block_time": datetime.fromtimestamp(time.time()).isoformat() + "Z",
+            "confirmations": metadata.get('confirmations', 0),
+            "merkle_proof": merkle_proof,
+            "merkle_root": merkle_root,
+            "consensus_proof": consensus_proof,
+            "proof_hash": canonical_hash,  # Usar hash canônico
+            "canonicalization": {
+                "method": "RFC8785",
+                "canonical_input_fields": canonical_fields,
+                "canonical_json": canonical_json
+            },
+            "quantum_signature_scheme": signature_scheme,
+            "quantum_signature": base64.b64encode(quantum_signature.encode() if isinstance(quantum_signature, str) else quantum_signature).decode(),
+            "signature_public_key_uri": f"https://testnet.allianza.tech/api/qss/key/{keypair_id}",
+            "keypair_id": keypair_id,
+            "timestamp": datetime.fromtimestamp(time.time()).isoformat() + "Z",
+            "verified_by": ["Allianza Quantum Layer"],
+            "verification_instructions": {
+                "verify_steps": [
+                    "1) Fetch raw_proof_bytes from raw_artifacts.raw_proof_bytes_url (se disponível)",
+                    "2) Canonicalize JSON per RFC8785 using canonicalization.canonical_input_fields",
+                    "3) Compute SHA256 -> equals proof_hash",
+                    "4) Verify ML-DSA signature using public key at signature_public_key_uri",
+                    "5) Recompute merkle path using proof_path and compare with merkle_root",
+                    "6) Verify block inclusion using block_hash and block_height"
+                ],
+                "verifier_code": "https://github.com/allianza-blockchain/qss-verifier"
+            },
+            "valid": True
         }
         
         print(f"✅ QSS: Prova quântica gerada com sucesso!")

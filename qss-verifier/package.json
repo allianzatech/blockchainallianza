@@ -1,0 +1,27 @@
+{
+  "name": "@allianza/qss-verifier",
+  "version": "1.0.0",
+  "description": "Verificador open-source de provas QSS (Quantum Security Service)",
+  "main": "verify.js",
+  "scripts": {
+    "test": "node verify.js test_proof.json",
+    "verify": "node verify.js"
+  },
+  "keywords": [
+    "quantum",
+    "post-quantum",
+    "verification",
+    "qss",
+    "allianza",
+    "audit"
+  ],
+  "author": "Allianza Blockchain",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+
