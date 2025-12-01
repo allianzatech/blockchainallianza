@@ -73,10 +73,43 @@ def test_generate_and_verify():
             computed_hash = hashlib.sha256(canonical_json.encode()).hexdigest()
             expected_hash = proof.get('proof_hash')
             
-            print(f"   Canonical JSON: {canonical_json[:100]}...")
+            print(f"   Canonical JSON: {canonical_json}")
             print(f"   Computed Hash: {computed_hash}")
             print(f"   Expected Hash: {expected_hash}")
             print(f"   Match: {computed_hash == expected_hash}")
+            
+            if computed_hash != expected_hash:
+                print(f"\n   ⚠️  Hash não confere! Verificando campos...")
+                canonical_fields = proof['canonicalization'].get('canonical_input_fields', [])
+                print(f"   Campos canônicos: {canonical_fields}")
+                for field in canonical_fields:
+                    if field in proof:
+                        value = proof[field]
+                        print(f"   - {field}: {value} (type: {type(value).__name__})")
+                
+                # Tentar recalcular
+                canonical_data = {}
+                for field in canonical_fields:
+                    if field in proof:
+                        value = proof[field]
+                        # Converter timestamp ISO para float se necessário
+                        if field == 'timestamp' and isinstance(value, str):
+                            try:
+                                if 'T' in value:
+                                    ts_str = value.replace('Z', '')
+                                    from datetime import datetime
+                                    dt = datetime.fromisoformat(ts_str)
+                                    value = dt.timestamp()
+                                    print(f"   Converted timestamp: {value}")
+                            except Exception as e:
+                                print(f"   Erro ao converter timestamp: {e}")
+                        canonical_data[field] = value
+                
+                recalculated_json = json.dumps(canonical_data, sort_keys=True, separators=(',', ':'))
+                recalculated_hash = hashlib.sha256(recalculated_json.encode()).hexdigest()
+                print(f"\n   Recalculated JSON: {recalculated_json}")
+                print(f"   Recalculated Hash: {recalculated_hash}")
+                print(f"   Match after recalculation: {recalculated_hash == expected_hash}")
         
         # 4. Verificar chave pública
         print("\n4️⃣ Verificando chave pública...")

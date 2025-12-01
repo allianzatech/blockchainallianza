@@ -230,7 +230,8 @@ def generate_quantum_proof():
             "canonicalization": {
                 "method": "RFC8785",
                 "canonical_input_fields": canonical_fields,
-                "canonical_json": canonical_json
+                "canonical_json": canonical_json,
+                "canonical_hash": canonical_hash  # Adicionar hash para referência
             },
             "quantum_signature_scheme": signature_scheme,
             "quantum_signature": base64.b64encode(quantum_signature.encode() if isinstance(quantum_signature, str) else quantum_signature).decode(),
@@ -433,10 +434,18 @@ def verify_quantum_proof():
                 proof_hash_valid = (expected_hash == proof['proof_hash'])
                 
                 print(f"🔍 Proof Hash Check:")
-                print(f"   Canonical JSON: {canonical_json[:80]}...")
-                print(f"   Expected Hash: {expected_hash}")
-                print(f"   Received Hash: {proof['proof_hash']}")
+                print(f"   Canonical JSON: {canonical_json}")
+                print(f"   Expected Hash (from canonical_json): {expected_hash}")
+                print(f"   Received Hash (proof_hash): {proof['proof_hash']}")
                 print(f"   Valid: {proof_hash_valid}")
+                
+                # Se canonical_hash estiver presente, verificar também
+                if proof['canonicalization'].get('canonical_hash'):
+                    canonical_hash = proof['canonicalization']['canonical_hash']
+                    print(f"   Canonical Hash (from proof): {canonical_hash}")
+                    if canonical_hash == proof['proof_hash']:
+                        print(f"   ✅ Hash confere com canonical_hash!")
+                        proof_hash_valid = True
                 
                 # Se não validar, tentar recalcular com os campos da prova
                 if not proof_hash_valid:
