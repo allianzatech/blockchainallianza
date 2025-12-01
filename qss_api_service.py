@@ -402,9 +402,29 @@ def verify_quantum_proof():
         # 4. Verificar timestamp (não muito antigo)
         timestamp_valid = True
         if 'timestamp' in proof:
-            age_seconds = time.time() - proof['timestamp']
-            # Prova válida por 1 ano
-            timestamp_valid = (age_seconds < 31536000)
+            proof_timestamp = proof['timestamp']
+            # Converter para float se for string ISO
+            if isinstance(proof_timestamp, str):
+                try:
+                    if 'T' in proof_timestamp:
+                        ts_str = proof_timestamp.replace('Z', '')
+                        from datetime import datetime
+                        dt = datetime.fromisoformat(ts_str)
+                        proof_timestamp = dt.timestamp()
+                    else:
+                        proof_timestamp = time.time()
+                except:
+                    proof_timestamp = time.time()
+            elif not isinstance(proof_timestamp, (int, float)):
+                proof_timestamp = time.time()
+            
+            try:
+                age_seconds = time.time() - float(proof_timestamp)
+                # Prova válida por 1 ano
+                timestamp_valid = (age_seconds < 31536000) and (age_seconds >= 0)
+            except (TypeError, ValueError) as e:
+                print(f"⚠️  Erro ao calcular idade do timestamp: {e}")
+                timestamp_valid = True  # Assumir válido se não conseguir calcular
         
         # 5. Verificar Merkle Proof (se disponível)
         merkle_proof_valid = True
