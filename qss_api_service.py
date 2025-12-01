@@ -335,11 +335,36 @@ def verify_quantum_proof():
         if quantum_system and 'keypair_id' in proof:
             try:
                 # Reconstruir mensagem original (mesmo formato usado na geração)
+                # Converter timestamp ISO para float se necessário
+                proof_timestamp = proof.get('timestamp', 0)
+                if isinstance(proof_timestamp, str):
+                    # Tentar converter ISO string para timestamp
+                    try:
+                        if 'T' in proof_timestamp:
+                            # Parse ISO format: "2025-12-01T00:45:00.068624Z"
+                            ts_str = proof_timestamp.replace('Z', '')
+                            from datetime import datetime
+                            dt = datetime.fromisoformat(ts_str)
+                            proof_timestamp = dt.timestamp()
+                        else:
+                            proof_timestamp = time.time()
+                    except Exception as e:
+                        print(f"⚠️  Erro ao converter timestamp na reconstrução: {e}")
+                        # Se falhar, usar time atual
+                        proof_timestamp = time.time()
+                elif not isinstance(proof_timestamp, (int, float)):
+                    proof_timestamp = time.time()
+                
+                # Garantir que metadata existe e é dict
+                metadata = proof.get('metadata', {})
+                if not isinstance(metadata, dict):
+                    metadata = {}
+                
                 message_data = {
                     "chain": proof['asset_chain'],
                     "tx_hash": proof['asset_tx'],
-                    "metadata": proof.get('metadata', {}),
-                    "timestamp": proof.get('timestamp', 0)
+                    "metadata": metadata,
+                    "timestamp": proof_timestamp
                 }
                 message_json = json.dumps(message_data, sort_keys=True)
                 message_hash = hashlib.sha256(message_json.encode()).digest()
