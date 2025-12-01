@@ -199,13 +199,16 @@ def generate_quantum_proof():
         proof_id = f"qss-{int(time.time())}-{hashlib.sha256(tx_hash.encode()).hexdigest()[:8]}"
         
         # 7. Calcular canonicalização (RFC8785)
+        timestamp_iso = datetime.fromtimestamp(time.time()).isoformat() + "Z"
+        timestamp_float = time.time()
+        
         canonical_fields = ['asset_chain', 'asset_tx', 'merkle_root', 'block_hash', 'timestamp']
         canonical_data = {
             "asset_chain": chain,
             "asset_tx": tx_hash,
             "merkle_root": merkle_root or "",
             "block_hash": metadata.get('block_hash', ""),
-            "timestamp": time.time()
+            "timestamp": timestamp_float  # Usar float para canonicalização
         }
         canonical_json = json.dumps(canonical_data, sort_keys=True, separators=(',', ':'))
         canonical_hash = hashlib.sha256(canonical_json.encode()).hexdigest()
@@ -218,7 +221,7 @@ def generate_quantum_proof():
             "asset_tx": tx_hash,
             "block_height": metadata.get('block_height', 0),
             "block_hash": metadata.get('block_hash', ""),
-            "block_time": datetime.fromtimestamp(time.time()).isoformat() + "Z",
+            "block_time": timestamp_iso,
             "confirmations": metadata.get('confirmations', 0),
             "merkle_proof": merkle_proof,
             "merkle_root": merkle_root,
@@ -233,7 +236,7 @@ def generate_quantum_proof():
             "quantum_signature": base64.b64encode(quantum_signature.encode() if isinstance(quantum_signature, str) else quantum_signature).decode(),
             "signature_public_key_uri": f"https://testnet.allianza.tech/api/qss/key/{keypair_id}",
             "keypair_id": keypair_id,
-            "timestamp": datetime.fromtimestamp(time.time()).isoformat() + "Z",
+            "timestamp": timestamp_iso,
             "verified_by": ["Allianza Quantum Layer"],
             "verification_instructions": {
                 "verify_steps": [
@@ -378,14 +381,23 @@ def verify_quantum_proof():
                 except:
                     signature_valid = False
         
-        # 3. Verificar proof_hash
+        # 3. Verificar proof_hash (usar canonicalização se disponível)
         proof_hash_valid = False
         try:
-            expected_hash_data = f"{proof['asset_tx']}{proof['quantum_signature']}{proof.get('merkle_root', '')}"
-            expected_hash = hashlib.sha256(expected_hash_data.encode()).hexdigest()
-            proof_hash_valid = (expected_hash == proof['proof_hash'])
+            if proof.get('canonicalization') and proof.get('canonical_json'):
+                # Usar canonicalização RFC8785 se disponível
+                canonical_json = proof['canonicalization']['canonical_json']
+                expected_hash = hashlib.sha256(canonical_json.encode()).hexdigest()
+                proof_hash_valid = (expected_hash == proof['proof_hash'])
+            else:
+                # Fallback: método antigo
+                expected_hash_data = f"{proof['asset_tx']}{proof['quantum_signature']}{proof.get('merkle_root', '')}"
+                expected_hash = hashlib.sha256(expected_hash_data.encode()).hexdigest()
+                proof_hash_valid = (expected_hash == proof['proof_hash'])
         except Exception as e:
             print(f"⚠️  Erro ao verificar proof_hash: {e}")
+            import traceback
+            traceback.print_exc()
         
         # 4. Verificar timestamp (não muito antigo)
         timestamp_valid = True
