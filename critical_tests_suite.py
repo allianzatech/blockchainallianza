@@ -899,8 +899,10 @@ def verify_bundle(bundle_path):
     if not expected_hash:
         expected_hash = bundle.get("components", {{}}).get("sha256_hash")
     
-    # Calcular hash SEM incluir o bundle_hash, signature_hash e keypair_id (para evitar circularidade e variações)
+    # Calcular hash SEM incluir o bundle_hash, signature_hash, keypair_id e timestamp (para evitar circularidade e variações)
     bundle_for_hash = json.loads(json.dumps(bundle))
+    # Remover timestamp que varia a cada execução
+    bundle_for_hash.pop("timestamp", None)
     if "components" in bundle_for_hash and "qrs3_signature" in bundle_for_hash["components"]:
         bundle_for_hash["components"]["qrs3_signature"].pop("bundle_hash", None)
         bundle_for_hash["components"]["qrs3_signature"].pop("signature_hash", None)
@@ -939,8 +941,10 @@ if __name__ == "__main__":
                 f.write(verify_script)
             
             # 4. Calcular hash ANTES de adicionar bundle_hash (para evitar circularidade)
-            # Criar cópia sem bundle_hash, signature_hash e keypair_id (que podem variar)
+            # Criar cópia sem campos que variam (bundle_hash, signature_hash, keypair_id, timestamp)
             bundle_for_hash = json.loads(json.dumps(bundle))
+            # Remover timestamp que varia a cada execução
+            bundle_for_hash.pop("timestamp", None)
             if "components" in bundle_for_hash and "qrs3_signature" in bundle_for_hash["components"]:
                 bundle_for_hash["components"]["qrs3_signature"].pop("bundle_hash", None)
                 bundle_for_hash["components"]["qrs3_signature"].pop("signature_hash", None)
@@ -1085,8 +1089,10 @@ if __name__ == "__main__":
             if not expected_hash:
                 expected_hash = bundle.get("components", {}).get("sha256_hash")
             
-            # Calcular hash SEM o bundle_hash, signature_hash e keypair_id (mesmo método usado na criação)
+            # Calcular hash SEM o bundle_hash, signature_hash, keypair_id e timestamp (mesmo método usado na criação)
             bundle_for_hash = json.loads(json.dumps(bundle))  # Deep copy
+            # Remover timestamp que varia a cada execução
+            bundle_for_hash.pop("timestamp", None)
             if "components" in bundle_for_hash and "qrs3_signature" in bundle_for_hash["components"]:
                 bundle_for_hash["components"]["qrs3_signature"].pop("bundle_hash", None)
                 bundle_for_hash["components"]["qrs3_signature"].pop("signature_hash", None)
