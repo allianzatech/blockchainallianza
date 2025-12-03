@@ -15,14 +15,17 @@ def verify_bundle(bundle_path):
     # Obter hash esperado ANTES de remover do bundle
     expected_hash = bundle.get("components", {}).get("qrs3_signature", {}).get("bundle_hash")
     
-    # Calcular hash SEM incluir o bundle_hash, signature_hash, keypair_id e timestamp (para evitar circularidade e variações)
+    # Calcular hash SEM incluir o bundle_hash, signature_hash, keypair_id, timestamp e sha256_hash (para evitar circularidade e variações)
     bundle_for_hash = json.loads(json.dumps(bundle))
     # Remover timestamp que varia a cada execução
     bundle_for_hash.pop("timestamp", None)
-    if "components" in bundle_for_hash and "qrs3_signature" in bundle_for_hash["components"]:
-        bundle_for_hash["components"]["qrs3_signature"].pop("bundle_hash", None)
-        bundle_for_hash["components"]["qrs3_signature"].pop("signature_hash", None)
-        bundle_for_hash["components"]["qrs3_signature"].pop("keypair_id", None)
+    if "components" in bundle_for_hash:
+        # Remover sha256_hash que é o hash do bundle (circularidade)
+        bundle_for_hash["components"].pop("sha256_hash", None)
+        if "qrs3_signature" in bundle_for_hash["components"]:
+            bundle_for_hash["components"]["qrs3_signature"].pop("bundle_hash", None)
+            bundle_for_hash["components"]["qrs3_signature"].pop("signature_hash", None)
+            bundle_for_hash["components"]["qrs3_signature"].pop("keypair_id", None)
     
     # Usar ensure_ascii=False e separators consistentes para garantir hash idêntico
     bundle_json_for_hash = json.dumps(bundle_for_hash, sort_keys=True, ensure_ascii=False, separators=(',', ':'))
