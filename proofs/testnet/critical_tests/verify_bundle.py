@@ -12,17 +12,26 @@ def verify_bundle(bundle_path):
     with open(bundle_path, 'r') as f:
         bundle = json.load(f)
     
-    # Verificar hash
-    bundle_json = json.dumps(bundle, sort_keys=True)
-    bundle_hash = hashlib.sha256(bundle_json.encode()).hexdigest()
-    
+    # Obter hash esperado ANTES de remover do bundle
     expected_hash = bundle.get("components", {}).get("qrs3_signature", {}).get("bundle_hash")
+    
+    # Calcular hash SEM incluir o bundle_hash e signature_hash (para evitar circularidade e variações)
+    bundle_for_hash = json.loads(json.dumps(bundle))
+    if "components" in bundle_for_hash and "qrs3_signature" in bundle_for_hash["components"]:
+        bundle_for_hash["components"]["qrs3_signature"].pop("bundle_hash", None)
+        bundle_for_hash["components"]["qrs3_signature"].pop("signature_hash", None)
+    
+    # Usar ensure_ascii=False e separators consistentes para garantir hash idêntico
+    bundle_json_for_hash = json.dumps(bundle_for_hash, sort_keys=True, ensure_ascii=False, separators=(',', ':'))
+    bundle_hash = hashlib.sha256(bundle_json_for_hash.encode('utf-8')).hexdigest()
     
     if expected_hash and bundle_hash == expected_hash:
         print("✅ Bundle hash verificado!")
         return True
     else:
-        print("❌ Bundle hash não confere!")
+        print(f"❌ Bundle hash não confere!")
+        print(f"   Esperado: {expected_hash}")
+        print(f"   Calculado: {bundle_hash}")
         return False
 
 if __name__ == "__main__":
