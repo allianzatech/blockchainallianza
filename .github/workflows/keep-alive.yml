@@ -2,21 +2,39 @@ name: Keep-Alive Allianza Testnet
 
 on:
   schedule:
-    # Executa a cada 14 minutos
-    - cron: '*/14 * * * *'
+    # Executa a cada 10 minutos (mais frequente para evitar sleep)
+    - cron: '*/10 * * * *'
   workflow_dispatch:  # Permite execução manual
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   keep-alive:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
+      - name: Checkout (não necessário, mas mantém workflow ativo)
+        uses: actions/checkout@v3
+      
       - name: Ping Testnet
         run: |
           echo "🔄 Enviando ping para Allianza Testnet..."
-          response=$(curl -s -o /dev/null -w "%{http_code}" https://testnet.allianza.tech/health)
+          response=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 https://testnet.allianza.tech/health)
           if [ "$response" = "200" ]; then
             echo "✅ Ping bem-sucedido! Status: 200"
+            exit 0
           else
             echo "⚠️  Ping retornou status: $response"
+            # Não falhar o workflow mesmo se o ping falhar
+            exit 0
           fi
+      
+      - name: Verificar se Render está ativo
+        run: |
+          echo "🔍 Verificando status do Render..."
+          curl -s -o /dev/null -w "Status: %{http_code}\n" --max-time 10 https://testnet.allianza.tech/ || echo "⚠️  Render pode estar em sleep mode"
 

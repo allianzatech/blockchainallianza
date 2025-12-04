@@ -6,6 +6,27 @@
     <title>ALZ-NIEV - Allianza Testnet</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* Botão Voltar ao Dashboard Padronizado */
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .btn-back:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateX(-3px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        
         .layer-card {
             transition: transform 0.2s;
         }
@@ -134,12 +155,6 @@
             <a href="/faucet" class="text-blue-400 hover:underline">→ Acessar Faucet</a>
         </div>
 
-        <!-- Links -->
-        <div class="mb-6">
-            <a href="/" class="btn-back">
-                <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
-            </a>
-        </div>
     </div>
 
     <script>
