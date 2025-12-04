@@ -1971,14 +1971,19 @@ def api_run_professional_suite():
     try:
         from testnet_professional_test_suite import ProfessionalTestSuite
         
+        # Permitir request sem JSON ou com JSON vazio
+        try:
+            data = request.get_json(force=True) or {}
+        except Exception:
+            data = {}
+        
+        include_critical = data.get('include_critical', False)
+        
         suite = ProfessionalTestSuite(
             bridge_instance=None,
             quantum_security_instance=quantum_security,
             blockchain_instance=None
         )
-        
-        data = request.get_json() or {}
-        include_critical = data.get('include_critical', False)
         
         results = suite.run_all_tests(include_critical=include_critical)
         
@@ -1989,9 +1994,12 @@ def api_run_professional_suite():
         }), 200
     
     except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
         return jsonify({
             "success": False,
-            "error": str(e)
+            "error": str(e),
+            "traceback": error_trace
         }), 500
 
 @testnet_bp.route('/api/tests/all/run', methods=['POST'])

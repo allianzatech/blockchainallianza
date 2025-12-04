@@ -113,8 +113,15 @@
             try {
                 const response = await fetch('/api/tests/professional/run', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
                 });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}: ${response.statusText}` }));
+                    throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
                 showResults('Professional Suite', data);
             } catch (error) {
