@@ -419,11 +419,20 @@ class EnhancedTestnetExplorer:
     
     def _get_supported_chains(self) -> List[str]:
         """Retorna lista de chains suportadas"""
-        chains = ["Allianza"]
-        
-        if self.bridge:
-            supported = ["Polygon", "Bitcoin", "Ethereum", "BSC", "Solana", "Base", "Avalanche"]
-            chains.extend(supported)
+        # Lista completa de todas as blockchains suportadas (11 total)
+        chains = [
+            "Bitcoin",
+            "Ethereum", 
+            "Polygon",
+            "BSC",
+            "Solana",
+            "Cosmos",
+            "Avalanche",
+            "Base",
+            "Cardano",
+            "Polkadot",
+            "Allianza"
+        ]
         
         return chains
     

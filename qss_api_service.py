@@ -662,7 +662,7 @@ def qss_status():
         "status": "operational",
         "quantum_security_available": QUANTUM_SECURITY_AVAILABLE,
         "alz_niev_available": ALZ_NIEV_AVAILABLE,
-        "liboqs_available": LIBOQS_AVAILABLE if 'LIBOQS_AVAILABLE' in globals() else False,
+        "liboqs_available": LIBOQS_AVAILABLE if 'LIBOQS_AVAILABLE' in globals() else (quantum_system.real_pqc_available if quantum_system and hasattr(quantum_system, 'real_pqc_available') else False),
         "endpoints": {
             "generate_proof": "/api/qss/generate-proof",
             "verify_proof": "/api/qss/verify-proof",
@@ -676,7 +676,11 @@ def qss_status():
             "bsc",
             "solana",
             "cosmos",
-            "avalanche"
+            "avalanche",
+            "base",
+            "cardano",
+            "polkadot",
+            "allianza"
         ],
         "signature_schemes": [
             "ML-DSA",
