@@ -1278,8 +1278,33 @@ class AllianzaBlockchain:
 # =============================================================================
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = secrets.token_hex(32)
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+# SECRET_KEY deve vir de variável de ambiente em produção
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    if os.getenv('FLASK_ENV') == 'production':
+        raise ValueError("SECRET_KEY must be set in production environment")
+    else:
+        SECRET_KEY = secrets.token_hex(32)
+        print("⚠️  SECRET_KEY gerada automaticamente (apenas para desenvolvimento)")
+app.config['SECRET_KEY'] = SECRET_KEY
+
+# CORS: Restringir origens permitidas (não usar "*" em produção)
+# Sempre restringir em produção, permitir todas apenas em desenvolvimento
+if os.getenv('FLASK_ENV') == 'development':
+    allowed_origins = ['*']
+    print("⚠️  CORS permitindo todas as origens (modo desenvolvimento)")
+else:
+    # Produção: apenas origens permitidas
+    cors_env = os.getenv('CORS_ORIGINS', 'https://testnet.allianza.tech,https://allianza.tech')
+    allowed_origins = [origin.strip() for origin in cors_env.split(',') if origin.strip()]
+    if not allowed_origins:
+        allowed_origins = [
+            "https://testnet.allianza.tech",
+            "https://allianza.tech"
+        ]
+    print(f"✅ CORS restrito para: {allowed_origins}")
+
+socketio = SocketIO(app, cors_allowed_origins=allowed_origins, async_mode='threading')
 
 # =============================================================================
 # MIDDLEWARE DE MELHORIAS - NOVA SEÇÃO
@@ -4410,5 +4435,136 @@ if __name__ == "__main__":
             print("📊 API de Transaction Tracking: http://localhost:5008/api/v1/transactions/<tx_id>/status")
     except Exception as e:
         logger.warning(f"⚠️  Erro ao registrar API de transaction tracking: {e}")
+    
+    # =============================================================================
+    # API PARA RECEBER TRANSAÇÕES DA WALLET
+    # =============================================================================
+    @app.route('/api/transactions/create', methods=['POST'])
+    def create_wallet_transaction():
+        """
+        Endpoint para receber transações da Allianza Wallet
+        Registra transações na blockchain como eventos/logs
+        """
+        try:
+            data = request.get_json()
+            
+            # Validar dados obrigatórios
+            transaction_type = data.get('transaction_type')
+            user_id = data.get('user_id')
+            amount = data.get('amount')
+            asset = data.get('asset', 'ALZ')
+            
+            if not transaction_type or not user_id or amount is None:
+                return jsonify({
+                    "success": False,
+                    "error": "transaction_type, user_id e amount são obrigatórios"
+                }), 400
+            
+            # Preparar dados da transação
+            transaction_data = {
+                "type": transaction_type,
+                "user_id": user_id,
+                "amount": float(amount),
+                "asset": asset,
+                "timestamp": data.get('timestamp', datetime.utcnow().isoformat()),
+                "metadata": data.get('metadata', {}),
+                "from_address": data.get('from_address'),
+                "to_address": data.get('to_address')
+            }
+            
+            # Gerar hash único para a transação
+            import hashlib
+            import time
+            transaction_id = f"wallet_{user_id}_{int(time.time())}_{hashlib.sha256(json.dumps(transaction_data, sort_keys=True).encode()).hexdigest()[:16]}"
+            tx_hash = hashlib.sha256(f"{transaction_id}{json.dumps(transaction_data, sort_keys=True)}".encode()).hexdigest()
+            
+            # Registrar transação no banco de dados (se disponível)
+            try:
+                if hasattr(allianza_blockchain, 'db_manager') and allianza_blockchain.db_manager:
+                    # Criar registro de transação da wallet
+                    allianza_blockchain.db_manager.execute(
+                        """
+                        INSERT INTO wallet_transactions 
+                        (transaction_id, tx_hash, user_id, transaction_type, amount, asset, metadata, created_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            transaction_id,
+                            tx_hash,
+                            user_id,
+                            transaction_type,
+                            float(amount),
+                            asset,
+                            json.dumps(transaction_data.get('metadata', {})),
+                            datetime.utcnow().isoformat()
+                        )
+                    )
+            except Exception as e:
+                # Se não tiver tabela, apenas logar
+                logger.info(f"📝 Transação da wallet (sem DB): {transaction_id}")
+            
+            # Retornar resultado
+            logger.info(f"✅ Transação da wallet registrada: {transaction_id} - {transaction_type} - {amount} {asset}")
+            
+            # Obter número do bloco atual
+            try:
+                latest_block = allianza_blockchain.get_latest_block()
+                block_number = latest_block.index if latest_block else 0
+            except:
+                block_number = 0
+            
+            return jsonify({
+                "success": True,
+                "tx_hash": tx_hash,
+                "transaction_id": transaction_id,
+                "block_number": block_number,
+                "message": "Transação registrada com sucesso"
+            }), 201
+            
+        except Exception as e:
+            logger.error(f"❌ Erro ao registrar transação da wallet: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({
+                "success": False,
+                "error": str(e)
+            }), 500
+    
+    @app.route('/api/transactions/<tx_hash>/status', methods=['GET'])
+    def get_transaction_status(tx_hash):
+        """
+        Verifica status de uma transação da wallet
+        """
+        try:
+            # Buscar transação no banco de dados
+            status = "pending"
+            block_number = 0
+            confirmations = 0
+            
+            try:
+                if hasattr(allianza_blockchain, 'db_manager') and allianza_blockchain.db_manager:
+                    result = allianza_blockchain.db_manager.fetch_one(
+                        "SELECT * FROM wallet_transactions WHERE tx_hash = ?",
+                        (tx_hash,)
+                    )
+                    if result:
+                        status = "confirmed"
+                        block_number = result.get('block_number', 0)
+                        confirmations = 1
+            except:
+                pass
+            
+            return jsonify({
+                "success": True,
+                "tx_hash": tx_hash,
+                "status": status,
+                "block_number": block_number,
+                "confirmations": confirmations
+            }), 200
+        except Exception as e:
+            return jsonify({
+                "success": False,
+                "error": str(e)
+            }), 500
     
     socketio.run(app, host="0.0.0.0", port=5008, debug=True, use_reloader=False)

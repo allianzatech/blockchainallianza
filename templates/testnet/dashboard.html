@@ -2,13 +2,35 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>Allianza Testnet - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Mobile Responsiveness */
+        @media (max-width: 640px) {
+            body { font-size: 16px; }
+            h1 { font-size: 1.75rem; }
+            h2 { font-size: 1.5rem; }
+            h3 { font-size: 1.25rem; }
+            button, a.button, .btn {
+                min-height: 44px;
+                min-width: 44px;
+                padding: 12px 24px;
+            }
+            .card { padding: 1rem; }
+        }
+        /* Touch-friendly */
+        @media (hover: none) and (pointer: coarse) {
+            button, a, .clickable {
+                -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+            }
+        }
+    </style>
 </head>
 <body class="bg-gray-900 text-white">
-    <div class="container mx-auto px-4 py-8">
+    <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
         <!-- Header -->
         <div class="mb-8">
             <h1 class="text-4xl font-bold mb-2">🌐 Allianza Testnet</h1>
@@ -32,7 +54,7 @@
         </div>
 
         <!-- Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
             <div class="bg-blue-900 p-6 rounded-lg">
                 <h3 class="text-sm text-gray-400 mb-1">Total de Blocos</h3>
                 <p class="text-3xl font-bold">{{ stats.total_blocks }}</p>
@@ -52,7 +74,7 @@
         </div>
 
         <!-- Quick Links -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
             <a href="/faucet" class="bg-green-600 hover:bg-green-700 p-6 rounded-lg text-center transition transform hover:scale-105">
                 <i class="fas fa-faucet text-4xl mb-2"></i>
                 <h3 class="text-xl font-semibold">Faucet</h3>
