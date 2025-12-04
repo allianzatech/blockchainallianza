@@ -8,6 +8,8 @@ Headers de segurança e validações adicionais
 from flask import request, jsonify, g
 from functools import wraps
 import os
+import secrets
+import hashlib
 
 def setup_security_headers(app):
     """Configurar headers de segurança"""
@@ -16,7 +18,13 @@ def setup_security_headers(app):
     def set_security_headers(response):
         """Adicionar headers de segurança a todas as respostas"""
         
+        # Gerar nonce único para esta requisição (para scripts inline seguros)
+        nonce = secrets.token_urlsafe(16)
+        g.csp_nonce = nonce
+        
         # Content Security Policy
+        # Nota: Mantendo 'unsafe-inline' temporariamente para compatibilidade
+        # Ideal: Migrar todos os scripts inline para arquivos externos ou usar nonces
         csp = (
             "default-src 'self'; "
             "script-src 'self' 'unsafe-inline' cdn.tailwindcss.com cdnjs.cloudflare.com cdn.jsdelivr.net; "
@@ -26,9 +34,22 @@ def setup_security_headers(app):
             "connect-src 'self' https://testnet.allianza.tech wss://testnet.allianza.tech; "
             "frame-ancestors 'none'; "
             "base-uri 'self'; "
-            "form-action 'self'"
+            "form-action 'self'; "
+            "object-src 'none'; "
+            "upgrade-insecure-requests"
         )
         response.headers['Content-Security-Policy'] = csp
+        
+        # Cross-Origin-Embedder-Policy (COEP) - Adicionado conforme recomendação
+        # Nota: 'require-corp' pode quebrar alguns recursos externos
+        # Usando 'credentialless' como alternativa mais permissiva
+        response.headers['Cross-Origin-Embedder-Policy'] = 'credentialless'
+        
+        # Cross-Origin-Opener-Policy (COOP) - Adicionado conforme recomendação
+        response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+        
+        # Cross-Origin-Resource-Policy (CORP) - Adicionado conforme recomendação
+        response.headers['Cross-Origin-Resource-Policy'] = 'same-origin'
         
         # X-Content-Type-Options
         response.headers['X-Content-Type-Options'] = 'nosniff'
