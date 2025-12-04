@@ -35,7 +35,24 @@ application.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(32).hex())
 @application.route('/health')
 def health_check():
     """Health check rápido para evitar timeout"""
-    return {"status": "initializing", "service": "Allianza Blockchain"}, 200
+    import socket
+    try:
+        # Verificar se a porta está sendo escutada
+        port = int(os.getenv('PORT', 5000))
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(1)
+        result = sock.connect_ex(('0.0.0.0', port))
+        sock.close()
+        port_status = "open" if result == 0 else "closed"
+    except:
+        port_status = "unknown"
+    
+    return {
+        "status": "ok" if _app_loaded else "initializing",
+        "service": "Allianza Blockchain",
+        "port": os.getenv('PORT', '5000'),
+        "port_status": port_status
+    }, 200
 
 # Carregar app completo de forma lazy
 _app_loaded = False

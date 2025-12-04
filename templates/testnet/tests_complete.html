@@ -174,7 +174,11 @@
             `;
         }
 
+        // Armazenar dados para copiar/baixar
+        let completeResultsData = null;
+
         function showResults(suiteName, data) {
+            completeResultsData = { suiteName, data };
             document.getElementById('results').classList.remove('hidden');
             
             let html = `<h3 class="text-xl font-semibold mb-4">${suiteName}</h3>`;
@@ -213,6 +217,30 @@
             }
             
             document.getElementById('results-content').innerHTML = html;
+        }
+
+        // Funções para copiar e baixar resultados completos
+        function copyCompleteResults() {
+            const content = completeResultsData ? JSON.stringify(completeResultsData, null, 2) : document.getElementById('results-content').innerText;
+            navigator.clipboard.writeText(content).then(() => {
+                alert('✅ Resultados copiados para a área de transferência!');
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                alert('❌ Erro ao copiar. Tente selecionar e copiar manualmente.');
+            });
+        }
+
+        function downloadCompleteResults() {
+            const content = completeResultsData ? JSON.stringify(completeResultsData, null, 2) : document.getElementById('results-content').innerText;
+            const blob = new Blob([content], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `prova_testes_completos_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         function showError(error) {

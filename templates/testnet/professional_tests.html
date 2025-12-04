@@ -187,7 +187,17 @@
 
         <!-- Resultados Gerais -->
         <div id="allResults" class="hidden bg-gray-800 p-6 rounded-lg mb-6">
-            <h3 class="text-xl font-bold mb-4">📊 Resultados Completos</h3>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold">📊 Resultados Completos</h3>
+                <div class="flex gap-2">
+                    <button onclick="copyResults()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm font-semibold transition">
+                        <i class="fas fa-copy mr-2"></i>Copiar
+                    </button>
+                    <button onclick="downloadResults()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm font-semibold transition">
+                        <i class="fas fa-download mr-2"></i>Baixar
+                    </button>
+                </div>
+            </div>
             <pre id="allResultsContent" class="text-sm overflow-auto max-h-96"></pre>
         </div>
 
@@ -253,6 +263,30 @@
             } catch (error) {
                 allResultsContent.textContent = `Erro: ${error.message}`;
             }
+        }
+
+        // Funções para copiar e baixar resultados
+        function copyResults() {
+            const content = document.getElementById('allResultsContent').textContent;
+            navigator.clipboard.writeText(content).then(() => {
+                alert('✅ Resultados copiados para a área de transferência!');
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                alert('❌ Erro ao copiar. Tente selecionar e copiar manualmente.');
+            });
+        }
+
+        function downloadResults() {
+            const content = document.getElementById('allResultsContent').textContent;
+            const blob = new Blob([content], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `prova_testes_profissionais_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         // Verificar status ao carregar

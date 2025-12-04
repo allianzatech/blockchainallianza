@@ -92,7 +92,17 @@
 
         <!-- Resultados -->
         <div id="resultsContainer" class="hidden">
-            <h2 class="text-2xl font-semibold mb-4">📊 Resultados</h2>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-semibold">📊 Resultados</h2>
+                <div class="flex gap-2">
+                    <button onclick="copyPublicResults()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm font-semibold transition">
+                        <i class="fas fa-copy mr-2"></i>Copiar
+                    </button>
+                    <button onclick="downloadPublicResults()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm font-semibold transition">
+                        <i class="fas fa-download mr-2"></i>Baixar
+                    </button>
+                </div>
+            </div>
             <div id="resultsContent"></div>
         </div>
     </div>
@@ -188,7 +198,11 @@
             });
         }
 
+        // Armazenar dados para copiar/baixar
+        let currentResultsData = null;
+
         function displayResult(result) {
+            currentResultsData = result;
             const container = document.getElementById('resultsContent');
             container.innerHTML = `
                 <div class="bg-gray-800 p-6 rounded-lg">
@@ -200,6 +214,7 @@
         }
 
         function displaySummary(summary) {
+            currentResultsData = summary;
             const container = document.getElementById('resultsContent');
             let html = `
                 <div class="bg-gray-800 p-6 rounded-lg mb-4">
@@ -237,6 +252,30 @@
             
             container.innerHTML = html;
             document.getElementById('resultsContainer').classList.remove('hidden');
+        }
+
+        // Funções para copiar e baixar resultados públicos
+        function copyPublicResults() {
+            const content = currentResultsData ? JSON.stringify(currentResultsData, null, 2) : document.getElementById('resultsContent').innerText;
+            navigator.clipboard.writeText(content).then(() => {
+                alert('✅ Resultados copiados para a área de transferência!');
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                alert('❌ Erro ao copiar. Tente selecionar e copiar manualmente.');
+            });
+        }
+
+        function downloadPublicResults() {
+            const content = currentResultsData ? JSON.stringify(currentResultsData, null, 2) : document.getElementById('resultsContent').innerText;
+            const blob = new Blob([content], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `prova_testes_publicos_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         document.getElementById('runAllTestsBtn').addEventListener('click', runAllTests);
