@@ -493,6 +493,40 @@
         if (currentAddress) {
             checkBalance();
         }
+        
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileSidebar = document.getElementById('mobile-sidebar');
+        const closeMobileMenu = document.getElementById('close-mobile-menu');
+        
+        if (mobileMenuBtn && mobileSidebar) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileSidebar.classList.remove('-translate-x-full');
+                // Copiar conteúdo da sidebar desktop para mobile
+                const desktopSidebar = document.querySelector('.hidden.md\\:block');
+                if (desktopSidebar) {
+                    const mobileContent = mobileSidebar.querySelector('div');
+                    if (mobileContent && !mobileContent.querySelector('h1')) {
+                        mobileContent.innerHTML = desktopSidebar.innerHTML;
+                    }
+                }
+            });
+        }
+        
+        if (closeMobileMenu && mobileSidebar) {
+            closeMobileMenu.addEventListener('click', () => {
+                mobileSidebar.classList.add('-translate-x-full');
+            });
+        }
+        
+        // Fechar menu ao clicar fora
+        if (mobileSidebar) {
+            mobileSidebar.addEventListener('click', (e) => {
+                if (e.target === mobileSidebar) {
+                    mobileSidebar.classList.add('-translate-x-full');
+                }
+            });
+        }
     </script>
 </body>
 </html>
