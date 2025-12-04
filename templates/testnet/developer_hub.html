@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Developer Hub - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .btn-back:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateX(-3px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        .code-block {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+        }
+        .code-block code {
+            color: #e2e8f0;
+            font-family: 'Courier New', monospace;
+        }
+        .step-card {
+            transition: transform 0.2s;
+        }
+        .step-card:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="/" class="btn-back mb-4">
+                <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
+            </a>
+            <h1 class="text-4xl font-bold mb-2">🚀 Developer Hub</h1>
+            <p class="text-gray-400">Comece a integrar segurança quântica em minutos</p>
+        </div>
+
+        <!-- Quick Start Guide -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-8">
+            <h2 class="text-2xl font-semibold mb-4">
+                <i class="fas fa-rocket text-yellow-400 mr-2"></i>
+                Quick Start Guide
+            </h2>
+            
+            <!-- Step 1: Install SDK -->
+            <div class="step-card bg-gray-700 rounded-lg p-6 mb-4">
+                <div class="flex items-center mb-4">
+                    <div class="bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">1</div>
+                    <h3 class="text-xl font-semibold">Instalar o SDK</h3>
+                </div>
+                <div class="code-block mb-4">
+                    <code>npm install @allianza/qss-js</code>
+                </div>
+                <p class="text-gray-300 mb-2">Ou via CDN:</p>
+                <div class="code-block">
+                    <code>&lt;script src="https://cdn.allianza.tech/qss-sdk.js"&gt;&lt;/script&gt;</code>
+                </div>
+            </div>
+
+            <!-- Step 2: Generate Proof -->
+            <div class="step-card bg-gray-700 rounded-lg p-6 mb-4">
+                <div class="flex items-center mb-4">
+                    <div class="bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">2</div>
+                    <h3 class="text-xl font-semibold">Gerar Prova Quântica</h3>
+                </div>
+                <div class="code-block mb-4">
+                    <code>
+import QSS from '@allianza/qss-js';
+
+// Gerar prova para qualquer blockchain
+const proof = await QSS.generateProof('bitcoin', txHash);
+
+console.log('Proof Hash:', proof.proof_hash);
+                    </code>
+                </div>
+                <p class="text-gray-300 text-sm">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Funciona com Bitcoin, Ethereum, Polygon, Solana e qualquer blockchain!
+                </p>
+            </div>
+
+            <!-- Step 3: Verify Proof -->
+            <div class="step-card bg-gray-700 rounded-lg p-6 mb-4">
+                <div class="flex items-center mb-4">
+                    <div class="bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">3</div>
+                    <h3 class="text-xl font-semibold">Verificar a Prova</h3>
+                </div>
+                <div class="code-block mb-4">
+                    <code>
+const result = await QSS.verifyProof(proof);
+
+if (result.valid) {
+    console.log('✅ Prova válida!');
+    console.log('Assinatura ML-DSA:', result.verification_details.signature_valid);
+    console.log('Merkle Proof:', result.verification_details.merkle_proof_valid);
+}
+                    </code>
+                </div>
+            </div>
+
+            <!-- Step 4: Anchor Proof -->
+            <div class="step-card bg-gray-700 rounded-lg p-6 mb-4">
+                <div class="flex items-center mb-4">
+                    <div class="bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">4</div>
+                    <h3 class="text-xl font-semibold">Ancorar na Blockchain</h3>
+                </div>
+                <div class="mb-4">
+                    <p class="text-gray-300 mb-2 font-semibold">Bitcoin (OP_RETURN):</p>
+                    <div class="code-block mb-4">
+                        <code>
+const instructions = await QSS.anchorOnBitcoin(proof, 'tb1q...');
+// Use instructions.data no OP_RETURN
+                        </code>
+                    </div>
+                    <p class="text-gray-300 mb-2 font-semibold">Ethereum/Polygon (Smart Contract):</p>
+                    <div class="code-block">
+                        <code>
+const { transactionData } = await QSS.anchorOnEVM(
+    proof,
+    contractAddress,
+    'ethereum'
+);
+// Envie a transação com transactionData
+                        </code>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Examples -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-8">
+            <h2 class="text-2xl font-semibold mb-4">
+                <i class="fas fa-code text-green-400 mr-2"></i>
+                Exemplos de API REST
+            </h2>
+            
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold mb-2 text-cyan-400">Gerar Prova</h3>
+                <div class="code-block mb-2">
+                    <code>
+POST https://testnet.allianza.tech/api/qss/generate-proof
+Content-Type: application/json
+
+{
+  "chain": "bitcoin",
+  "tx_hash": "842f01a3302b6b19981204c96f377be1..."
+}
+                    </code>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold mb-2 text-cyan-400">Verificar Prova</h3>
+                <div class="code-block mb-2">
+                    <code>
+POST https://testnet.allianza.tech/api/qss/verify-proof
+Content-Type: application/json
+
+{
+  "quantum_proof": { /* JSON da prova */ }
+}
+                    </code>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold mb-2 text-cyan-400">Status do Serviço</h3>
+                <div class="code-block">
+                    <code>
+GET https://testnet.allianza.tech/api/qss/status
+                    </code>
+                </div>
+            </div>
+        </div>
+
+        <!-- Use Cases -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-8">
+            <h2 class="text-2xl font-semibold mb-4">
+                <i class="fas fa-lightbulb text-yellow-400 mr-2"></i>
+                Casos de Uso
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-gray-700 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold mb-2 text-blue-400">
+                        <i class="fas fa-exchange-alt mr-2"></i>Cross-Chain Bridges
+                    </h3>
+                    <p class="text-gray-300 text-sm">
+                        Prove que uma transação em Polygon foi validada e ancore no Bitcoin.
+                    </p>
+                </div>
+                
+                <div class="bg-gray-700 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold mb-2 text-green-400">
+                        <i class="fas fa-wallet mr-2"></i>Exchanges
+                    </h3>
+                    <p class="text-gray-300 text-sm">
+                        Gere provas quânticas para saques e verifique antes de processar.
+                    </p>
+                </div>
+                
+                <div class="bg-gray-700 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold mb-2 text-purple-400">
+                        <i class="fas fa-coins mr-2"></i>DeFi Protocols
+                    </h3>
+                    <p class="text-gray-300 text-sm">
+                        Proteja interações de smart contracts com provas quânticas.
+                    </p>
+                </div>
+                
+                <div class="bg-gray-700 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold mb-2 text-red-400">
+                        <i class="fas fa-shield-alt mr-2"></i>Auditoria
+                    </h3>
+                    <p class="text-gray-300 text-sm">
+                        Certifique transações importantes com provas verificáveis.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resources -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-2xl font-semibold mb-4">
+                <i class="fas fa-book text-blue-400 mr-2"></i>
+                Recursos
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <a href="/qss" class="bg-gray-700 hover:bg-gray-600 rounded-lg p-4 transition">
+                    <h3 class="text-lg font-semibold mb-2">
+                        <i class="fas fa-shield-virus mr-2"></i>QSS Dashboard
+                    </h3>
+                    <p class="text-gray-300 text-sm">Teste o QSS diretamente no navegador</p>
+                </a>
+                
+                <a href="/api/qss/status" target="_blank" class="bg-gray-700 hover:bg-gray-600 rounded-lg p-4 transition">
+                    <h3 class="text-lg font-semibold mb-2">
+                        <i class="fas fa-server mr-2"></i>API Status
+                    </h3>
+                    <p class="text-gray-300 text-sm">Verifique o status da API em tempo real</p>
+                </a>
+                
+                <a href="https://github.com/allianza-blockchain/qss-sdk" target="_blank" class="bg-gray-700 hover:bg-gray-600 rounded-lg p-4 transition">
+                    <h3 class="text-lg font-semibold mb-2">
+                        <i class="fab fa-github mr-2"></i>GitHub SDK
+                    </h3>
+                    <p class="text-gray-300 text-sm">Código-fonte e documentação completa</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

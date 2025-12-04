@@ -17,6 +17,7 @@ from testnet_wallet_generator import TestnetWalletGenerator
 from testnet_status import TestnetStatusPage
 from testnet_quantum_dashboard import QuantumSecurityDashboard
 from testnet_public_tests_interface import PublicTestsInterface
+from testnet_leaderboard import TestnetLeaderboard
 # Importar ALZ-NIEV (substitui testnet_interoperability)
 try:
     from alz_niev_interoperability import ALZNIEV
@@ -57,11 +58,12 @@ status_page = None
 quantum_dashboard = None
 public_tests = None
 alz_niev = None
+leaderboard = None
 
 def init_testnet_routes(app, blockchain_instance, quantum_security_instance, bridge_instance=None):
     """Inicializa as rotas da testnet"""
     global faucet, explorer, proof_generator, quantum_security, wallet_generator, professional_tests
-    global status_page, quantum_dashboard, public_tests, alz_niev
+    global status_page, quantum_dashboard, public_tests, alz_niev, leaderboard
     
     try:
         quantum_security = quantum_security_instance
@@ -85,6 +87,7 @@ def init_testnet_routes(app, blockchain_instance, quantum_security_instance, bri
         status_page = TestnetStatusPage(blockchain_instance)
         quantum_dashboard = QuantumSecurityDashboard(quantum_security_instance, blockchain_instance)
         public_tests = PublicTestsInterface(blockchain_instance, quantum_security_instance)
+        leaderboard = TestnetLeaderboard()
         
         # Inicializar ALZ-NIEV (substitui testnet_interoperability)
         if ALZ_NIEV_AVAILABLE and ALZNIEV:
@@ -168,10 +171,18 @@ def testnet_dashboard():
         "amount_per_request": 1000
     }
     
+    # Adicionar atividade recente e leaderboard
+    recent_activities = leaderboard.get_recent_activities(limit=10) if leaderboard else []
+    top_users = leaderboard.get_top_users(limit=5) if leaderboard else []
+    leaderboard_stats = leaderboard.get_stats_summary() if leaderboard else {}
+    
     return render_template('testnet/dashboard.html',
                          network_info=network_info,
                          stats=stats,
-                         faucet_stats=faucet_stats)
+                         faucet_stats=faucet_stats,
+                         recent_activities=recent_activities,
+                         top_users=top_users,
+                         leaderboard_stats=leaderboard_stats)
 
 @testnet_bp.route('/explorer')
 def testnet_explorer_page():
@@ -191,6 +202,43 @@ def testnet_explorer_page():
                              blocks=blocks,
                              transactions=transactions,
                              stats=stats)
+
+@testnet_bp.route('/developer-hub')
+def developer_hub():
+    """Página Developer Hub com Quick Start Guide"""
+    return render_template('testnet/developer_hub.html')
+
+@testnet_bp.route('/leaderboard')
+def leaderboard_page():
+    """Página do Leaderboard"""
+    top_users = leaderboard.get_top_users(limit=50) if leaderboard else []
+    recent_activities = leaderboard.get_recent_activities(limit=50) if leaderboard else []
+    stats = leaderboard.get_stats_summary() if leaderboard else {}
+    
+    return render_template('testnet/leaderboard.html',
+                         top_users=top_users,
+                         recent_activities=recent_activities,
+                         stats=stats)
+
+@testnet_bp.route('/api/leaderboard/top')
+def api_leaderboard_top():
+    """API: Top usuários do leaderboard"""
+    limit = request.args.get('limit', 10, type=int)
+    top_users = leaderboard.get_top_users(limit=limit) if leaderboard else []
+    return jsonify({"users": top_users}), 200
+
+@testnet_bp.route('/api/leaderboard/activities')
+def api_leaderboard_activities():
+    """API: Atividades recentes"""
+    limit = request.args.get('limit', 20, type=int)
+    activities = leaderboard.get_recent_activities(limit=limit) if leaderboard else []
+    return jsonify({"activities": activities}), 200
+
+@testnet_bp.route('/api/leaderboard/stats')
+def api_leaderboard_stats():
+    """API: Estatísticas do leaderboard"""
+    stats = leaderboard.get_stats_summary() if leaderboard else {}
+    return jsonify(stats), 200
 
 # =============================================================================
 # API - FAUCET
@@ -1083,6 +1131,16 @@ def api_run_public_tests():
             test_func = test_map.get(test_name)
             if test_func:
                 result = test_func()
+                
+                # Adicionar ao leaderboard
+                if leaderboard and result.get('success'):
+                    user_id = request.remote_addr or "anonymous"
+                    activity_type = "test_success" if result.get('success') else "test_run"
+                    leaderboard.add_activity(activity_type, user_id, {
+                        "test_name": test_name,
+                        "test_id": result.get('test_id')
+                    })
+                
                 return jsonify(result), 200
             else:
                 return jsonify({
@@ -1909,182 +1967,3 @@ def api_alz_niev_status():
         "supported_chains": ["bitcoin", "ethereum", "polygon", "bsc", "solana", "cosmos", "base"],
         "supported_consensus": ["PoW", "PoS", "Parallel", "Tendermint", "BFT"]
     }), 200
-
-# =============================================================================
-# TESTES COMPLETOS - 41 VALIDAÇÕES
-# =============================================================================
-
-@testnet_bp.route('/api/tests/complete-validation/run', methods=['POST'])
-def api_run_complete_validation():
-    """Executa a Complete Validation Suite (8 testes)"""
-    try:
-        from complete_validation_suite import CompleteValidationSuite
-        
-        suite = CompleteValidationSuite(
-            bridge_instance=None,
-            quantum_security_instance=quantum_security,
-            tokenomics_instance=None
-        )
-        
-        results = suite.run_all_validation_tests()
-        
-        return jsonify({
-            "success": True,
-            "suite": "complete_validation",
-            "results": results
-        }), 200
-    
-    except Exception as e:
-        return jsonify({
-            "success": False,
-            "error": str(e)
-        }), 500
-
-@testnet_bp.route('/api/tests/critical/run', methods=['POST'])
-def api_run_critical_tests():
-    """Executa a Critical Tests Suite (6 testes)"""
-    try:
-        from critical_tests_suite import CriticalTestsSuite
-        
-        suite = CriticalTestsSuite(
-            bridge_instance=None,
-            quantum_security_instance=quantum_security
-        )
-        
-        results = suite.run_all_critical_tests()
-        
-        return jsonify({
-            "success": True,
-            "suite": "critical_tests",
-            "results": results
-        }), 200
-    
-    except Exception as e:
-        return jsonify({
-            "success": False,
-            "error": str(e)
-        }), 500
-
-@testnet_bp.route('/api/tests/professional/run', methods=['POST'])
-def api_run_professional_suite():
-    """Executa a Professional Suite (14 testes)"""
-    try:
-        from testnet_professional_test_suite import ProfessionalTestSuite
-        
-        # Permitir request sem JSON ou com JSON vazio
-        try:
-            data = request.get_json(force=True) or {}
-        except Exception:
-            data = {}
-        
-        include_critical = data.get('include_critical', False)
-        
-        suite = ProfessionalTestSuite(
-            bridge_instance=None,
-            quantum_security_instance=quantum_security,
-            blockchain_instance=None
-        )
-        
-        results = suite.run_all_tests(include_critical=include_critical)
-        
-        return jsonify({
-            "success": True,
-            "suite": "professional_suite",
-            "results": results
-        }), 200
-    
-    except Exception as e:
-        import traceback
-        error_trace = traceback.format_exc()
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "traceback": error_trace
-        }), 500
-
-@testnet_bp.route('/api/tests/all/run', methods=['POST'])
-def api_run_all_tests():
-    """Executa TODOS os 41 testes (Complete + Critical + Professional)"""
-    try:
-        all_results = {
-            "start_time": datetime.now().isoformat(),
-            "suites": {}
-        }
-        
-        # 1. Complete Validation Suite (8 testes)
-        try:
-            from complete_validation_suite import CompleteValidationSuite
-            complete_suite = CompleteValidationSuite(
-                bridge_instance=None,
-                quantum_security_instance=quantum_security,
-                tokenomics_instance=None
-            )
-            all_results["suites"]["complete_validation"] = complete_suite.run_all_validation_tests()
-        except Exception as e:
-            all_results["suites"]["complete_validation"] = {
-                "success": False,
-                "error": str(e)
-            }
-        
-        # 2. Critical Tests Suite (6 testes)
-        try:
-            from critical_tests_suite import CriticalTestsSuite
-            critical_suite = CriticalTestsSuite(
-                bridge_instance=None,
-                quantum_security_instance=quantum_security
-            )
-            all_results["suites"]["critical_tests"] = critical_suite.run_all_critical_tests()
-        except Exception as e:
-            all_results["suites"]["critical_tests"] = {
-                "success": False,
-                "error": str(e)
-            }
-        
-        # 3. Professional Suite (14 testes)
-        try:
-            from testnet_professional_test_suite import ProfessionalTestSuite
-            professional_suite = ProfessionalTestSuite(
-                bridge_instance=None,
-                quantum_security_instance=quantum_security,
-                blockchain_instance=None
-            )
-            all_results["suites"]["professional_suite"] = professional_suite.run_all_tests(include_critical=False)
-        except Exception as e:
-            all_results["suites"]["professional_suite"] = {
-                "success": False,
-                "error": str(e)
-            }
-        
-        # Calcular estatísticas totais
-        total_tests = 0
-        successful_tests = 0
-        
-        for suite_name, suite_results in all_results["suites"].items():
-            if isinstance(suite_results, dict) and "summary" in suite_results:
-                total_tests += suite_results["summary"].get("total_tests", 0)
-                successful_tests += suite_results["summary"].get("successful_tests", 0)
-        
-        all_results["summary"] = {
-            "total_validations": total_tests,
-            "successful_validations": successful_tests,
-            "failed_validations": total_tests - successful_tests,
-            "success_rate": (successful_tests / total_tests * 100) if total_tests > 0 else 0
-        }
-        
-        all_results["end_time"] = datetime.now().isoformat()
-        
-        return jsonify({
-            "success": True,
-            "results": all_results
-        }), 200
-    
-    except Exception as e:
-        return jsonify({
-            "success": False,
-            "error": str(e)
-        }), 500
-
-@testnet_bp.route('/tests/complete', methods=['GET'])
-def tests_complete_page():
-    """Página para executar todos os 41 testes"""
-    return render_template('testnet/tests_complete.html')

@@ -109,6 +109,19 @@ def generate_quantum_proof():
         
         print(f"🔐 QSS: Gerando prova quântica para {chain}:{tx_hash}")
         
+        # Adicionar requisição QSS ao leaderboard (se disponível)
+        try:
+            from flask import request
+            from testnet_leaderboard import TestnetLeaderboard
+            leaderboard = TestnetLeaderboard()
+            user_id = request.remote_addr or "anonymous"
+            leaderboard.add_activity("qss_request", user_id, {
+                "chain": chain,
+                "tx_hash": tx_hash[:16] + "..."
+            })
+        except:
+            pass  # Leaderboard opcional
+        
         # 1. Preparar mensagem para assinatura
         message_data = {
             "chain": chain,
@@ -258,6 +271,20 @@ def generate_quantum_proof():
         print(f"   TX: {tx_hash}")
         print(f"   Signature Scheme: {signature_scheme}")
         print(f"   Proof Hash: {proof_hash}")
+        
+        # Adicionar ao leaderboard (se disponível)
+        try:
+            from flask import request
+            from testnet_leaderboard import TestnetLeaderboard
+            leaderboard = TestnetLeaderboard()
+            user_id = request.remote_addr or "anonymous"
+            leaderboard.add_activity("proof_generated", user_id, {
+                "chain": chain,
+                "tx_hash": tx_hash[:16] + "...",
+                "proof_hash": proof_hash[:16] + "..."
+            })
+        except:
+            pass  # Leaderboard opcional
         
         return jsonify({
             "success": True,
