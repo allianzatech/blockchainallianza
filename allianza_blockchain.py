@@ -1340,6 +1340,32 @@ if IMPROVEMENTS_AVAILABLE:
             rate_limit_response = rate_limit_middleware()
             if rate_limit_response:
                 return rate_limit_response
+    else:
+        # Middleware básico de segurança mesmo sem melhorias
+        @app.before_request
+        def basic_security():
+            """Validações básicas de segurança"""
+            # Validar tamanho de request
+            if request.content_length and request.content_length > 16 * 1024 * 1024:
+                return jsonify({"error": "Request too large", "message": "Maximum 16MB"}), 413
+
+# =============================================================================
+# SECURITY HEADERS - NOVA SEÇÃO
+# =============================================================================
+try:
+    from security_middleware import setup_security_headers
+    setup_security_headers(app)
+    print("✅ Security headers configurados!")
+except ImportError:
+    # Fallback básico se módulo não estiver disponível
+    @app.after_request
+    def basic_security_headers(response):
+        """Headers básicos de segurança"""
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+        return response
+    print("⚠️  Security middleware não disponível, usando headers básicos")
 
 # =============================================================================
 # RATE LIMITING - PROTEÇÃO CONTRA ABUSO
