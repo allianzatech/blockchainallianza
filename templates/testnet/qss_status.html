@@ -353,13 +353,20 @@ Voltar
                     loadingModal.remove();
                     showTestResult(name, data, data.success !== false);
                 } else if (name === 'verify_proof') {
-                    // POST request - precisa de uma prova
-                    // Criar uma prova de teste primeiro
+                    // POST request - precisa de uma prova completa
+                    // Criar uma prova de teste com todos os campos necessários
+                    const testTxHash = '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('');
+                    const testSignature = btoa('test_signature_' + Date.now()); // Base64 encode
+                    const testProofHash = '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('');
+                    
                     const testProof = {
                         asset_chain: 'bitcoin',
-                        asset_tx: '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join(''),
-                        proof_hash: '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join(''),
-                        timestamp: Math.floor(Date.now() / 1000)
+                        asset_tx: testTxHash,
+                        quantum_signature: testSignature, // Campo obrigatório!
+                        quantum_signature_scheme: 'ML-DSA',
+                        proof_hash: testProofHash,
+                        timestamp: Math.floor(Date.now() / 1000),
+                        merkle_root: '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('')
                     };
                     
                     const response = await fetch(fullUrl, {
