@@ -42,7 +42,7 @@ This is the **public repository** for developers and investors to validate Allia
 - **QSS SDK** (`qss-sdk/`) - TypeScript SDK for quantum security
 - **Documentation** (`docs/`) - API reference, guides, and technical docs
 - **Templates** (`templates/testnet/`) - UI templates for testnet
-- **Technical Proofs** (`PROVAS_TECNICAS_COMPLETAS_FINAL_EN.json`) - 41 technical proofs
+- **Technical Proofs** (`TECHNICAL_PROOFS_COMPLETE_FINAL.json`) - 41 technical proofs
 - **Whitepaper** (`WHITEPAPER_ALLIANZA_BLOCKCHAIN.md`) - Complete technical documentation
 
 ### 🔒 **Not Included (Private Repository):**
@@ -76,7 +76,7 @@ This is the **public repository** for developers and investors to validate Allia
 
 - 🌐 **Testnet:** https://testnet.allianza.tech
 - 📦 **npm Package:** https://www.npmjs.com/package/allianza-qss-js
-- 📄 **Technical Proofs:** See `PROVAS_TECNICAS_COMPLETAS_FINAL_EN.json`
+- 📄 **Technical Proofs:** See `TECHNICAL_PROOFS_COMPLETE_FINAL.json`
 
 ---
 

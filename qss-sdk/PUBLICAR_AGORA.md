@@ -1,63 +1,62 @@
-# 🚀 Publicar Agora (Sem Escopo)
+# 🚀 Publish Now (Without Scope)
 
-## ✅ Solução Rápida
+## ✅ Quick Solution
 
-Mudei o `package.json` para publicar **sem escopo** temporariamente.
+Changed `package.json` to publish **without scope** temporarily.
 
-### **Publicar Agora:**
+### **Publish Now:**
 
 ```bash
 npm publish
 ```
 
-**Instalação será:**
+**Installation will be:**
 ```bash
 npm install allianza-qss-js
 ```
 
-### **Depois (Quando Criar Organização):**
+### **Later (When Creating Organization):**
 
-1. Criar organização `allianza` no npm
-2. Mudar `package.json` de volta para `@allianza/qss-js`
-3. Publicar nova versão
-4. Deprecar versão antiga: `npm deprecate allianza-qss-js "Use @allianza/qss-js instead"`
+1. Create `allianza` organization on npm
+2. Change `package.json` back to `@allianza/qss-js`
+3. Publish new version
+4. Deprecate old version: `npm deprecate allianza-qss-js "Use @allianza/qss-js instead"`
 
 ---
 
-## 📝 O Que Foi Mudado
+## 📝 What Was Changed
 
-**Antes:**
+**Before:**
 ```json
 "name": "@allianza/qss-js"
 ```
 
-**Agora:**
+**Now:**
 ```json
 "name": "allianza-qss-js"
 ```
 
-**Tudo mais permanece igual!**
+**Everything else remains the same!**
 
 ---
 
-## 🎯 Próximos Passos
+## 🎯 Next Steps
 
-1. **Publicar agora:**
+1. **Publish now:**
    ```bash
    npm publish
    ```
 
-2. **Testar instalação:**
+2. **Test installation:**
    ```bash
    npm install allianza-qss-js
    ```
 
-3. **Depois criar organização:**
-   - Acesse: https://www.npmjs.com/org/create
-   - Crie organização `allianza`
-   - Migre para `@allianza/qss-js` na próxima versão
+3. **Later create organization:**
+   - Visit: https://www.npmjs.com/org/create
+   - Create `allianza` organization
+   - Migrate to `@allianza/qss-js` in next version
 
 ---
 
-**✅ Pronto para publicar! Execute: `npm publish`**
-
+**✅ Ready to publish! Run: `npm publish`**

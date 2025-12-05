@@ -1,6 +1,6 @@
 # 📚 API Reference - Allianza Blockchain
 
-Referência completa da API RPC da Allianza Blockchain.
+Complete reference for Allianza Blockchain RPC API.
 
 ---
 
@@ -27,13 +27,13 @@ GET http://localhost:8545/network
 
 ---
 
-## 📡 Métodos RPC
+## 📡 RPC Methods
 
-### Métodos Ethereum Padrão
+### Standard Ethereum Methods
 
 #### `eth_blockNumber`
 
-Retorna o número do bloco mais recente.
+Returns the number of the most recent block.
 
 **Request:**
 ```json
@@ -58,7 +58,7 @@ Retorna o número do bloco mais recente.
 
 #### `eth_getBalance`
 
-Retorna o saldo de uma conta.
+Returns the balance of an account.
 
 **Request:**
 ```json
@@ -83,7 +83,7 @@ Retorna o saldo de uma conta.
 
 #### `eth_sendTransaction`
 
-Envia uma transação.
+Sends a transaction.
 
 **Request:**
 ```json
@@ -110,11 +110,11 @@ Envia uma transação.
 
 ---
 
-### Métodos Allianza Customizados
+### Allianza Custom Methods
 
 #### `allianza_getNetworkInfo`
 
-Retorna informações da rede.
+Returns network information.
 
 **Request:**
 ```json
@@ -153,7 +153,7 @@ Retorna informações da rede.
 
 #### `allianza_getValidators`
 
-Retorna lista de validadores.
+Returns list of validators.
 
 **Request:**
 ```json
@@ -185,7 +185,7 @@ Retorna lista de validadores.
 
 #### `allianza_getValidatorInfo`
 
-Retorna informações de um validador específico.
+Returns information about a specific validator.
 
 **Request:**
 ```json
@@ -218,7 +218,7 @@ Retorna informações de um validador específico.
 
 #### `allianza_sendCrossChain`
 
-Envia transação cross-chain.
+Sends a cross-chain transaction.
 
 **Request:**
 ```json
@@ -241,7 +241,7 @@ Envia transação cross-chain.
   "result": {
     "success": true,
     "tx_hash": "0x1234567890abcdef...",
-    "message": "Transação cross-chain iniciada"
+    "message": "Cross-chain transaction initiated"
   },
   "id": 1
 }
@@ -251,7 +251,7 @@ Envia transação cross-chain.
 
 #### `allianza_getCrossChainStatus`
 
-Verifica status de transferência cross-chain.
+Checks the status of a cross-chain transfer.
 
 **Request:**
 ```json
@@ -281,7 +281,7 @@ Verifica status de transferência cross-chain.
 
 #### `allianza_stake`
 
-Faz stake de tokens.
+Stakes tokens.
 
 **Request:**
 ```json
@@ -312,7 +312,7 @@ Faz stake de tokens.
 
 #### `allianza_unstake`
 
-Remove stake de tokens.
+Removes staked tokens.
 
 **Request:**
 ```json
@@ -341,10 +341,10 @@ Remove stake de tokens.
 
 ---
 
-## 🔐 Códigos de Erro
+## 🔐 Error Codes
 
-| Código | Descrição |
-|--------|-----------|
+| Code | Description |
+|------|-------------|
 | -32700 | Parse error |
 | -32600 | Invalid Request |
 | -32601 | Method not found |
@@ -353,7 +353,7 @@ Remove stake de tokens.
 
 ---
 
-## 📖 Exemplos
+## 📖 Examples
 
 ### Python
 
@@ -363,7 +363,7 @@ import requests
 url = "http://localhost:8545"
 headers = {"Content-Type": "application/json"}
 
-# Obter informações da rede
+# Get network information
 payload = {
     "jsonrpc": "2.0",
     "method": "allianza_getNetworkInfo",
@@ -382,7 +382,7 @@ const fetch = require('node-fetch');
 
 const url = 'http://localhost:8545';
 
-// Obter informações da rede
+// Get network information
 const payload = {
   jsonrpc: '2.0',
   method: 'allianza_getNetworkInfo',
@@ -401,12 +401,4 @@ fetch(url, {
 
 ---
 
-**Para mais informações, consulte a documentação completa em [docs.allianza.io](https://docs.allianza.io)**
-
-
-
-
-
-
-
-
+**For more information, see the complete documentation at [docs.allianza.io](https://docs.allianza.io)**

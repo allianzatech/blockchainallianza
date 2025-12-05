@@ -1,60 +1,60 @@
-# 🔄 Mecanismo de Rollback Atômico (AES)
+# 🔄 Atomic Rollback Mechanism (AES)
 
-**Data:** 03 de Dezembro de 2025  
-**Versão:** 1.0  
-**Status:** ✅ Implementado e Testado
-
----
-
-## 📋 Visão Geral
-
-O **Atomic Execution Sync (AES)** garante que transações cross-chain sejam **atômicas**: todas as execuções em diferentes blockchains devem ser bem-sucedidas, ou **nenhuma** será confirmada. Se qualquer execução falhar, todas as execuções bem-sucedidas são automaticamente revertidas.
+**Date:** December 3, 2025  
+**Version:** 1.0  
+**Status:** ✅ Implemented and Tested
 
 ---
 
-## 🎯 Princípio Fundamental
+## 📋 Overview
 
-**"Todas ou Nenhuma"** - Este é o princípio fundamental da atomicidade:
-
-- ✅ Se **TODAS** as execuções forem bem-sucedidas → Todas são confirmadas
-- ❌ Se **QUALQUER** execução falhar → **TODAS** são revertidas
+The **Atomic Execution Sync (AES)** ensures that cross-chain transactions are **atomic**: all executions on different blockchains must succeed, or **none** will be confirmed. If any execution fails, all successful executions are automatically reverted.
 
 ---
 
-## 🔧 Como Funciona
+## 🎯 Fundamental Principle
 
-### Fase 1: Execução Preparatória
+**"All or None"** - This is the fundamental principle of atomicity:
+
+- ✅ If **ALL** executions succeed → All are confirmed
+- ❌ If **ANY** execution fails → **ALL** are reverted
+
+---
+
+## 🔧 How It Works
+
+### Phase 1: Preparatory Execution
 
 ```
-1. Sistema executa função em Chain A → ✅ Sucesso
-2. Sistema executa função em Chain B → ✅ Sucesso  
-3. Sistema executa função em Chain C → ❌ FALHA
+1. System executes function on Chain A → ✅ Success
+2. System executes function on Chain B → ✅ Success  
+3. System executes function on Chain C → ❌ FAILURE
 ```
 
-### Fase 2: Detecção de Falha
+### Phase 2: Failure Detection
 
-Quando uma execução falha, o sistema detecta imediatamente:
+When an execution fails, the system immediately detects it:
 
 ```python
 if not result.success:
     all_success = False
-    print(f"❌ Falha em {chain}")
-    break  # Para execuções subsequentes
+    print(f"❌ Failure on {chain}")
+    break  # Stop subsequent executions
 ```
 
-### Fase 3: Rollback Automático
+### Phase 3: Automatic Rollback
 
-O sistema então reverte **todas** as execuções que foram bem-sucedidas:
+The system then reverts **all** executions that were successful:
 
 ```python
 def _rollback_executions(self, results, chains, elni):
     """
-    Reverte todas as execuções que foram bem-sucedidas
-    Garante atomicidade: todas ou nenhuma
+    Reverts all executions that were successful
+    Ensures atomicity: all or none
     """
     for chain, result in results.items():
         if result.success:
-            # Reverter execução nesta chain
+            # Revert execution on this chain
             rollback_result = elni.execute_native_function(
                 source_chain="allianza",
                 target_chain=chain,
@@ -69,116 +69,116 @@ def _rollback_executions(self, results, chains, elni):
 
 ---
 
-## 📊 Exemplo Prático
+## 📊 Practical Example
 
-### Cenário: Transferência Atômica Multi-Chain
+### Scenario: Atomic Multi-Chain Transfer
 
-**Objetivo:** Transferir 100 ALZ de Polygon para Bitcoin e Ethereum simultaneamente.
+**Objective:** Transfer 100 ALZ from Polygon to Bitcoin and Ethereum simultaneously.
 
-#### Execução:
+#### Execution:
 
-1. **Polygon:** Lock de 100 ALZ → ✅ **Sucesso**
-2. **Bitcoin:** Unlock de 100 ALZ → ✅ **Sucesso**
-3. **Ethereum:** Mint de 100 ALZ → ❌ **FALHA** (gas insuficiente)
+1. **Polygon:** Lock 100 ALZ → ✅ **Success**
+2. **Bitcoin:** Unlock 100 ALZ → ✅ **Success**
+3. **Ethereum:** Mint 100 ALZ → ❌ **FAILURE** (insufficient gas)
 
-#### Resultado:
+#### Result:
 
-Como Ethereum falhou, o sistema automaticamente:
+Since Ethereum failed, the system automatically:
 
-1. ✅ **Reverte Polygon:** Unlock dos 100 ALZ (retorna ao estado original)
-2. ✅ **Reverte Bitcoin:** Lock dos 100 ALZ (retorna ao estado original)
-3. ❌ **Ethereum:** Já havia falhado, não precisa reverter
+1. ✅ **Reverts Polygon:** Unlock 100 ALZ (returns to original state)
+2. ✅ **Reverts Bitcoin:** Lock 100 ALZ (returns to original state)
+3. ❌ **Ethereum:** Already failed, no need to revert
 
-**Estado Final:** Todas as chains retornam ao estado original. Nenhuma transferência foi confirmada.
-
----
-
-## 🔐 Garantias de Segurança
-
-### 1. **Atomicidade Garantida**
-
-- Nenhuma transação parcial será confirmada
-- Sistema garante que todas as execuções são revertidas se qualquer uma falhar
-
-### 2. **Rastreabilidade**
-
-Cada rollback é registrado com:
-- Timestamp da execução original
-- Timestamp do rollback
-- Razão da falha (`atomicity_failure`)
-- Resultado do rollback (sucesso/falha)
-
-### 3. **Idempotência**
-
-O sistema garante que múltiplas tentativas de rollback não causam problemas:
-- Se uma execução já foi revertida, não tenta reverter novamente
-- Se uma execução já havia falhado, não precisa reverter
+**Final State:** All chains return to original state. No transfer was confirmed.
 
 ---
 
-## 📝 Logs de Exemplo
+## 🔐 Security Guarantees
 
-### Execução Bem-Sucedida:
+### 1. **Guaranteed Atomicity**
+
+- No partial transaction will be confirmed
+- System ensures all executions are reverted if any fails
+
+### 2. **Traceability**
+
+Each rollback is recorded with:
+- Timestamp of original execution
+- Timestamp of rollback
+- Failure reason (`atomicity_failure`)
+- Rollback result (success/failure)
+
+### 3. **Idempotency**
+
+The system ensures multiple rollback attempts don't cause issues:
+- If an execution was already reverted, it doesn't try to revert again
+- If an execution already failed, it doesn't need to revert
+
+---
+
+## 📝 Example Logs
+
+### Successful Execution:
 
 ```
-🔴 AES: Executando transação atômica multi-chain
-   Chains envolvidas: 3
+🔴 AES: Executing atomic multi-chain transaction
+   Chains involved: 3
    1. polygon: transfer
    2. bitcoin: unlock
    3. ethereum: mint
 
-📋 Fase 1: Execução preparatória
-   ✅ polygon: transfer executado com sucesso
-   ✅ bitcoin: unlock executado com sucesso
-   ✅ ethereum: mint executado com sucesso
+📋 Phase 1: Preparatory execution
+   ✅ polygon: transfer executed successfully
+   ✅ bitcoin: unlock executed successfully
+   ✅ ethereum: mint executed successfully
 
-📋 Fase 2: Geração de provas
-   ✅ Provas geradas para todas as chains
+📋 Phase 2: Proof generation
+   ✅ Proofs generated for all chains
 
-✅ AES: Execução atômica confirmada - todas as chains foram atualizadas
+✅ AES: Atomic execution confirmed - all chains were updated
 ```
 
-### Execução com Falha (Rollback):
+### Execution with Failure (Rollback):
 
 ```
-🔴 AES: Executando transação atômica multi-chain
-   Chains envolvidas: 3
+🔴 AES: Executing atomic multi-chain transaction
+   Chains involved: 3
    1. polygon: transfer
    2. bitcoin: unlock
    3. ethereum: mint
 
-📋 Fase 1: Execução preparatória
-   ✅ polygon: transfer executado com sucesso
-   ✅ bitcoin: unlock executado com sucesso
-   ❌ ethereum: mint falhou (gas insuficiente)
+📋 Phase 1: Preparatory execution
+   ✅ polygon: transfer executed successfully
+   ✅ bitcoin: unlock executed successfully
+   ❌ ethereum: mint failed (insufficient gas)
 
-🔄 ROLLBACK: Revertendo execuções para garantir atomicidade
-   🔄 Revertendo execução em polygon...
-   ✅ polygon: Execução revertida com sucesso
-   🔄 Revertendo execução em bitcoin...
-   ✅ bitcoin: Execução revertida com sucesso
+🔄 ROLLBACK: Reverting executions to ensure atomicity
+   🔄 Reverting execution on polygon...
+   ✅ polygon: Execution reverted successfully
+   🔄 Reverting execution on bitcoin...
+   ✅ bitcoin: Execution reverted successfully
 
-✅ Rollback concluído: 2/2 execuções revertidas
-❌ AES: Execução atômica falhou - nenhuma chain foi confirmada
+✅ Rollback completed: 2/2 executions reverted
+❌ AES: Atomic execution failed - no chain was confirmed
 ```
 
 ---
 
-## 🧪 Teste de Validação
+## 🧪 Validation Test
 
-O mecanismo de rollback foi testado e validado no arquivo `test_atomicity_failure.py`:
+The rollback mechanism has been tested and validated in the file `test_atomicity_failure.py`:
 
 ```python
 def test_atomicity_failure():
     """
-    Testa que o sistema reverte todas as execuções quando uma falha
+    Tests that the system reverts all executions when one fails
     """
-    # Executar transação atômica com falha simulada
+    # Execute atomic transaction with simulated failure
     results = aes.execute_atomic_multi_chain(
         chains=[
             ("polygon", "transfer", {...}),
             ("bitcoin", "unlock", {...}),
-            ("ethereum", "mint", {...})  # Esta vai falhar
+            ("ethereum", "mint", {...})  # This will fail
         ],
         elni=elni,
         zkef=zkef,
@@ -186,50 +186,47 @@ def test_atomicity_failure():
         mcl=mcl
     )
     
-    # Verificar que todas foram revertidas
+    # Verify that all were reverted
     assert all(not r.success for r in results.values())
     assert rollback_results["polygon"]["rollback_success"] == True
     assert rollback_results["bitcoin"]["rollback_success"] == True
 ```
 
-**Resultado:** ✅ **PASSOU** - Sistema reverte corretamente todas as execuções quando uma falha.
+**Result:** ✅ **PASSED** - System correctly reverts all executions when one fails.
 
 ---
 
-## 🔗 Integração com Outras Camadas
+## 🔗 Integration with Other Layers
 
-O rollback atômico integra-se com:
+Atomic rollback integrates with:
 
-1. **ELNI (Execution-Level Native Interop):** Executa as funções de rollback nas chains de destino
-2. **ZKEF (Zero-Knowledge External Functions):** Gera provas de que o rollback foi executado
-3. **UP-NMT (Universal Proof Normalized Merkle Tunneling):** Valida que o rollback foi incluído no blockchain
-4. **MCL (Multi-Consensus Layer):** Garante consenso sobre o rollback
-
----
-
-## 📈 Métricas de Performance
-
-- **Tempo médio de rollback:** < 50ms por chain
-- **Taxa de sucesso de rollback:** > 99.9%
-- **Overhead de atomicidade:** < 5% do tempo total de execução
+1. **ELNI (Execution-Level Native Interop):** Executes rollback functions on target chains
+2. **ZKEF (Zero-Knowledge External Functions):** Generates proofs that rollback was executed
+3. **UP-NMT (Universal Proof Normalized Merkle Tunneling):** Validates that rollback was included in blockchain
+4. **MCL (Multi-Consensus Layer):** Ensures consensus on rollback
 
 ---
 
-## 🎯 Conclusão
+## 📈 Performance Metrics
 
-O mecanismo de rollback atômico garante que:
-
-✅ **Nenhuma transação parcial será confirmada**  
-✅ **Todas as execuções são revertidas se qualquer uma falhar**  
-✅ **Sistema mantém consistência entre todas as blockchains**  
-✅ **Usuários nunca perdem fundos devido a falhas parciais**
-
-**Status:** ✅ **IMPLEMENTADO, TESTADO E VALIDADO**
+- **Average rollback time:** < 50ms per chain
+- **Rollback success rate:** > 99.9%
+- **Atomicity overhead:** < 5% of total execution time
 
 ---
 
-**Última Atualização:** 03 de Dezembro de 2025  
-**Próxima Revisão:** Após auditoria externa
+## 🎯 Conclusion
 
+The atomic rollback mechanism ensures that:
 
+✅ **No partial transaction will be confirmed**  
+✅ **All executions are reverted if any fails**  
+✅ **System maintains consistency across all blockchains**  
+✅ **Users never lose funds due to partial failures**
 
+**Status:** ✅ **IMPLEMENTED, TESTED AND VALIDATED**
+
+---
+
+**Last Updated:** December 3, 2025  
+**Next Review:** After external audit
