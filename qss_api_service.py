@@ -46,14 +46,20 @@ def init_qss_service():
         quantum_system = QuantumSecuritySystem()
         print("✅ QSS: Sistema de segurança quântica inicializado")
         # Verificar se liboqs está disponível através do sistema quântico
+        liboqs_detected = False
+        
+        # Método 1: Verificar através do quantum_system.real_pqc_available
         if hasattr(quantum_system, 'real_pqc_available') and quantum_system.real_pqc_available:
-            LIBOQS_AVAILABLE = True
-            print("✅ QSS: liboqs-python detectado e ativo!")
-        elif hasattr(quantum_system, 'algorithms') and quantum_system.algorithms.get('real_implementation'):
-            LIBOQS_AVAILABLE = True
+            liboqs_detected = True
+            print("✅ QSS: liboqs-python detectado via quantum_system.real_pqc_available!")
+        
+        # Método 2: Verificar através de algorithms.real_implementation
+        if not liboqs_detected and hasattr(quantum_system, 'algorithms') and quantum_system.algorithms.get('real_implementation'):
+            liboqs_detected = True
             print("✅ QSS: liboqs-python detectado via algorithms.real_implementation!")
-        else:
-            # Tentar verificar diretamente
+        
+        # Método 3: Tentar importar diretamente
+        if not liboqs_detected:
             try:
                 from quantum_security_REAL import LIBOQS_AVAILABLE as LIBOQS_DIRECT
                 LIBOQS_AVAILABLE = LIBOQS_DIRECT
@@ -732,9 +738,29 @@ def get_public_key(keypair_id):
             "error": str(e)
         }), 500
 
+def try_detect_liboqs_direct():
+    """Tentar detectar liboqs diretamente"""
+    try:
+        from oqs import KeyEncapsulation, Signature
+        return True
+    except ImportError:
+        try:
+            from liboqs import KeyEncapsulation, Signature
+            return True
+        except ImportError:
+            return False
+
 @qss_bp.route('/status', methods=['GET'])
 def qss_status():
     """📊 Status do serviço QSS"""
+    # Atualizar LIBOQS_AVAILABLE dinamicamente
+    global LIBOQS_AVAILABLE
+    if not LIBOQS_AVAILABLE:
+        LIBOQS_AVAILABLE = (
+            (quantum_system.real_pqc_available if quantum_system and hasattr(quantum_system, 'real_pqc_available') else False) or
+            try_detect_liboqs_direct()
+        )
+    
     return jsonify({
         "success": True,
         "service": "Quantum Security Service (QSS)",
