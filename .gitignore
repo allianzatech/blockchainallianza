@@ -77,3 +77,12 @@ htmlcov/
 *.temp
 *.bak
 
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# CSS compilado (será gerado no build)
+static/css/output.css
+
