@@ -211,6 +211,16 @@ def developer_hub():
 @testnet_bp.route('/qss/status')
 def qss_status_page():
     """Página de status do QSS com visualização melhorada"""
+    # Se for uma requisição AJAX/JSON, retornar JSON da API
+    if request.headers.get('Accept', '').find('application/json') != -1 or request.args.get('format') == 'json':
+        try:
+            # Importar e chamar a função de status da API
+            from qss_api_service import qss_status
+            return qss_status()
+        except:
+            # Fallback: redirecionar para a API
+            from flask import redirect
+            return redirect('/api/qss/status', code=302)
     return render_template('testnet/qss_status.html')
 
 @testnet_bp.route('/leaderboard')
