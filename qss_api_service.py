@@ -741,11 +741,12 @@ def qss_status():
         "status": "operational",
         "quantum_security_available": QUANTUM_SECURITY_AVAILABLE,
         "alz_niev_available": ALZ_NIEV_AVAILABLE,
-        "liboqs_available": (
+        "liboqs_available": bool(
             (quantum_system.real_pqc_available if quantum_system and hasattr(quantum_system, 'real_pqc_available') else False) or
-            (quantum_system.algorithms.get('real_implementation') if quantum_system and hasattr(quantum_system, 'algorithms') else False) or
+            (quantum_system.algorithms.get('real_implementation', False) if quantum_system and hasattr(quantum_system, 'algorithms') else False) or
             LIBOQS_AVAILABLE or
-            (globals().get('LIBOQS_AVAILABLE', False))
+            (globals().get('LIBOQS_AVAILABLE', False)) or
+            (try_detect_liboqs_direct())
         ),
         "endpoints": {
             "generate_proof": "/api/qss/generate-proof",
