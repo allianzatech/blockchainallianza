@@ -1,8 +1,42 @@
+# Dependencies
 node_modules/
+package-lock.json
+
+# Build outputs
 dist/
-*.log
-.env
+*.js.map
+*.d.ts.map
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Test coverage
 coverage/
 .nyc_output/
 
+# Temporary files
+*.tmp
+*.temp
+
+# ⚠️ IMPORTANTE: NÃO incluir arquivos do core
+# O core da blockchain fica PRIVADO
+# Apenas o SDK será público

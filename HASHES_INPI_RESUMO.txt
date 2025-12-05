@@ -1,0 +1,140 @@
+============================================================
+HASHES SHA256 PARA REGISTRO NO INPI
+============================================================
+
+Data de Geração: 2025-12-04T21:45:11.890970
+
+PATENTES DE INVENÇÃO (PI)
+------------------------------------------------------------
+
+INPI_PI_01_ALZ_NIEV_DESCRICAO_COMPLETA.md
+  Hash SHA256: 5e71d97e42617950b4ac93fed895504314f50bec276a91a4a2134f463448a304
+  Tamanho: 18319 bytes
+
+INPI_PI_02_QRS3_DESCRICAO_COMPLETA.md
+  Hash SHA256: ac7c1f15eb13b9910ad12a778c32d16f7127722914d6050fdde5de01ce177ea7
+  Tamanho: 15490 bytes
+
+INPI_PI_03_QSS_DESCRICAO_COMPLETA.md
+  Hash SHA256: 25c6fca1df71db49868e6a1ebff50ec6072d85ce9c445ef93ab3dc1ef83ee835
+  Tamanho: 16292 bytes
+
+TEMPLATES_DESCRICAO_TECNICA_PATENTES.md
+  Hash SHA256: 31a26d1a3deba4bc1113ff4e943e58151c8c14daef6dbb5bf0865b77e6001166
+  Tamanho: 17682 bytes
+
+DOCUMENTACAO_INPI_COMPLETA.md
+  Hash SHA256: df05d21c3c83cb7b3852dbe0b5f5b009b6e3300902912e48685ad834c290e99f
+  Tamanho: 15815 bytes
+
+
+REGISTROS DE PROGRAMA DE COMPUTADOR (RPC)
+------------------------------------------------------------
+
+RPC-1_ALZ_NIEV:
+  alz_niev_interoperability.py
+    Hash SHA256: a6292046d8c401ac41e2b953b620be80ca30d2fb85671a79ea0187219ff0fdf3
+    Tamanho: 51234 bytes
+  real_cross_chain_bridge.py
+    Hash SHA256: 15a156f896d9c52953ae53f2c9948a65369835cafbd59cd04b269a614d911de4
+    Tamanho: 328242 bytes
+  quantum_safe_interoperability.py
+    Hash SHA256: 4e257a6863ec06a743fea22e5285f21954d9d4224ae4249478e0356b0726df4b
+    Tamanho: 12647 bytes
+  test_atomicity_failure.py
+    Hash SHA256: 3ad3734538b01507f75a36f5b06208f463197acecb51770e694899f1c2f203c7
+    Tamanho: 4674 bytes
+  test_write_cross_chain.py
+    Hash SHA256: afcded32c9d824766d92b8d90d2464fa47d87df07fc3018d0a9b08f3fd3a5691
+    Tamanho: 5094 bytes
+
+RPC-2_QUANTUM_SECURITY:
+  quantum_security.py
+    Hash SHA256: a0b4430824f371880faba9306a93f5fefad62bf56b103b46cef47600ef870dcf
+    Tamanho: 93880 bytes
+  quantum_security_REAL.py
+    Hash SHA256: c62ba6863ac6160a3d7f1f9b610e5c7ee2592492d6472b5a7ecb28e42b464c5f
+    Tamanho: 25186 bytes
+  quantum_multi_sig_wallet.py
+    Hash SHA256: 60c93f10ae3bbc45048bd3206fd97a2451e90ead1bd45e0100d8a4419836760a
+    Tamanho: 22883 bytes
+  qrs3_complete_verification.py
+    Hash SHA256: cdb040b3d48b01c34cae1bd4f5a5398e7918060bf98f7f0bdc0ebeeab26dca83
+    Tamanho: 11281 bytes
+  qrs3_optimized_sharding.py
+    Hash SHA256: 813b1d73effceeaf01e358a9428d81dcd3cc83a5516c96a0412d58692ca4bea4
+    Tamanho: 4232 bytes
+
+RPC-3_QSS:
+  qss_api_service.py
+    Hash SHA256: 67b4557527f45814cb4b441459ec49cac1d5d1bb37832deab787fecb913b826b
+    Tamanho: 29644 bytes
+  qss-verifier/verify.js
+    Hash SHA256: 3830b1230a44997743daf71bc62da16e26904923e441f3f71493b148d0e3cf6b
+    Tamanho: 11804 bytes
+
+RPC-4_BRIDGE:
+  real_cross_chain_bridge.py
+    Hash SHA256: 15a156f896d9c52953ae53f2c9948a65369835cafbd59cd04b269a614d911de4
+    Tamanho: 328242 bytes
+
+
+⚠️ HASHES CONSOLIDADOS (UM HASH POR PROGRAMA) ⚠️
+============================================================
+Use estes hashes se o formulário aceitar apenas UM hash por programa:
+
+RPC-1_ALZ_NIEV:
+  🔐 HASH CONSOLIDADO SHA256: 1fc3e4e539136d467eaca22c631e1071c3c1cba3a2b8f54c7f811630b44c06ac
+  📁 Arquivos incluídos: 5
+  📅 Data: 2025-12-04T21:45:11.889363
+
+RPC-2_QUANTUM_SECURITY:
+  🔐 HASH CONSOLIDADO SHA256: 280a65821f01dd46b71f4ae778670e3038a779bb51e652e2d69922de4cc33997
+  📁 Arquivos incluídos: 5
+  📅 Data: 2025-12-04T21:45:11.890209
+
+RPC-3_QSS:
+  🔐 HASH CONSOLIDADO SHA256: d4dee32f9cc64b73c1b0b8cdaa6748cc9cd71ec2bfb76cbb6fd777d76316de86
+  📁 Arquivos incluídos: 2
+  📅 Data: 2025-12-04T21:45:11.890469
+
+RPC-4_BRIDGE:
+  🔐 HASH CONSOLIDADO SHA256: 5a5bd2c4cd66558747a0da8dee81a9c6eb67cbf6e00d1ccb917035a614ec1263
+  📁 Arquivos incluídos: 1
+  📅 Data: 2025-12-04T21:45:11.890950
+
+
+
+============================================================
+🎯 HASH FINAL CONSOLIDADO (TODOS OS PROGRAMAS JUNTOS) 🎯
+============================================================
+⚠️ USE ESTE HASH PARA REGISTRAR TODOS OS PROGRAMAS DE UMA VEZ ⚠️
+
+Hash SHA256 Final:
+7be66988b0ca1919acb2ea49a44ab72e61074d66cfe860a3bd58602886e0053f
+
+Programas incluídos (4):
+  - RPC-1_ALZ_NIEV
+  - RPC-2_QUANTUM_SECURITY
+  - RPC-3_QSS
+  - RPC-4_BRIDGE
+
+Data de Geração: 2025-12-04T21:45:11.891681
+
+============================================================
+
+
+DOCUMENTAÇÃO
+------------------------------------------------------------
+
+GUIA_PASSO_A_PASSO_DEPOSITO_INPI.md
+  Hash SHA256: c3396de79a38bd440abaf9a82cc7b843b826c5b4993dcea6f0bf5b3069673119
+  Tamanho: 11378 bytes
+
+GUIA_QSS_PARA_OUTRAS_BLOCKCHAINS.md
+  Hash SHA256: c31b8165b0dbc7f5530daccc60d215dd19c8103093ddc44f06000a320e777235
+  Tamanho: 16094 bytes
+
+WHITEPAPER_ALLIANZA_BLOCKCHAIN.md
+  Hash SHA256: b672f7e87d87ca47234389ce347c4096fc6edb5228fdbfc868d425212bacf2ef
+  Tamanho: 21467 bytes

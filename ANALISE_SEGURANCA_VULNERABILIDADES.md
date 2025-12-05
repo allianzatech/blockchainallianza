@@ -568,3 +568,5 @@ A Allianza Blockchain tem uma **base sólida de segurança**, mas precisa de **m
 3. Revisar novamente após correções
 4. Deploy em produção apenas após aprovação
 
+
+

@@ -1,0 +1,65 @@
+============================================================
+HASHES CONSOLIDADOS PARA REGISTRO NO INPI
+(UM HASH POR PROGRAMA DE COMPUTADOR)
+============================================================
+
+Data de Geração: 2025-12-04T21:38:14
+
+⚠️ USE ESTES HASHES SE O FORMULÁRIO ACEITAR APENAS UM HASH POR PROGRAMA ⚠️
+
+============================================================
+RPC-1: Sistema ALZ-NIEV
+============================================================
+Hash Consolidado SHA256:
+38c2e6711f3fc7350c0988613c8cd6fb0661cb37814ea9d60ead25474c4ffcc5
+
+Arquivos incluídos: 4
+- alz_niev_interoperability.py
+- real_cross_chain_bridge.py
+- test_atomicity_failure.py
+- test_write_cross_chain.py
+
+============================================================
+RPC-2: Sistema de Segurança Quântica
+============================================================
+Hash Consolidado SHA256:
+cede285ea5ba679ad17771497270ba2bb347a79e5bea46b6c4adc13afc4c6656
+
+Arquivos incluídos: 3
+- quantum_security.py
+- quantum_security_REAL.py
+- quantum_multi_sig_wallet.py
+
+============================================================
+RPC-3: Quantum Security Service (QSS)
+============================================================
+Hash Consolidado SHA256:
+7de14be7a1e2a9c4ea578a54b10bb8e959c94221b13ce3deed5dbb99d3686258
+
+Arquivos incluídos: 3
+- qss_api_service.py
+- qss-sdk/src/index.ts
+- qss-verifier/verify.js
+
+============================================================
+RPC-4: Bridge Cross-Chain
+============================================================
+Hash Consolidado SHA256:
+5a5bd2c4cd66558747a0da8dee81a9c6eb67cbf6e00d1ccb917035a614ec1263
+
+Arquivos incluídos: 1
+- real_cross_chain_bridge.py
+
+============================================================
+INSTRUÇÕES:
+============================================================
+
+1. Copie o hash consolidado do programa que você está registrando
+2. Cole no campo "Resumo Digital Hash" do formulário do INPI
+3. Um único hash representa todos os arquivos do programa
+
+Algoritmo: SHA-256
+Formato: Hexadecimal (64 caracteres)
+
+============================================================
+

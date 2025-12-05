@@ -231,3 +231,5 @@ Com o keep-alive funcionando:
 - ✅ **Sem tela de carregamento** do Render
 - ✅ **Melhor experiência** para usuários
 
+
+

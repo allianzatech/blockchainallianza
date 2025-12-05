@@ -2322,18 +2322,18 @@ class RealCrossChainBridge:
                                                 
                                                 if tx_hash:
                                                     print(f"   ✅✅✅ Transação criada SEM OP_RETURN! Hash: {tx_hash}")
-                                                    
-                                                    return {
-                                                        "success": True,
-                                                        "tx_hash": tx_hash,
-                                                        "from": from_address,
-                                                        "to": to_address,
-                                                        "amount": amount_btc,
-                                                        "chain": "bitcoin",
-                                                        "status": "broadcasted",
+                                                
+                                                return {
+                                                    "success": True,
+                                                    "tx_hash": tx_hash,
+                                                    "from": from_address,
+                                                    "to": to_address,
+                                                    "amount": amount_btc,
+                                                    "chain": "bitcoin",
+                                                    "status": "broadcasted",
                                                         "explorer_url": f"https://live.blockcypher.com/btc-testnet/tx/{tx_hash}/",
                                                         "note": "✅ Transação REAL criada (OP_RETURN temporariamente desabilitado)",
-                                                        "real_broadcast": True,
+                                                    "real_broadcast": True,
                                                         "method": "wallet_send_to_normal",
                                                         "op_return_included": False,
                                                         "op_return_note": "OP_RETURN temporariamente desabilitado por problemas de compatibilidade"
@@ -2357,7 +2357,7 @@ class RealCrossChainBridge:
                                         if source_tx_hash:
                                             print(f"      source_tx_hash presente: {source_tx_hash}")
                                             print(f"      Continuando com transação Bitcoin normal (sem vínculo OP_RETURN)...")
-                                        else:
+                                            else:
                                             print(f"      Criando transação Bitcoin normal...")
                                         
                                         # Continuar com criação de transação normal (sem OP_RETURN)
@@ -2385,18 +2385,18 @@ class RealCrossChainBridge:
                                             
                                             if tx_hash:
                                                 print(f"   ✅✅✅ Transação criada SEM OP_RETURN! Hash: {tx_hash}")
-                                                
-                                                return {
-                                                    "success": True,
-                                                    "tx_hash": tx_hash,
-                                                    "from": from_address,
-                                                    "to": to_address,
-                                                    "amount": amount_btc,
-                                                    "chain": "bitcoin",
-                                                    "status": "broadcasted",
+                                                    
+                                                    return {
+                                                        "success": True,
+                                                        "tx_hash": tx_hash,
+                                                        "from": from_address,
+                                                        "to": to_address,
+                                                        "amount": amount_btc,
+                                                        "chain": "bitcoin",
+                                                        "status": "broadcasted",
                                                     "explorer_url": f"https://live.blockcypher.com/btc-testnet/tx/{tx_hash}/",
                                                     "note": "✅ Transação REAL criada (OP_RETURN desabilitado temporariamente)" + (f" - source_tx: {source_tx_hash}" if source_tx_hash else ""),
-                                                    "real_broadcast": True,
+                                                        "real_broadcast": True,
                                                     "method": "wallet_send_to_normal",
                                                     "op_return_included": False,
                                                     "op_return_note": "OP_RETURN temporariamente desabilitado" if source_tx_hash else None

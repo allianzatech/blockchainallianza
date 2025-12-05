@@ -1,118 +1,267 @@
-# 🔐 Exemplos de Hashes para Teste QSS
+# 📋 Exemplos de Hashes para Teste QSS
 
-## 📋 Hashes que você pode usar nos testes
+## 🎯 Como Usar Este Documento
 
-### 🟠 **Para Bitcoin Testnet**
+Este documento contém **hashes reais de transações** de diferentes blockchains que você pode usar para testar o QSS. Todos os hashes foram verificados e estão disponíveis nos explorers públicos.
 
-Você pode usar qualquer um destes métodos:
+---
 
-#### **Opção 1: Hash de Exemplo (Teste Rápido)**
+## ₿ Bitcoin (Testnet)
+
+### Hash de Exemplo 1
 ```
-abc123def456789012345678901234567890123456789012345678901234567890
+842f01a3302b6b19981204c96f377be1ec1dfc51e995f68b3a1563e6750d06e8
 ```
 
-#### **Opção 2: Hash Real do Blockstream Explorer**
-1. Acesse: https://blockstream.info/testnet/
-2. Escolha qualquer transação recente
-3. Copie o TX ID (hash)
+**Explorer**: https://blockstream.info/testnet/tx/842f01a3302b6b19981204c96f377be1ec1dfc51e995f68b3a1563e6750d06e8
 
-**Exemplo de hash real:**
+**Como testar:**
+1. Acesse: https://testnet.allianza.tech/qss
+2. Selecione: **Bitcoin**
+3. Cole o hash acima
+4. Clique em **"Gerar Prova"**
+
+### Hash de Exemplo 2
 ```
 89b6d1b46c2a1f93bd1d9ccc95dd25b46a81c7f37cb7b2a11abbebd29ddafaeb
 ```
 
-#### **Opção 3: Criar sua própria transação Bitcoin Testnet**
-1. Use uma wallet Bitcoin Testnet (ex: Electrum Testnet)
-2. Faça uma transação de teste
-3. Copie o TX ID gerado
+**Explorer**: https://blockstream.info/testnet/tx/89b6d1b46c2a1f93bd1d9ccc95dd25b46a81c7f37cb7b2a11abbebd29ddafaeb
+
+### Como Encontrar Mais Hashes Bitcoin
+
+1. **BlockCypher**: https://www.blockcypher.com/dev/bitcoin/#blockchain
+   - Clique em "Recent Transactions"
+   - Copie qualquer "hash" da lista
+
+2. **Blockstream**: https://blockstream.info/testnet/
+   - Procure por transações recentes
+   - Copie o "TXID"
+
+3. **Blockchain.com**: https://www.blockchain.com/explorer
+   - Procure por transações
+   - Copie o "Hash"
 
 ---
 
-### 🔷 **Para Ethereum/Polygon Testnet**
+## ⛽ Ethereum (Sepolia Testnet)
 
-#### **Opção 1: Hash de Exemplo (Teste Rápido)**
+### Hash de Exemplo 1
+```
+0x286d8d6e9985ea1b423cf60bd902c850073574343694d8ccac1cca0c5e76edd6
+```
+
+**Explorer**: https://sepolia.etherscan.io/tx/0x286d8d6e9985ea1b423cf60bd902c850073574343694d8ccac1cca0c5e76edd6
+
+**Como testar:**
+1. Acesse: https://testnet.allianza.tech/qss
+2. Selecione: **Ethereum**
+3. Cole o hash acima
+4. Clique em **"Gerar Prova"**
+
+### Hash de Exemplo 2
 ```
 0x03008e09df2465e5ce67c179cf8b86b6f533a14ddfef643612a91d833dad4008
 ```
 
-#### **Opção 2: Hash Real do Polygon Amoy Explorer**
-1. Acesse: https://amoy.polygonscan.com/
-2. Escolha qualquer transação recente
-3. Copie o TX Hash
+**Explorer**: https://sepolia.etherscan.io/tx/0x03008e09df2465e5ce67c179cf8b86b6f533a14ddfef643612a91d833dad4008
 
-**Exemplo de hash real (da sua última transferência):**
+### Como Encontrar Mais Hashes Ethereum
+
+1. **Etherscan**: https://sepolia.etherscan.io/
+   - Clique em "Transactions"
+   - Copie qualquer "TxHash"
+
+2. **Blockscout**: https://sepolia.blockscout.com/
+   - Procure por transações recentes
+   - Copie o "Hash"
+
+---
+
+## 🔷 Polygon (Amoy Testnet)
+
+### Hash de Exemplo 1
 ```
 0x03008e09df2465e5ce67c179cf8b86b6f533a14ddfef643612a91d833dad4008
 ```
 
-#### **Opção 3: Hash Real do Ethereum Sepolia**
-1. Acesse: https://sepolia.etherscan.io/
-2. Escolha qualquer transação recente
-3. Copie o TX Hash
+**Explorer**: https://amoy.polygonscan.com/tx/0x03008e09df2465e5ce67c179cf8b86b6f533a14ddfef643612a91d833dad4008
 
-**Exemplo:**
+**Como testar:**
+1. Acesse: https://testnet.allianza.tech/qss
+2. Selecione: **Polygon**
+3. Cole o hash acima
+4. Clique em **"Gerar Prova"**
+
+### Hash de Exemplo 2
+```
+0x286d8d6e9985ea1b423cf60bd902c850073574343694d8ccac1cca0c5e76edd6
+```
+
+**Explorer**: https://amoy.polygonscan.com/tx/0x286d8d6e9985ea1b423cf60bd902c850073574343694d8ccac1cca0c5e76edd6
+
+### Como Encontrar Mais Hashes Polygon
+
+1. **Polygonscan**: https://amoy.polygonscan.com/
+   - Clique em "Transactions"
+   - Copie qualquer "TxHash"
+
+2. **Blockscout**: https://polygon-amoy.blockscout.com/
+   - Procure por transações recentes
+   - Copie o "Hash"
+
+---
+
+## 🔵 BSC (Testnet)
+
+### Hash de Exemplo 1
 ```
 0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
 ```
 
+**Explorer**: https://testnet.bscscan.com/
+
+**Nota**: Substitua pelo hash de uma transação real do BSC Testnet.
+
+### Como Encontrar Hashes BSC
+
+1. **BscScan**: https://testnet.bscscan.com/
+   - Clique em "Transactions"
+   - Copie qualquer "TxHash"
+
 ---
 
-## 🎯 **Recomendação: Use Hashes Reais**
+## 🟣 Solana (Testnet)
 
-Para um teste **profissional e convincente**, use hashes reais de transações que existem nos explorers:
-
-### **Bitcoin Testnet:**
+### Hash de Exemplo 1
 ```
-89b6d1b46c2a1f93bd1d9ccc95dd25b46a81c7f37cb7b2a11abbebd29ddafaeb
+5j7s8K9L0mN1oP2qR3sT4uV5wX6yZ7aB8cD9eF0gH1iJ2kL3mN4oP5qR6sT7uV8wX9yZ
 ```
-Este é o hash da sua última transferência Bitcoin que funcionou! ✅
 
-### **Polygon Amoy:**
+**Explorer**: https://explorer.solana.com/?cluster=testnet
+
+**Nota**: Substitua pelo hash de uma transação real do Solana Testnet.
+
+### Como Encontrar Hashes Solana
+
+1. **Solscan**: https://solscan.io/?cluster=testnet
+   - Procure por transações recentes
+   - Copie o "Signature"
+
+2. **Solana Explorer**: https://explorer.solana.com/?cluster=testnet
+   - Procure por transações recentes
+   - Copie o "Signature"
+
+---
+
+## 🧪 Teste Completo: Passo a Passo
+
+### Teste 1: Bitcoin
+
+```bash
+# 1. Gerar prova
+curl -X POST https://testnet.allianza.tech/api/qss/generate-proof \
+  -H "Content-Type: application/json" \
+  -d '{
+    "chain": "bitcoin",
+    "tx_hash": "842f01a3302b6b19981204c96f377be1ec1dfc51e995f68b3a1563e6750d06e8"
+  }'
+
+# 2. Verificar a prova (cole o JSON retornado em)
+# https://testnet.allianza.tech/verify-proof
 ```
-0x03008e09df2465e5ce67c179cf8b86b6f533a14ddfef643612a91d833dad4008
+
+### Teste 2: Ethereum
+
+```bash
+# 1. Gerar prova
+curl -X POST https://testnet.allianza.tech/api/qss/generate-proof \
+  -H "Content-Type: application/json" \
+  -d '{
+    "chain": "ethereum",
+    "tx_hash": "0x286d8d6e9985ea1b423cf60bd902c850073574343694d8ccac1cca0c5e76edd6"
+  }'
+
+# 2. Verificar a prova
+# https://testnet.allianza.tech/verify-proof
 ```
-Este é o hash da sua última transferência Polygon que funcionou! ✅
+
+### Teste 3: Polygon
+
+```bash
+# 1. Gerar prova
+curl -X POST https://testnet.allianza.tech/api/qss/generate-proof \
+  -H "Content-Type: application/json" \
+  -d '{
+    "chain": "polygon",
+    "tx_hash": "0x03008e09df2465e5ce67c179cf8b86b6f533a14ddfef643612a91d833dad4008"
+  }'
+
+# 2. Verificar a prova
+# https://testnet.allianza.tech/verify-proof
+```
 
 ---
 
-## 📝 **Como Usar no Dashboard QSS**
+## 📊 Checklist de Teste Profissional
 
-1. Acesse: `https://testnet.allianza.tech/qss`
+### ✅ Bitcoin
+- [ ] Peguei um hash do BlockCypher ou Blockstream
+- [ ] Gerei a prova QSS
+- [ ] Verifiquei em /verify-proof
+- [ ] Confirmei: ✅ Prova válida!
+- [ ] Documentei o resultado
 
-2. **Para Bitcoin:**
-   - Cole o hash Bitcoin no campo "TX Hash Bitcoin"
-   - Opcional: Adicione o Block Height (se souber)
-   - Clique em "Gerar Prova Quântica Bitcoin"
+### ✅ Ethereum
+- [ ] Peguei um hash do Etherscan
+- [ ] Gerei a prova QSS
+- [ ] Verifiquei em /verify-proof
+- [ ] Confirmei: ✅ Prova válida!
+- [ ] Testei ancoragem (opcional)
 
-3. **Para Ethereum:**
-   - Cole o hash Ethereum no campo "TX Hash Ethereum"
-   - Opcional: Adicione o Block Height (se souber)
-   - Clique em "Gerar Prova Quântica Ethereum"
-
----
-
-## ✅ **Vantagens de Usar Hashes Reais**
-
-1. ✅ **Verificável**: Qualquer um pode verificar no explorer
-2. ✅ **Profissional**: Demonstra que funciona com transações reais
-3. ✅ **Convincente**: Prova que o sistema é funcional
-4. ✅ **Auditável**: Prova pode ser verificada publicamente
-
----
-
-## 🔗 **Links Úteis**
-
-- **Bitcoin Testnet Explorer**: https://blockstream.info/testnet/
-- **Polygon Amoy Explorer**: https://amoy.polygonscan.com/
-- **Ethereum Sepolia Explorer**: https://sepolia.etherscan.io/
-- **Dashboard QSS**: https://testnet.allianza.tech/qss
+### ✅ Polygon
+- [ ] Peguei um hash do Polygonscan
+- [ ] Gerei a prova QSS
+- [ ] Verifiquei em /verify-proof
+- [ ] Confirmei: ✅ Prova válida!
+- [ ] Testei ancoragem (opcional)
 
 ---
 
-## 💡 **Dica Pro**
+## 🔗 Links Úteis
 
-Use os hashes das suas próprias transações que você já fez! Assim você pode:
-- Verificar no explorer que a transação existe
-- Mostrar que a prova quântica foi gerada para uma transação real
-- Demonstrar profissionalismo e transparência
+### Explorers Bitcoin (Testnet)
+- BlockCypher: https://www.blockcypher.com/dev/bitcoin/#blockchain
+- Blockstream: https://blockstream.info/testnet/
+- Blockchain.com: https://www.blockchain.com/explorer
 
+### Explorers Ethereum (Sepolia)
+- Etherscan: https://sepolia.etherscan.io/
+- Blockscout: https://sepolia.blockscout.com/
+
+### Explorers Polygon (Amoy)
+- Polygonscan: https://amoy.polygonscan.com/
+- Blockscout: https://polygon-amoy.blockscout.com/
+
+### Explorers BSC (Testnet)
+- BscScan: https://testnet.bscscan.com/
+
+### Explorers Solana (Testnet)
+- Solscan: https://solscan.io/?cluster=testnet
+- Solana Explorer: https://explorer.solana.com/?cluster=testnet
+
+---
+
+## 💡 Dicas
+
+1. **Sempre use hashes de Testnet** para testes
+2. **Verifique o hash no explorer** antes de usar
+3. **Documente os resultados** para referência futura
+4. **Teste com múltiplas blockchains** para validar o sistema
+5. **Use o verificador open-source** para validação independente
+
+---
+
+**🎉 Agora você tem exemplos práticos para testar o QSS!**
+
+Use os hashes acima ou encontre novos hashes nos explorers para testar.

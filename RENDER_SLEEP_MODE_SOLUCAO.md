@@ -134,3 +134,5 @@ curl https://testnet.allianza.tech/health
 - ⚠️ **Sleep mode** é uma limitação do plano gratuito do Render
 - 💡 **Upgrade para plano pago** elimina completamente o problema
 
+
+

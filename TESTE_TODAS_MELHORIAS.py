@@ -1,317 +1,394 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Teste Completo de Todas as Melhorias Implementadas
+🧪 TESTE COMPLETO DE TODAS AS MELHORIAS IMPLEMENTADAS
 """
 
 import time
-import sys
-from datetime import datetime
+import json
+import hashlib
+from datetime import datetime, timezone
+from typing import Dict, List
 
-print("=" * 70)
-print("🧪 TESTE COMPLETO DE TODAS AS MELHORIAS")
-print("=" * 70)
-print()
-
-# Contador de sucessos
-success_count = 0
-total_tests = 0
-
-def test_result(test_name, success, details=""):
-    global success_count, total_tests
-    total_tests += 1
-    if success:
-        success_count += 1
-        print(f"✅ {test_name}: PASSOU")
-    else:
-        print(f"❌ {test_name}: FALHOU")
-    if details:
-        print(f"   {details}")
-    print()
-
-# ============================================================================
-# TESTE 1: CONSENSO ADAPTATIVO AVANÇADO
-# ============================================================================
-
-print("=" * 70)
-print("🌟 TESTE 1: CONSENSO ADAPTATIVO AVANÇADO")
-print("=" * 70)
-print()
-
-try:
-    from advanced_adaptive_consensus import AdvancedAdaptiveConsensus, ConsensusType
+def test_qr_did():
+    """Testar QR-DID"""
+    print("="*70)
+    print("🧪 TESTE 1: QR-DID (Identidade Quântico-Resistente)")
+    print("="*70)
     
-    # Criar blockchain mock
-    class MockBlockchain:
-        def __init__(self):
-            self.wallets = {
-                "addr1": {"staked": 5000},
-                "addr2": {"staked": 3000},
-                "addr3": {"staked": 2000}
+    try:
+        from qr_did_system import QR_DIDManager
+        from quantum_security import QuantumSecuritySystem
+        
+        quantum_security = QuantumSecuritySystem()
+        manager = QR_DIDManager(quantum_security)
+        
+        # Gerar DID
+        print("\n📋 Gerando QR-DID...")
+        did, keypair = manager.generate_did(subject="test_user")
+        
+        if did:
+            print(f"✅ DID gerado: {did}")
+            print(f"✅ Quantum-resistant: {keypair.get('quantum_resistant', False)}")
+            
+            # Resolver
+            doc = manager.resolve_did(did)
+            if doc:
+                print(f"✅ DID resolvido: {len(doc.get('verification_methods', []))} verification methods")
+                return {"success": True, "did": did, "quantum_resistant": keypair.get('quantum_resistant', False)}
+        
+        return {"success": False, "error": "Falha ao gerar DID"}
+    except Exception as e:
+        print(f"❌ Erro: {e}")
+        return {"success": False, "error": str(e)}
+
+def test_banking_api():
+    """Testar Banking API Layer"""
+    print("\n" + "="*70)
+    print("🧪 TESTE 2: Banking API Layer (ABSL)")
+    print("="*70)
+    
+    try:
+        from banking_api_layer import BankingSecurityLayer
+        
+        layer = BankingSecurityLayer()
+        
+        # Testar health check
+        print("\n📋 Testando health check...")
+        with layer.app.test_client() as client:
+            response = client.get('/api/v1/health')
+            if response.status_code == 200:
+                data = json.loads(response.data)
+                print(f"✅ Health check: {data.get('status')}")
+                print(f"✅ PQC disponível: {data.get('pqc_available')}")
+                return {"success": True, "pqc_available": data.get('pqc_available')}
+        
+        return {"success": False, "error": "Health check falhou"}
+    except Exception as e:
+        print(f"❌ Erro: {e}")
+        return {"success": False, "error": str(e)}
+
+def test_zk_interoperability():
+    """Testar ZK-Interoperabilidade Privada"""
+    print("\n" + "="*70)
+    print("🧪 TESTE 3: ZK-Interoperabilidade Privada")
+    print("="*70)
+    
+    try:
+        from zk_interoperability_private import ZKInteroperabilityPrivate
+        from quantum_security import QuantumSecuritySystem
+        
+        quantum_security = QuantumSecuritySystem()
+        zk_system = ZKInteroperabilityPrivate(quantum_security)
+        
+        # Criar prova privada
+        print("\n📋 Criando prova ZK privada...")
+        result = zk_system.create_private_cross_chain_proof(
+            source_chain="polygon",
+            target_chain="bitcoin",
+            amount=0.001,
+            recipient="tb1qtest",
+            source_tx_hash="0x1234abcd",
+            target_tx_hash="abc123def"
+        )
+        
+        if result.get("success"):
+            proof_id = result["proof_id"]
+            print(f"✅ Prova criada: {proof_id}")
+            print(f"✅ Amount oculto: {result['proof']['amount_encrypted'][:20]}...")
+            
+            # Verificar
+            verification = zk_system.verify_zk_proof(proof_id)
+            print(f"✅ Verificação: {'Válida' if verification.get('valid') else 'Inválida'}")
+            print(f"✅ Privacidade preservada: {verification.get('privacy_preserved')}")
+            
+            return {
+                "success": True,
+                "proof_id": proof_id,
+                "valid": verification.get("valid"),
+                "privacy_preserved": verification.get("privacy_preserved")
             }
-    
-    blockchain = MockBlockchain()
-    consensus = AdvancedAdaptiveConsensus(blockchain)
-    
-    # Testar adaptação
-    consensus.update_network_state({
-        "load": 0.9,  # Alta carga
-        "validators": 5,
-        "pending_txs": 100,
-        "urgent_txs": 0,
-        "qrs3_txs": 0
-    })
-    
-    info = consensus.get_consensus_info()
-    test_result("Consenso Adaptativo", info["current_consensus"] in ["PoA", "PoH"], 
-                f"Consenso atual: {info['current_consensus']}")
-    
-except Exception as e:
-    test_result("Consenso Adaptativo", False, f"Erro: {e}")
-
-# ============================================================================
-# TESTE 2: SHARDING DINÂMICO
-# ============================================================================
-
-print("=" * 70)
-print("🔀 TESTE 2: SHARDING DINÂMICO")
-print("=" * 70)
-print()
-
-try:
-    from dynamic_sharding import DynamicSharding
-    
-    blockchain = MockBlockchain()
-    blockchain.shards = {i: [] for i in range(8)}
-    blockchain.pending_transactions = {i: [] for i in range(8)}
-    blockchain.create_genesis_block = lambda x: {"shard_id": x, "index": 0}
-    
-    sharding = DynamicSharding(blockchain, min_shards=4, max_shards=1000)
-    
-    # Testar criação de shard
-    loads = sharding.get_all_shard_loads()
-    stats = sharding.get_sharding_stats()
-    
-    test_result("Sharding Dinâmico", stats["total_shards"] == 8,
-                f"Shards: {stats['total_shards']}, Carga média: {stats['average_load']:.2%}")
-    
-except Exception as e:
-    test_result("Sharding Dinâmico", False, f"Erro: {e}")
-
-# ============================================================================
-# TESTE 3: STATE CHANNELS
-# ============================================================================
-
-print("=" * 70)
-print("⚡ TESTE 3: STATE CHANNELS QUÂNTICO-SEGUROS")
-print("=" * 70)
-print()
-
-try:
-    from quantum_security import QuantumSecuritySystem
-    from quantum_safe_state_channels import QuantumSafeStateChannelManager
-    
-    blockchain = MockBlockchain()
-    blockchain.get_balance = lambda x: 10000
-    
-    qs = QuantumSecuritySystem()
-    manager = QuantumSafeStateChannelManager(blockchain, qs)
-    
-    # Abrir canal
-    result = manager.open_channel(
-        "party1",
-        "party2",
-        {"party1": {"ALZ": 1000}, "party2": {"ALZ": 500}}
-    )
-    
-    if result.get("success"):
-        channel_id = result["channel_id"]
         
-        # Atualizar estado
-        update_result = manager.update_channel(channel_id, "party1", "party2", 100, "ALZ")
+        return {"success": False, "error": "Falha ao criar prova"}
+    except Exception as e:
+        print(f"❌ Erro: {e}")
+        import traceback
+        traceback.print_exc()
+        return {"success": False, "error": str(e)}
+
+def test_fhe_poc():
+    """Testar FHE PoC"""
+    print("\n" + "="*70)
+    print("🧪 TESTE 4: FHE PoC (Fully Homomorphic Encryption)")
+    print("="*70)
+    
+    try:
+        from fhe_poc import FHEPoC
         
-        test_result("State Channels", update_result.get("success"),
-                   f"Canal: {channel_id}, Latência: {update_result.get('latency_ms', 0)} ms")
-    else:
-        test_result("State Channels", False, result.get("error", "Erro desconhecido"))
-    
-except Exception as e:
-    test_result("State Channels", False, f"Erro: {e}")
-
-# ============================================================================
-# TESTE 4: AGREGAÇÃO DE ASSINATURAS
-# ============================================================================
-
-print("=" * 70)
-print("📦 TESTE 4: AGREGAÇÃO DE ASSINATURAS")
-print("=" * 70)
-print()
-
-try:
-    from signature_aggregation import SignatureAggregation
-    from quantum_security import QuantumSecuritySystem
-    
-    qs = QuantumSecuritySystem()
-    aggregator = SignatureAggregation()
-    
-    # Gerar múltiplas assinaturas
-    signatures = []
-    for i in range(5):
-        keypair = qs.generate_qrs3_keypair()
-        if keypair.get("success"):
-            sig = qs.sign_qrs3(keypair["keypair_id"], f"message_{i}".encode())
-            if sig.get("success"):
-                signatures.append(sig)
-    
-    if len(signatures) >= 2:
-        # Agregar
-        aggregated = aggregator.aggregate_qrs3_signatures(signatures)
+        fhe = FHEPoC()
         
-        if aggregated.get("success"):
-            reduction = aggregated.get("size_reduction", 0)
-            test_result("Agregação de Assinaturas", True,
-                       f"Redução: {reduction:.1%}, {aggregated['count']} assinaturas")
-        else:
-            test_result("Agregação de Assinaturas", False, aggregated.get("error"))
-    else:
-        test_result("Agregação de Assinaturas", False, "Não foi possível gerar assinaturas")
-    
-except Exception as e:
-    test_result("Agregação de Assinaturas", False, f"Erro: {e}")
-
-# ============================================================================
-# TESTE 5: NFTs QUÂNTICO-SEGUROS
-# ============================================================================
-
-print("=" * 70)
-print("🎨 TESTE 5: NFTs QUÂNTICO-SEGUROS")
-print("=" * 70)
-print()
-
-try:
-    from quantum_safe_nfts import QuantumSafeNFTManager
-    from quantum_security import QuantumSecuritySystem
-    
-    blockchain = MockBlockchain()
-    qs = QuantumSecuritySystem()
-    nft_manager = QuantumSafeNFTManager(blockchain, qs)
-    
-    # Mint NFT
-    result = nft_manager.mint_nft(
-        {
-            "name": "Quantum Art #1",
-            "description": "Primeira arte quântico-segura",
-            "image": "ipfs://QmHash..."
-        },
-        "owner1"
-    )
-    
-    if result.get("success"):
-        token_id = result["token_id"]
-        nft_info = nft_manager.get_nft(token_id)
+        # Criptografar
+        print("\n📋 Criptografando valores...")
+        encrypted_a = fhe.encrypt(10.5)
+        encrypted_b = fhe.encrypt(5.3)
         
-        test_result("NFTs Quântico-Seguros", nft_info is not None,
-                   f"Token ID: {token_id}, Quantum Safe: {nft_info.get('quantum_safe', False)}")
-    else:
-        test_result("NFTs Quântico-Seguros", False, result.get("error"))
-    
-except Exception as e:
-    test_result("NFTs Quântico-Seguros", False, f"Erro: {e}")
+        if encrypted_a.get("success") and encrypted_b.get("success"):
+            print(f"✅ Valores criptografados")
+            
+            # Operações homomórficas
+            print("\n📋 Realizando adição homomórfica...")
+            add_result = fhe.add_encrypted(encrypted_a['encrypted'], encrypted_b['encrypted'])
+            
+            if add_result.get("success"):
+                print(f"✅ Adição homomórfica realizada")
+                print(f"✅ Operações realizadas: {len(fhe.get_operations_history())}")
+                
+                return {
+                    "success": True,
+                    "operations": len(fhe.get_operations_history()),
+                    "fhe_available": fhe.fhe_available
+                }
+        
+        return {"success": False, "error": "Falha nas operações FHE"}
+    except Exception as e:
+        print(f"❌ Erro: {e}")
+        return {"success": False, "error": str(e)}
 
-# ============================================================================
-# TESTE 6: MULTI-LAYER SECURITY
-# ============================================================================
-
-print("=" * 70)
-print("🛡️ TESTE 6: MULTI-LAYER SECURITY")
-print("=" * 70)
-print()
-
-try:
-    from multi_layer_security import MultiLayerSecurity
-    from quantum_security import QuantumSecuritySystem
+def test_qkd_integration():
+    """Testar QKD Integration"""
+    print("\n" + "="*70)
+    print("🧪 TESTE 5: QKD Integration (Quantum Key Distribution)")
+    print("="*70)
     
-    qs = QuantumSecuritySystem()
-    security = MultiLayerSecurity(qs)
+    try:
+        from qkd_integration import QKDIntegration
+        from quantum_security import QuantumSecuritySystem
+        
+        quantum_security = QuantumSecuritySystem()
+        qkd = QKDIntegration(quantum_security)
+        
+        # Estabelecer canal
+        print("\n📋 Estabelecendo canal quântico...")
+        result = qkd.establish_quantum_channel("node_a", "node_b")
+        
+        if result.get("success"):
+            print(f"✅ Canal estabelecido: {result['session_id']}")
+            print(f"✅ Método: {result['method']}")
+            
+            # Criptografar
+            encrypted = qkd.encrypt_with_shared_key("node_a", "node_b", "Mensagem secreta")
+            if encrypted.get("success"):
+                print(f"✅ Mensagem criptografada com chave QKD")
+            
+            # Sessões
+            sessions = qkd.get_active_sessions()
+            print(f"✅ Sessões ativas: {len(sessions)}")
+            
+            return {
+                "success": True,
+                "session_id": result['session_id'],
+                "method": result['method'],
+                "active_sessions": len(sessions)
+            }
+        
+        return {"success": False, "error": "Falha ao estabelecer canal"}
+    except Exception as e:
+        print(f"❌ Erro: {e}")
+        return {"success": False, "error": str(e)}
+
+def gerar_relatorio_completo(resultados: Dict):
+    """Gerar relatório completo de implementação"""
+    print("\n" + "="*70)
+    print("📄 GERANDO RELATÓRIO COMPLETO")
+    print("="*70)
     
-    # Validar transação
-    tx = {
-        "id": "tx1",
-        "sender": "addr1",
-        "receiver": "addr2",
-        "amount": 100,
-        "qrs3_signature": {"redundancy_level": 3}
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    
+    relatorio = {
+        "teste_id": f"todas_melhorias_{int(time.time())}",
+        "timestamp": datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
+        "tipo": "Teste Completo de Todas as Melhorias",
+        "status": "concluido",
+        "resultados": resultados,
+        "resumo": {
+            "total_testes": len(resultados),
+            "sucessos": sum(1 for r in resultados.values() if r.get("success")),
+            "falhas": sum(1 for r in resultados.values() if not r.get("success"))
+        }
     }
     
-    result = security.validate_transaction(tx)
+    # Salvar JSON
+    import os
+    os.makedirs("relatorios_implementacao", exist_ok=True)
+    json_file = f"relatorios_implementacao/relatorio_completo_{timestamp}.json"
     
-    test_result("Multi-Layer Security", result.get("success"),
-               f"Camadas passadas: {result.get('layers_passed', 0)}/{result.get('total_layers', 0)}")
+    with open(json_file, 'w', encoding='utf-8') as f:
+        json.dump(relatorio, f, indent=2, ensure_ascii=False)
     
-except Exception as e:
-    test_result("Multi-Layer Security", False, f"Erro: {e}")
-
-# ============================================================================
-# TESTE 7: DeFi QUÂNTICO-SEGURO
-# ============================================================================
-
-print("=" * 70)
-print("💰 TESTE 7: DeFi QUÂNTICO-SEGURO")
-print("=" * 70)
-print()
-
-try:
-    from quantum_safe_defi import QuantumSafeDeFi
-    from quantum_security import QuantumSecuritySystem
+    # Calcular hash
+    with open(json_file, 'rb') as f:
+        file_hash = hashlib.sha256(f.read()).hexdigest()
     
-    qs = QuantumSecuritySystem()
-    defi = QuantumSafeDeFi(qs)
+    relatorio["hash_sha256"] = file_hash
+    relatorio["arquivo"] = json_file
     
-    # Criar pool DEX
-    pool_result = defi.dex.create_pool("ALZ", "BTC", {"ALZ": 10000, "BTC": 1})
+    # Salvar novamente com hash
+    with open(json_file, 'w', encoding='utf-8') as f:
+        json.dump(relatorio, f, indent=2, ensure_ascii=False)
     
-    if pool_result.get("success"):
-        pool_id = pool_result["pool_id"]
-        
-        # Realizar swap
-        swap_result = defi.dex.swap(pool_id, "ALZ", "BTC", 100)
-        
-        test_result("DeFi Quântico-Seguro", swap_result.get("success"),
-                   f"Pool: {pool_id}, Quantum Safe: {swap_result.get('swap', {}).get('quantum_safe', False)}")
-    else:
-        test_result("DeFi Quântico-Seguro", False, pool_result.get("error"))
+    # Gerar relatório Markdown
+    md_file = f"relatorios_implementacao/relatorio_completo_{timestamp}.md"
+    gerar_relatorio_markdown(relatorio, md_file)
     
-except Exception as e:
-    test_result("DeFi Quântico-Seguro", False, f"Erro: {e}")
+    print(f"✅ Relatório JSON: {json_file}")
+    print(f"✅ Relatório Markdown: {md_file}")
+    print(f"✅ Hash SHA-256: {file_hash}")
+    
+    return relatorio
 
-# ============================================================================
-# RESUMO FINAL
-# ============================================================================
+def gerar_relatorio_markdown(relatorio: Dict, arquivo: str):
+    """Gerar relatório em Markdown"""
+    resultados = relatorio["resultados"]
+    resumo = relatorio["resumo"]
+    
+    md = f"""# 📊 RELATÓRIO COMPLETO DE IMPLEMENTAÇÃO
 
-print("=" * 70)
-print("📊 RESUMO FINAL")
-print("=" * 70)
-print()
+## 🎯 Resumo Executivo
 
-print(f"✅ Testes Passados: {success_count}/{total_tests}")
-print(f"📈 Taxa de Sucesso: {(success_count/total_tests*100):.1f}%")
-print()
+**Data:** {relatorio['timestamp']}  
+**ID do Teste:** {relatorio['teste_id']}  
+**Status:** {'✅ SUCESSO' if resumo['falhas'] == 0 else '⚠️ PARCIAL'}
 
-if success_count == total_tests:
-    print("🎉 TODAS AS MELHORIAS FUNCIONANDO!")
-    print("   • Consenso Adaptativo Avançado")
-    print("   • Sharding Dinâmico")
-    print("   • State Channels")
-    print("   • Agregação de Assinaturas")
-    print("   • NFTs Quântico-Seguros")
-    print("   • Multi-Layer Security")
-    print("   • DeFi Quântico-Seguro")
-else:
-    print(f"⚠️  {total_tests - success_count} teste(s) falharam")
-    print("   Verifique os erros acima")
+---
 
-print()
-print("=" * 70)
+## 📋 Resultados dos Testes
+
+### **1. QR-DID (Identidade Quântico-Resistente)**
+
+**Status:** {'✅ SUCESSO' if resultados.get('qr_did', {}).get('success') else '❌ FALHA'}
+
+**Resultados:**
+- DID gerado: {resultados.get('qr_did', {}).get('did', 'N/A')}
+- Quantum-resistant: {resultados.get('qr_did', {}).get('quantum_resistant', False)}
+
+**Arquivo:** `qr_did_system.py`
+
+---
+
+### **2. Banking API Layer (ABSL)**
+
+**Status:** {'✅ SUCESSO' if resultados.get('banking_api', {}).get('success') else '❌ FALHA'}
+
+**Resultados:**
+- Health check: OK
+- PQC disponível: {resultados.get('banking_api', {}).get('pqc_available', False)}
+
+**Arquivo:** `banking_api_layer.py`
+
+---
+
+### **3. ZK-Interoperabilidade Privada**
+
+**Status:** {'✅ SUCESSO' if resultados.get('zk_interop', {}).get('success') else '❌ FALHA'}
+
+**Resultados:**
+- Prova criada: {resultados.get('zk_interop', {}).get('proof_id', 'N/A')}
+- Verificação válida: {resultados.get('zk_interop', {}).get('valid', False)}
+- Privacidade preservada: {resultados.get('zk_interop', {}).get('privacy_preserved', False)}
+
+**Arquivo:** `zk_interoperability_private.py`
+
+---
+
+### **4. FHE PoC (Fully Homomorphic Encryption)**
+
+**Status:** {'✅ SUCESSO' if resultados.get('fhe_poc', {}).get('success') else '❌ FALHA'}
+
+**Resultados:**
+- Operações realizadas: {resultados.get('fhe_poc', {}).get('operations', 0)}
+- FHE disponível: {resultados.get('fhe_poc', {}).get('fhe_available', False)}
+
+**Arquivo:** `fhe_poc.py`
+
+---
+
+### **5. QKD Integration (Quantum Key Distribution)**
+
+**Status:** {'✅ SUCESSO' if resultados.get('qkd', {}).get('success') else '❌ FALHA'}
+
+**Resultados:**
+- Sessão criada: {resultados.get('qkd', {}).get('session_id', 'N/A')}
+- Método: {resultados.get('qkd', {}).get('method', 'N/A')}
+- Sessões ativas: {resultados.get('qkd', {}).get('active_sessions', 0)}
+
+**Arquivo:** `qkd_integration.py`
+
+---
+
+## 📊 Resumo Geral
+
+- **Total de Testes:** {resumo['total_testes']}
+- **Sucessos:** {resumo['sucessos']}
+- **Falhas:** {resumo['falhas']}
+- **Taxa de Sucesso:** {(resumo['sucessos']/resumo['total_testes']*100):.1f}%
+
+---
+
+## ✅ Melhorias Implementadas
+
+1. ✅ **QR-DID** - Identidade Quântico-Resistente
+2. ✅ **Banking API Layer** - API dedicada para bancos
+3. ✅ **ZK-Interoperabilidade Privada** - Privacidade em cross-chain
+4. ✅ **FHE PoC** - Computação sobre dados criptografados
+5. ✅ **QKD Integration** - Distribuição quântica de chaves
+
+---
+
+## 🔐 Verificação
+
+**Hash SHA-256:** `{relatorio.get('hash_sha256', 'N/A')}`
+
+**Arquivo:** `{relatorio.get('arquivo', 'N/A')}`
+
+---
+
+**Data:** {relatorio['timestamp']}  
+**Status Final:** {'✅ TODAS AS MELHORIAS IMPLEMENTADAS E TESTADAS' if resumo['falhas'] == 0 else '⚠️ ALGUMAS MELHORIAS PRECISAM DE AJUSTES'}
+"""
+    
+    with open(arquivo, 'w', encoding='utf-8') as f:
+        f.write(md)
+
+if __name__ == '__main__':
+    print("="*70)
+    print("🧪 TESTE COMPLETO DE TODAS AS MELHORIAS")
+    print("="*70)
+    
+    resultados = {}
+    
+    # Executar todos os testes
+    resultados["qr_did"] = test_qr_did()
+    resultados["banking_api"] = test_banking_api()
+    resultados["zk_interop"] = test_zk_interoperability()
+    resultados["fhe_poc"] = test_fhe_poc()
+    resultados["qkd"] = test_qkd_integration()
+    
+    # Gerar relatório
+    relatorio = gerar_relatorio_completo(resultados)
+    
+    # Resumo final
+    print("\n" + "="*70)
+    print("📊 RESUMO FINAL")
+    print("="*70)
+    
+    resumo = relatorio["resumo"]
+    print(f"\n✅ Testes executados: {resumo['total_testes']}")
+    print(f"✅ Sucessos: {resumo['sucessos']}")
+    print(f"❌ Falhas: {resumo['falhas']}")
+    print(f"📈 Taxa de sucesso: {(resumo['sucessos']/resumo['total_testes']*100):.1f}%")
+    
+    print(f"\n📄 Relatório completo: {relatorio['arquivo']}")
+
 
 
 

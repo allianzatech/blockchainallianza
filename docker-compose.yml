@@ -1,0 +1,66 @@
+# Docker Compose para Ambiente de Testes e Auditoria - Allianza Blockchain
+# Versão: 1.0
+# Data: 03 de Dezembro de 2025
+
+version: '3.8'
+
+services:
+  allianza-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: allianza-blockchain-tests
+    volumes:
+      - ./proofs:/app/proofs
+      - ./logs:/app/logs
+      - ./test_results:/app/test_results
+    environment:
+      - PYTHONUNBUFFERED=1
+      - BLOCKCHAIN_MODE=testnet
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    networks:
+      - allianza-network
+    command: /app/scripts/run_all_tests.sh
+
+  redis:
+    image: redis:7-alpine
+    container_name: allianza-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - allianza-network
+    volumes:
+      - redis-data:/data
+
+  # Opcional: Serviço de API para testes manuais
+  allianza-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: allianza-blockchain-api
+    ports:
+      - "5008:5008"
+    volumes:
+      - ./proofs:/app/proofs
+      - ./logs:/app/logs
+    environment:
+      - PYTHONUNBUFFERED=1
+      - BLOCKCHAIN_MODE=testnet
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    networks:
+      - allianza-network
+    command: python allianza_blockchain.py
+
+networks:
+  allianza-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+
+
+
