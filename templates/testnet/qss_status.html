@@ -221,14 +221,14 @@ Voltar
                         <code class="text-blue-400 text-sm break-all">${path}</code>
                         ${endpointInfo.description ? `<p class="text-gray-300 text-xs mt-2">${endpointInfo.description}</p>` : ''}
                         <div class="mt-3 flex gap-2 flex-wrap">
-                            <button onclick="testEndpoint('${name}', '${path}')" class="bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white text-xs px-3 py-1.5 rounded transition font-semibold">
-                                <i class="fas fa-play mr-1"></i>Testar
+                            <button onclick="testEndpoint('${name}', '${path}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2 rounded-lg transition font-semibold shadow-md hover:shadow-lg">
+                                <i class="fas fa-play mr-1.5"></i>Testar
                             </button>
-                            <a href="${fullUrl}" target="_blank" class="bg-gray-600 hover:bg-gray-500 text-white text-xs px-3 py-1.5 rounded transition inline-block font-semibold">
-                                <i class="fas fa-external-link-alt mr-1"></i>Abrir
+                            <a href="${fullUrl}" target="_blank" class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-4 py-2 rounded-lg transition inline-block font-semibold shadow-md hover:shadow-lg">
+                                <i class="fas fa-external-link-alt mr-1.5"></i>Abrir
                             </a>
-                            <a href="https://github.com/dieisonmaach-lang/allianzablockchainpublic" target="_blank" class="bg-gray-600 hover:bg-gray-500 text-white text-xs px-3 py-1.5 rounded transition inline-block font-semibold">
-                                <i class="fab fa-github mr-1"></i>GitHub
+                            <a href="https://github.com/dieisonmaach-lang/allianzablockchainpublic" target="_blank" class="bg-gray-700 hover:bg-gray-600 text-white text-xs px-4 py-2 rounded-lg transition inline-block font-semibold shadow-md hover:shadow-lg">
+                                <i class="fab fa-github mr-1.5"></i>GitHub
                             </a>
                         </div>
                     `;
@@ -470,12 +470,14 @@ Voltar
                     <div class="bg-gray-900 rounded-lg p-4 max-h-[60vh] overflow-y-auto border border-gray-700">
                         <pre class="text-sm text-gray-300 overflow-x-auto whitespace-pre-wrap break-words">${escapedJson}</pre>
                     </div>
-                    <div class="mt-4 flex gap-2 justify-end sticky bottom-0 bg-gray-800 pt-4 border-t border-gray-700">
-                        <button id="copy-json-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
-                            <i class="fas fa-copy mr-2"></i>Copiar JSON
+                    <div class="mt-4 flex gap-3 justify-end sticky bottom-0 bg-gray-800 pt-4 border-t border-gray-700">
+                        <button id="copy-json-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition shadow-md hover:shadow-lg flex items-center gap-2 min-w-[140px] justify-center">
+                            <i class="fas fa-copy"></i>
+                            <span>Copiar JSON</span>
                         </button>
-                        <button onclick="this.closest('.fixed').remove()" class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
-                            <i class="fas fa-times mr-2"></i>Fechar
+                        <button onclick="this.closest('.fixed').remove()" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition shadow-md hover:shadow-lg flex items-center gap-2 min-w-[140px] justify-center">
+                            <i class="fas fa-times"></i>
+                            <span>Fechar</span>
                         </button>
                     </div>
                 </div>
