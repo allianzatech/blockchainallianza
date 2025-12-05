@@ -49,8 +49,21 @@ def init_qss_service():
         if hasattr(quantum_system, 'real_pqc_available') and quantum_system.real_pqc_available:
             LIBOQS_AVAILABLE = True
             print("✅ QSS: liboqs-python detectado e ativo!")
+        elif hasattr(quantum_system, 'algorithms') and quantum_system.algorithms.get('real_implementation'):
+            LIBOQS_AVAILABLE = True
+            print("✅ QSS: liboqs-python detectado via algorithms.real_implementation!")
         else:
-            LIBOQS_AVAILABLE = False
+            # Tentar verificar diretamente
+            try:
+                from quantum_security_REAL import LIBOQS_AVAILABLE as LIBOQS_DIRECT
+                LIBOQS_AVAILABLE = LIBOQS_DIRECT
+                if LIBOQS_AVAILABLE:
+                    print("✅ QSS: liboqs-python detectado diretamente!")
+                else:
+                    print("⚠️  QSS: liboqs-python não disponível (modo simulado)")
+            except:
+                LIBOQS_AVAILABLE = False
+                print("⚠️  QSS: liboqs-python não disponível (modo simulado)")
     
     if ALZ_NIEV_AVAILABLE:
         alz_niev = ALZNIEV()
@@ -730,7 +743,8 @@ def qss_status():
         "alz_niev_available": ALZ_NIEV_AVAILABLE,
         "liboqs_available": (
             (quantum_system.real_pqc_available if quantum_system and hasattr(quantum_system, 'real_pqc_available') else False) or
-            (LIBOQS_AVAILABLE if 'LIBOQS_AVAILABLE' in globals() else False) or
+            (quantum_system.algorithms.get('real_implementation') if quantum_system and hasattr(quantum_system, 'algorithms') else False) or
+            LIBOQS_AVAILABLE or
             (globals().get('LIBOQS_AVAILABLE', False))
         ),
         "endpoints": {
