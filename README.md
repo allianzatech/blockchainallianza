@@ -1,5 +1,13 @@
 # 🔐 Allianza Blockchain - Public Repository
 
+[![npm version](https://img.shields.io/npm/v/allianza-qss-js)](https://www.npmjs.com/package/allianza-qss-js)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Testnet](https://img.shields.io/badge/Testnet-Active-green)](https://testnet.allianza.tech)
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
+[![CI](https://github.com/dieisonmaach-lang/allianzablockchainpublic/workflows/CI/badge.svg)](https://github.com/dieisonmaach-lang/allianzablockchainpublic/actions)
+[![Tests](https://img.shields.io/badge/Tests-Passing-brightgreen)](https://github.com/dieisonmaach-lang/allianzablockchainpublic/actions)
+
 > **Post-Quantum Blockchain for Real-World Assets (RWA)**
 
 This is the **public repository** for developers and investors to validate Allianza Blockchain technology. The core blockchain implementation remains private for security reasons.
@@ -70,6 +78,8 @@ This is the **public repository** for developers and investors to validate Allia
 - **Quick Start Guide:** `docs/QUICK_START.md`
 - **QSS Integration:** `QSS_FOR_OTHER_BLOCKCHAINS.md`
 - **Whitepaper:** `WHITEPAPER_ALLIANZA_BLOCKCHAIN.md`
+- **Audit Readiness:** `docs/AUDIT_READINESS.md`
+- **Contributing:** `CONTRIBUTING.md`
 
 ---
 

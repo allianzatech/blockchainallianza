@@ -1,0 +1,16 @@
+# Allianza Blockchain - Public Repository Requirements
+# Core dependencies for examples and demos
+
+# HTTP requests
+requests>=2.31.0
+
+# JSON handling (built-in, but listed for clarity)
+# json - built-in
+
+# Testing
+pytest>=7.4.0
+coverage>=7.3.0
+
+# Note: liboqs-python is not included as it's part of the private core
+# The public repository uses API calls to the testnet instead
+
