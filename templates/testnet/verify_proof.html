@@ -28,25 +28,19 @@
         }
         
         /* Botão Voltar */
-        .btn-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                .btn-back {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #374151;
             color: white;
             text-decoration: none;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background 0.2s;
         }
         
-        .btn-back:hover {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            transform: translateX(-3px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-        }
+        
+        
         
         /* Container para código com botão copiar */
         .code-container {
@@ -236,7 +230,7 @@
 <body>
     <div class="container">
         <a href="/" class="btn-back">
-            <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
+            <i class="fas fa-arrow-left mr-1"></i>Voltar
         </a>
         
         <h1>🔍 Verificador Público de Provas</h1>
