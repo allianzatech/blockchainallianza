@@ -67,7 +67,7 @@ This is the **public repository** for developers and investors to validate Allia
 
 - **API Reference:** `docs/API_REFERENCE.md`
 - **Quick Start Guide:** `docs/QUICK_START.md`
-- **QSS Integration:** `QSS_FOR_OTHER_BLOCKCHAINS.md` (English) / `QSS_FOR_OTHER_BLOCKCHAINS.md` (Portuguese)
+- **QSS Integration:** `QSS_FOR_OTHER_BLOCKCHAINS.md` (English) / `GUIA_QSS_PARA_OUTRAS_BLOCKCHAINS.md` (Portuguese)
 - **Whitepaper:** `WHITEPAPER_ALLIANZA_BLOCKCHAIN.md`
 
 ---
