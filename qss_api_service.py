@@ -12,13 +12,16 @@ import base64
 import uuid
 
 # Importar sistema de segurança quântica
+LIBOQS_AVAILABLE = False  # Inicializar como False
 try:
     from quantum_security import QuantumSecuritySystem
-    from quantum_security_REAL import QuantumSecuritySystemREAL, LIBOQS_AVAILABLE
+    from quantum_security_REAL import QuantumSecuritySystemREAL, LIBOQS_AVAILABLE as LIBOQS_IMPORTED
+    LIBOQS_AVAILABLE = LIBOQS_IMPORTED  # Usar valor importado
     QUANTUM_SECURITY_AVAILABLE = True
 except ImportError:
     QUANTUM_SECURITY_AVAILABLE = False
     QuantumSecuritySystem = None
+    LIBOQS_AVAILABLE = False
 
 # Importar sistema ALZ-NIEV para Merkle Proofs
 try:
