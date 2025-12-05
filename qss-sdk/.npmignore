@@ -1,0 +1,11 @@
+src/
+*.test.ts
+*.test.js
+tsconfig.json
+jest.config.js
+.gitignore
+.env
+node_modules/
+dist/*.test.js
+dist/*.test.d.ts
+

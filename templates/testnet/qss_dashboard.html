@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Security Service (QSS) - Allianza Blockchain</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+        }
+        .card {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .status-online { background: #10b981; color: white; }
+        .status-offline { background: #ef4444; color: white; }
+        .proof-card {
+            background: rgba(15, 23, 42, 0.9);
+            border: 2px solid rgba(139, 92, 246, 0.3);
+        }
+        .copy-btn {
+            transition: all 0.2s;
+        }
+        .copy-btn:hover {
+            transform: scale(1.1);
+        }
+        /* Botão Voltar Padronizado */
+                .btn-back {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #374151;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        
+        
+        
+    
+        .btn-back:hover {
+            background: #4b5563;
+        }
+</style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+    <!-- Header -->
+    <div class="bg-slate-900 border-b border-slate-700 p-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="mb-6">
+                <a href="/" class="btn-back">Voltar</a>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold mb-2">
+                    <i class="fas fa-shield-virus text-cyan-400 mr-2"></i>
+                    Quantum Security Service (QSS)
+                </h1>
+                <p class="text-slate-400">Segurança quântica para Bitcoin, Ethereum e outras blockchains</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- Status do Serviço -->
+        <div class="card rounded-xl p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-semibold">
+                    <i class="fas fa-server text-cyan-400 mr-2"></i>
+                    Status do Serviço
+                </h2>
+                <span id="service-status" class="status-badge status-offline">Verificando...</span>
+            </div>
+            <div id="service-info" class="text-slate-300">
+                <p>Carregando informações do serviço...</p>
+            </div>
+        </div>
+
+        <!-- Testes Profissionais -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Teste Bitcoin -->
+            <div class="card rounded-xl p-6">
+                <h3 class="text-xl font-semibold mb-4">
+                    <i class="fab fa-bitcoin text-orange-400 mr-2"></i>
+                    Teste de Segurança Quântica - Bitcoin
+                </h3>
+                <p class="text-slate-400 mb-4">
+                    Gere uma prova quântica para uma transação Bitcoin e ancore no OP_RETURN
+                </p>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">TX Hash Bitcoin</label>
+                        <input type="text" id="btc-tx-hash" 
+                               placeholder="Ex: 89b6d1b46c2a1f93bd1d9ccc95dd25b46a81c7f37cb7b2a11abbebd29ddafaeb" 
+                               class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-400">
+                        <p class="text-xs text-slate-400 mt-1">
+                            💡 Use um hash real do <a href="https://blockstream.info/testnet/" target="_blank" class="text-cyan-400 hover:underline">Blockstream Explorer</a>
+                        </p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Block Height (opcional)</label>
+                        <input type="number" id="btc-block-height" 
+                               placeholder="Ex: 12345" 
+                               class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-400">
+                    </div>
+                    <button onclick="testBitcoinSecurity()" 
+                            class="w-full bg-orange-600 hover:bg-orange-700 px-6 py-3 rounded-lg font-semibold transition">
+                        <i class="fas fa-shield-alt mr-2"></i>
+                        Gerar Prova Quântica Bitcoin
+                    </button>
+                </div>
+                <div id="btc-result" class="mt-4 hidden"></div>
+            </div>
+
+            <!-- Teste Ethereum -->
+            <div class="card rounded-xl p-6">
+                <h3 class="text-xl font-semibold mb-4">
+                    <i class="fab fa-ethereum text-blue-400 mr-2"></i>
+                    Teste de Segurança Quântica - Ethereum
+                </h3>
+                <p class="text-slate-400 mb-4">
+                    Gere uma prova quântica para uma transação Ethereum e ancore via Smart Contract
+                </p>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">TX Hash Ethereum</label>
+                        <input type="text" id="eth-tx-hash" 
+                               placeholder="Ex: 0x03008e09df2465e5ce67c179cf8b86b6f533a14ddfef643612a91d833dad4008" 
+                               class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-400">
+                        <p class="text-xs text-slate-400 mt-1">
+                            💡 Use um hash real do <a href="https://amoy.polygonscan.com/" target="_blank" class="text-blue-400 hover:underline">Polygon Explorer</a> ou <a href="https://sepolia.etherscan.io/" target="_blank" class="text-blue-400 hover:underline">Ethereum Sepolia</a>
+                        </p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Block Height (opcional)</label>
+                        <input type="number" id="eth-block-height" 
+                               placeholder="Ex: 12345" 
+                               class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-400">
+                    </div>
+                    <button onclick="testEthereumSecurity()" 
+                            class="w-full bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition">
+                        <i class="fas fa-shield-alt mr-2"></i>
+                        Gerar Prova Quântica Ethereum
+                    </button>
+                </div>
+                <div id="eth-result" class="mt-4 hidden"></div>
+            </div>
+        </div>
+
+        <!-- Resultado da Prova -->
+        <div id="proof-result" class="card rounded-xl p-6 hidden">
+            <h3 class="text-xl font-semibold mb-4">
+                <i class="fas fa-certificate text-purple-400 mr-2"></i>
+                Prova Quântica Gerada
+            </h3>
+            <div id="proof-content" class="proof-card rounded-lg p-4 font-mono text-sm overflow-x-auto"></div>
+            <div class="mt-4 flex gap-4">
+                <button onclick="verifyProof()" 
+                        class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition">
+                    <i class="fas fa-check-circle mr-2"></i>Verificar Prova
+                </button>
+                <button onclick="copyProof()" 
+                        class="bg-slate-700 hover:bg-slate-600 px-6 py-3 rounded-lg font-semibold transition copy-btn">
+                    <i class="fas fa-copy mr-2"></i>Copiar JSON
+                </button>
+                <button onclick="downloadProof()" 
+                        class="bg-slate-700 hover:bg-slate-600 px-6 py-3 rounded-lg font-semibold transition">
+                    <i class="fas fa-download mr-2"></i>Download
+                </button>
+            </div>
+        </div>
+
+        <!-- Instruções de Ancoragem -->
+        <div id="anchor-instructions" class="card rounded-xl p-6 mt-6 hidden">
+            <h3 class="text-xl font-semibold mb-4">
+                <i class="fas fa-anchor text-yellow-400 mr-2"></i>
+                Instruções de Ancoragem
+            </h3>
+            <div id="anchor-content" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentProof = null;
+
+        // Verificar status do serviço
+        async function checkServiceStatus() {
+            try {
+                const response = await fetch('/api/qss/status');
+                const data = await response.json();
+                
+                const statusBadge = document.getElementById('service-status');
+                const serviceInfo = document.getElementById('service-info');
+                
+                if (data.success) {
+                    statusBadge.className = 'status-badge status-online';
+                    statusBadge.textContent = 'Online';
+                    
+                    serviceInfo.innerHTML = `
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <p class="text-slate-400 text-sm">Quantum Security</p>
+                                <p class="text-lg font-semibold">${data.quantum_security_available ? '✅ Disponível' : '❌ Indisponível'}</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-400 text-sm">ALZ-NIEV</p>
+                                <p class="text-lg font-semibold">${data.alz_niev_available ? '✅ Disponível' : '❌ Indisponível'}</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-400 text-sm">Chains Suportadas</p>
+                                <p class="text-lg font-semibold">${data.supported_chains?.length || 11}</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-400 text-sm">Algoritmos PQC</p>
+                                <p class="text-lg font-semibold">${data.signature_schemes?.length || 3}</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    statusBadge.className = 'status-badge status-offline';
+                    statusBadge.textContent = 'Offline';
+                    serviceInfo.innerHTML = '<p class="text-red-400">Serviço não disponível</p>';
+                }
+            } catch (error) {
+                console.error('Erro ao verificar status:', error);
+                document.getElementById('service-status').className = 'status-badge status-offline';
+                document.getElementById('service-status').textContent = 'Offline';
+            }
+        }
+
+        // Teste Bitcoin
+        async function testBitcoinSecurity() {
+            const txHash = document.getElementById('btc-tx-hash').value.trim();
+            const blockHeight = document.getElementById('btc-block-height').value;
+            
+            if (!txHash) {
+                alert('Por favor, insira um TX Hash Bitcoin');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('btc-result');
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<p class="text-yellow-400"><i class="fas fa-spinner fa-spin mr-2"></i>Gerando prova quântica...</p>';
+            
+            try {
+                const response = await fetch('/api/qss/generate-proof', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chain: 'bitcoin',
+                        tx_hash: txHash,
+                        metadata: {
+                            block_height: blockHeight ? parseInt(blockHeight) : undefined,
+                            timestamp: Math.floor(Date.now() / 1000)
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.quantum_proof) {
+                    currentProof = data.quantum_proof;
+                    displayProof(data.quantum_proof);
+                    await getAnchorInstructions('bitcoin');
+                    resultDiv.innerHTML = '<p class="text-green-400"><i class="fas fa-check-circle mr-2"></i>Prova gerada com sucesso!</p>';
+                } else {
+                    resultDiv.innerHTML = `<p class="text-red-400"><i class="fas fa-times-circle mr-2"></i>Erro: ${data.error || 'Erro desconhecido'}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="text-red-400"><i class="fas fa-times-circle mr-2"></i>Erro: ${error.message}</p>`;
+            }
+        }
+
+        // Teste Ethereum
+        async function testEthereumSecurity() {
+            const txHash = document.getElementById('eth-tx-hash').value.trim();
+            const blockHeight = document.getElementById('eth-block-height').value;
+            
+            if (!txHash) {
+                alert('Por favor, insira um TX Hash Ethereum');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('eth-result');
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<p class="text-yellow-400"><i class="fas fa-spinner fa-spin mr-2"></i>Gerando prova quântica...</p>';
+            
+            try {
+                const response = await fetch('/api/qss/generate-proof', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chain: 'ethereum',
+                        tx_hash: txHash,
+                        metadata: {
+                            block_height: blockHeight ? parseInt(blockHeight) : undefined,
+                            timestamp: Math.floor(Date.now() / 1000)
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.quantum_proof) {
+                    currentProof = data.quantum_proof;
+                    displayProof(data.quantum_proof);
+                    await getAnchorInstructions('ethereum');
+                    resultDiv.innerHTML = '<p class="text-green-400"><i class="fas fa-check-circle mr-2"></i>Prova gerada com sucesso!</p>';
+                } else {
+                    resultDiv.innerHTML = `<p class="text-red-400"><i class="fas fa-times-circle mr-2"></i>Erro: ${data.error || 'Erro desconhecido'}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="text-red-400"><i class="fas fa-times-circle mr-2"></i>Erro: ${error.message}</p>`;
+            }
+        }
+
+        // Exibir prova
+        function displayProof(proof) {
+            const proofDiv = document.getElementById('proof-result');
+            const contentDiv = document.getElementById('proof-content');
+            
+            contentDiv.textContent = JSON.stringify(proof, null, 2);
+            proofDiv.classList.remove('hidden');
+        }
+
+        // Verificar prova
+        async function verifyProof() {
+            if (!currentProof) {
+                alert('Nenhuma prova para verificar');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/qss/verify-proof', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ quantum_proof: currentProof })
+                });
+                
+                const data = await response.json();
+                
+                if (data.valid) {
+                    alert('✅ Prova válida!\n\n' + JSON.stringify(data.verification_details, null, 2));
+                } else {
+                    alert('❌ Prova inválida!\n\n' + (data.error || 'Verificação falhou'));
+                }
+            } catch (error) {
+                alert('Erro ao verificar: ' + error.message);
+            }
+        }
+
+        // Obter instruções de ancoragem
+        async function getAnchorInstructions(chain) {
+            if (!currentProof) return;
+            
+            try {
+                const response = await fetch('/api/qss/anchor-proof', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        quantum_proof: currentProof,
+                        target_chain: chain
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.anchor_instructions) {
+                    const anchorDiv = document.getElementById('anchor-instructions');
+                    const contentDiv = document.getElementById('anchor-content');
+                    
+                    const instructions = data.anchor_instructions;
+                    contentDiv.innerHTML = `
+                        <div class="bg-slate-800 rounded-lg p-4">
+                            <p class="font-semibold mb-2">Método: ${instructions.method}</p>
+                            ${instructions.data ? `<p class="text-sm text-slate-300 mb-2">Data: <code class="bg-slate-900 px-2 py-1 rounded">${instructions.data}</code></p>` : ''}
+                            ${instructions.proof_hash ? `<p class="text-sm text-slate-300 mb-2">Proof Hash: <code class="bg-slate-900 px-2 py-1 rounded">${instructions.proof_hash}</code></p>` : ''}
+                            ${instructions.note ? `<p class="text-yellow-400 text-sm mt-2">${instructions.note}</p>` : ''}
+                        </div>
+                    `;
+                    
+                    anchorDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Erro ao obter instruções:', error);
+            }
+        }
+
+        // Copiar prova
+        function copyProof() {
+            if (!currentProof) {
+                alert('Nenhuma prova para copiar');
+                return;
+            }
+            
+            navigator.clipboard.writeText(JSON.stringify(currentProof, null, 2))
+                .then(() => alert('✅ Prova copiada para a área de transferência!'))
+                .catch(err => alert('Erro ao copiar: ' + err.message));
+        }
+
+        // Download prova
+        function downloadProof() {
+            if (!currentProof) {
+                alert('Nenhuma prova para download');
+                return;
+            }
+            
+            const blob = new Blob([JSON.stringify(currentProof, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `qss_proof_${currentProof.asset_chain}_${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Inicializar
+        checkServiceStatus();
+        setInterval(checkServiceStatus, 30000); // Atualizar a cada 30s
+    </script>
+</body>
+</html>
+

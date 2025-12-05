@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Explorer - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Botão Voltar Padronizado */
+                .btn-back {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #374151;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        
+        
+        
+        
+        
+        .btn-back:hover {
+            background: #4b5563;
+        }
+.stat-card {
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+        .tx-card {
+            transition: all 0.3s;
+        }
+        .tx-card:hover {
+            background-color: rgba(55, 65, 81, 0.8);
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-green { background-color: #10b981; color: white; }
+        .badge-blue { background-color: #3b82f6; color: white; }
+        .badge-purple { background-color: #8b5cf6; color: white; }
+        .badge-yellow { background-color: #f59e0b; color: white; }
+        .badge-red { background-color: #ef4444; color: white; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-6">
+            <a href="/" class="btn-back mb-4">Voltar</a>
+            <h1 class="text-4xl font-bold mb-2">🔍 Explorer</h1>
+            <p class="text-gray-400">Explore blocos, transações e estatísticas detalhadas da rede</p>
+        </div>
+
+        <!-- Stats Melhoradas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="stat-card bg-blue-900 p-4 rounded-lg border-2 border-blue-500">
+                <h3 class="text-sm text-gray-400 mb-1">Total de Blocos</h3>
+                <p class="text-3xl font-bold">{{ stats.total_blocks }}</p>
+                {% if stats.last_block_index %}
+                <p class="text-xs text-gray-400 mt-1">Último: #{{ stats.last_block_index }}</p>
+                {% endif %}
+            </div>
+            <div class="stat-card bg-green-900 p-4 rounded-lg border-2 border-green-500">
+                <h3 class="text-sm text-gray-400 mb-1">Total de Transações</h3>
+                <p class="text-3xl font-bold">{{ stats.total_transactions }}</p>
+                {% if stats.pending_transactions %}
+                <p class="text-xs text-gray-400 mt-1">{{ stats.pending_transactions }} pendentes</p>
+                {% endif %}
+            </div>
+            <div class="stat-card bg-purple-900 p-4 rounded-lg border-2 border-purple-500">
+                <h3 class="text-sm text-gray-400 mb-1">TPS (24h)</h3>
+                <p class="text-3xl font-bold">{{ stats.tps_24h_avg }}</p>
+                {% if stats.tps_current %}
+                <p class="text-xs text-gray-400 mt-1">Atual: {{ stats.tps_current }}/s</p>
+                {% endif %}
+            </div>
+            <div class="stat-card bg-yellow-900 p-4 rounded-lg border-2 border-yellow-500">
+                <h3 class="text-sm text-gray-400 mb-1">Latência Média</h3>
+                <p class="text-3xl font-bold">{{ stats.latency_avg_ms }}ms</p>
+                {% if stats.active_shards %}
+                <p class="text-xs text-gray-400 mt-1">{{ stats.active_shards }} shards ativos</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Estatísticas Avançadas -->
+        {% if stats.cross_chain or stats.quantum_security %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            {% if stats.cross_chain %}
+            <div class="bg-gray-800 p-6 rounded-lg border-2 border-cyan-500">
+                <h3 class="text-xl font-semibold mb-4 text-cyan-400">
+                    <i class="fas fa-project-diagram mr-2"></i>Cross-Chain
+                </h3>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Transações:</span>
+                        <span class="font-bold">{{ stats.cross_chain.total_transactions }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Volume Total:</span>
+                        <span class="font-bold">{{ "%.2f"|format(stats.cross_chain.total_volume) }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Percentual:</span>
+                        <span class="font-bold">{{ stats.cross_chain.percentage }}%</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if stats.quantum_security %}
+            <div class="bg-gray-800 p-6 rounded-lg border-2 border-purple-500">
+                <h3 class="text-xl font-semibold mb-4 text-purple-400">
+                    <i class="fas fa-atom mr-2"></i>Segurança Quântica
+                </h3>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Assinadas com PQC:</span>
+                        <span class="font-bold">{{ stats.quantum_security.quantum_signed_count }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Percentual:</span>
+                        <span class="font-bold">{{ stats.quantum_security.quantum_percentage }}%</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">QRS-3 Verificadas:</span>
+                        <span class="font-bold">{{ stats.quantum_security.qrs3_verified_count }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Chains Suportadas -->
+        {% if stats.chains_supported %}
+        <div class="mb-8 bg-gray-800 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold mb-2">🌐 Blockchains Suportadas</h3>
+            <div class="flex flex-wrap gap-2">
+                {% for chain in stats.chains_supported %}
+                <span class="badge badge-blue">{{ chain }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Blocks Melhorados -->
+        <div class="mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold">📦 Blocos Recentes</h2>
+                <span class="text-sm text-gray-400">{{ blocks|length }} blocos</span>
+            </div>
+            
+            {% if blocks|length > 0 and blocks[0].transaction_count == 0 %}
+            <div class="bg-blue-900/30 border border-blue-500/50 rounded-lg p-4 mb-4 text-sm text-blue-200">
+                <p><strong>ℹ️ Informação:</strong> Os blocos estão sendo criados, mas ainda não há transações pendentes para incluir neles. Isso é normal - blocos vazios são criados periodicamente para manter a rede ativa. Quando houver transações, elas aparecerão aqui automaticamente.</p>
+            </div>
+            {% endif %}
+            <div class="space-y-3">
+                {% for block in blocks %}
+                <div class="tx-card bg-gray-800 p-5 rounded-lg border-l-4 border-blue-500">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="font-mono text-lg font-bold text-blue-400">#{{ block.index }}</span>
+                                {% if block.qrs3_verified %}
+                                <span class="badge badge-green">
+                                    <i class="fas fa-shield-alt mr-1"></i>QRS-3 ✓
+                                </span>
+                                {% endif %}
+                                {% if block.statistics.cross_chain_count > 0 %}
+                                <span class="badge badge-cyan">
+                                    <i class="fas fa-project-diagram mr-1"></i>{{ block.statistics.cross_chain_count }} Cross-Chain
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="text-sm text-gray-400 space-y-1">
+                                <p><span class="text-gray-500">Hash:</span> <span class="font-mono">{{ block.hash_short }}</span></p>
+                                <p><span class="text-gray-500">Timestamp:</span> {{ block.timestamp_readable }} <span class="text-gray-600">({{ block.timestamp_relative }})</span></p>
+                                <p><span class="text-gray-500">Shard:</span> {{ block.shard_id }} | <span class="text-gray-500">Validator:</span> {{ block.validator[:20] }}...</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold text-green-400">{{ block.transaction_count }}</div>
+                            <div class="text-xs text-gray-400">transações</div>
+                            {% if block.statistics %}
+                            <div class="text-xs text-gray-400 mt-1">
+                                Total: {{ "%.2f"|format(block.statistics.total_amount) }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if block.statistics %}
+                    <div class="mt-3 pt-3 border-t border-gray-700 grid grid-cols-3 gap-2 text-xs">
+                        <div>
+                            <span class="text-gray-500">Cross-Chain:</span>
+                            <span class="font-bold">{{ block.statistics.cross_chain_count }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">PQC Signed:</span>
+                            <span class="font-bold">{{ block.statistics.quantum_signed_count }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">Tamanho:</span>
+                            <span class="font-bold">{{ block.size_bytes }} bytes</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-3 flex gap-2">
+                        <a href="/api/proofs/block/{{ block.index }}?format=json" 
+                           class="text-xs bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded"
+                           onclick="copyBlockJSON({{ block.index }}); return false;">
+                            <i class="fas fa-copy mr-1"></i>Copiar JSON
+                        </a>
+                        <a href="/api/proofs/block/{{ block.index }}?format=json" 
+                           target="_blank"
+                           class="text-xs bg-gray-600 hover:bg-gray-700 px-3 py-1 rounded">
+                            <i class="fas fa-external-link-alt mr-1"></i>Abrir JSON
+                        </a>
+                        {% if block.transaction_count > 0 %}
+                        <button onclick="toggleBlockTransactions({{ block.index }})" 
+                                class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded">
+                            <i class="fas fa-list mr-1"></i>Ver Transações
+                        </button>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Transações do bloco (ocultas por padrão) -->
+                    <div id="block-{{ block.index }}-transactions" class="hidden mt-4 pt-4 border-t border-gray-700">
+                        <h4 class="text-sm font-semibold mb-2">Transações do Bloco:</h4>
+                        <div class="space-y-2">
+                            {% for tx in block.transactions[:5] %}
+                            <div class="bg-gray-900 p-3 rounded text-xs">
+                                <div class="flex justify-between">
+                                    <span class="font-mono">{{ tx.tx_hash_short }}</span>
+                                    <span class="text-gray-400">{{ tx.amount_formatted }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% if block.transaction_count > 5 %}
+                            <p class="text-xs text-gray-500">... e mais {{ block.transaction_count - 5 }} transações</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Transactions Melhoradas -->
+        <div>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold">💸 Transações Recentes</h2>
+                <span class="text-sm text-gray-400">{{ transactions|length }} transações</span>
+            </div>
+            <div class="space-y-3">
+                {% for tx in transactions %}
+                <div class="tx-card bg-gray-800 p-5 rounded-lg border-l-4 {% if tx.is_cross_chain %}border-cyan-500{% elif tx.has_quantum_signature %}border-purple-500{% else %}border-green-500{% endif %}">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2 flex-wrap">
+                                <span class="font-mono text-sm">{{ tx.tx_hash_short }}</span>
+                                {% if tx.is_cross_chain %}
+                                <span class="badge badge-cyan">
+                                    <i class="fas fa-project-diagram mr-1"></i>{{ tx.source_chain }} → {{ tx.target_chain }}
+                                </span>
+                                {% endif %}
+                                {% if tx.has_quantum_signature %}
+                                <span class="badge badge-purple">
+                                    <i class="fas fa-atom mr-1"></i>{{ tx.quantum_algorithm }}
+                                </span>
+                                {% endif %}
+                                {% if tx.qrs3_verified %}
+                                <span class="badge badge-green">
+                                    <i class="fas fa-shield-alt mr-1"></i>QRS-3 ✓
+                                </span>
+                                {% endif %}
+                                <span class="badge badge-{{ tx.status_color }}">
+                                    {{ tx.status|upper }}
+                                </span>
+                            </div>
+                            <div class="text-sm text-gray-400 space-y-1">
+                                <p>
+                                    <span class="text-gray-500">De:</span> 
+                                    <span class="font-mono">{{ tx.from_short }}</span>
+                                    <span class="text-gray-600">→</span>
+                                    <span class="text-gray-500">Para:</span> 
+                                    <span class="font-mono">{{ tx.to_short }}</span>
+                                </p>
+                                <p>
+                                    <span class="text-gray-500">Valor:</span> 
+                                    <span class="font-bold text-green-400">{{ tx.amount_formatted }}</span>
+                                    {% if tx.gas_cost > 0 %}
+                                    <span class="text-gray-600">|</span>
+                                    <span class="text-gray-500">Gas:</span> 
+                                    <span class="text-yellow-400">{{ tx.gas_cost|int }}</span>
+                                    {% endif %}
+                                </p>
+                                <p>
+                                    <span class="text-gray-500">Timestamp:</span> 
+                                    {{ tx.timestamp_readable }} 
+                                    <span class="text-gray-600">({{ tx.timestamp_relative }})</span>
+                                    {% if tx.confirmations > 0 %}
+                                    <span class="text-gray-600">|</span>
+                                    <span class="text-gray-500">Confirmações:</span> 
+                                    <span class="text-green-400">{{ tx.confirmations }}</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xl font-bold text-green-400">{{ tx.amount_formatted }}</div>
+                            <div class="text-xs text-gray-400">ALZ-T</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3 flex gap-2 flex-wrap">
+                        <button onclick="copyTransactionJSON('{{ tx.tx_hash }}')" 
+                                class="text-xs bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">
+                            <i class="fas fa-copy mr-1"></i>Copiar JSON
+                        </button>
+                        <a href="/api/proofs/transaction/{{ tx.tx_hash }}?format=json" 
+                           target="_blank"
+                           class="text-xs bg-gray-600 hover:bg-gray-700 px-3 py-1 rounded">
+                            <i class="fas fa-external-link-alt mr-1"></i>Abrir JSON
+                        </a>
+                        {% if tx.explorer_url %}
+                        <a href="{{ tx.explorer_url }}" target="_blank"
+                           class="text-xs bg-cyan-600 hover:bg-cyan-700 px-3 py-1 rounded">
+                            <i class="fas fa-external-link-alt mr-1"></i>Explorer Externo
+                        </a>
+                        {% endif %}
+                        {% if tx.has_quantum_signature %}
+                        <span class="text-xs bg-purple-600 px-3 py-1 rounded">
+                            <i class="fas fa-atom mr-1"></i>PQC: {{ tx.quantum_algorithm }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleBlockTransactions(blockIndex) {
+            const element = document.getElementById(`block-${blockIndex}-transactions`);
+            if (element) {
+                element.classList.toggle('hidden');
+            }
+        }
+        
+        // Auto-refresh a cada 30 segundos
+        setInterval(() => {
+            location.reload();
+        }, 30000);
+    </script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 QSS API Status - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+                .btn-back {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #374151;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        
+        
+        
+        .btn-back:hover {
+            background: #4b5563;
+        }
+.status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+        .status-online { background: #10b981; color: white; }
+        .status-offline { background: #ef4444; color: white; }
+        .chain-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            margin: 2px;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="/" class="btn-back mb-4">
+Voltar
+            </a>
+            <h1 class="text-4xl font-bold mb-2">📊 QSS API Status</h1>
+            <p class="text-gray-400">Status em tempo real do Quantum Security Service</p>
+        </div>
+
+        <!-- Status Card -->
+        <div id="statusContainer" class="bg-gray-800 rounded-lg p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-semibold">Status do Serviço</h2>
+                <span id="statusBadge" class="status-badge status-offline">Carregando...</span>
+            </div>
+            <div id="statusContent">
+                <p class="text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Carregando informações...</p>
+            </div>
+        </div>
+
+        <!-- Endpoints -->
+        <div id="endpointsCard" class="bg-gray-800 rounded-lg p-6 mb-6 hidden">
+            <h2 class="text-2xl font-semibold mb-4">
+                <i class="fas fa-plug text-blue-400 mr-2"></i>
+                Endpoints Disponíveis
+            </h2>
+            <div id="endpointsList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <!-- Supported Chains -->
+        <div id="chainsCard" class="bg-gray-800 rounded-lg p-6 mb-6 hidden">
+            <h2 class="text-2xl font-semibold mb-4">
+                <i class="fas fa-link text-green-400 mr-2"></i>
+                Blockchains Suportadas
+            </h2>
+            <div id="chainsList" class="flex flex-wrap gap-2"></div>
+        </div>
+
+        <!-- Signature Schemes -->
+        <div id="schemesCard" class="bg-gray-800 rounded-lg p-6 mb-6 hidden">
+            <h2 class="text-2xl font-semibold mb-4">
+                <i class="fas fa-shield-alt text-purple-400 mr-2"></i>
+                Algoritmos de Assinatura
+            </h2>
+            <div id="schemesList" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+        </div>
+
+        <!-- Raw JSON (Collapsible) -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <button onclick="toggleRawJson()" class="w-full text-left flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-semibold">
+                    <i class="fas fa-code text-yellow-400 mr-2"></i>
+                    JSON Completo
+                </h2>
+                <i id="jsonToggleIcon" class="fas fa-chevron-down"></i>
+            </button>
+            <div id="rawJsonContainer" class="hidden">
+                <pre id="rawJson" class="bg-gray-900 p-4 rounded text-sm overflow-x-auto"></pre>
+                <div class="mt-4 flex gap-2">
+                    <button onclick="copyRawJson()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm font-semibold transition">
+                        <i class="fas fa-copy mr-2"></i>Copiar JSON
+                    </button>
+                    <button onclick="downloadRawJson()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm font-semibold transition">
+                        <i class="fas fa-download mr-2"></i>Baixar JSON
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let statusData = null;
+
+        async function loadStatus() {
+            try {
+                const response = await fetch('/api/qss/status');
+                statusData = await response.json();
+                displayStatus(statusData);
+            } catch (error) {
+                console.error('Erro ao carregar status:', error);
+                document.getElementById('statusBadge').className = 'status-badge status-offline';
+                document.getElementById('statusBadge').textContent = 'Erro';
+                document.getElementById('statusContent').innerHTML = '<p class="text-red-400">Erro ao carregar status da API</p>';
+            }
+        }
+
+        function displayStatus(data) {
+            // Status Badge
+            const statusBadge = document.getElementById('statusBadge');
+            if (data.success && data.status === 'operational') {
+                statusBadge.className = 'status-badge status-online';
+                statusBadge.textContent = '✅ Operacional';
+            } else {
+                statusBadge.className = 'status-badge status-offline';
+                statusBadge.textContent = '❌ Indisponível';
+            }
+
+            // Status Content
+            const statusContent = document.getElementById('statusContent');
+            statusContent.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-gray-700 rounded-lg p-4">
+                        <p class="text-gray-400 text-sm mb-2">Quantum Security</p>
+                        <p class="text-xl font-semibold ${data.quantum_security_available ? 'text-green-400' : 'text-red-400'}">
+                            ${data.quantum_security_available ? '✅ Disponível' : '❌ Indisponível'}
+                        </p>
+                    </div>
+                    <div class="bg-gray-700 rounded-lg p-4">
+                        <p class="text-gray-400 text-sm mb-2">ALZ-NIEV</p>
+                        <p class="text-xl font-semibold ${data.alz_niev_available ? 'text-green-400' : 'text-red-400'}">
+                            ${data.alz_niev_available ? '✅ Disponível' : '❌ Indisponível'}
+                        </p>
+                    </div>
+                    <div class="bg-gray-700 rounded-lg p-4">
+                        <p class="text-gray-400 text-sm mb-2">liboqs-python</p>
+                        <p class="text-xl font-semibold ${data.liboqs_available ? 'text-green-400' : 'text-yellow-400'}">
+                            ${data.liboqs_available ? '✅ Disponível' : '⚠️ Simulado'}
+                        </p>
+                    </div>
+                </div>
+            `;
+
+            // Endpoints
+            if (data.endpoints) {
+                const endpointsList = document.getElementById('endpointsList');
+                endpointsList.innerHTML = '';
+                for (const [name, path] of Object.entries(data.endpoints)) {
+                    const endpointCard = document.createElement('div');
+                    endpointCard.className = 'bg-gray-700 rounded-lg p-4';
+                    endpointCard.innerHTML = `
+                        <p class="text-gray-400 text-sm mb-1">${name.replace('_', ' ').toUpperCase()}</p>
+                        <code class="text-blue-400 text-sm">${path}</code>
+                        <a href="${path}" target="_blank" class="text-xs text-gray-400 hover:text-blue-400 mt-2 block">
+                            <i class="fas fa-external-link-alt mr-1"></i>Abrir endpoint
+                        </a>
+                    `;
+                    endpointsList.appendChild(endpointCard);
+                }
+                document.getElementById('endpointsCard').classList.remove('hidden');
+            }
+
+            // Supported Chains
+            if (data.supported_chains && data.supported_chains.length > 0) {
+                const chainsList = document.getElementById('chainsList');
+                chainsList.innerHTML = '';
+                data.supported_chains.forEach(chain => {
+                    const badge = document.createElement('span');
+                    badge.className = 'chain-badge';
+                    badge.textContent = chain.charAt(0).toUpperCase() + chain.slice(1);
+                    chainsList.appendChild(badge);
+                });
+                document.getElementById('chainsCard').classList.remove('hidden');
+            }
+
+            // Signature Schemes
+            if (data.signature_schemes && data.signature_schemes.length > 0) {
+                const schemesList = document.getElementById('schemesList');
+                schemesList.innerHTML = '';
+                data.signature_schemes.forEach(scheme => {
+                    const schemeCard = document.createElement('div');
+                    schemeCard.className = 'bg-gray-700 rounded-lg p-4';
+                    schemeCard.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-shield-alt text-purple-400"></i>
+                            <p class="font-semibold">${scheme}</p>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2">Algoritmo PQC</p>
+                    `;
+                    schemesList.appendChild(schemeCard);
+                });
+                document.getElementById('schemesCard').classList.remove('hidden');
+            }
+
+            // Raw JSON
+            document.getElementById('rawJson').textContent = JSON.stringify(data, null, 2);
+        }
+
+        function toggleRawJson() {
+            const container = document.getElementById('rawJsonContainer');
+            const icon = document.getElementById('jsonToggleIcon');
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                container.classList.add('hidden');
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        }
+
+        function copyRawJson() {
+            const json = document.getElementById('rawJson').textContent;
+            navigator.clipboard.writeText(json).then(() => {
+                alert('JSON copiado para a área de transferência!');
+            });
+        }
+
+        function downloadRawJson() {
+            const json = document.getElementById('rawJson').textContent;
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `qss-status-${new Date().toISOString()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Carregar status ao carregar a página
+        loadStatus();
+
+        // Auto-refresh a cada 30 segundos
+        setInterval(loadStatus, 30000);
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificador Público de Provas - Allianza Blockchain</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        /* Botão Voltar */
+                .btn-back {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #374151;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        
+        
+        
+        
+        
+        .btn-back:hover {
+            background: #4b5563;
+        }
+/* Container para código com botão copiar */
+        .code-container {
+            position: relative;
+            margin: 15px 0;
+        }
+        
+        .code-wrapper {
+            position: relative;
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 15px;
+            overflow-x: auto;
+        }
+        
+        .code-wrapper pre {
+            margin: 0;
+            color: #e2e8f0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .btn-copy {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(59, 130, 246, 0.8);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        
+        .btn-copy:hover {
+            background: rgba(59, 130, 246, 1);
+            transform: scale(1.05);
+        }
+        
+        .btn-copy.copied {
+            background: #10b981;
+        }
+        
+        .btn-copy.copied::after {
+            content: " ✓ Copiado!";
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+        
+        .result.loading {
+            background: #d1ecf1;
+            border: 2px solid #17a2b8;
+            color: #0c5460;
+        }
+        
+        .details {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .detail-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+        }
+        
+        .detail-item strong {
+            color: #333;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        
+        .status-verified {
+            background: #28a745;
+            color: white;
+        }
+        
+        .status-unverified {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .info-box p {
+            margin: 5px 0;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="btn-back">
+Voltar
+        </a>
+        
+        <h1>🔍 Verificador Público de Provas</h1>
+        <p class="subtitle">Verifique a autenticidade de transferências cross-chain sem confiar no backend</p>
+        
+        <div class="info-box">
+            <p><strong>Como funciona:</strong></p>
+            <p>1. Cole os hashes das transações Polygon e Bitcoin</p>
+            <p>2. O sistema verifica ambas as transações diretamente nas blockchains</p>
+            <p>3. Verifica o vínculo criptográfico via OP_RETURN na transação Bitcoin</p>
+            <p>4. Retorna resultado verificável independentemente</p>
+        </div>
+        
+        <form id="verifyForm">
+            <div class="form-group">
+                <label for="polygon_tx_hash">Hash da Transação Polygon:</label>
+                <input type="text" id="polygon_tx_hash" name="polygon_tx_hash" 
+                       placeholder="0x049cd16743b1a953788e197e54073cc7775480282c24b22eeb3084024e9d1a52" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="bitcoin_tx_hash">Hash da Transação Bitcoin:</label>
+                <input type="text" id="bitcoin_tx_hash" name="bitcoin_tx_hash" 
+                       placeholder="204027d6fae86a20cff8dd584795494287eb061e855927d6f0c8254994ffb792" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="zk_proof_hash">Hash da Prova ZK (opcional):</label>
+                <input type="text" id="zk_proof_hash" name="zk_proof_hash" 
+                       placeholder="b2fdcad963b32dce33d71839b3bc6d24...">
+            </div>
+            
+            <div class="form-group">
+                <label for="merkle_root">Merkle Root (opcional):</label>
+                <input type="text" id="merkle_root" name="merkle_root" 
+                       placeholder="0ab7589eed2eacb2853c7952258db985...">
+            </div>
+            
+            <button type="submit" class="btn">🔍 Verificar Prova</button>
+        </form>
+        
+        <div id="result" class="result"></div>
+    </div>
+    
+    <script>
+        document.getElementById('verifyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result loading';
+            resultDiv.innerHTML = '<p>⏳ Verificando prova...</p>';
+            
+            const formData = {
+                polygon_tx_hash: document.getElementById('polygon_tx_hash').value.trim(),
+                bitcoin_tx_hash: document.getElementById('bitcoin_tx_hash').value.trim(),
+                zk_proof_hash: document.getElementById('zk_proof_hash').value.trim(),
+                merkle_root: document.getElementById('merkle_root').value.trim()
+            };
+            
+            try {
+                const response = await fetch('/verify-proof', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.verified) {
+                    resultDiv.className = 'result success';
+                    const jsonData = JSON.stringify(data, null, 2);
+                    resultDiv.innerHTML = `
+                        <h2>✅ Prova Verificada</h2>
+                        <p><strong>Transferência cross-chain autêntica verificada!</strong></p>
+                        <div class="code-container">
+                            <div class="code-wrapper">
+                                <button class="btn-copy" onclick="copyCode('proof-json')" title="Copiar JSON">
+                                    <i class="fas fa-copy"></i> Copiar
+                                </button>
+                                <pre id="proof-json"><code>${jsonData}</code></pre>
+                            </div>
+                        </div>
+                        <div class="details">
+                            <div class="detail-item">
+                                <strong>Polygon:</strong> 
+                                <span class="status-badge status-verified">Verificado</span>
+                                <br>Block: ${data.details.polygon.block_number || 'N/A'}
+                                <br>Confirmações: ${data.details.polygon.confirmations}
+                            </div>
+                            <div class="detail-item">
+                                <strong>Bitcoin:</strong> 
+                                <span class="status-badge status-verified">Verificado</span>
+                                <br>Confirmações: ${data.details.bitcoin.confirmations}
+                            </div>
+                            <div class="detail-item">
+                                <strong>Vínculo Criptográfico:</strong> 
+                                <span class="status-badge ${data.details.cryptographic_link.verified ? 'status-verified' : 'status-unverified'}">
+                                    ${data.details.cryptographic_link.verified ? 'Verificado' : 'Não Verificado'}
+                                </span>
+                                <br>${data.details.cryptographic_link.note}
+                                ${data.details.bitcoin.op_return_polygon_hash ? '<br>Hash no OP_RETURN: ' + data.details.bitcoin.op_return_polygon_hash : ''}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    const jsonData = JSON.stringify(data, null, 2);
+                    resultDiv.innerHTML = `
+                        <h2>❌ Prova Não Verificada</h2>
+                        <p>${data.message || 'Erro ao verificar prova'}</p>
+                        <div class="code-container">
+                            <div class="code-wrapper">
+                                <button class="btn-copy" onclick="copyCode('proof-json-error')" title="Copiar JSON">
+                                    <i class="fas fa-copy"></i> Copiar
+                                </button>
+                                <pre id="proof-json-error"><code>${jsonData}</code></pre>
+                            </div>
+                        </div>
+                        <div class="details">
+                            <div class="detail-item">
+                                <strong>Polygon:</strong> 
+                                <span class="status-badge ${data.details.polygon.verified ? 'status-verified' : 'status-unverified'}">
+                                    ${data.details.polygon.verified ? 'Verificado' : 'Não Verificado'}
+                                </span>
+                            </div>
+                            <div class="detail-item">
+                                <strong>Bitcoin:</strong> 
+                                <span class="status-badge ${data.details.bitcoin.verified ? 'status-verified' : 'status-unverified'}">
+                                    ${data.details.bitcoin.verified ? 'Verificado' : 'Não Verificado'}
+                                </span>
+                            </div>
+                            <div class="detail-item">
+                                <strong>Vínculo Criptográfico:</strong> 
+                                <span class="status-badge status-unverified">Não Verificado</span>
+                                <br>${data.details.cryptographic_link.note}
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                const errorJson = JSON.stringify({error: error.message}, null, 2);
+                resultDiv.innerHTML = `
+                    <h2>❌ Erro</h2>
+                    <p>Erro ao verificar: ${error.message}</p>
+                    <div class="code-container">
+                        <div class="code-wrapper">
+                            <button class="btn-copy" onclick="copyCode('proof-json-error-catch')" title="Copiar JSON">
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
+                            <pre id="proof-json-error-catch"><code>${errorJson}</code></pre>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+        
+        // Função para copiar código
+        function copyCode(elementId) {
+            const element = document.getElementById(elementId);
+            if (!element) {
+                console.error('Elemento não encontrado:', elementId);
+                return;
+            }
+            
+            let textToCopy = '';
+            if (element.tagName === 'PRE' || element.tagName === 'CODE') {
+                textToCopy = element.textContent || element.innerText;
+            } else {
+                textToCopy = element.textContent || element.innerText || element.value;
+            }
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const btn = document.querySelector(`[onclick*="${elementId}"]`);
+                if (btn) {
+                    const originalText = btn.innerHTML;
+                    btn.classList.add('copied');
+                    setTimeout(() => {
+                        btn.classList.remove('copied');
+                        btn.innerHTML = originalText;
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+            });
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</body>
+</html>
+
