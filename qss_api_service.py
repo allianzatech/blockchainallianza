@@ -111,7 +111,6 @@ def generate_quantum_proof():
         
         # Adicionar requisição QSS ao leaderboard (se disponível)
         try:
-            from flask import request
             from testnet_leaderboard import TestnetLeaderboard
             leaderboard = TestnetLeaderboard()
             user_id = request.remote_addr or "anonymous"
@@ -119,7 +118,8 @@ def generate_quantum_proof():
                 "chain": chain,
                 "tx_hash": tx_hash[:16] + "..."
             })
-        except:
+        except Exception as e:
+            print(f"⚠️  Erro ao adicionar requisição QSS ao leaderboard: {e}")
             pass  # Leaderboard opcional
         
         # 1. Preparar mensagem para assinatura
