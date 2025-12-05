@@ -518,7 +518,7 @@ def verify_quantum_proof():
             "error": str(e)
         }), 500
 
-@qss_bp.route('/anchor-proof', methods=['POST'])
+@qss_bp.route('/anchor-proof', methods=['GET', 'POST'])
 def anchor_quantum_proof():
     """
     🔗 Gerar instruções para ancorar prova quântica em blockchain destino
