@@ -83,6 +83,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# CSS compilado (será gerado no build)
-static/css/output.css
+# CSS compilado - COMENTADO: precisa estar no repositório para funcionar no Render
+# static/css/output.css
 
