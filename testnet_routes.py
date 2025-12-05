@@ -208,6 +208,11 @@ def developer_hub():
     """Página Developer Hub com Quick Start Guide"""
     return render_template('testnet/developer_hub.html')
 
+@testnet_bp.route('/qss/status')
+def qss_status_page():
+    """Página de status do QSS com visualização melhorada"""
+    return render_template('testnet/qss_status.html')
+
 @testnet_bp.route('/leaderboard')
 def leaderboard_page():
     """Página do Leaderboard"""
