@@ -4058,6 +4058,25 @@ def network_status():
     
     return jsonify(status_data)
 
+@app.route('/static/css/output.css')
+def serve_css():
+    """Servir CSS com MIME type correto"""
+    try:
+        response = send_from_directory('static/css', 'output.css')
+        response.headers['Content-Type'] = 'text/css; charset=utf-8'
+        return response
+    except Exception as e:
+        # Fallback: retornar CSS básico inline
+        from flask import Response
+        basic_css = """
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .bg-gray-900 { background-color: #111827; }
+        .bg-gray-800 { background-color: #1f2937; }
+        .text-white { color: #ffffff; }
+        .container { max-width: 1280px; margin: 0 auto; padding: 1rem; }
+        """
+        return Response(basic_css, mimetype='text/css')
+
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check geral do sistema"""
