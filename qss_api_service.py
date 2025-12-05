@@ -753,13 +753,29 @@ def try_detect_liboqs_direct():
 @qss_bp.route('/status', methods=['GET'])
 def qss_status():
     """📊 Status do serviço QSS"""
-    # Atualizar LIBOQS_AVAILABLE dinamicamente
+    # SEMPRE verificar liboqs dinamicamente (não confiar apenas na inicialização)
     global LIBOQS_AVAILABLE
-    if not LIBOQS_AVAILABLE:
-        LIBOQS_AVAILABLE = (
-            (quantum_system.real_pqc_available if quantum_system and hasattr(quantum_system, 'real_pqc_available') else False) or
-            try_detect_liboqs_direct()
-        )
+    
+    # Detectar liboqs com múltiplos métodos
+    liboqs_detected = False
+    
+    # Método 1: Verificar através do quantum_system
+    if quantum_system:
+        if hasattr(quantum_system, 'real_pqc_available') and quantum_system.real_pqc_available:
+            liboqs_detected = True
+        elif hasattr(quantum_system, 'algorithms') and quantum_system.algorithms.get('real_implementation', False):
+            liboqs_detected = True
+    
+    # Método 2: Verificar diretamente via import (mais confiável)
+    if not liboqs_detected:
+        liboqs_detected = try_detect_liboqs_direct()
+    
+    # Método 3: Verificar variável global (fallback)
+    if not liboqs_detected:
+        liboqs_detected = LIBOQS_AVAILABLE if LIBOQS_AVAILABLE else False
+    
+    # Atualizar variável global para próxima vez
+    LIBOQS_AVAILABLE = liboqs_detected
     
     return jsonify({
         "success": True,
@@ -767,13 +783,7 @@ def qss_status():
         "status": "operational",
         "quantum_security_available": QUANTUM_SECURITY_AVAILABLE,
         "alz_niev_available": ALZ_NIEV_AVAILABLE,
-        "liboqs_available": bool(
-            (quantum_system.real_pqc_available if quantum_system and hasattr(quantum_system, 'real_pqc_available') else False) or
-            (quantum_system.algorithms.get('real_implementation', False) if quantum_system and hasattr(quantum_system, 'algorithms') else False) or
-            LIBOQS_AVAILABLE or
-            (globals().get('LIBOQS_AVAILABLE', False)) or
-            (try_detect_liboqs_direct())
-        ),
+        "liboqs_available": liboqs_detected,
         "endpoints": {
             "generate_proof": "/api/qss/generate-proof",
             "verify_proof": "/api/qss/verify-proof",
