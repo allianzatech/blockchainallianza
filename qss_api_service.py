@@ -37,11 +37,17 @@ alz_niev = None
 
 def init_qss_service():
     """Inicializar serviço QSS"""
-    global quantum_system, alz_niev
+    global quantum_system, alz_niev, LIBOQS_AVAILABLE
     
     if QUANTUM_SECURITY_AVAILABLE:
         quantum_system = QuantumSecuritySystem()
         print("✅ QSS: Sistema de segurança quântica inicializado")
+        # Verificar se liboqs está disponível através do sistema quântico
+        if hasattr(quantum_system, 'real_pqc_available') and quantum_system.real_pqc_available:
+            LIBOQS_AVAILABLE = True
+            print("✅ QSS: liboqs-python detectado e ativo!")
+        else:
+            LIBOQS_AVAILABLE = False
     
     if ALZ_NIEV_AVAILABLE:
         alz_niev = ALZNIEV()
@@ -719,7 +725,7 @@ def qss_status():
         "status": "operational",
         "quantum_security_available": QUANTUM_SECURITY_AVAILABLE,
         "alz_niev_available": ALZ_NIEV_AVAILABLE,
-        "liboqs_available": LIBOQS_AVAILABLE if 'LIBOQS_AVAILABLE' in globals() else (quantum_system.real_pqc_available if quantum_system and hasattr(quantum_system, 'real_pqc_available') else False),
+        "liboqs_available": (quantum_system.real_pqc_available if quantum_system and hasattr(quantum_system, 'real_pqc_available') else False) or (LIBOQS_AVAILABLE if 'LIBOQS_AVAILABLE' in globals() else False),
         "endpoints": {
             "generate_proof": "/api/qss/generate-proof",
             "verify_proof": "/api/qss/verify-proof",
