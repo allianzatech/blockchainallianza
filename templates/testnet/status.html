@@ -4,29 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Status - Allianza Testnet</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/output.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        /* Botão Voltar Padronizado */
-                .btn-back {
-            display: inline-block;
-            padding: 8px 16px;
-            background: #374151;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: background 0.2s;
-        }
-        
-        
-        
-    
-        .btn-back:hover {
-            background: #4b5563;
-        }
-</style>
 </head>
 <body class="bg-gray-900 text-white">
     <div class="container mx-auto px-4 py-8">
@@ -143,8 +123,20 @@
     <script>
         // Atualizar métricas a cada 5 segundos SEM recarregar a página
         setInterval(() => {
-            fetch('/api/status')
-                .then(r => r.json())
+            fetch('/api/status', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                signal: AbortSignal.timeout(10000)
+            })
+                .then(r => {
+                    if (!r.ok) {
+                        throw new Error(`HTTP ${r.status}: ${r.statusText}`);
+                    }
+                    return r.json();
+                })
                 .then(data => {
                     // Atualizar apenas os valores sem recarregar
                     if (data.overall_status) {
@@ -160,7 +152,10 @@
                         }
                     }
                 })
-                .catch(err => console.error('Erro ao atualizar status:', err));
+                .catch(err => {
+                    console.error('Erro ao atualizar status:', err);
+                    // Não mostrar erro ao usuário para atualizações automáticas
+                });
         }, 5000);
     </script>
 </body>

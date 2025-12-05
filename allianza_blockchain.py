@@ -21,6 +21,7 @@ from flask import Flask, jsonify, request, render_template
 from flask_socketio import SocketIO, emit
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_cors import CORS
 from dotenv import load_dotenv
 
 # Importar módulos de melhorias
@@ -1293,6 +1294,7 @@ app.config['SECRET_KEY'] = SECRET_KEY
 if os.getenv('FLASK_ENV') == 'development':
     allowed_origins = ['*']
     print("⚠️  CORS permitindo todas as origens (modo desenvolvimento)")
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
 else:
     # Produção: apenas origens permitidas
     cors_env = os.getenv('CORS_ORIGINS', 'https://testnet.allianza.tech,https://allianza.tech')
@@ -1303,6 +1305,7 @@ else:
             "https://allianza.tech"
         ]
     print(f"✅ CORS restrito para: {allowed_origins}")
+    CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
 
 socketio = SocketIO(app, cors_allowed_origins=allowed_origins, async_mode='threading')
 

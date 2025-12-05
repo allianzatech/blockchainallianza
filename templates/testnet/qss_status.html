@@ -4,44 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>📊 QSS API Status - Allianza Testnet</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/output.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-                .btn-back {
-            display: inline-block;
-            padding: 8px 16px;
-            background: #374151;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: background 0.2s;
-        }
-        
-        
-        
-        .btn-back:hover {
-            background: #4b5563;
-        }
-.status-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: bold;
-        }
-        .status-online { background: #10b981; color: white; }
-        .status-offline { background: #ef4444; color: white; }
-        .chain-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            background: #3b82f6;
-            color: white;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            margin: 2px;
-        }
-    </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen">
     <div class="container mx-auto px-4 py-8 max-w-6xl">
@@ -136,14 +100,53 @@ Voltar
 
         async function loadStatus() {
             try {
-                const response = await fetch('/api/qss/status');
+                const response = await fetch('/api/qss/status', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    // Adicionar timeout
+                    signal: AbortSignal.timeout(10000) // 10 segundos
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 statusData = await response.json();
                 displayStatus(statusData);
             } catch (error) {
                 console.error('Erro ao carregar status:', error);
-                document.getElementById('statusBadge').className = 'status-badge status-offline';
-                document.getElementById('statusBadge').textContent = 'Erro';
-                document.getElementById('statusContent').innerHTML = '<p class="text-red-400">Erro ao carregar status da API</p>';
+                
+                // Melhor tratamento de erros
+                const statusBadge = document.getElementById('statusBadge');
+                const statusContent = document.getElementById('statusContent');
+                
+                if (statusBadge) {
+                    statusBadge.className = 'status-badge status-offline';
+                    statusBadge.textContent = 'Erro';
+                }
+                
+                if (statusContent) {
+                    let errorMessage = 'Erro ao carregar status da API';
+                    if (error.name === 'AbortError') {
+                        errorMessage = 'Timeout: A requisição demorou muito para responder';
+                    } else if (error.message.includes('Failed to fetch')) {
+                        errorMessage = 'Erro de conexão: Verifique sua conexão com a internet';
+                    } else if (error.message.includes('ERR_CONNECTION_CLOSED')) {
+                        errorMessage = 'Conexão fechada: O servidor pode estar temporariamente indisponível';
+                    }
+                    
+                    statusContent.innerHTML = `
+                        <div class="bg-red-900 bg-opacity-50 border border-red-600 rounded-lg p-4">
+                            <p class="text-red-400 font-semibold mb-2">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>${errorMessage}
+                            </p>
+                            <p class="text-gray-400 text-sm">Tentando novamente em alguns segundos...</p>
+                        </div>
+                    `;
+                }
             }
         }
 
