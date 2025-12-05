@@ -60,7 +60,7 @@
     <div class="container mx-auto px-4 py-8 max-w-6xl">
         <!-- Header -->
         <div class="mb-8">
-            <a onclick="history.back(); return false;"  class="btn-back mb-4">Voltar</a>
+            <a href="javascript:history.back()" class="btn-back mb-4">Voltar</a>
             <h1 class="text-4xl font-bold mb-2">🚀 Developer Hub</h1>
             <p class="text-gray-400 mb-2">Comece a integrar segurança quântica em minutos</p>
             <div class="flex items-center gap-4 text-sm flex-wrap">
@@ -69,9 +69,6 @@
                 </span>
                 <a href="https://www.npmjs.com/package/allianza-qss-js" target="_blank" class="text-blue-400 hover:text-blue-300">
                     <i class="fab fa-npm mr-1"></i>Ver no npm
-                </a>
-                <a href="https://github.com/dieisonmaach-lang/allianzablockchainpublic" target="_blank" class="text-gray-300 hover:text-white">
-                    <i class="fab fa-github mr-1"></i>GitHub
                 </a>
                 <span class="text-gray-500">
                     <i class="fas fa-calendar mr-1"></i>Atualizado: Dez 2025
@@ -244,12 +241,7 @@ const { transactionData } = await QSS.anchorOnEVM(
             </h2>
             
             <div class="mb-4">
-                <div class="flex items-center justify-between mb-2">
-                    <h3 class="text-lg font-semibold text-cyan-400">Gerar Prova</h3>
-                    <button onclick="testGenerateProof()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm font-semibold transition">
-                        <i class="fas fa-play mr-1"></i>Testar
-                    </button>
-                </div>
+                <h3 class="text-lg font-semibold mb-2 text-cyan-400">Gerar Prova</h3>
                 <div class="code-block mb-2" style="position: relative;">
                     <button class="btn-copy-code" onclick="copyCodeBlock(this)" title="Copiar código">
                         <i class="fas fa-copy"></i> Copiar
@@ -264,16 +256,10 @@ Content-Type: application/json
 }
                     </code>
                 </div>
-                <div id="generateResult" class="hidden mt-2 p-3 bg-gray-700 rounded text-xs"></div>
             </div>
 
             <div class="mb-4">
-                <div class="flex items-center justify-between mb-2">
-                    <h3 class="text-lg font-semibold text-cyan-400">Verificar Prova</h3>
-                    <button onclick="testVerifyProof()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm font-semibold transition">
-                        <i class="fas fa-play mr-1"></i>Testar
-                    </button>
-                </div>
+                <h3 class="text-lg font-semibold mb-2 text-cyan-400">Verificar Prova</h3>
                 <div class="code-block mb-2" style="position: relative;">
                     <button class="btn-copy-code" onclick="copyCodeBlock(this)" title="Copiar código">
                         <i class="fas fa-copy"></i> Copiar
@@ -287,16 +273,10 @@ Content-Type: application/json
 }
                     </code>
                 </div>
-                <div id="verifyResult" class="hidden mt-2 p-3 bg-gray-700 rounded text-xs"></div>
             </div>
 
             <div class="mb-4">
-                <div class="flex items-center justify-between mb-2">
-                    <h3 class="text-lg font-semibold text-cyan-400">Ancorar Prova</h3>
-                    <button onclick="testAnchorProof()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm font-semibold transition">
-                        <i class="fas fa-play mr-1"></i>Testar
-                    </button>
-                </div>
+                <h3 class="text-lg font-semibold mb-2 text-cyan-400">Ancorar Prova</h3>
                 <div class="code-block mb-2" style="position: relative;">
                     <button class="btn-copy-code" onclick="copyCodeBlock(this)" title="Copiar código">
                         <i class="fas fa-copy"></i> Copiar
@@ -312,16 +292,10 @@ Content-Type: application/json
 }
                     </code>
                 </div>
-                <div id="anchorResult" class="hidden mt-2 p-3 bg-gray-700 rounded text-xs"></div>
             </div>
 
             <div class="mb-4">
-                <div class="flex items-center justify-between mb-2">
-                    <h3 class="text-lg font-semibold text-cyan-400">Status do Serviço</h3>
-                    <button onclick="testStatus()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm font-semibold transition">
-                        <i class="fas fa-play mr-1"></i>Testar
-                    </button>
-                </div>
+                <h3 class="text-lg font-semibold mb-2 text-cyan-400">Status do Serviço</h3>
                 <div class="code-block" style="position: relative;">
                     <button class="btn-copy-code" onclick="copyCodeBlock(this)" title="Copiar código">
                         <i class="fas fa-copy"></i> Copiar
@@ -330,7 +304,6 @@ Content-Type: application/json
 GET https://testnet.allianza.tech/api/qss/status
                     </code>
                 </div>
-                <div id="statusResult" class="hidden mt-2 p-3 bg-gray-700 rounded text-xs"></div>
             </div>
         </div>
 
@@ -413,6 +386,20 @@ GET https://testnet.allianza.tech/api/qss/status
                     <p class="text-green-300 text-xs">
                         <i class="fas fa-check-circle mr-1"></i>
                         Instale agora: npm install allianza-qss-js
+                    </p>
+                </a>
+                
+                <a href="https://github.com/dieisonmaach-lang/allianzablockchainpublic" target="_blank" class="bg-gradient-to-br from-gray-700 to-gray-800 rounded-lg p-4 border border-gray-600 hover:from-gray-600 hover:to-gray-700 transition">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-lg font-semibold">
+                            <i class="fab fa-github mr-2"></i>GitHub Repository
+                        </h3>
+                        <span class="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">⭐ PÚBLICO</span>
+                    </div>
+                    <p class="text-gray-200 text-sm mb-2 font-mono">allianzablockchainpublic</p>
+                    <p class="text-gray-300 text-xs">
+                        <i class="fas fa-code mr-1"></i>
+                        Código fonte, exemplos e documentação
                     </p>
                 </a>
             </div>
@@ -596,142 +583,6 @@ GET https://testnet.allianza.tech/api/qss/status
                 closeChangelog();
             }
         });
-
-        // Testar Endpoints da API
-        async function testGenerateProof() {
-            const resultDiv = document.getElementById('generateResult');
-            resultDiv.classList.remove('hidden');
-            resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Testando...';
-            
-            try {
-                const txHash = '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('');
-                const response = await fetch('/api/qss/generate-proof', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chain: 'bitcoin',
-                        tx_hash: txHash
-                    })
-                });
-                
-                const data = await response.json();
-                if (data.success) {
-                    resultDiv.innerHTML = `<span class="text-green-400">✅ Sucesso!</span> Proof gerada: ${data.quantum_proof?.proof_hash?.substring(0, 20)}...`;
-                } else {
-                    resultDiv.innerHTML = `<span class="text-red-400">❌ Erro:</span> ${data.error || 'Erro desconhecido'}`;
-                }
-            } catch (error) {
-                resultDiv.innerHTML = `<span class="text-red-400">❌ Erro:</span> ${error.message}`;
-            }
-        }
-
-        async function testVerifyProof() {
-            const resultDiv = document.getElementById('verifyResult');
-            resultDiv.classList.remove('hidden');
-            resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Gerando proof primeiro...';
-            
-            try {
-                // Primeiro gerar uma proof
-                const txHash = '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('');
-                const genResponse = await fetch('/api/qss/generate-proof', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chain: 'bitcoin',
-                        tx_hash: txHash
-                    })
-                });
-                
-                const genData = await genResponse.json();
-                if (!genData.success || !genData.quantum_proof) {
-                    resultDiv.innerHTML = `<span class="text-red-400">❌ Erro ao gerar proof:</span> ${genData.error || 'Erro desconhecido'}`;
-                    return;
-                }
-                
-                // Agora verificar
-                resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Verificando...';
-                const verifyResponse = await fetch('/api/qss/verify-proof', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        quantum_proof: genData.quantum_proof
-                    })
-                });
-                
-                const verifyData = await verifyResponse.json();
-                if (verifyData.success && verifyData.valid) {
-                    resultDiv.innerHTML = `<span class="text-green-400">✅ Proof válida!</span> Verificação bem-sucedida.`;
-                } else {
-                    resultDiv.innerHTML = `<span class="text-red-400">❌ Proof inválida:</span> ${verifyData.error || 'Erro na verificação'}`;
-                }
-            } catch (error) {
-                resultDiv.innerHTML = `<span class="text-red-400">❌ Erro:</span> ${error.message}`;
-            }
-        }
-
-        async function testAnchorProof() {
-            const resultDiv = document.getElementById('anchorResult');
-            resultDiv.classList.remove('hidden');
-            resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Gerando proof primeiro...';
-            
-            try {
-                // Primeiro gerar uma proof
-                const txHash = '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('');
-                const genResponse = await fetch('/api/qss/generate-proof', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chain: 'bitcoin',
-                        tx_hash: txHash
-                    })
-                });
-                
-                const genData = await genResponse.json();
-                if (!genData.success || !genData.quantum_proof) {
-                    resultDiv.innerHTML = `<span class="text-red-400">❌ Erro ao gerar proof:</span> ${genData.error || 'Erro desconhecido'}`;
-                    return;
-                }
-                
-                // Agora ancorar
-                resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Gerando instruções de ancoragem...';
-                const anchorResponse = await fetch('/api/qss/anchor-proof', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        quantum_proof: genData.quantum_proof,
-                        target_chain: 'bitcoin',
-                        target_address: 'tb1qtest...'
-                    })
-                });
-                
-                const anchorData = await anchorResponse.json();
-                if (anchorData.success) {
-                    resultDiv.innerHTML = `<span class="text-green-400">✅ Instruções geradas!</span> Método: ${anchorData.anchor_instructions?.method || 'N/A'}`;
-                } else {
-                    resultDiv.innerHTML = `<span class="text-red-400">❌ Erro:</span> ${anchorData.error || 'Erro desconhecido'}`;
-                }
-            } catch (error) {
-                resultDiv.innerHTML = `<span class="text-red-400">❌ Erro:</span> ${error.message}`;
-            }
-        }
-
-        async function testStatus() {
-            const resultDiv = document.getElementById('statusResult');
-            resultDiv.classList.remove('hidden');
-            resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Testando...';
-            
-            try {
-                const response = await fetch('/api/qss/status');
-                const data = await response.json();
-                if (data.success) {
-                    resultDiv.innerHTML = `<span class="text-green-400">✅ Serviço operacional!</span> Status: ${data.status}, Chains: ${data.supported_chains?.length || 0}`;
-                } else {
-                    resultDiv.innerHTML = `<span class="text-red-400">❌ Erro:</span> ${data.error || 'Erro desconhecido'}`;
-                }
-            } catch (error) {
-                resultDiv.innerHTML = `<span class="text-red-400">❌ Erro:</span> ${error.message}`;
-            }
-        }
 
         // Adicionar botões de copiar a todos os code blocks que não têm
         document.addEventListener('DOMContentLoaded', function() {

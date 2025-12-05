@@ -47,7 +47,7 @@
     <div class="container mx-auto px-4 py-8 max-w-6xl">
         <!-- Header -->
         <div class="mb-8">
-            <a onclick="history.back(); return false;" class="btn-back mb-4">
+            <a href="javascript:history.back()" class="btn-back mb-4">
 Voltar
             </a>
             <h1 class="text-4xl font-bold mb-2">📊 QSS API Status</h1>
@@ -90,6 +90,22 @@ Voltar
                 Algoritmos de Assinatura
             </h2>
             <div id="schemesList" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+        </div>
+
+        <!-- GitHub Link -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-semibold mb-4">
+                <i class="fab fa-github text-white mr-2"></i>
+                Código Fonte
+            </h2>
+            <div class="bg-gray-700 rounded-lg p-4">
+                <p class="text-gray-300 mb-3">Acesse o repositório público no GitHub para ver exemplos, SDK e documentação completa:</p>
+                <a href="https://github.com/dieisonmaach-lang/allianzablockchainpublic" target="_blank" class="inline-flex items-center gap-2 bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg transition">
+                    <i class="fab fa-github"></i>
+                    <span>Ver no GitHub</span>
+                    <i class="fas fa-external-link-alt text-xs"></i>
+                </a>
+            </div>
         </div>
 
         <!-- Raw JSON (Collapsible) -->
@@ -174,12 +190,24 @@ Voltar
                 for (const [name, path] of Object.entries(data.endpoints)) {
                     const endpointCard = document.createElement('div');
                     endpointCard.className = 'bg-gray-700 rounded-lg p-4';
+                    const fullUrl = path.startsWith('http') ? path : `https://testnet.allianza.tech${path}`;
+                    const endpointInfo = getEndpointInfo(name, path);
+                    
                     endpointCard.innerHTML = `
-                        <p class="text-gray-400 text-sm mb-1">${name.replace('_', ' ').toUpperCase()}</p>
-                        <code class="text-blue-400 text-sm">${path}</code>
-                        <a href="${path}" target="_blank" class="text-xs text-gray-400 hover:text-blue-400 mt-2 block">
-                            <i class="fas fa-external-link-alt mr-1"></i>Abrir endpoint
-                        </a>
+                        <p class="text-gray-400 text-sm mb-1 font-semibold">${name.replace('_', ' ').toUpperCase()}</p>
+                        <code class="text-blue-400 text-sm break-all">${path}</code>
+                        ${endpointInfo.description ? `<p class="text-gray-300 text-xs mt-2">${endpointInfo.description}</p>` : ''}
+                        <div class="mt-3 flex gap-2 flex-wrap">
+                            <button onclick="testEndpoint('${name}', '${path}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded transition">
+                                <i class="fas fa-play mr-1"></i>Testar
+                            </button>
+                            <a href="${fullUrl}" target="_blank" class="bg-gray-600 hover:bg-gray-500 text-white text-xs px-3 py-1 rounded transition inline-block">
+                                <i class="fas fa-external-link-alt mr-1"></i>Abrir
+                            </a>
+                            <a href="https://github.com/dieisonmaach-lang/allianzablockchainpublic" target="_blank" class="bg-gray-600 hover:bg-gray-500 text-white text-xs px-3 py-1 rounded transition inline-block">
+                                <i class="fab fa-github mr-1"></i>GitHub
+                            </a>
+                        </div>
                     `;
                     endpointsList.appendChild(endpointCard);
                 }
@@ -259,6 +287,91 @@ Voltar
 
         // Auto-refresh a cada 30 segundos
         setInterval(loadStatus, 30000);
+
+        // Informações dos endpoints
+        function getEndpointInfo(name, path) {
+            const info = {
+                'generate_proof': {
+                    description: 'Gera prova quântica para uma transação blockchain'
+                },
+                'verify_proof': {
+                    description: 'Verifica a validade de uma prova quântica'
+                },
+                'anchor_proof': {
+                    description: 'Gera instruções para ancorar prova quântica em blockchain destino'
+                },
+                'status': {
+                    description: 'Retorna o status do serviço QSS'
+                }
+            };
+            return info[name] || {};
+        }
+
+        // Testar endpoint
+        async function testEndpoint(name, path) {
+            const fullUrl = `https://testnet.allianza.tech${path}`;
+            
+            if (name === 'status') {
+                // GET request
+                try {
+                    const response = await fetch(fullUrl);
+                    const data = await response.json();
+                    showTestResult(name, data, true);
+                } catch (error) {
+                    showTestResult(name, { error: error.message }, false);
+                }
+            } else if (name === 'generate_proof') {
+                // POST request - precisa de dados
+                const testData = {
+                    chain: 'bitcoin',
+                    tx_hash: '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('')
+                };
+                try {
+                    const response = await fetch(fullUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(testData)
+                    });
+                    const data = await response.json();
+                    showTestResult(name, data, data.success);
+                } catch (error) {
+                    showTestResult(name, { error: error.message }, false);
+                }
+            } else if (name === 'verify_proof' || name === 'anchor_proof') {
+                alert(`Para testar ${name}, você precisa primeiro gerar uma prova usando o endpoint "generate_proof".\n\nAcesse: https://testnet.allianza.tech/developer-hub`);
+            }
+        }
+
+        // Mostrar resultado do teste
+        function showTestResult(endpointName, data, success) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold ${success ? 'text-green-400' : 'text-red-400'}">
+                            <i class="fas fa-${success ? 'check-circle' : 'times-circle'} mr-2"></i>
+                            Teste: ${endpointName.replace('_', ' ').toUpperCase()}
+                        </h2>
+                        <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-white">
+                            <i class="fas fa-times text-2xl"></i>
+                        </button>
+                    </div>
+                    <div class="bg-gray-900 rounded-lg p-4">
+                        <pre class="text-sm text-gray-300 overflow-x-auto">${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                    <div class="mt-4 flex gap-2">
+                        <button onclick="navigator.clipboard.writeText(JSON.stringify(data, null, 2)); alert('Copiado!')" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm">
+                            <i class="fas fa-copy mr-2"></i>Copiar JSON
+                        </button>
+                        <button onclick="this.closest('.fixed').remove()" class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded text-sm">
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
     </script>
 </body>
 </html>
