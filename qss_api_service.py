@@ -541,12 +541,42 @@ def anchor_quantum_proof():
     }
     """
     try:
-        data = request.get_json()
+        # Suportar tanto GET quanto POST
+        if request.method == 'GET':
+            return jsonify({
+                "success": True,
+                "endpoint": "/api/qss/anchor-proof",
+                "method": "POST",
+                "description": "Gerar instruções para ancorar prova quântica em blockchain destino",
+                "request_example": {
+                    "quantum_proof": {
+                        "proof_hash": "...",
+                        "asset_chain": "bitcoin",
+                        "asset_tx": "..."
+                    },
+                    "target_chain": "bitcoin",
+                    "target_address": "optional"
+                },
+                "supported_chains": ["bitcoin", "ethereum", "polygon", "solana"],
+                "note": "Use POST para enviar a prova quântica e receber instruções de ancoragem"
+            }), 200
+        
+        data = request.get_json() or {}
         
         if not data or 'quantum_proof' not in data:
             return jsonify({
                 "success": False,
-                "error": "quantum_proof required"
+                "error": "quantum_proof required",
+                "method": "POST",
+                "request_example": {
+                    "quantum_proof": {
+                        "proof_hash": "...",
+                        "asset_chain": "bitcoin",
+                        "asset_tx": "..."
+                    },
+                    "target_chain": "bitcoin",
+                    "target_address": "optional"
+                }
             }), 400
         
         proof = data['quantum_proof']
