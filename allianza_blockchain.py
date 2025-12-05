@@ -17,7 +17,7 @@ from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends import default_backend
 from cryptography.fernet import Fernet
 from base58_utils import generate_allianza_address, validate_allianza_address
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, send_from_directory
 from flask_socketio import SocketIO, emit
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
