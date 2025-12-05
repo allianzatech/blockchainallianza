@@ -214,13 +214,13 @@ Voltar
                         <code class="text-blue-400 text-sm break-all">${path}</code>
                         ${endpointInfo.description ? `<p class="text-gray-300 text-xs mt-2">${endpointInfo.description}</p>` : ''}
                         <div class="mt-3 flex gap-2 flex-wrap">
-                            <button onclick="testEndpoint('${name}', '${path}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded transition">
+                            <button onclick="testEndpoint('${name}', '${path}')" class="bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white text-xs px-3 py-1.5 rounded transition font-semibold">
                                 <i class="fas fa-play mr-1"></i>Testar
                             </button>
-                            <a href="${fullUrl}" target="_blank" class="bg-gray-600 hover:bg-gray-500 text-white text-xs px-3 py-1 rounded transition inline-block">
+                            <a href="${fullUrl}" target="_blank" class="bg-gray-600 hover:bg-gray-500 text-white text-xs px-3 py-1.5 rounded transition inline-block font-semibold">
                                 <i class="fas fa-external-link-alt mr-1"></i>Abrir
                             </a>
-                            <a href="https://github.com/dieisonmaach-lang/allianzablockchainpublic" target="_blank" class="bg-gray-600 hover:bg-gray-500 text-white text-xs px-3 py-1 rounded transition inline-block">
+                            <a href="https://github.com/dieisonmaach-lang/allianzablockchainpublic" target="_blank" class="bg-gray-600 hover:bg-gray-500 text-white text-xs px-3 py-1.5 rounded transition inline-block font-semibold">
                                 <i class="fab fa-github mr-1"></i>GitHub
                             </a>
                         </div>
@@ -438,32 +438,33 @@ Voltar
         // Mostrar resultado do teste
         function showTestResult(endpointName, data, success) {
             const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
+            modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4';
+            modal.style.overflowY = 'auto';
             
             // Escapar JSON para uso seguro no HTML
             const jsonString = JSON.stringify(data, null, 2);
             const escapedJson = jsonString.replace(/`/g, '\\`').replace(/\$/g, '\\$');
             
             modal.innerHTML = `
-                <div class="bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-                    <div class="flex justify-between items-center mb-4">
+                <div class="bg-gray-800 rounded-lg p-6 max-w-4xl w-full my-4 shadow-2xl relative">
+                    <div class="flex justify-between items-center mb-4 sticky top-0 bg-gray-800 pb-4 border-b border-gray-700">
                         <h2 class="text-2xl font-bold ${success ? 'text-green-400' : 'text-red-400'}">
                             <i class="fas fa-${success ? 'check-circle' : 'times-circle'} mr-2"></i>
                             Teste: ${endpointName.replace('_', ' ').toUpperCase()}
                         </h2>
-                        <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-white">
-                            <i class="fas fa-times text-2xl"></i>
+                        <button onclick="this.closest('.fixed').remove()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg transition font-bold text-lg" title="Fechar">
+                            <i class="fas fa-times"></i>
                         </button>
                     </div>
-                    <div class="bg-gray-900 rounded-lg p-4">
-                        <pre class="text-sm text-gray-300 overflow-x-auto">${escapedJson}</pre>
+                    <div class="bg-gray-900 rounded-lg p-4 max-h-[60vh] overflow-y-auto border border-gray-700">
+                        <pre class="text-sm text-gray-300 overflow-x-auto whitespace-pre-wrap break-words">${escapedJson}</pre>
                     </div>
-                    <div class="mt-4 flex gap-2">
-                        <button id="copy-json-btn" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm">
+                    <div class="mt-4 flex gap-2 justify-end sticky bottom-0 bg-gray-800 pt-4 border-t border-gray-700">
+                        <button id="copy-json-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
                             <i class="fas fa-copy mr-2"></i>Copiar JSON
                         </button>
-                        <button onclick="this.closest('.fixed').remove()" class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded text-sm">
-                            Fechar
+                        <button onclick="this.closest('.fixed').remove()" class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+                            <i class="fas fa-times mr-2"></i>Fechar
                         </button>
                     </div>
                 </div>
