@@ -274,7 +274,6 @@ def generate_quantum_proof():
         
         # Adicionar ao leaderboard (se disponível)
         try:
-            from flask import request
             from testnet_leaderboard import TestnetLeaderboard
             leaderboard = TestnetLeaderboard()
             user_id = request.remote_addr or "anonymous"
@@ -283,7 +282,8 @@ def generate_quantum_proof():
                 "tx_hash": tx_hash[:16] + "...",
                 "proof_hash": proof_hash[:16] + "..."
             })
-        except:
+        except Exception as e:
+            print(f"⚠️  Erro ao adicionar ao leaderboard: {e}")
             pass  # Leaderboard opcional
         
         return jsonify({

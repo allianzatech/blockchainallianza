@@ -30,10 +30,27 @@
             border-radius: 8px;
             padding: 1rem;
             overflow-x: auto;
+            position: relative;
         }
         .code-block code {
             color: #e2e8f0;
             font-family: 'Courier New', monospace;
+        }
+        .btn-copy-code {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-copy-code:hover {
+            background: #2563eb;
         }
         .step-card {
             transition: transform 0.2s;
@@ -123,7 +140,10 @@ console.log('Proof Hash:', proof.proof_hash);
                     <div class="bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">3</div>
                     <h3 class="text-xl font-semibold">Verificar a Prova</h3>
                 </div>
-                <div class="code-block mb-4">
+                <div class="code-block mb-4" style="position: relative;">
+                    <button class="btn-copy-code" onclick="copyCodeBlock(this)" title="Copiar código">
+                        <i class="fas fa-copy"></i> Copiar
+                    </button>
                     <code>
 const result = await QSS.verifyProof(proof);
 
@@ -288,6 +308,50 @@ GET https://testnet.allianza.tech/api/qss/status
             </div>
         </div>
     </div>
+
+    <script>
+        // Função para copiar código dos blocos
+        function copyCodeBlock(button) {
+            const codeBlock = button.nextElementSibling;
+            const code = codeBlock.textContent;
+            
+            navigator.clipboard.writeText(code).then(() => {
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+                button.style.background = '#10b981';
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.style.background = '#3b82f6';
+                }, 2000);
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                alert('❌ Erro ao copiar. Tente selecionar e copiar manualmente.');
+            });
+        }
+
+        // Adicionar botões de copiar a todos os code blocks que não têm
+        document.addEventListener('DOMContentLoaded', function() {
+            const codeBlocks = document.querySelectorAll('.code-block');
+            codeBlocks.forEach(block => {
+                // Verificar se já tem botão
+                if (!block.querySelector('.btn-copy-code')) {
+                    block.style.position = 'relative';
+                    const button = document.createElement('button');
+                    button.className = 'btn-copy-code';
+                    button.innerHTML = '<i class="fas fa-copy"></i> Copiar';
+                    button.onclick = function() { copyCodeBlock(this); };
+                    button.title = 'Copiar código';
+                    
+                    // Inserir antes do code
+                    const code = block.querySelector('code');
+                    if (code) {
+                        block.insertBefore(button, code);
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>
 
