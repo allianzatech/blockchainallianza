@@ -2,94 +2,188 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALZ-NIEV - Allianza Testnet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>🌐 ALZ-NIEV - Allianza Testnet</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/testnet-modern.css">
+    <script src="/static/js/testnet-modals.js"></script>
     <style>
-        /* Botão Voltar Padronizado */
         .btn-back {
-            display: inline-block;
-            padding: 8px 16px;
-            background: #374151;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
             color: white;
             text-decoration: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 14px;
-            transition: background 0.2s;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid #4b5563;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
         .btn-back:hover {
-            background: #4b5563;
+            background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        .main-card {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border: 1px solid #374151;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+        }
+        .main-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
         }
         .layer-card {
-            transition: transform 0.2s;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.8) 100%);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
         }
         .layer-card:hover {
-            transform: translateY(-2px);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+            border-color: rgba(71, 85, 105, 0.8);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px rgba(37, 99, 235, 0.4);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(220, 38, 38, 0.3);
+        }
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px rgba(220, 38, 38, 0.4);
+        }
+        .input-modern {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            transition: all 0.2s;
+        }
+        .input-modern:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-900 text-white">
-    <div class="container mx-auto px-4 py-8">
+<body class="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 text-white min-h-screen">
+    <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-6xl">
         <!-- Header -->
         <div class="mb-8">
-            <div class="mb-6">
-                <a href="javascript:history.back()" class="btn-back">Voltar</a>
+            <a href="javascript:history.back()" class="btn-back mb-4 inline-flex">
+                <i class="fas fa-arrow-left"></i>
+                <span>Voltar</span>
+            </a>
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-2xl">
+                    🌐
+                </div>
+                <div>
+                    <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">ALZ-NIEV</h1>
+                    <p class="text-gray-400 text-sm mt-1">Non-Intermediate Execution Validation - Interoperabilidade Única no Mundo</p>
+                </div>
             </div>
-            <h1 class="text-4xl font-bold mb-2">🌐 ALZ-NIEV</h1>
-            <p class="text-gray-400">Non-Intermediate Execution Validation - Interoperabilidade Única no Mundo</p>
         </div>
 
         <!-- Status -->
-        <div id="status" class="mb-6 p-4 bg-gray-800 rounded-lg">
-            <p class="text-yellow-400">⏳ Verificando status...</p>
+        <div id="status" class="main-card mb-6">
+            <p class="text-yellow-400 flex items-center gap-2">
+                <i class="fas fa-spinner fa-spin"></i>
+                ⏳ Verificando status...
+            </p>
         </div>
 
         <!-- As 5 Camadas -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            <div class="layer-card bg-blue-900 p-6 rounded-lg">
-                <h3 class="text-xl font-bold mb-2">🔵 ELNI</h3>
-                <p class="text-sm text-gray-300">Execution-Level Native Interop</p>
-                <p class="text-xs text-gray-400 mt-2">Execução nativa sem bridges</p>
-            </div>
-            <div class="layer-card bg-purple-900 p-6 rounded-lg">
-                <h3 class="text-xl font-bold mb-2">🟣 ZKEF</h3>
-                <p class="text-sm text-gray-300">Zero-Knowledge External Functions</p>
-                <p class="text-xs text-gray-400 mt-2">Provas ZK sem relayers</p>
-            </div>
-            <div class="layer-card bg-green-900 p-6 rounded-lg">
-                <h3 class="text-xl font-bold mb-2">🟢 UP-NMT</h3>
-                <p class="text-sm text-gray-300">Universal Proof Normalized Merkle Tunneling</p>
-                <p class="text-xs text-gray-400 mt-2">Provas Merkle universais</p>
-            </div>
-            <div class="layer-card bg-yellow-900 p-6 rounded-lg">
-                <h3 class="text-xl font-bold mb-2">🟡 MCL</h3>
-                <p class="text-sm text-gray-300">Multi-Consensus Layer</p>
-                <p class="text-xs text-gray-400 mt-2">Suporte a qualquer consenso</p>
-            </div>
-            <div class="layer-card bg-red-900 p-6 rounded-lg">
-                <h3 class="text-xl font-bold mb-2">🔴 AES</h3>
-                <p class="text-sm text-gray-300">Atomic Execution Sync</p>
-                <p class="text-xs text-gray-400 mt-2">Execução atômica multi-chain</p>
+        <div class="main-card mb-6">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                <i class="fas fa-layer-group text-blue-400"></i>
+                As 5 Camadas do ALZ-NIEV
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="layer-card bg-blue-500/10 border-blue-500/30">
+                    <h3 class="text-xl font-bold mb-2 text-blue-300">🔵 ELNI</h3>
+                    <p class="text-sm text-gray-300 font-semibold">Execution-Level Native Interop</p>
+                    <p class="text-xs text-gray-400 mt-2">Execução nativa sem bridges</p>
+                </div>
+                <div class="layer-card bg-purple-500/10 border-purple-500/30">
+                    <h3 class="text-xl font-bold mb-2 text-purple-300">🟣 ZKEF</h3>
+                    <p class="text-sm text-gray-300 font-semibold">Zero-Knowledge External Functions</p>
+                    <p class="text-xs text-gray-400 mt-2">Provas ZK sem relayers</p>
+                </div>
+                <div class="layer-card bg-green-500/10 border-green-500/30">
+                    <h3 class="text-xl font-bold mb-2 text-green-300">🟢 UP-NMT</h3>
+                    <p class="text-sm text-gray-300 font-semibold">Universal Proof Normalized Merkle Tunneling</p>
+                    <p class="text-xs text-gray-400 mt-2">Provas Merkle universais</p>
+                </div>
+                <div class="layer-card bg-yellow-500/10 border-yellow-500/30">
+                    <h3 class="text-xl font-bold mb-2 text-yellow-300">🟡 MCL</h3>
+                    <p class="text-sm text-gray-300 font-semibold">Multi-Consensus Layer</p>
+                    <p class="text-xs text-gray-400 mt-2">Suporte a qualquer consenso</p>
+                </div>
+                <div class="layer-card bg-red-500/10 border-red-500/30">
+                    <h3 class="text-xl font-bold mb-2 text-red-300">🔴 AES</h3>
+                    <p class="text-sm text-gray-300 font-semibold">Atomic Execution Sync</p>
+                    <p class="text-xs text-gray-400 mt-2">Execução atômica multi-chain</p>
+                </div>
             </div>
         </div>
 
         <!-- Teste 1: Execução Cross-Chain Simples -->
-        <div class="bg-gray-800 p-6 rounded-lg mb-6">
-            <h2 class="text-2xl font-bold mb-4">🔵 Teste 1: Execução Cross-Chain (ELNI + Todas as Provas)</h2>
+        <div class="main-card mb-6">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-project-diagram text-blue-400 text-xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold">🔵 Teste 1: Execução Cross-Chain (ELNI + Todas as Provas)</h2>
+            </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-sm font-medium mb-2">Source Chain</label>
-                    <select id="sourceChain" class="w-full bg-gray-700 text-white p-2 rounded">
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Source Chain</label>
+                    <select id="sourceChain" class="input-modern w-full">
                         <option value="allianza">Allianza</option>
                         <option value="polygon">Polygon</option>
                         <option value="ethereum">Ethereum</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-2">Target Chain</label>
-                    <select id="targetChain" class="w-full bg-gray-700 text-white p-2 rounded">
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Target Chain</label>
+                    <select id="targetChain" class="input-modern w-full">
                         <option value="polygon">Polygon</option>
                         <option value="ethereum">Ethereum</option>
                         <option value="bsc">BSC</option>
@@ -101,57 +195,59 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-sm font-medium mb-2">Function Name</label>
-                    <input type="text" id="functionName" value="getBalance" class="w-full bg-gray-700 text-white p-2 rounded">
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Function Name</label>
+                    <input type="text" id="functionName" value="getBalance" class="input-modern w-full">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-2">Function Params (JSON)</label>
-                    <input type="text" id="functionParams" value='{"address": "0x1234..."}' class="w-full bg-gray-700 text-white p-2 rounded">
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Function Params (JSON)</label>
+                    <input type="text" id="functionParams" value='{"address": "0x1234..."}' class="input-modern w-full">
                 </div>
             </div>
 
-            <button onclick="testExecution()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded font-bold">
-                🚀 Executar com ALZ-NIEV
+            <button onclick="testExecution()" class="btn-primary">
+                <i class="fas fa-rocket mr-2"></i>🚀 Executar com ALZ-NIEV
             </button>
 
-            <div id="executionResult" class="mt-4 hidden">
-                <div class="bg-gray-900 p-4 rounded">
-                    <pre id="executionResultContent" class="text-sm overflow-auto"></pre>
-                </div>
-            </div>
+            <div id="executionResult" class="mt-4 hidden"></div>
         </div>
 
         <!-- Teste 2: Execução Atômica Multi-Chain -->
-        <div class="bg-gray-800 p-6 rounded-lg mb-6">
-            <h2 class="text-2xl font-bold mb-4">🔴 Teste 2: Execução Atômica Multi-Chain (AES)</h2>
+        <div class="main-card mb-6">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-bolt text-red-400 text-xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold">🔴 Teste 2: Execução Atômica Multi-Chain (AES)</h2>
+            </div>
             
             <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Chains (JSON Array)</label>
-                <textarea id="atomicChains" rows="6" class="w-full bg-gray-700 text-white p-2 rounded font-mono text-sm">[
+                <label class="block text-sm font-medium mb-2 text-gray-300">Chains (JSON Array)</label>
+                <textarea id="atomicChains" rows="6" class="input-modern w-full font-mono text-sm">[
   {"chain": "polygon", "function": "transfer", "params": {"to": "0x1234...", "amount": 100}},
   {"chain": "ethereum", "function": "mint", "params": {"to": "0x5678...", "amount": 50}},
   {"chain": "bsc", "function": "swap", "params": {"token_in": "BNB", "token_out": "USDT", "amount": 10}}
 ]</textarea>
             </div>
 
-            <button onclick="testAtomic()" class="bg-red-600 hover:bg-red-700 px-6 py-2 rounded font-bold">
-                ⚡ Executar Atomicamente
+            <button onclick="testAtomic()" class="btn-danger">
+                <i class="fas fa-bolt mr-2"></i>⚡ Executar Atomicamente
             </button>
 
-            <div id="atomicResult" class="mt-4 hidden">
-                <div class="bg-gray-900 p-4 rounded">
-                    <pre id="atomicResultContent" class="text-sm overflow-auto"></pre>
-                </div>
-            </div>
+            <div id="atomicResult" class="mt-4 hidden"></div>
         </div>
 
         <!-- Link para Faucet -->
-        <div class="bg-yellow-900 p-4 rounded-lg mb-6">
-            <p class="font-bold mb-2">💰 Precisa de Tokens de Teste?</p>
-            <p class="text-sm mb-2">Para executar funções que requerem saldo, use o faucet:</p>
-            <a href="/faucet" class="text-blue-400 hover:underline">→ Acessar Faucet</a>
+        <div class="main-card bg-yellow-500/10 border-yellow-500/30">
+            <p class="font-bold mb-2 text-yellow-300 flex items-center gap-2">
+                <i class="fas fa-coins"></i>
+                💰 Precisa de Tokens de Teste?
+            </p>
+            <p class="text-sm mb-2 text-gray-300">Para executar funções que requerem saldo, use o faucet:</p>
+            <a href="/faucet" class="text-blue-400 hover:text-blue-300 font-semibold inline-flex items-center gap-2">
+                <i class="fas fa-faucet"></i>
+                → Acessar Faucet
+            </a>
         </div>
-
     </div>
 
     <script>
@@ -163,12 +259,12 @@
                 
                 const statusDiv = document.getElementById('status');
                 if (data.available) {
-                    statusDiv.innerHTML = '<p class="text-green-400">✅ ALZ-NIEV disponível e funcionando!</p>';
+                    statusDiv.innerHTML = '<p class="text-green-400 flex items-center gap-2"><i class="fas fa-check-circle"></i>✅ ALZ-NIEV disponível e funcionando!</p>';
                 } else {
-                    statusDiv.innerHTML = '<p class="text-red-400">❌ ALZ-NIEV não disponível</p>';
+                    statusDiv.innerHTML = '<p class="text-red-400 flex items-center gap-2"><i class="fas fa-times-circle"></i>❌ ALZ-NIEV não disponível</p>';
                 }
             } catch (error) {
-                document.getElementById('status').innerHTML = '<p class="text-red-400">❌ Erro ao verificar status</p>';
+                document.getElementById('status').innerHTML = '<p class="text-red-400 flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i>❌ Erro ao verificar status</p>';
             }
         }
 
@@ -188,9 +284,8 @@
             }
 
             const resultDiv = document.getElementById('executionResult');
-            const resultContent = document.getElementById('executionResultContent');
             resultDiv.classList.remove('hidden');
-            resultContent.textContent = '⏳ Executando...';
+            resultDiv.innerHTML = '<p class="text-blue-400 flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i>⏳ Executando...</p>';
 
             try {
                 const response = await fetch('/api/alz-niev/execute', {
@@ -205,9 +300,27 @@
                 });
 
                 const data = await response.json();
-                resultContent.textContent = JSON.stringify(data, null, 2);
+                
+                // Usar modal moderno
+                const resultType = data.success ? 'success' : 'error';
+                const description = {
+                    statusTitle: data.success ? 'Execução Bem-Sucedida' : 'Erro na Execução',
+                    description: data.success ? 'A execução cross-chain foi concluída com sucesso!' : (data.error || 'Erro ao executar')
+                };
+                createModernModal('Execução Cross-Chain ALZ-NIEV', data, resultType, description);
+                resultDiv.innerHTML = '';
             } catch (error) {
-                resultContent.textContent = `Erro: ${error.message}`;
+                const errorData = {
+                    success: false,
+                    error: error.message
+                };
+                const resultType = 'error';
+                const description = {
+                    statusTitle: 'Erro ao Executar',
+                    description: error.message
+                };
+                createModernModal('Execução Cross-Chain ALZ-NIEV', errorData, resultType, description);
+                resultDiv.innerHTML = '';
             }
         }
 
@@ -224,9 +337,8 @@
             }
 
             const resultDiv = document.getElementById('atomicResult');
-            const resultContent = document.getElementById('atomicResultContent');
             resultDiv.classList.remove('hidden');
-            resultContent.textContent = '⏳ Executando atomicamente...';
+            resultDiv.innerHTML = '<p class="text-blue-400 flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i>⏳ Executando atomicamente...</p>';
 
             try {
                 const response = await fetch('/api/alz-niev/atomic', {
@@ -236,9 +348,27 @@
                 });
 
                 const data = await response.json();
-                resultContent.textContent = JSON.stringify(data, null, 2);
+                
+                // Usar modal moderno
+                const resultType = data.success ? 'success' : 'error';
+                const description = {
+                    statusTitle: data.success ? 'Execução Atômica Bem-Sucedida' : 'Erro na Execução Atômica',
+                    description: data.success ? 'Todas as execuções foram concluídas atomicamente!' : (data.error || 'Erro ao executar atomicamente')
+                };
+                createModernModal('Execução Atômica Multi-Chain', data, resultType, description);
+                resultDiv.innerHTML = '';
             } catch (error) {
-                resultContent.textContent = `Erro: ${error.message}`;
+                const errorData = {
+                    success: false,
+                    error: error.message
+                };
+                const resultType = 'error';
+                const description = {
+                    statusTitle: 'Erro ao Executar',
+                    description: error.message
+                };
+                createModernModal('Execução Atômica Multi-Chain', errorData, resultType, description);
+                resultDiv.innerHTML = '';
             }
         }
 
@@ -247,7 +377,3 @@
     </script>
 </body>
 </html>
-
-
-
-

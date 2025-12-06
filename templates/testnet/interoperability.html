@@ -2,59 +2,119 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interoperabilidade - Transferências Reais - Allianza Testnet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>💰 Transferência Real Cross-Chain - Allianza Testnet</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/testnet-modern.css">
+    <script src="/static/js/testnet-modals.js"></script>
     <style>
-        /* Botão Voltar Padronizado */
-                .btn-back {
-            display: inline-block;
-            padding: 8px 16px;
-            background: #374151;
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
             color: white;
             text-decoration: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 14px;
-            transition: background 0.2s;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid #4b5563;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
-        
-        
-        
-    
         .btn-back:hover {
-            background: #4b5563;
+            background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
-</style>
+        .main-card {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border: 1px solid #374151;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+            width: 100%;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4);
+        }
+        .input-modern {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            transition: all 0.2s;
+        }
+        .input-modern:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-white">
-    <div class="container mx-auto px-4 py-8">
+<body class="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 text-white min-h-screen">
+    <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-4xl">
         <!-- Header -->
         <div class="mb-8">
-            <div class="mb-6">
-                <a href="javascript:history.back()" class="btn-back">
-Voltar
-                </a>
+            <a href="javascript:history.back()" class="btn-back mb-4 inline-flex">
+                <i class="fas fa-arrow-left"></i>
+                <span>Voltar</span>
+            </a>
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center text-2xl">
+                    💰
+                </div>
+                <div>
+                    <h1 class="text-4xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">Transferência Real Cross-Chain</h1>
+                    <p class="text-gray-400 text-sm mt-1">Envie tokens REAIS entre blockchains diferentes</p>
+                    <p class="text-sm text-yellow-400 mt-2 flex items-center gap-2">
+                        <i class="fas fa-check-circle"></i>
+                        As transferências aparecem nos explorers e são 100% reais!
+                    </p>
+                </div>
             </div>
-            <h1 class="text-4xl font-bold mb-2">💰 Transferência Real Cross-Chain</h1>
-            <p class="text-gray-400">Envie tokens REAIS entre blockchains diferentes (Polygon, Bitcoin, Ethereum, etc.)</p>
-            <p class="text-sm text-yellow-400 mt-2">✅ As transferências aparecem nos explorers e são 100% reais!</p>
         </div>
 
         <!-- Status -->
-        <div id="status" class="mb-6 p-4 bg-gray-800 rounded-lg">
-            <p class="text-yellow-400">⏳ Verificando status...</p>
+        <div id="status" class="main-card mb-6">
+            <p class="text-yellow-400 flex items-center gap-2">
+                <i class="fas fa-spinner fa-spin"></i>
+                ⏳ Verificando status...
+            </p>
         </div>
 
         <!-- Transferência Real -->
-        <div class="bg-gray-800 p-6 rounded-lg mb-6">
-            <h2 class="text-2xl font-bold mb-4">📝 Preencha os Dados da Transferência</h2>
-            <p class="text-sm text-gray-400 mb-4">Simples: escolha origem, destino, quantidade e endereço. É só isso!</p>
+        <div class="main-card mb-6">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-exchange-alt text-green-400 text-xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold">📝 Preencha os Dados da Transferência</h2>
+            </div>
+            <p class="text-sm text-gray-400 mb-6">Simples: escolha origem, destino, quantidade e endereço. É só isso!</p>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-sm font-medium mb-2">Blockchain de Origem</label>
-                    <select id="sourceChain" class="w-full bg-gray-700 text-white p-2 rounded">
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Blockchain de Origem</label>
+                    <select id="sourceChain" class="input-modern w-full">
                         <option value="polygon">Polygon (Amoy)</option>
                         <option value="ethereum">Ethereum (Sepolia)</option>
                         <option value="bsc">BSC (Testnet)</option>
@@ -63,8 +123,8 @@ Voltar
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-2">Blockchain de Destino</label>
-                    <select id="targetChain" class="w-full bg-gray-700 text-white p-2 rounded">
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Blockchain de Destino</label>
+                    <select id="targetChain" class="input-modern w-full">
                         <option value="bitcoin">Bitcoin (Testnet)</option>
                         <option value="polygon">Polygon (Amoy)</option>
                         <option value="ethereum">Ethereum (Sepolia)</option>
@@ -76,12 +136,12 @@ Voltar
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-sm font-medium mb-2">Quantidade</label>
-                    <input type="number" id="amount" step="0.0001" value="0.1" class="w-full bg-gray-700 text-white p-2 rounded">
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Quantidade</label>
+                    <input type="number" id="amount" step="0.0001" value="0.1" class="input-modern w-full">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-2">Token</label>
-                    <select id="tokenSymbol" class="w-full bg-gray-700 text-white p-2 rounded">
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Token</label>
+                    <select id="tokenSymbol" class="input-modern w-full">
                         <option value="MATIC">MATIC</option>
                         <option value="ETH">ETH</option>
                         <option value="BNB">BNB</option>
@@ -90,13 +150,16 @@ Voltar
                 </div>
             </div>
 
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Endereço Destinatário</label>
-                <input type="text" id="recipient" placeholder="0x... ou tb1q..." class="w-full bg-gray-700 text-white p-2 rounded">
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2 text-gray-300">Endereço Destinatário</label>
+                <input type="text" id="recipient" placeholder="0x... ou tb1q..." class="input-modern w-full">
             </div>
 
-            <div class="mb-4 p-4 bg-blue-900 rounded">
-                <p class="text-sm font-bold mb-2">💡 Como funciona:</p>
+            <div class="mb-6 p-4 bg-blue-500/20 border border-blue-500 rounded-lg">
+                <p class="text-sm font-bold mb-2 text-blue-300 flex items-center gap-2">
+                    <i class="fas fa-lightbulb"></i>
+                    💡 Como funciona:
+                </p>
                 <ol class="text-xs text-gray-300 list-decimal list-inside space-y-1">
                     <li>Escolha a blockchain de origem (ex: Polygon)</li>
                     <li>Escolha a blockchain de destino (ex: Bitcoin)</li>
@@ -107,8 +170,11 @@ Voltar
                 </ol>
             </div>
 
-            <div class="mb-4 p-4 bg-yellow-900 rounded">
-                <p class="text-sm font-bold mb-2">⚠️ Importante:</p>
+            <div class="mb-6 p-4 bg-yellow-500/20 border border-yellow-500 rounded-lg">
+                <p class="text-sm font-bold mb-2 text-yellow-300 flex items-center gap-2">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    ⚠️ Importante:
+                </p>
                 <ul class="text-xs text-gray-300 list-disc list-inside space-y-1">
                     <li>Esta é uma transferência REAL que aparecerá nos explorers</li>
                     <li>Você precisa ter saldo suficiente na blockchain de origem</li>
@@ -116,57 +182,50 @@ Voltar
                 </ul>
             </div>
 
-            <button onclick="executeRealTransfer()" class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded font-bold text-lg w-full">
-                🚀 Executar Transferência REAL
+            <button onclick="executeRealTransfer()" class="btn-primary">
+                <i class="fas fa-rocket mr-2"></i>🚀 Executar Transferência REAL
             </button>
 
-            <div id="transferResult" class="mt-4 hidden">
-                <div class="bg-gray-900 p-4 rounded">
-                    <h3 class="text-lg font-bold mb-2">Resultado da Transferência</h3>
-                    <pre id="transferResultContent" class="text-sm overflow-auto max-h-96"></pre>
-                </div>
-            </div>
+            <div id="transferResult" class="mt-4 hidden"></div>
         </div>
 
         <!-- Informação sobre ALZ-NIEV -->
-        <div class="bg-gray-800 p-6 rounded-lg mb-6">
-            <h2 class="text-2xl font-bold mb-4">🧬 Tecnologia ALZ-NIEV</h2>
+        <div class="main-card">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-atom text-purple-400 text-xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold">🧬 Tecnologia ALZ-NIEV</h2>
+            </div>
             <p class="text-sm text-gray-300 mb-4">
                 Por trás desta interface simples, está o sistema ALZ-NIEV com 5 camadas de segurança e provas criptográficas.
                 Você não precisa entender isso - apenas faça sua transferência e tudo funciona automaticamente!
             </p>
             <details class="text-sm">
-                <summary class="cursor-pointer text-blue-400 hover:text-blue-300">Ver detalhes técnicos (opcional)</summary>
+                <summary class="cursor-pointer text-blue-400 hover:text-blue-300 font-semibold mb-4">Ver detalhes técnicos (opcional)</summary>
                 <div class="mt-4 grid grid-cols-1 md:grid-cols-5 gap-4">
-                    <div class="bg-blue-900 p-4 rounded">
-                        <h3 class="font-bold mb-1">🔵 ELNI</h3>
+                    <div class="bg-blue-500/20 border border-blue-500 rounded-lg p-4">
+                        <h3 class="font-bold mb-1 text-blue-300">🔵 ELNI</h3>
                         <p class="text-xs text-gray-300">Execution-Level Native Interop</p>
                     </div>
-                    <div class="bg-purple-900 p-4 rounded">
-                        <h3 class="font-bold mb-1">🟣 ZKEF</h3>
+                    <div class="bg-purple-500/20 border border-purple-500 rounded-lg p-4">
+                        <h3 class="font-bold mb-1 text-purple-300">🟣 ZKEF</h3>
                         <p class="text-xs text-gray-300">Zero-Knowledge External Functions</p>
                     </div>
-                    <div class="bg-green-900 p-4 rounded">
-                        <h3 class="font-bold mb-1">🟢 UP-NMT</h3>
+                    <div class="bg-green-500/20 border border-green-500 rounded-lg p-4">
+                        <h3 class="font-bold mb-1 text-green-300">🟢 UP-NMT</h3>
                         <p class="text-xs text-gray-300">Universal Proof Normalized Merkle Tunneling</p>
                     </div>
-                    <div class="bg-yellow-900 p-4 rounded">
-                        <h3 class="font-bold mb-1">🟡 MCL</h3>
+                    <div class="bg-yellow-500/20 border border-yellow-500 rounded-lg p-4">
+                        <h3 class="font-bold mb-1 text-yellow-300">🟡 MCL</h3>
                         <p class="text-xs text-gray-300">Multi-Consensus Layer</p>
                     </div>
-                    <div class="bg-red-900 p-4 rounded">
-                        <h3 class="font-bold mb-1">🔴 AES</h3>
+                    <div class="bg-red-500/20 border border-red-500 rounded-lg p-4">
+                        <h3 class="font-bold mb-1 text-red-300">🔴 AES</h3>
                         <p class="text-xs text-gray-300">Atomic Execution Sync</p>
                     </div>
                 </div>
             </details>
-        </div>
-
-        <!-- Links -->
-        <div class="mb-6">
-            <a href="javascript:history.back()" class="btn-back">
-                <i class="fas fa-arrow-left mr-1"></i>Voltar
-            </a>
         </div>
     </div>
 
@@ -179,12 +238,12 @@ Voltar
                 
                 const statusDiv = document.getElementById('status');
                 if (data.available) {
-                    statusDiv.innerHTML = '<p class="text-green-400">✅ Sistema de interoperabilidade disponível e pronto para transferências REAIS!</p>';
+                    statusDiv.innerHTML = '<p class="text-green-400 flex items-center gap-2"><i class="fas fa-check-circle"></i>✅ Sistema de interoperabilidade disponível e pronto para transferências REAIS!</p>';
                 } else {
-                    statusDiv.innerHTML = '<p class="text-yellow-400">⚠️ Sistema em modo limitado: ' + (data.error || 'Não disponível') + '</p>';
+                    statusDiv.innerHTML = '<p class="text-yellow-400 flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i>⚠️ Sistema em modo limitado: ' + (data.error || 'Não disponível') + '</p>';
                 }
             } catch (error) {
-                document.getElementById('status').innerHTML = '<p class="text-yellow-400">⚠️ Verificando status...</p>';
+                document.getElementById('status').innerHTML = '<p class="text-yellow-400 flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i>⚠️ Verificando status...</p>';
             }
         }
 
@@ -207,9 +266,8 @@ Voltar
             }
 
             const resultDiv = document.getElementById('transferResult');
-            const resultContent = document.getElementById('transferResultContent');
             resultDiv.classList.remove('hidden');
-            resultContent.textContent = '⏳ Executando transferência REAL...\n\nIsso pode levar alguns segundos...';
+            resultDiv.innerHTML = '<p class="text-blue-400 flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i>⏳ Executando transferência REAL...<br><span class="text-sm text-gray-400">Isso pode levar alguns segundos...</span></p>';
 
             try {
                 const response = await fetch('/api/interoperability/transfer-real', {
@@ -224,7 +282,6 @@ Voltar
                     })
                 });
 
-                // Verificar se a resposta é JSON
                 const contentType = response.headers.get('content-type');
                 if (!contentType || !contentType.includes('application/json')) {
                     const text = await response.text();
@@ -233,29 +290,35 @@ Voltar
 
                 const data = await response.json();
                 
+                // Usar modal moderno para mostrar resultado
                 if (data.success) {
-                    let resultText = '✅ Transferência REAL executada com sucesso!\n\n';
-                    resultText += '📊 Detalhes:\n';
-                    resultText += JSON.stringify(data, null, 2);
-                    
-                    if (data.source_tx) {
-                        resultText += '\n\n🔗 Links dos Explorers:\n';
-                        if (data.source_tx.startsWith('0x')) {
-                            resultText += `Polygon/EVM: https://amoy.polygonscan.com/tx/${data.source_tx}\n`;
-                        } else {
-                            resultText += `Bitcoin: https://blockstream.info/testnet/tx/${data.source_tx}\n`;
-                        }
-                    }
-                    
-                    resultContent.textContent = resultText;
-                    resultContent.classList.add('text-green-400');
+                    const resultType = 'success';
+                    const description = {
+                        statusTitle: 'Transferência Real Executada',
+                        description: 'A transferência foi executada com sucesso e aparecerá nos explorers!'
+                    };
+                    createModernModal('Transferência Cross-Chain', data, resultType, description);
                 } else {
-                    resultContent.textContent = '❌ Erro na transferência:\n\n' + JSON.stringify(data, null, 2);
-                    resultContent.classList.add('text-red-400');
+                    const resultType = 'error';
+                    const description = {
+                        statusTitle: 'Erro na Transferência',
+                        description: data.error || 'Erro ao executar transferência'
+                    };
+                    createModernModal('Transferência Cross-Chain', data, resultType, description);
                 }
+                resultDiv.innerHTML = '';
             } catch (error) {
-                resultContent.textContent = '❌ Erro ao executar transferência:\n\n' + error.message;
-                resultContent.classList.add('text-red-400');
+                const errorData = {
+                    success: false,
+                    error: error.message
+                };
+                const resultType = 'error';
+                const description = {
+                    statusTitle: 'Erro ao Executar',
+                    description: error.message
+                };
+                createModernModal('Transferência Cross-Chain', errorData, resultType, description);
+                resultDiv.innerHTML = '';
             }
         }
 
