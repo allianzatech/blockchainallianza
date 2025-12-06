@@ -5,7 +5,8 @@ from flask import Blueprint, request, jsonify
 from flask_cors import CORS
 from functools import wraps
 import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from payment_expiration import expire_old_payments, set_payment_expiration, add_expires_at_column
 
 # ✅ CARREGAR VARIÁVEIS DE AMBIENTE PRIMEIRO
 from dotenv import load_dotenv
@@ -121,7 +122,7 @@ def get_payments():
         
         cursor.execute('''
             SELECT id, email, amount, method, status, created_at, 
-                   processed_at, tx_hash, metadata, wallet_address
+                   processed_at, tx_hash, metadata, wallet_address, expires_at
             FROM payments 
             ORDER BY created_at DESC
         ''')
@@ -498,8 +499,14 @@ def get_stats():
         circulating_result = cursor.fetchone()
         circulating = float(circulating_result['circulating'] or 0)
         
-        # ✅ PAGAMENTOS PENDENTES CALCULADOS CORRETAMENTE
-        cursor.execute("SELECT SUM(amount) as pending_brl FROM payments WHERE status = 'pending'")
+        # ✅ PAGAMENTOS PENDENTES CALCULADOS CORRETAMENTE (apenas não expirados)
+        # ✅ CORRIGIDO: Não contar pagamentos expirados no pending_distribution
+        cursor.execute("""
+            SELECT SUM(amount) as pending_brl 
+            FROM payments 
+            WHERE status = 'pending' 
+            AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)
+        """)
         pending_brl_result = cursor.fetchone()
         pending_brl = float(pending_brl_result['pending_brl'] or 0)
         pending_alz = calculate_alz_from_brl(pending_brl)
@@ -510,7 +517,8 @@ def get_stats():
                 COUNT(*) as total_users,
                 (SELECT COUNT(*) FROM payments) as total_payments,
                 (SELECT COUNT(*) FROM payments WHERE status = 'completed') as completed_payments,
-                (SELECT COUNT(*) FROM payments WHERE status = 'pending') as pending_payments,
+                (SELECT COUNT(*) FROM payments WHERE status = 'pending' AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)) as pending_payments,
+                (SELECT COUNT(*) FROM payments WHERE status = 'expired') as expired_payments,
                 (SELECT SUM(amount) FROM payments WHERE status = 'completed') as total_processed_brl
         ''')
         stats_result = cursor.fetchone()
