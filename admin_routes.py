@@ -120,7 +120,7 @@ def get_payments():
         
         cursor.execute('''
             SELECT id, email, amount, method, status, created_at, 
-                   processed_at, tx_hash, metadata, wallet_address
+                   processed_at, tx_hash, metadata
             FROM payments 
             ORDER BY created_at DESC
         ''')
@@ -174,11 +174,11 @@ def get_all_stakes():
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         
         # Buscar todos os stakes (ativos e inativos)
+        # ✅ CORRIGIDO: Removidas colunas que podem não existir (early_withdrawal_penalty, days_remaining)
         cursor.execute('''
             SELECT id, user_id, asset, amount, duration, apy, start_date, end_date, 
                    estimated_reward, accrued_reward, status, auto_compound, last_reward_claim, 
-                   days_remaining, early_withdrawal_penalty, actual_return, penalty_applied, 
-                   withdrawn_at, metadata
+                   actual_return, penalty_applied, withdrawn_at, metadata
             FROM stakes 
             ORDER BY created_at DESC
         ''')
@@ -199,7 +199,8 @@ def get_all_stakes():
                     formatted_stake[key] = formatted_stake[key].strftime('%Y-%m-%dT%H:%M:%S.%fZ')
             
             # Garantir que os numéricos sejam floats
-            for key in ['amount', 'apy', 'estimated_reward', 'accrued_reward', 'early_withdrawal_penalty', 'actual_return', 'penalty_applied']:
+            # ✅ CORRIGIDO: Removido early_withdrawal_penalty que pode não existir
+            for key in ['amount', 'apy', 'estimated_reward', 'accrued_reward', 'actual_return', 'penalty_applied']:
                 if formatted_stake.get(key) is not None:
                     formatted_stake[key] = float(formatted_stake[key])
 
