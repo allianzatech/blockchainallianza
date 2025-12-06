@@ -11,6 +11,14 @@ from datetime import datetime, timedelta, timezone
 try:
     from payment_expiration import expire_old_payments, set_payment_expiration, add_expires_at_column
     PAYMENT_EXPIRATION_AVAILABLE = True
+    
+    # ✅ GARANTIR QUE A COLUNA EXISTS NA INICIALIZAÇÃO
+    try:
+        add_expires_at_column()
+        print("✅ Coluna 'expires_at' verificada/criada com sucesso")
+    except Exception as e:
+        print(f"⚠️  Aviso ao verificar coluna expires_at: {e}")
+        
 except ImportError:
     PAYMENT_EXPIRATION_AVAILABLE = False
     print("⚠️  payment_expiration não disponível - funcionalidade de expiração desabilitada")
@@ -146,12 +154,43 @@ def get_payments():
         conn = get_db_connection()
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         
-        cursor.execute('''
-            SELECT id, email, amount, method, status, created_at, 
-                   processed_at, tx_hash, metadata, wallet_address, expires_at
-            FROM payments 
-            ORDER BY created_at DESC
-        ''')
+        # ✅ VERIFICAR SE COLUNA expires_at EXISTE
+        cursor.execute("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name='payments' AND column_name='expires_at'
+        """)
+        has_expires_at = cursor.fetchone() is not None
+        
+        # ✅ TENTAR CRIAR COLUNA SE NÃO EXISTIR
+        if not has_expires_at:
+            try:
+                if PAYMENT_EXPIRATION_AVAILABLE:
+                    add_expires_at_column()
+                    has_expires_at = True
+                    print("✅ Coluna 'expires_at' criada com sucesso")
+                else:
+                    print("⚠️  payment_expiration não disponível, pulando criação de coluna")
+            except Exception as e:
+                print(f"⚠️  Não foi possível criar coluna expires_at: {e}")
+        
+        # ✅ SELECT DINÂMICO BASEADO NA EXISTÊNCIA DA COLUNA
+        if has_expires_at:
+            cursor.execute('''
+                SELECT id, email, amount, method, status, created_at, 
+                       processed_at, tx_hash, metadata, wallet_address, expires_at
+                FROM payments 
+                ORDER BY created_at DESC
+            ''')
+        else:
+            # SELECT sem expires_at se coluna não existir
+            cursor.execute('''
+                SELECT id, email, amount, method, status, created_at, 
+                       processed_at, tx_hash, metadata, wallet_address
+                FROM payments 
+                ORDER BY created_at DESC
+            ''')
+        
         payments = cursor.fetchall()
         
         print(f"✅ Encontrados {len(payments)} pagamentos")
@@ -525,14 +564,29 @@ def get_stats():
         circulating_result = cursor.fetchone()
         circulating = float(circulating_result['circulating'] or 0)
         
+        # ✅ VERIFICAR SE COLUNA expires_at EXISTE
+        cursor.execute("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name='payments' AND column_name='expires_at'
+        """)
+        has_expires_at = cursor.fetchone() is not None
+        
         # ✅ PAGAMENTOS PENDENTES CALCULADOS CORRETAMENTE (apenas não expirados)
         # ✅ CORRIGIDO: Não contar pagamentos expirados no pending_distribution
-        cursor.execute("""
-            SELECT SUM(amount) as pending_brl 
-            FROM payments 
-            WHERE status = 'pending' 
-            AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)
-        """)
+        if has_expires_at:
+            cursor.execute("""
+                SELECT SUM(amount) as pending_brl 
+                FROM payments 
+                WHERE status = 'pending' 
+                AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)
+            """)
+        else:
+            cursor.execute("""
+                SELECT SUM(amount) as pending_brl 
+                FROM payments 
+                WHERE status = 'pending'
+            """)
         pending_brl_result = cursor.fetchone()
         pending_brl = float(pending_brl_result['pending_brl'] or 0)
         pending_alz = calculate_alz_from_brl(pending_brl)
@@ -543,7 +597,7 @@ def get_stats():
                 COUNT(*) as total_users,
                 (SELECT COUNT(*) FROM payments) as total_payments,
                 (SELECT COUNT(*) FROM payments WHERE status = 'completed') as completed_payments,
-                (SELECT COUNT(*) FROM payments WHERE status = 'pending' AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)) as pending_payments,
+                (SELECT COUNT(*) FROM payments WHERE status = 'pending') as pending_payments,
                 (SELECT COUNT(*) FROM payments WHERE status = 'expired') as expired_payments,
                 (SELECT SUM(amount) FROM payments WHERE status = 'completed') as total_processed_brl
         ''')
