@@ -346,9 +346,11 @@ def process_automatic_payment(email, amount_alz, method, external_id):
         print(f"🔄 Processando pagamento automático: {email} - {amount_alz} ALZ - {method}")
         print(f"💰 Valor a creditar: {amount_alz} ALZ")
         
-        # ✅ CORREÇÃO: Registrar o valor EM ALZ diretamente
-        # O valor em BRL para registro é calculado como: ALZ * 0.10
-        brl_amount_for_db = float(amount_alz) * 0.10
+        # ✅ CORRIGIDO: Calcular USD e BRL a partir do ALZ
+        # 1 ALZ = $0,10 USD (valor atualizado)
+        amount_usd = float(amount_alz) * 0.10  # 1 ALZ = $0,10 USD
+        usd_to_brl_rate = 5.50  # Taxa aproximada USD/BRL
+        brl_amount_for_db = amount_usd * usd_to_brl_rate  # Para registro no banco
         
         # Registrar pagamento com metadata correto
         cursor.execute(
@@ -505,20 +507,31 @@ def site_purchase():
     """Registrar uma compra de ALZ - CORREÇÃO URGENTE DOS VALORES"""
     data = request.json
     email = data.get('email')
-    amount = data.get('amount') # Este é o valor em BRL (do frontend)
+    amount = data.get('amount') # Este é o valor em ALZ (do frontend Buy.jsx)
     method = data.get('method')
     sourceName = data.get('sourceName')  # Para PIX
+    wallet_address_from_user = data.get('wallet_address')  # ✅ NOVO: Wallet address do usuário
+    use_own_wallet = data.get('use_own_wallet', False)  # ✅ NOVO: Flag se usa wallet própria
+    network = data.get('network')  # ✅ NOVO: Rede selecionada
+    currency = data.get('currency', 'usd')  # ✅ NOVO: Moeda
     
     if not email or not amount or not method:
         return jsonify({"error": "Email, amount e method são obrigatórios"}), 400
     
     try:
-        amount_brl = float(amount)  # Valor em BRL
+        amount_alz = float(amount)  # ✅ CORRIGIDO: Buy.jsx envia amount em ALZ
     except ValueError:
         return jsonify({"error": "Valor (amount) inválido"}), 400
     
-    if amount_brl <= 0:
+    if amount_alz <= 0:
         return jsonify({"error": "Valor (amount) deve ser positivo"}), 400
+    
+    # ✅ CORRIGIDO: Calcular USD e BRL a partir do ALZ
+    # 1 ALZ = $0,10 USD (valor atualizado)
+    amount_usd = amount_alz * 0.10  # 1 ALZ = $0,10 USD
+    # Para compatibilidade, calcular BRL usando cotação (assumindo ~5.50)
+    usd_to_brl_rate = 5.50  # Taxa aproximada USD/BRL
+    amount_brl = amount_usd * usd_to_brl_rate  # Para registro no banco
         
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -526,27 +539,41 @@ def site_purchase():
     try:
         cursor.execute("BEGIN")
         
-        # ✅✅✅ CORREÇÃO CRÍTICA: Calcular valor em ALZ CORRETAMENTE
-        # 1 ALZ = R$ 0,10, então: ALZ = BRL / 0.10
-        amount_alz = amount_brl / 0.10  # R$ 10,00 / 0.10 = 100 ALZ ✅
-        brl_amount_for_db = amount_brl  # 10.0 (BRL)
+        # ✅ CORRIGIDO: Calcular USD e BRL a partir do ALZ
+        # 1 ALZ = $0,10 USD (valor atualizado)
+        amount_usd = amount_alz * 0.10  # 1 ALZ = $0,10 USD
+        # Para compatibilidade, calcular BRL usando cotação (assumindo ~5.50)
+        usd_to_brl_rate = 5.50  # Taxa aproximada USD/BRL
+        amount_brl = amount_usd * usd_to_brl_rate  # Para registro no banco
         
         # ✅ DEBUG PARA VERIFICAR VALORES
-        print(f"🔢 DEBUG VALORES: R$ {amount_brl} → {amount_alz} ALZ | BRL no DB: {brl_amount_for_db}")
+        print(f"🔢 DEBUG VALORES: {amount_alz} ALZ → ${amount_usd} USD → R$ {amount_brl} | Wallet: {wallet_address_from_user or 'Não fornecida'}")
         
         # Preparar metadata
-        metadata = {'alz_amount': float(amount_alz)}
+        metadata = {
+            'alz_amount': float(amount_alz),
+            'amount_usd': float(amount_usd),  # ✅ NOVO: Salvar também em USD
+            'network': network,
+            'currency': currency,
+            'use_own_wallet': use_own_wallet,
+            'usd_to_brl_rate': usd_to_brl_rate
+        }
         if sourceName:
             metadata['source_name'] = sourceName
+        if wallet_address_from_user:
+            metadata['user_wallet_address'] = wallet_address_from_user
         
         # ✅ Registrar o valor EM BRL no banco, mas com metadata correto
+        # ✅ Definir expires_at = created_at + 10 dias
+        # ✅ CORRIGIDO: Incluir wallet_address se fornecido pelo usuário
+        expires_at = datetime.now(timezone.utc) + timedelta(days=10)
         cursor.execute(
-            "INSERT INTO payments (email, amount, method, status, metadata) VALUES (%s, %s, %s, 'pending', %s) RETURNING id",
-            (email, brl_amount_for_db, method, json.dumps(metadata))
+            "INSERT INTO payments (email, amount, method, status, metadata, expires_at, wallet_address, currency, network) VALUES (%s, %s, %s, 'pending', %s, %s, %s, %s, %s) RETURNING id",
+            (email, amount_brl, method, json.dumps(metadata), expires_at, wallet_address_from_user, currency, network)
         )
         payment_id = cursor.fetchone()['id']
         
-        print(f"✅ Compra registrada: ID {payment_id} | R$ {brl_amount_for_db} = {amount_alz} ALZ | Método: {method}")
+        print(f"✅ Compra registrada: ID {payment_id} | {amount_alz} ALZ = R$ {amount_brl} | Método: {method} | Wallet: {wallet_address_from_user or 'Gerada automaticamente'}")
         
         # Buscar usuário existente
         cursor.execute("SELECT id, wallet_address, password FROM users WHERE email = %s", (email,))
@@ -557,7 +584,15 @@ def site_purchase():
         user_id = None
         
         if not user:
-            private_key, wallet_address = generate_polygon_wallet()
+            # ✅ Se usuário forneceu wallet, usar ela. Senão, gerar nova
+            if wallet_address_from_user and use_own_wallet:
+                wallet_address = wallet_address_from_user
+                private_key = None  # Não temos a private key se o usuário forneceu a wallet
+                print(f"💼 Usando wallet fornecida pelo usuário: {wallet_address}")
+            else:
+                private_key, wallet_address = generate_polygon_wallet()
+                print(f"💼 Gerando nova wallet: {wallet_address}")
+            
             temp_password = f"temp_{secrets.token_hex(8)}"
             hashed_password = generate_password_hash(temp_password)
             nickname = f"User_{email.split('@')[0]}"
@@ -571,7 +606,16 @@ def site_purchase():
             print(f"👤 Usuário criado com senha temporária: {email}")
         else:
             user_id = user['id']
-            wallet_address = user['wallet_address']
+            # ✅ Se usuário forneceu wallet e quer usar própria, atualizar
+            if wallet_address_from_user and use_own_wallet:
+                cursor.execute(
+                    "UPDATE users SET wallet_address = %s WHERE id = %s",
+                    (wallet_address_from_user, user_id)
+                )
+                wallet_address = wallet_address_from_user
+                print(f"💼 Wallet do usuário atualizada: {wallet_address}")
+            else:
+                wallet_address = user['wallet_address']
             print(f"👤 Usuário existente: {email} - ID: {user_id}")
         
         # Verificar/criar saldo
@@ -583,10 +627,10 @@ def site_purchase():
             )
             print(f"💰 Saldo criado para usuário {user_id}")
         
-        # Atualizar o registro de pagamento com o user_id
+        # ✅ Atualizar o registro de pagamento com o user_id e wallet_address final
         cursor.execute(
-            "UPDATE payments SET user_id = %s WHERE id = %s",
-            (user_id, payment_id)
+            "UPDATE payments SET user_id = %s, wallet_address = %s WHERE id = %s",
+            (user_id, wallet_address, payment_id)
         )
         
         conn.commit()
@@ -648,11 +692,13 @@ def create_checkout_session():
         if not amount_brl_cents or not email:
             return jsonify({"error": "Valor e email são obrigatórios"}), 400
             
-        # ✅ CORREÇÃO: Calcular valor em ALZ corretamente
+        # ✅ CORRIGIDO: Calcular valor em ALZ corretamente
         # amount_brl_cents é o valor em centavos de BRL (ex: 10 centavos = R$ 0,10)
         amount_brl = amount_brl_cents / 100  # Converter para BRL
-        # O valor em ALZ é calculado como: BRL / 0.10 (1 ALZ = R$ 0.10)
-        amount_alz = amount_brl / 0.10  # Converter para ALZ (1 ALZ = R$ 0,10)
+        # ✅ ATUALIZADO: Converter BRL → USD → ALZ (1 ALZ = $0,10 USD)
+        usd_to_brl_rate = 5.50
+        amount_usd = amount_brl / usd_to_brl_rate  # BRL → USD
+        amount_alz = amount_usd / 0.10  # USD → ALZ (1 ALZ = $0,10 USD)
         
         session = stripe.checkout.Session.create(
             payment_method_types=['card'],
@@ -712,23 +758,28 @@ def create_pagarme_pix():
         try:
             cursor.execute("BEGIN")
             
-            # Se tiver amount, usar para cálculo interno, mas não enviar ao Pagar.me
+            # ✅ CORRIGIDO: Se tiver amount, usar para cálculo interno
             amount_alz = 0
             if amount_brl:
-                amount_alz = float(amount_brl) / 0.10
-                print(f"💰 Valor de referência: R$ {amount_brl} = {amount_alz} ALZ")
+                # ✅ ATUALIZADO: Converter BRL → USD → ALZ (1 ALZ = $0,10 USD)
+                usd_to_brl_rate = 5.50
+                amount_usd = float(amount_brl) / usd_to_brl_rate  # BRL → USD
+                amount_alz = amount_usd / 0.10  # USD → ALZ
+                print(f"💰 Valor de referência: R$ {amount_brl} = ${amount_usd} USD = {amount_alz} ALZ")
             else:
                 print("💰 Valor será definido pelo usuário no Pagar.me")
             
             # ✅ Registrar com método CORRETO 'pix' e amount 0 (será atualizado depois)
+            # ✅ Definir expires_at = created_at + 10 dias
+            expires_at = datetime.now(timezone.utc) + timedelta(days=10)
             cursor.execute(
-                "INSERT INTO payments (email, amount, method, status, metadata) VALUES (%s, %s, %s, 'pending', %s) RETURNING id",
+                "INSERT INTO payments (email, amount, method, status, metadata, expires_at) VALUES (%s, %s, %s, 'pending', %s, %s) RETURNING id",
                 (email, float(amount_brl) if amount_brl else 0, 'pix', json.dumps({
                     'alz_amount': amount_alz,
                     'user_defined_amount': True,  # ✅ Flag indicando que o valor será definido pelo usuário
                     'pagarme_checkout': True,
                     'note': 'Usuário definirá o valor no Pagar.me'
-                }))
+                }), expires_at)
             )
             payment_id = cursor.fetchone()['id']
             
@@ -872,14 +923,19 @@ def create_direct_crypto_payment():
                 )
                 print(f"💰 Saldo criado para user {user_id}")
 
-            # Calcular ALZ (com bônus de 2% para crypto)
-            base_alz = amount_brl / 0.10
+            # ✅ CORRIGIDO: Calcular ALZ (com bônus de 2% para crypto)
+            # ✅ ATUALIZADO: Converter BRL → USD → ALZ (1 ALZ = $0,10 USD)
+            usd_to_brl_rate = 5.50
+            amount_usd = amount_brl / usd_to_brl_rate  # BRL → USD
+            base_alz = amount_usd / 0.10  # USD → ALZ (1 ALZ = $0,10 USD)
             bonus_alz = base_alz * 0.02
             total_alz = base_alz + bonus_alz
             
             # Registrar pagamento pendente
+            # ✅ Definir expires_at = created_at + 10 dias
+            expires_at = datetime.now(timezone.utc) + timedelta(days=10)
             cursor.execute(
-                "INSERT INTO payments (email, amount, method, status, user_id, metadata) VALUES (%s, %s, %s, 'pending', %s, %s) RETURNING id",
+                "INSERT INTO payments (email, amount, method, status, user_id, metadata, expires_at) VALUES (%s, %s, %s, 'pending', %s, %s, %s) RETURNING id",
                 (email, amount_brl, 'direct_crypto', user_id, json.dumps({
                     'alz_amount': total_alz,
                     'base_alz': base_alz,
@@ -887,7 +943,7 @@ def create_direct_crypto_payment():
                     'currency': currency,
                     'direct_crypto_pending': True,
                     'user_created': user_id is not None
-                }))
+                }), expires_at)
             )
             db_payment_id = cursor.fetchone()['id']
             
@@ -989,7 +1045,10 @@ def get_direct_crypto_payment_status(payment_id):
             base_alz = float(metadata.get('base_alz', total_alz))
             bonus_alz = float(metadata.get('bonus_alz', 0))
         else:
-            base_alz = amount_brl / 0.10
+            # ✅ CORRIGIDO: Converter BRL → USD → ALZ (1 ALZ = $0,10 USD)
+            usd_to_brl_rate = 5.50
+            amount_usd = amount_brl / usd_to_brl_rate  # BRL → USD
+            base_alz = amount_usd / 0.10  # USD → ALZ (1 ALZ = $0,10 USD)
             bonus_alz = base_alz * 0.02
             total_alz = base_alz + bonus_alz
         
@@ -1057,9 +1116,15 @@ def verify_direct_payment():
                 if not payment:
                     return jsonify({"error": "Pagamento não encontrado no banco"}), 404
                 
-                # Processar pagamento automaticamente
+                # ✅ CORRIGIDO: Processar pagamento automaticamente
                 metadata = payment['metadata'] or {}
-                alz_amount = metadata.get('alz_amount', float(payment['amount']) / 0.10)
+                if metadata.get('alz_amount'):
+                    alz_amount = float(metadata['alz_amount'])
+                else:
+                    # ✅ ATUALIZADO: Converter BRL → USD → ALZ (1 ALZ = $0,10 USD)
+                    usd_to_brl_rate = 5.50
+                    amount_usd = float(payment['amount']) / usd_to_brl_rate  # BRL → USD
+                    alz_amount = amount_usd / 0.10  # USD → ALZ
                 
                 payment_result = process_automatic_payment(
                     payment['email'], 
