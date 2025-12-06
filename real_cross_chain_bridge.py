@@ -236,11 +236,29 @@ class RealCrossChainBridge:
             self.TransactionStatus = None
             print(f"⚠️  Novas melhorias não disponíveis: {e}")
         
-        self.setup_connections()
+        # OTIMIZAÇÃO: Setup lazy - só conectar quando necessário
+        self._connections_setup = False
+        self._reserves_setup = False
+        self._exchange_rates_updated = False
+        
+        # Setup básico (sem conexões pesadas)
         self.setup_reserves()
         
-        # MELHORIA: Buscar taxas de câmbio em tempo real na inicialização
-        self.update_exchange_rates()
+        # MELHORIA: Buscar taxas de câmbio em background (não bloquear inicialização)
+        try:
+            import threading
+            def update_rates_async():
+                try:
+                    self.update_exchange_rates()
+                except:
+                    pass  # Falha silenciosa em background
+            threading.Thread(target=update_rates_async, daemon=True).start()
+        except:
+            # Fallback: tentar sincronamente mas com timeout
+            try:
+                self.update_exchange_rates()
+            except:
+                pass  # Não bloquear se falhar
         
         if self.logger:
             self.logger.info("Sistema inicializado", {
@@ -507,8 +525,12 @@ class RealCrossChainBridge:
         
         return w3
     
-    def setup_connections(self):
-        """Configurar conexões com todas as blockchains"""
+    def setup_connections(self, lazy=True):
+        """Configurar conexões com todas as blockchains (lazy loading por padrão)"""
+        if self._connections_setup and lazy:
+            return  # Já configurado
+        
+        self._connections_setup = True
         try:
             # BlockCypher API para Bitcoin
             self.blockcypher_token = os.getenv('BLOCKCYPHER_API_TOKEN', '17766314e49c439e85cec883969614ac')

@@ -2,7 +2,8 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>📊 QSS API Status - Allianza Testnet</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -120,10 +121,61 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
         }
+        
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            h1 {
+                font-size: 1.75rem;
+            }
+            h2 {
+                font-size: 1.5rem;
+            }
+            .btn-test {
+                min-width: 80px;
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+            .endpoint-card {
+                padding: 16px;
+            }
+            .grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .btn-test {
+                flex: 1;
+                min-width: 0;
+            }
+            .flex-wrap {
+                flex-direction: column;
+            }
+            .flex-wrap .btn-test {
+                width: 100%;
+            }
+        }
+        
+        /* Performance: Lazy loading para imagens */
+        img {
+            loading: lazy;
+        }
+        
+        /* Touch-friendly */
+        @media (hover: none) and (pointer: coarse) {
+            button, a, .clickable {
+                -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+                min-height: 44px;
+            }
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 text-white min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-6xl">
+    <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-6xl">
         <!-- Header -->
         <div class="mb-8">
             <a href="javascript:history.back()" class="btn-back mb-4 inline-flex">
@@ -526,7 +578,9 @@
                     }
                     const data = await response.json();
                     loadingModal.remove();
-                    showTestResult(name, data, data.valid !== false && data.success !== false);
+                    // Para verify_proof, considerar sucesso se a requisição foi processada (success: true)
+                    // mesmo que valid seja false (isso é uma validação, não um erro)
+                    showTestResult(name, data, data.success !== false);
                 } else if (name === 'anchor_proof') {
                     const testProof = {
                         asset_chain: 'bitcoin',
@@ -573,22 +627,104 @@
             const jsonString = JSON.stringify(data, null, 2);
             const escapedJson = jsonString.replace(/`/g, '\\`').replace(/\$/g, '\\$');
             
+            // Determinar tipo de resultado: erro, validação falhada, ou sucesso
+            let resultType = 'error'; // padrão
+            let icon = 'times-circle';
+            let color = 'text-red-400';
+            let bgColor = 'bg-red-500/20';
+            let borderColor = 'border-red-500';
+            let title = 'Erro';
+            let description = 'Ocorreu um erro ao processar a requisição';
+            
+            if (data.success === false || data.error) {
+                // Erro do sistema
+                resultType = 'error';
+                icon = 'exclamation-triangle';
+                color = 'text-red-400';
+                bgColor = 'bg-red-500/20';
+                borderColor = 'border-red-500';
+                title = 'Erro do Sistema';
+                description = data.error || 'Erro desconhecido';
+            } else if (data.success === true && data.valid === false) {
+                // Validação falhada (não é erro!)
+                resultType = 'validation_failed';
+                icon = 'exclamation-circle';
+                color = 'text-yellow-400';
+                bgColor = 'bg-yellow-500/20';
+                borderColor = 'border-yellow-500';
+                title = 'Validação Falhada';
+                description = 'A requisição foi processada, mas a prova é inválida';
+                
+                // Detalhes da validação
+                if (data.verification_details) {
+                    const details = data.verification_details;
+                    const failedChecks = [];
+                    if (details.signature_valid === false) failedChecks.push('Assinatura inválida');
+                    if (details.merkle_proof_valid === false) failedChecks.push('Merkle proof inválido');
+                    if (details.proof_hash_valid === false) failedChecks.push('Hash da prova inválido');
+                    if (details.timestamp_valid === false) failedChecks.push('Timestamp inválido');
+                    
+                    if (failedChecks.length > 0) {
+                        description = `Prova inválida: ${failedChecks.join(', ')}`;
+                    }
+                }
+            } else if (data.success === true && (data.valid === true || data.valid === undefined)) {
+                // Sucesso
+                resultType = 'success';
+                icon = 'check-circle';
+                color = 'text-green-400';
+                bgColor = 'bg-green-500/20';
+                borderColor = 'border-green-500';
+                title = 'Sucesso';
+                description = 'Requisição processada com sucesso';
+            }
+            
             modal.innerHTML = `
-                <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 max-w-4xl w-full my-4 shadow-2xl relative border border-gray-700">
-                    <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-700">
-                        <h2 class="text-2xl font-bold ${success ? 'text-green-400' : 'text-red-400'} flex items-center gap-3">
-                            <i class="fas fa-${success ? 'check-circle' : 'times-circle'} text-3xl"></i>
-                            <span>Teste: ${endpointName.replace('_', ' ').toUpperCase()}</span>
-                        </h2>
-                        <button onclick="this.closest('.fixed').remove()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition font-bold" title="Fechar">
+                <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 max-w-4xl w-full my-4 shadow-2xl relative border-2 ${borderColor}">
+                    <div class="flex justify-between items-start mb-6 pb-4 border-b border-gray-700">
+                        <div class="flex-1">
+                            <h2 class="text-2xl font-bold ${color} flex items-center gap-3 mb-2">
+                                <i class="fas fa-${icon} text-3xl"></i>
+                                <span>Teste: ${endpointName.replace('_', ' ').toUpperCase()}</span>
+                            </h2>
+                            <div class="${bgColor} border ${borderColor} rounded-lg p-3 mt-3">
+                                <p class="font-semibold ${color} mb-1">${title}</p>
+                                <p class="text-sm text-gray-300">${description}</p>
+                            </div>
+                        </div>
+                        <button onclick="this.closest('.fixed').remove()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition font-bold ml-4" title="Fechar">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
-                    <div class="bg-gray-900/80 rounded-lg p-5 max-h-[60vh] overflow-y-auto border border-gray-700">
-                        <pre class="text-sm text-gray-300 overflow-x-auto whitespace-pre-wrap break-words font-mono">${escapedJson}</pre>
+                    ${data.verification_details ? `
+                        <div class="mb-4 ${bgColor} border ${borderColor} rounded-lg p-4">
+                            <h3 class="font-bold ${color} mb-3 flex items-center gap-2">
+                                <i class="fas fa-clipboard-check"></i>
+                                Detalhes da Verificação
+                            </h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                ${Object.entries(data.verification_details).map(([key, value]) => `
+                                    <div class="flex items-center justify-between p-2 bg-gray-900/50 rounded">
+                                        <span class="text-sm text-gray-400 capitalize">${key.replace(/_/g, ' ')}:</span>
+                                        <span class="text-sm font-bold ${value ? 'text-green-400' : 'text-red-400'}">
+                                            ${value ? '✓ Válido' : '✗ Inválido'}
+                                        </span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    <div class="bg-gray-900/80 rounded-lg p-5 max-h-[50vh] overflow-y-auto border border-gray-700">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-semibold text-gray-400">Resposta JSON Completa</h3>
+                            <button onclick="copyJsonFromModal(this)" class="text-xs text-blue-400 hover:text-blue-300">
+                                <i class="fas fa-copy mr-1"></i>Copiar
+                            </button>
+                        </div>
+                        <pre class="text-xs text-gray-300 overflow-x-auto whitespace-pre-wrap break-words font-mono">${escapedJson}</pre>
                     </div>
-                    <div class="mt-6 flex gap-3 justify-end">
-                        <button id="copy-json-btn" class="btn-test btn-test-primary">
+                    <div class="mt-6 flex flex-wrap gap-3 justify-end">
+                        <button onclick="copyJsonFromModal(this)" class="btn-test btn-test-primary">
                             <i class="fas fa-copy"></i>
                             <span>Copiar JSON</span>
                         </button>
@@ -601,23 +737,52 @@
             `;
             
             document.body.appendChild(modal);
-            const copyBtn = modal.querySelector('#copy-json-btn');
-            if (copyBtn) {
-                copyBtn.addEventListener('click', function() {
-                    navigator.clipboard.writeText(jsonString).then(() => {
-                        alert('✅ JSON copiado para a área de transferência!');
-                    }).catch(err => {
-                        alert('❌ Erro ao copiar: ' + err.message);
-                    });
+            
+            // Adicionar função para copiar JSON
+            window.copyJsonFromModal = function(btn) {
+                navigator.clipboard.writeText(jsonString).then(() => {
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check"></i><span>Copiado!</span>';
+                    btn.classList.add('bg-green-600');
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.classList.remove('bg-green-600');
+                    }, 2000);
+                }).catch(err => {
+                    alert('❌ Erro ao copiar: ' + err.message);
                 });
-            }
+            };
         }
 
-        // Carregar status ao carregar a página
+        // Carregar status ao carregar a página (com debounce)
+        let loadTimeout;
+        function debouncedLoadStatus() {
+            clearTimeout(loadTimeout);
+            loadTimeout = setTimeout(loadStatus, 100);
+        }
+        
+        // Carregar imediatamente
         loadStatus();
 
-        // Auto-refresh a cada 30 segundos
-        setInterval(loadStatus, 30000);
+        // Auto-refresh a cada 30 segundos (otimizado)
+        let refreshInterval = setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                loadStatus();
+            }
+        }, 30000);
+        
+        // Pausar refresh quando a aba está oculta
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                clearInterval(refreshInterval);
+            } else {
+                refreshInterval = setInterval(() => {
+                    if (document.visibilityState === 'visible') {
+                        loadStatus();
+                    }
+                }, 30000);
+            }
+        });
     </script>
 </body>
 </html>
