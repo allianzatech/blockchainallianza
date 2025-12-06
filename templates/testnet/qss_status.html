@@ -7,6 +7,8 @@
     <title>📊 QSS API Status - Allianza Testnet</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/testnet-modern.css">
+    <script src="/static/js/testnet-modals.js"></script>
     <style>
         .btn-back {
             display: inline-flex;
@@ -618,140 +620,20 @@
             }
         }
 
-        // Mostrar resultado do teste
+        // Mostrar resultado do teste (usando sistema moderno)
         function showTestResult(endpointName, data, success) {
-            const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4';
-            modal.style.overflowY = 'auto';
+            // Determinar tipo de resultado
+            const resultType = determineResultType(data);
+            const description = createResultDescription(data, resultType);
             
-            const jsonString = JSON.stringify(data, null, 2);
-            const escapedJson = jsonString.replace(/`/g, '\\`').replace(/\$/g, '\\$');
+            // Criar título
+            const title = `Teste: ${endpointName.replace('_', ' ').toUpperCase()}`;
             
-            // Determinar tipo de resultado: erro, validação falhada, ou sucesso
-            let resultType = 'error'; // padrão
-            let icon = 'times-circle';
-            let color = 'text-red-400';
-            let bgColor = 'bg-red-500/20';
-            let borderColor = 'border-red-500';
-            let title = 'Erro';
-            let description = 'Ocorreu um erro ao processar a requisição';
-            
-            if (data.success === false || data.error) {
-                // Erro do sistema
-                resultType = 'error';
-                icon = 'exclamation-triangle';
-                color = 'text-red-400';
-                bgColor = 'bg-red-500/20';
-                borderColor = 'border-red-500';
-                title = 'Erro do Sistema';
-                description = data.error || 'Erro desconhecido';
-            } else if (data.success === true && data.valid === false) {
-                // Validação falhada (não é erro!)
-                resultType = 'validation_failed';
-                icon = 'exclamation-circle';
-                color = 'text-yellow-400';
-                bgColor = 'bg-yellow-500/20';
-                borderColor = 'border-yellow-500';
-                title = 'Validação Falhada';
-                description = 'A requisição foi processada, mas a prova é inválida';
-                
-                // Detalhes da validação
-                if (data.verification_details) {
-                    const details = data.verification_details;
-                    const failedChecks = [];
-                    if (details.signature_valid === false) failedChecks.push('Assinatura inválida');
-                    if (details.merkle_proof_valid === false) failedChecks.push('Merkle proof inválido');
-                    if (details.proof_hash_valid === false) failedChecks.push('Hash da prova inválido');
-                    if (details.timestamp_valid === false) failedChecks.push('Timestamp inválido');
-                    
-                    if (failedChecks.length > 0) {
-                        description = `Prova inválida: ${failedChecks.join(', ')}`;
-                    }
-                }
-            } else if (data.success === true && (data.valid === true || data.valid === undefined)) {
-                // Sucesso
-                resultType = 'success';
-                icon = 'check-circle';
-                color = 'text-green-400';
-                bgColor = 'bg-green-500/20';
-                borderColor = 'border-green-500';
-                title = 'Sucesso';
-                description = 'Requisição processada com sucesso';
-            }
-            
-            modal.innerHTML = `
-                <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 max-w-4xl w-full my-4 shadow-2xl relative border-2 ${borderColor}">
-                    <div class="flex justify-between items-start mb-6 pb-4 border-b border-gray-700">
-                        <div class="flex-1">
-                            <h2 class="text-2xl font-bold ${color} flex items-center gap-3 mb-2">
-                                <i class="fas fa-${icon} text-3xl"></i>
-                                <span>Teste: ${endpointName.replace('_', ' ').toUpperCase()}</span>
-                            </h2>
-                            <div class="${bgColor} border ${borderColor} rounded-lg p-3 mt-3">
-                                <p class="font-semibold ${color} mb-1">${title}</p>
-                                <p class="text-sm text-gray-300">${description}</p>
-                            </div>
-                        </div>
-                        <button onclick="this.closest('.fixed').remove()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition font-bold ml-4" title="Fechar">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    ${data.verification_details ? `
-                        <div class="mb-4 ${bgColor} border ${borderColor} rounded-lg p-4">
-                            <h3 class="font-bold ${color} mb-3 flex items-center gap-2">
-                                <i class="fas fa-clipboard-check"></i>
-                                Detalhes da Verificação
-                            </h3>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                ${Object.entries(data.verification_details).map(([key, value]) => `
-                                    <div class="flex items-center justify-between p-2 bg-gray-900/50 rounded">
-                                        <span class="text-sm text-gray-400 capitalize">${key.replace(/_/g, ' ')}:</span>
-                                        <span class="text-sm font-bold ${value ? 'text-green-400' : 'text-red-400'}">
-                                            ${value ? '✓ Válido' : '✗ Inválido'}
-                                        </span>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
-                    <div class="bg-gray-900/80 rounded-lg p-5 max-h-[50vh] overflow-y-auto border border-gray-700">
-                        <div class="flex items-center justify-between mb-3">
-                            <h3 class="text-sm font-semibold text-gray-400">Resposta JSON Completa</h3>
-                            <button onclick="copyJsonFromModal(this)" class="text-xs text-blue-400 hover:text-blue-300">
-                                <i class="fas fa-copy mr-1"></i>Copiar
-                            </button>
-                        </div>
-                        <pre class="text-xs text-gray-300 overflow-x-auto whitespace-pre-wrap break-words font-mono">${escapedJson}</pre>
-                    </div>
-                    <div class="mt-6 flex flex-wrap gap-3 justify-end">
-                        <button onclick="copyJsonFromModal(this)" class="btn-test btn-test-primary">
-                            <i class="fas fa-copy"></i>
-                            <span>Copiar JSON</span>
-                        </button>
-                        <button onclick="this.closest('.fixed').remove()" class="btn-test btn-test-secondary">
-                            <i class="fas fa-times"></i>
-                            <span>Fechar</span>
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-            
-            // Adicionar função para copiar JSON
-            window.copyJsonFromModal = function(btn) {
-                navigator.clipboard.writeText(jsonString).then(() => {
-                    const originalText = btn.innerHTML;
-                    btn.innerHTML = '<i class="fas fa-check"></i><span>Copiado!</span>';
-                    btn.classList.add('bg-green-600');
-                    setTimeout(() => {
-                        btn.innerHTML = originalText;
-                        btn.classList.remove('bg-green-600');
-                    }, 2000);
-                }).catch(err => {
-                    alert('❌ Erro ao copiar: ' + err.message);
-                });
-            };
+            // Criar modal moderno
+            createModernModal(title, data, resultType, {
+                statusTitle: description.statusTitle,
+                description: description.description
+            });
         }
 
         // Carregar status ao carregar a página (com debounce)
