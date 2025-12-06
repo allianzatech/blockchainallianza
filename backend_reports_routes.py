@@ -12,7 +12,8 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 import os
-from database import get_db_connection
+# ✅ CORRIGIDO: Usar database_neon (PostgreSQL) em vez de database (SQLite)
+from database_neon import get_db_connection
 from typing import Dict, List, Tuple, Optional, Union
 import logging
 
@@ -112,15 +113,17 @@ class DataFetcher:
         
         try:
             # Obter informações do usuário
-            cursor.execute("SELECT email, nickname, wallet_address FROM users WHERE id = ?", (user_id,))
+            # ✅ CORRIGIDO: Usar %s (PostgreSQL) em vez de ? (SQLite)
+            cursor.execute("SELECT email, nickname, wallet_address FROM users WHERE id = %s", (user_id,))
             user_data = cursor.fetchone()
             
             if not user_data:
                 raise ValueError("Usuário não encontrado")
             
             # Obter saldo atual
+            # ✅ CORRIGIDO: Usar %s (PostgreSQL) em vez de ? (SQLite)
             cursor.execute(
-                "SELECT available, locked, staking_balance FROM balances WHERE user_id = ? AND asset = 'ALZ'",
+                "SELECT available, locked, staking_balance FROM balances WHERE user_id = %s AND asset = 'ALZ'",
                 (user_id,)
             )
             balance_data = cursor.fetchone()
@@ -130,11 +133,12 @@ class DataFetcher:
                 total_balance = balance_data['available'] + balance_data['locked'] + balance_data['staking_balance']
             
             # Obter transações no período
+            # ✅ CORRIGIDO: Usar %s (PostgreSQL) em vez de ? (SQLite)
             cursor.execute(
                 """
                 SELECT id, asset, amount, entry_type, description, created_at 
                 FROM ledger_entries 
-                WHERE user_id = ? AND date(created_at) BETWEEN ? AND ?
+                WHERE user_id = %s AND date(created_at) BETWEEN %s AND %s
                 ORDER BY created_at DESC
                 """,
                 (user_id, start_date, end_date)
@@ -142,12 +146,13 @@ class DataFetcher:
             transactions = [dict(row) for row in cursor.fetchall()]
             
             # Obter stakes ativos
+            # ✅ CORRIGIDO: Usar %s (PostgreSQL) em vez de ? (SQLite)
             cursor.execute(
                 """
                 SELECT id, amount, duration, apy, start_date, end_date, 
                        estimated_reward, accrued_reward, status, auto_compound
                 FROM stakes 
-                WHERE user_id = ? AND status = 'active'
+                WHERE user_id = %s AND status = 'active'
                 """,
                 (user_id,)
             )
