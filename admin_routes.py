@@ -475,6 +475,19 @@ def process_payments():
                     user_id = cursor.fetchone()['id']
                     print(f"✅ Novo usuário criado: {user_id}")
                 
+                # ✅ VERIFICAR SE É LIBERAÇÃO DE TOKENS BLOQUEADOS OU ENVIO EXTERNO
+                release_to_allianza_wallet = data.get('release_to_allianza_wallet', False)
+                payment_wallet_address = None
+                
+                # Buscar wallet_address do pagamento
+                cursor.execute(
+                    "SELECT wallet_address FROM payments WHERE id = %s",
+                    (payment_id,)
+                )
+                payment_data = cursor.fetchone()
+                if payment_data:
+                    payment_wallet_address = payment_data.get('wallet_address')
+                
                 # ✅ VERIFICAR/CRIAR BALANCE
                 cursor.execute(
                     "SELECT id FROM balances WHERE user_id = %s AND asset = 'ALZ'",
@@ -484,16 +497,35 @@ def process_payments():
                 
                 if not balance:
                     cursor.execute(
-                        "INSERT INTO balances (user_id, asset, available, staking_balance) VALUES (%s, 'ALZ', 0, 0)",
+                        "INSERT INTO balances (user_id, asset, available, locked, staking_balance) VALUES (%s, 'ALZ', 0, 0, 0)",
                         (user_id,)
                     )
                     print(f"✅ Balance criado para usuário {user_id}")
                 
-                # ✅ CREDITAR TOKENS
-                cursor.execute(
-                    "UPDATE balances SET available = available + %s WHERE user_id = %s AND asset = 'ALZ'",
-                    (alz_amount, user_id)
-                )
+                # ✅ LÓGICA: Se não tem wallet_address OU release_to_allianza_wallet = true
+                # Adicionar tokens em LOCKED (bloqueados) ao invés de available
+                if not payment_wallet_address or release_to_allianza_wallet:
+                    # ✅ LIBERAR TOKENS BLOQUEADOS (mover de locked para available)
+                    if release_to_allianza_wallet:
+                        cursor.execute(
+                            "UPDATE balances SET locked = locked - %s, available = available + %s WHERE user_id = %s AND asset = 'ALZ' AND locked >= %s",
+                            (alz_amount, alz_amount, user_id, alz_amount)
+                        )
+                        print(f"🔓 Tokens liberados: {alz_amount} ALZ movidos de locked para available")
+                    else:
+                        # ✅ BLOQUEAR TOKENS (adicionar em locked)
+                        cursor.execute(
+                            "UPDATE balances SET locked = locked + %s WHERE user_id = %s AND asset = 'ALZ'",
+                            (alz_amount, user_id)
+                        )
+                        print(f"🔒 Tokens bloqueados: {alz_amount} ALZ adicionados em locked")
+                else:
+                    # ✅ CREDITAR TOKENS DIRETAMENTE (para wallet externa)
+                    cursor.execute(
+                        "UPDATE balances SET available = available + %s WHERE user_id = %s AND asset = 'ALZ'",
+                        (alz_amount, user_id)
+                    )
+                    print(f"✅ Tokens creditados: {alz_amount} ALZ adicionados em available")
                 
                 # ✅ REGISTRAR NO LEDGER
                 cursor.execute(
