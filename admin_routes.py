@@ -110,11 +110,11 @@ def health_check():
 @admin_bp.route('/admin/payments', methods=['GET'])
 @admin_required
 def get_payments():
-    conn = get_db_connection()
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
-    
+    conn = None
     try:
         print("📥 Buscando pagamentos do banco...")
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
         
         cursor.execute('''
             SELECT id, email, amount, method, status, created_at, 
@@ -148,20 +148,28 @@ def get_payments():
         }), 200
         
     except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
         print(f"❌ Erro ao carregar pagamentos: {str(e)}")
-        return jsonify({"error": f"Erro no servidor: {str(e)}"}), 500
+        print(f"📋 Traceback completo:\n{error_trace}")
+        return jsonify({
+            "success": False,
+            "error": f"Erro no servidor: {str(e)}",
+            "type": type(e).__name__
+        }), 500
     finally:
-        conn.close()
+        if conn:
+            conn.close()
 
 # ✅ ROTA PARA LISTAR TODOS OS STAKES
 @admin_bp.route('/admin/stakes', methods=['GET'])
 @admin_required
 def get_all_stakes():
-    conn = get_db_connection()
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
-    
+    conn = None
     try:
         print("📥 Buscando todos os stakes do banco...")
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
         
         # Buscar todos os stakes (ativos e inativos)
         cursor.execute('''
@@ -183,14 +191,14 @@ def get_all_stakes():
             
             # Converter datas para ISO format
             for key in ['start_date', 'end_date', 'last_reward_claim', 'withdrawn_at']:
-                if formatted_stake[key] and hasattr(formatted_stake[key], 'isoformat'):
+                if formatted_stake.get(key) and hasattr(formatted_stake[key], 'isoformat'):
                     formatted_stake[key] = formatted_stake[key].isoformat()
-                elif formatted_stake[key]:
+                elif formatted_stake.get(key):
                     formatted_stake[key] = formatted_stake[key].strftime('%Y-%m-%dT%H:%M:%S.%fZ')
             
             # Garantir que os numéricos sejam floats
             for key in ['amount', 'apy', 'estimated_reward', 'accrued_reward', 'early_withdrawal_penalty', 'actual_return', 'penalty_applied']:
-                if formatted_stake[key] is not None:
+                if formatted_stake.get(key) is not None:
                     formatted_stake[key] = float(formatted_stake[key])
 
             formatted_stakes.append(formatted_stake)
@@ -202,10 +210,18 @@ def get_all_stakes():
         }), 200
         
     except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
         print(f"❌ Erro ao carregar stakes: {str(e)}")
-        return jsonify({"error": f"Erro no servidor: {str(e)}"}), 500
+        print(f"📋 Traceback completo:\n{error_trace}")
+        return jsonify({
+            "success": False,
+            "error": f"Erro no servidor: {str(e)}",
+            "type": type(e).__name__
+        }), 500
     finally:
-        conn.close()
+        if conn:
+            conn.close()
 
 # ✅ ROTA PARA UNSTAKE FORÇADO PELO ADMIN
 @admin_bp.route('/admin/unstake', methods=['POST'])
