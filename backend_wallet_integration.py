@@ -369,8 +369,9 @@ def process_automatic_payment(email, amount_alz, method, external_id):
         user_id = None
         
         if not user:
-            # Criar usuário automaticamente
-            private_key, wallet_address = generate_polygon_wallet()
+            # ✅ NÃO gerar wallet - usuário usará wallet Allianza (saldo bloqueado)
+            wallet_address = None
+            private_key = None
             temp_password = f"temp_{secrets.token_hex(8)}"
             hashed_password = generate_password_hash(temp_password)
             
@@ -380,27 +381,27 @@ def process_automatic_payment(email, amount_alz, method, external_id):
             )
             user_id = cursor.fetchone()['id']
             user_created = True
-            print(f"👤 Usuário criado: {email} - Carteira: {wallet_address}")
+            print(f"👤 Usuário criado: {email} - Wallet Allianza (será gerada no login)")
         else:
             user_id = user['id']
-            wallet_address = user['wallet_address']
+            wallet_address = user['wallet_address']  # Pode ser None se não tiver wallet ainda
             print(f"👤 Usuário existente: {email} - ID: {user_id}")
         
         # Verificar/criar saldo
-        cursor.execute("SELECT user_id FROM balances WHERE user_id = %s", (user_id,))
+        cursor.execute("SELECT user_id FROM balances WHERE user_id = %s AND asset = 'ALZ'", (user_id,))
         if not cursor.fetchone():
             cursor.execute(
-                "INSERT INTO balances (user_id, available) VALUES (%s, %s)",
-                (user_id, 0.0)
+                "INSERT INTO balances (user_id, asset, available, locked, staking_balance) VALUES (%s, 'ALZ', 0, 0, 0)",
+                (user_id,)
             )
             print(f"💰 Saldo criado para usuário {user_id}")
         
-        # ✅ CORREÇÃO: Creditar o valor CORRETO em ALZ (sem multiplicar por 10)
+        # ✅ BLOQUEAR TOKENS (adicionar em locked) - usuário verá ao fazer login
         cursor.execute(
-            "UPDATE balances SET available = available + %s, updated_at = CURRENT_TIMESTAMP WHERE user_id = %s",
-            (amount_alz, user_id)  # Usar o amount original (em ALZ)
+            "UPDATE balances SET locked = locked + %s, updated_at = CURRENT_TIMESTAMP WHERE user_id = %s AND asset = 'ALZ'",
+            (amount_alz, user_id)
         )
-        print(f"💰 Saldo atualizado: +{amount_alz} ALZ para user {user_id}")
+        print(f"🔒 Tokens bloqueados: +{amount_alz} ALZ em locked (usuário verá ao fazer login)")
         
         # Registrar entrada no ledger
         cursor.execute(
@@ -675,14 +676,16 @@ def site_purchase():
         user_id = None
         
         if not user:
-            # ✅ Se usuário forneceu wallet, usar ela. Senão, gerar nova
+            # ✅ Se usuário forneceu wallet, usar ela. Senão, NÃO gerar (usará wallet Allianza)
             if wallet_address_from_user and use_own_wallet:
                 wallet_address = wallet_address_from_user
                 private_key = None  # Não temos a private key se o usuário forneceu a wallet
                 print(f"💼 Usando wallet fornecida pelo usuário: {wallet_address}")
             else:
-                private_key, wallet_address = generate_polygon_wallet()
-                print(f"💼 Gerando nova wallet: {wallet_address}")
+                # ✅ NÃO gerar wallet - usuário usará wallet Allianza (saldo bloqueado)
+                wallet_address = None
+                private_key = None
+                print(f"💼 Wallet não fornecida - tokens serão bloqueados na wallet Allianza")
             
             temp_password = f"temp_{secrets.token_hex(8)}"
             hashed_password = generate_password_hash(temp_password)
@@ -706,7 +709,8 @@ def site_purchase():
                 wallet_address = wallet_address_from_user
                 print(f"💼 Wallet do usuário atualizada: {wallet_address}")
             else:
-                wallet_address = user['wallet_address']
+                # ✅ Se usuário não forneceu wallet, usar None (não usar wallet existente do usuário)
+                wallet_address = wallet_address_from_user if wallet_address_from_user and use_own_wallet else None
             print(f"👤 Usuário existente: {email} - ID: {user_id}")
         
         # Verificar/criar saldo
@@ -735,10 +739,13 @@ def site_purchase():
             print(f"✅ Tokens disponíveis: {amount_alz} ALZ adicionados em available (para envio externo)")
         
         # ✅ Atualizar o registro de pagamento com o user_id e wallet_address final
+        # ✅ IMPORTANTE: Só salvar wallet_address se foi fornecida pelo usuário
+        final_wallet_address = wallet_address_from_user if (wallet_address_from_user and use_own_wallet) else None
         cursor.execute(
             "UPDATE payments SET user_id = %s, wallet_address = %s WHERE id = %s",
-            (user_id, wallet_address, payment_id)
+            (user_id, final_wallet_address, payment_id)
         )
+        print(f"💾 Payment atualizado: user_id={user_id}, wallet_address={final_wallet_address or 'None (wallet Allianza)'}")
         
         conn.commit()
         
@@ -1005,7 +1012,9 @@ def create_direct_crypto_payment():
             wallet_address = None
             
             if not user:
-                private_key, wallet_address = generate_polygon_wallet()
+                # ✅ NÃO gerar wallet - usuário usará wallet Allianza (saldo bloqueado)
+                wallet_address = None
+                private_key = None
                 temp_password = f"temp_{secrets.token_hex(8)}"
                 hashed_password = generate_password_hash(temp_password)
                 nickname = f"User_{email.split('@')[0]}"
@@ -1015,18 +1024,18 @@ def create_direct_crypto_payment():
                     (email, hashed_password, nickname, wallet_address, private_key)
                 )
                 user_id = cursor.fetchone()['id']
-                print(f"👤 Usuário criado: {email}")
+                print(f"👤 Usuário criado: {email} - Wallet Allianza (será gerada no login)")
             else:
                 user_id = user['id']
-                wallet_address = user['wallet_address']
+                wallet_address = user['wallet_address']  # Pode ser None se não tiver wallet ainda
                 print(f"👤 Usuário existente: {email}")
 
             # Verificar/criar saldo
-            cursor.execute("SELECT user_id FROM balances WHERE user_id = %s", (user_id,))
+            cursor.execute("SELECT user_id FROM balances WHERE user_id = %s AND asset = 'ALZ'", (user_id,))
             if not cursor.fetchone():
                 cursor.execute(
-                    "INSERT INTO balances (user_id, available) VALUES (%s, %s)",
-                    (user_id, 0.0)
+                    "INSERT INTO balances (user_id, asset, available, locked, staking_balance) VALUES (%s, 'ALZ', 0, 0, 0)",
+                    (user_id,)
                 )
                 print(f"💰 Saldo criado para user {user_id}")
 
