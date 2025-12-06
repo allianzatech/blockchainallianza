@@ -20,10 +20,12 @@ CORS(admin_bp, resources={r"/admin/*": {"origins": "*"}})
 # ✅ CONFIGURAÇÃO ÚNICA - Evitar conflitos
 def get_db_connection():
     """Conexão única com o banco para evitar conflitos"""
-    DATABASE_URL = os.getenv('DATABASE_URL')
+    # ✅ FALLBACK: Usar NEON_DATABASE_URL se DATABASE_URL não existir
+    DATABASE_URL = os.getenv('DATABASE_URL') or os.getenv('NEON_DATABASE_URL')
     if not DATABASE_URL:
-        raise ValueError("DATABASE_URL não configurada")
+        raise ValueError("DATABASE_URL ou NEON_DATABASE_URL não configurada")
     
+    print(f"🔗 Conectando ao banco usando: {'DATABASE_URL' if os.getenv('DATABASE_URL') else 'NEON_DATABASE_URL (fallback)'}")
     conn = psycopg2.connect(DATABASE_URL)
     conn.autocommit = False
     return conn
