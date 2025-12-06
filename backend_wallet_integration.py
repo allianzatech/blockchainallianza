@@ -233,7 +233,31 @@ def options_handler():
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    return jsonify({"status": "OK", "message": "Backend is running"}), 200
+    """Health check endpoint - sempre retorna JSON válido"""
+    try:
+        # Tentar verificar conexão com banco (opcional)
+        try:
+            from database_neon import get_db_connection
+            conn = get_db_connection()
+            conn.close()
+            db_status = "connected"
+        except:
+            db_status = "unknown"
+        
+        return jsonify({
+            "status": "ok",
+            "message": "Backend is running",
+            "database": db_status,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }), 200
+    except Exception as e:
+        # Mesmo em caso de erro, retornar JSON válido
+        return jsonify({
+            "status": "error",
+            "message": "Backend is running but health check failed",
+            "error": str(e),
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }), 200
 
 # 🔐 CONFIGURAÇÕES DE SEGURANÇA ADMIN - PRODUÇÃO (CORRIGIDO)
 ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD_1', 'CdE25$$$')
@@ -1722,7 +1746,31 @@ def cancel_withdraw_request():
 # Ajustar redirecionamento para garantir compatibilidade
 @app.route('/health', methods=['GET', 'OPTIONS'])
 def root_health_check():
-    return jsonify({"status": "OK", "message": "Backend is running"}), 200
+    """Health check endpoint - sempre retorna JSON válido"""
+    try:
+        # Tentar verificar conexão com banco (opcional)
+        try:
+            from database_neon import get_db_connection
+            conn = get_db_connection()
+            conn.close()
+            db_status = "connected"
+        except:
+            db_status = "unknown"
+        
+        return jsonify({
+            "status": "ok",
+            "message": "Backend is running",
+            "database": db_status,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }), 200
+    except Exception as e:
+        # Mesmo em caso de erro, retornar JSON válido
+        return jsonify({
+            "status": "error",
+            "message": "Backend is running but health check failed",
+            "error": str(e),
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }), 200
 
 # 🚀 INICIALIZAÇÃO DO FLASK
 if __name__ == '__main__':
