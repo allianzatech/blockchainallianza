@@ -69,7 +69,7 @@ def calculate_alz_from_brl(amount_brl):
 # ✅ ROTA DE HEALTH CHECK MELHORADA
 @admin_bp.route('/health', methods=['GET'])
 def health_check():
-    """Verifica saúde do backend e banco"""
+    """Verifica saúde do backend e banco - sempre retorna JSON válido"""
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -101,12 +101,13 @@ def health_check():
         }), 200
         
     except Exception as e:
+        # ✅ CORRIGIDO: Sempre retornar JSON válido, mesmo em caso de erro
         return jsonify({
             "status": "unhealthy",
             "database": "disconnected",
             "error": str(e),
             "timestamp": datetime.utcnow().isoformat()
-        }), 500
+        }), 200  # Retornar 200 para não quebrar o frontend
 
 # ✅ DASHBOARD CORRIGIDO
 @admin_bp.route('/admin/payments', methods=['GET'])
