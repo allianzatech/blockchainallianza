@@ -710,13 +710,29 @@ def site_purchase():
             print(f"👤 Usuário existente: {email} - ID: {user_id}")
         
         # Verificar/criar saldo
-        cursor.execute("SELECT user_id FROM balances WHERE user_id = %s", (user_id,))
+        cursor.execute("SELECT user_id FROM balances WHERE user_id = %s AND asset = 'ALZ'", (user_id,))
         if not cursor.fetchone():
             cursor.execute(
-                "INSERT INTO balances (user_id, available) VALUES (%s, %s)",
-                (user_id, 0.0)
+                "INSERT INTO balances (user_id, asset, available, locked, staking_balance) VALUES (%s, 'ALZ', 0, 0, 0)",
+                (user_id,)
             )
             print(f"💰 Saldo criado para usuário {user_id}")
+        
+        # ✅ SE NÃO TEM WALLET_ADDRESS, BLOQUEAR TOKENS (adicionar em locked)
+        # O usuário verá o saldo bloqueado quando fizer login na wallet Allianza
+        if not wallet_address_from_user or not use_own_wallet:
+            cursor.execute(
+                "UPDATE balances SET locked = locked + %s WHERE user_id = %s AND asset = 'ALZ'",
+                (amount_alz, user_id)
+            )
+            print(f"🔒 Tokens bloqueados: {amount_alz} ALZ adicionados em locked (usuário verá ao fazer login)")
+        else:
+            # Se tem wallet externa, adicionar em available (será enviado depois)
+            cursor.execute(
+                "UPDATE balances SET available = available + %s WHERE user_id = %s AND asset = 'ALZ'",
+                (amount_alz, user_id)
+            )
+            print(f"✅ Tokens disponíveis: {amount_alz} ALZ adicionados em available (para envio externo)")
         
         # ✅ Atualizar o registro de pagamento com o user_id e wallet_address final
         cursor.execute(
