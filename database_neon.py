@@ -8,7 +8,8 @@ load_dotenv()
 
 class NeonDatabase:
     def __init__(self):
-        self.database_url = os.getenv('NEON_DATABASE_URL')
+        # ✅ CORRIGIDO: Aceitar ambos os nomes (NEON_DATABASE_URL ou DATABASE_URL)
+        self.database_url = os.getenv('NEON_DATABASE_URL') or os.getenv('DATABASE_URL')
         if self.database_url:
             safe_url = self.database_url.split('@')
             if len(safe_url) > 1:
@@ -16,12 +17,12 @@ class NeonDatabase:
             else:
                 print("🔗 URL do Neon configurada")
         else:
-            print("❌ NEON_DATABASE_URL não encontrada")
+            print("❌ NEON_DATABASE_URL ou DATABASE_URL não encontrada")
         
     def get_connection(self):
         """Obter conexão com o Neon PostgreSQL"""
         if not self.database_url:
-            raise ValueError("NEON_DATABASE_URL não configurada no .env")
+            raise ValueError("NEON_DATABASE_URL ou DATABASE_URL não configurada no .env")
         
         try:
             conn = psycopg.connect(
@@ -87,6 +88,23 @@ class NeonDatabase:
                 );
             ''')
             print("✅ Tabela 'vault_balances' criada/verificada")
+            
+            # ✅ TABELA DE SOLICITAÇÕES DE RETIRADA DO COFRE
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS vault_withdraw_requests (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                    amount NUMERIC(20,8) NOT NULL,
+                    auth_code VARCHAR(12) NOT NULL,
+                    expires_at TIMESTAMPTZ NOT NULL,
+                    description TEXT,
+                    status VARCHAR(20) DEFAULT 'pending' NOT NULL,
+                    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                    completed_at TIMESTAMPTZ,
+                    cancelled_at TIMESTAMPTZ
+                );
+            ''')
+            print("✅ Tabela 'vault_withdraw_requests' criada/verificada")
             
             # Tabela de ledger
             cursor.execute('''
@@ -247,6 +265,11 @@ class NeonDatabase:
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_vault_balances_user_id ON vault_balances(user_id);')
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_vault_balances_security_level ON vault_balances(security_level);')
             
+            # ✅ Índices para solicitações de retirada
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_vault_withdraw_requests_user_id ON vault_withdraw_requests(user_id);')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_vault_withdraw_requests_status ON vault_withdraw_requests(status);')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_vault_withdraw_requests_expires_at ON vault_withdraw_requests(expires_at);')
+            
             # ✅ CORREÇÃO: Verificar se a coluna asset existe antes de criar índice
             cursor.execute("""
                 SELECT column_name 
@@ -280,14 +303,6 @@ class NeonDatabase:
                 conn.close()
 
 # Instância global
-neon_db = NeonDatabase()
-
-# Funções de conveniência
-def get_db_connection():
-    return neon_db.get_connection()
-
-def init_db():
-    return neon_db.init_db()
 neon_db = NeonDatabase()
 
 # Funções de conveniência
