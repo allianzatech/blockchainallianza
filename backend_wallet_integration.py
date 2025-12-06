@@ -539,6 +539,26 @@ def site_purchase():
     try:
         cursor.execute("BEGIN")
         
+        # ✅ VERIFICAR E CRIAR COLUNA expires_at SE NÃO EXISTIR
+        try:
+            cursor.execute("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name='payments' AND column_name='expires_at'
+            """)
+            has_expires_at = cursor.fetchone() is not None
+            
+            if not has_expires_at:
+                try:
+                    from payment_expiration import add_expires_at_column
+                    add_expires_at_column()
+                    print("✅ Coluna 'expires_at' criada antes do INSERT")
+                except Exception as e:
+                    print(f"⚠️  Não foi possível criar coluna expires_at: {e}")
+                    print("⚠️  Continuando sem expires_at...")
+        except Exception as e:
+            print(f"⚠️  Erro ao verificar coluna expires_at: {e}")
+        
         # ✅ CORRIGIDO: Calcular USD e BRL a partir do ALZ
         # 1 ALZ = $0,10 USD (valor atualizado)
         amount_usd = amount_alz * 0.10  # 1 ALZ = $0,10 USD
@@ -563,17 +583,45 @@ def site_purchase():
         if wallet_address_from_user:
             metadata['user_wallet_address'] = wallet_address_from_user
         
-        # ✅ Registrar o valor EM BRL no banco, mas com metadata correto
-        # ✅ Definir expires_at = created_at + 10 dias
-        # ✅ CORRIGIDO: Incluir wallet_address se fornecido pelo usuário
-        expires_at = datetime.now(timezone.utc) + timedelta(days=10)
-        cursor.execute(
-            "INSERT INTO payments (email, amount, method, status, metadata, expires_at, wallet_address, currency, network) VALUES (%s, %s, %s, 'pending', %s, %s, %s, %s, %s) RETURNING id",
-            (email, amount_brl, method, json.dumps(metadata), expires_at, wallet_address_from_user, currency, network)
-        )
-        payment_id = cursor.fetchone()['id']
+        # ✅ Verificar novamente se coluna existe para decidir o INSERT
+        cursor.execute("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name='payments' AND column_name='expires_at'
+        """)
+        has_expires_at = cursor.fetchone() is not None
         
-        print(f"✅ Compra registrada: ID {payment_id} | {amount_alz} ALZ = R$ {amount_brl} | Método: {method} | Wallet: {wallet_address_from_user or 'Gerada automaticamente'}")
+        # ✅ Registrar o valor EM BRL no banco, mas com metadata correto
+        # ✅ Definir expires_at = created_at + 10 dias (se coluna existir)
+        expires_at = datetime.now(timezone.utc) + timedelta(days=10)
+        
+        # ✅ INSERT com tratamento de erro detalhado
+        try:
+            if has_expires_at:
+                # INSERT com expires_at
+                cursor.execute(
+                    "INSERT INTO payments (email, amount, method, status, metadata, expires_at, wallet_address, currency, network) VALUES (%s, %s, %s, 'pending', %s, %s, %s, %s, %s) RETURNING id",
+                    (email, amount_brl, method, json.dumps(metadata), expires_at, wallet_address_from_user, currency, network)
+                )
+                print(f"✅ INSERT executado COM expires_at")
+            else:
+                # INSERT sem expires_at (fallback)
+                cursor.execute(
+                    "INSERT INTO payments (email, amount, method, status, metadata, wallet_address, currency, network) VALUES (%s, %s, %s, 'pending', %s, %s, %s, %s) RETURNING id",
+                    (email, amount_brl, method, json.dumps(metadata), wallet_address_from_user, currency, network)
+                )
+                print(f"✅ INSERT executado SEM expires_at (fallback)")
+            
+            result = cursor.fetchone()
+            if not result:
+                raise Exception("INSERT não retornou ID do pagamento")
+            
+            payment_id = result['id']
+            print(f"✅ Compra registrada: ID {payment_id} | {amount_alz} ALZ = ${amount_usd} USD = R$ {amount_brl} | Método: {method} | Wallet: {wallet_address_from_user or 'Gerada automaticamente'}")
+        except Exception as insert_error:
+            print(f"❌ ERRO NO INSERT: {insert_error}")
+            print(f"❌ Dados do INSERT: email={email}, amount_brl={amount_brl}, method={method}, wallet={wallet_address_from_user}")
+            raise  # Re-raise para ser capturado pelo except externo
         
         # Buscar usuário existente
         cursor.execute("SELECT id, wallet_address, password FROM users WHERE email = %s", (email,))
