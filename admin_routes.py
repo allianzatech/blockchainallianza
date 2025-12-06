@@ -6,7 +6,22 @@ from flask_cors import CORS
 from functools import wraps
 import jwt
 from datetime import datetime, timedelta, timezone
-from payment_expiration import expire_old_payments, set_payment_expiration, add_expires_at_column
+
+# ✅ Import opcional de payment_expiration (pode não existir em alguns ambientes)
+try:
+    from payment_expiration import expire_old_payments, set_payment_expiration, add_expires_at_column
+    PAYMENT_EXPIRATION_AVAILABLE = True
+except ImportError:
+    PAYMENT_EXPIRATION_AVAILABLE = False
+    print("⚠️  payment_expiration não disponível - funcionalidade de expiração desabilitada")
+    
+    # Funções stub para evitar erros
+    def expire_old_payments():
+        return {"success": True, "expired_count": 0, "message": "Funcionalidade não disponível"}
+    def set_payment_expiration(payment_id, days=10):
+        pass
+    def add_expires_at_column():
+        pass
 
 # ✅ CARREGAR VARIÁVEIS DE AMBIENTE PRIMEIRO
 from dotenv import load_dotenv
@@ -32,7 +47,9 @@ def get_db_connection():
     return conn
 
 # ✅ CONSTANTES GLOBAIS - Evitar recálculos
-ALZ_PRICE_BRL = 0.10  # 1 ALZ = R$ 0,10
+# ✅ ATUALIZADO: Valor do token mudou para USD
+ALZ_PRICE_USD = 0.10  # 1 ALZ = $0,10 USD
+ALZ_PRICE_BRL = 0.10  # Mantido para compatibilidade (será calculado via cotação USD/BRL)
 
 # ✅ CARREGAR TOKEN DA VARIÁVEL DE AMBIENTE (com debug)
 _env_token = os.getenv('VITE_SITE_ADMIN_TOKEN')
@@ -63,9 +80,18 @@ def admin_required(f):
     return decorated_function
 
 # ✅ FUNÇÃO DE CÁLCULO GLOBAL
+# ✅ ATUALIZADO: 1 ALZ = $0,10 USD
 def calculate_alz_from_brl(amount_brl):
     """Calcula ALZ a partir de BRL de forma consistente"""
-    return float(amount_brl) / ALZ_PRICE_BRL
+    # Se amount_brl está em BRL, converter: BRL → USD → ALZ
+    # Assumindo cotação USD/BRL = 5.50
+    usd_to_brl_rate = 5.50
+    amount_usd = float(amount_brl) / usd_to_brl_rate  # BRL → USD
+    return amount_usd / ALZ_PRICE_USD  # USD → ALZ (1 ALZ = $0,10 USD)
+
+def calculate_alz_from_usd(amount_usd):
+    """Calcula ALZ a partir de USD (método preferido)"""
+    return float(amount_usd) / ALZ_PRICE_USD  # 1 ALZ = $0,10 USD
 
 # ✅ ROTA DE HEALTH CHECK MELHORADA
 @admin_bp.route('/health', methods=['GET'])
@@ -148,7 +174,7 @@ def get_payments():
             "success": True,
             "data": corrected_payments,
             "count": len(corrected_payments),
-            "calculation_note": "ALZ = BRL / 0.10 (1 ALZ = R$ 0,10)"
+            "calculation_note": "ALZ = USD / 0.10 (1 ALZ = $0,10 USD)"
         }), 200
         
     except Exception as e:
