@@ -46,9 +46,27 @@ function createModernModal(title, data, type = 'success', options = {}) {
     const jsonString = JSON.stringify(data, null, 2);
     const escapedJson = jsonString.replace(/`/g, '\\`').replace(/\$/g, '\\$');
     
+    // Função helper para codificar Unicode em base64 de forma segura
+    const safeBase64Encode = (str) => {
+        try {
+            // Converter para UTF-8 primeiro, depois para base64
+            return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+                return String.fromCharCode(parseInt(p1, 16));
+            }));
+        } catch (e) {
+            // Fallback: usar escape simples se falhar
+            return btoa(unescape(encodeURIComponent(str)));
+        }
+    };
+    
+    // Armazenar JSON de forma segura usando data attribute
+    const modalId = 'modal-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    
     // Criar modal
     const modal = document.createElement('div');
     modal.className = 'modern-modal';
+    modal.setAttribute('data-json', jsonString);
+    modal.setAttribute('data-modal-id', modalId);
     modal.onclick = function(e) {
         if (e.target === modal) {
             modal.remove();
@@ -85,7 +103,7 @@ function createModernModal(title, data, type = 'success', options = {}) {
                 <div class="mt-4">
                     <div class="flex items-center justify-between mb-2">
                         <h3 class="text-sm font-semibold text-gray-400">Resposta JSON Completa</h3>
-                        <button class="btn-copy-modern" onclick="copyJsonFromModal(this, '${btoa(jsonString)}')">
+                        <button class="btn-copy-modern" onclick="copyJsonFromModal(this, '${modalId}')">
                             <i class="fas fa-copy"></i>
                             <span>Copiar JSON</span>
                         </button>
@@ -97,7 +115,7 @@ function createModernModal(title, data, type = 'success', options = {}) {
             </div>
             
             <div class="modern-modal-footer">
-                <button class="btn-copy-modern" onclick="copyJsonFromModal(this, '${btoa(jsonString)}')">
+                <button class="btn-copy-modern" onclick="copyJsonFromModal(this, '${modalId}')">
                     <i class="fas fa-copy"></i>
                     <span>Copiar JSON</span>
                 </button>
@@ -158,10 +176,33 @@ function generateVerificationDetails(details) {
 
 /**
  * Copia JSON do modal
+ * @param {HTMLElement} button - Botão que foi clicado
+ * @param {string} modalId - ID do modal ou base64 (para compatibilidade)
  */
-function copyJsonFromModal(button, base64Json) {
+function copyJsonFromModal(button, modalId) {
     try {
-        const jsonString = atob(base64Json);
+        let jsonString = '';
+        
+        // Tentar encontrar o modal pelo ID
+        const modal = document.querySelector(`[data-modal-id="${modalId}"]`);
+        if (modal && modal.getAttribute('data-json')) {
+            // Usar data attribute (método seguro para Unicode)
+            jsonString = modal.getAttribute('data-json');
+        } else {
+            // Fallback: tentar decodificar como base64 (compatibilidade)
+            try {
+                jsonString = atob(modalId);
+            } catch (e) {
+                // Se falhar, tentar encontrar o modal mais próximo
+                const closestModal = button.closest('.modern-modal');
+                if (closestModal && closestModal.getAttribute('data-json')) {
+                    jsonString = closestModal.getAttribute('data-json');
+                } else {
+                    throw new Error('Não foi possível encontrar o JSON para copiar');
+                }
+            }
+        }
+        
         navigator.clipboard.writeText(jsonString).then(() => {
             const originalHTML = button.innerHTML;
             button.classList.add('copied');
@@ -176,8 +217,8 @@ function copyJsonFromModal(button, base64Json) {
             alert('❌ Erro ao copiar. Tente selecionar e copiar manualmente.');
         });
     } catch (err) {
-        console.error('Erro ao decodificar JSON:', err);
-        alert('❌ Erro ao processar JSON.');
+        console.error('Erro ao processar JSON:', err);
+        alert('❌ Erro ao processar JSON: ' + err.message);
     }
 }
 

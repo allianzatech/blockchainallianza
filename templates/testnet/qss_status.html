@@ -556,7 +556,17 @@
                     showTestResult(name, data, data.success !== false);
                 } else if (name === 'verify_proof') {
                     const testTxHash = '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('');
-                    const testSignature = btoa('test_signature_' + Date.now());
+                    // Função helper para codificar Unicode em base64 de forma segura
+                    const safeBase64Encode = (str) => {
+                        try {
+                            return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+                                return String.fromCharCode(parseInt(p1, 16));
+                            }));
+                        } catch (e) {
+                            return btoa(unescape(encodeURIComponent(str)));
+                        }
+                    };
+                    const testSignature = safeBase64Encode('test_signature_' + Date.now());
                     const testProofHash = '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('');
                     
                     const testProof = {
