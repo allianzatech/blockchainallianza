@@ -111,7 +111,7 @@
                         <span class="font-bold">{{ "%.2f"|format(stats.cross_chain.total_volume) }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-400">Percentual:</span>
+                        <span class="text-gray-400">{{ t('percentage') or 'Percentage' }}:</span>
                         <span class="font-bold">{{ stats.cross_chain.percentage }}%</span>
                     </div>
                 </div>
@@ -129,7 +129,7 @@
                         <span class="font-bold">{{ stats.quantum_security.quantum_signed_count }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-400">Percentual:</span>
+                        <span class="text-gray-400">{{ t('percentage') or 'Percentage' }}:</span>
                         <span class="font-bold">{{ stats.quantum_security.quantum_percentage }}%</span>
                     </div>
                     <div class="flex justify-between">
