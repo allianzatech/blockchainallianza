@@ -330,6 +330,11 @@ class AutoFaucetManager:
     
     def start_scheduler(self, interval_hours: int = 12):
         """Inicia agendador para verificar a cada X horas"""
+        if not SCHEDULE_AVAILABLE:
+            print("⚠️  schedule não disponível - gerenciador automático não pode ser iniciado")
+            print("   Para habilitar, instale: pip install schedule")
+            return None
+        
         print(f"🚀 Iniciando gerenciador automático de faucets...")
         print(f"   Intervalo: {interval_hours} horas")
         print(f"   Endereços configurados: {len(self.addresses_config)}")
