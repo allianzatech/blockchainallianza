@@ -472,11 +472,11 @@ GET https://testnet.allianza.tech/api/qss/status
                     </div>
                     <ul class="list-disc list-inside text-gray-300 text-sm space-y-1">
                         <li>✅ Lançamento inicial do SDK</li>
-                        <li>✅ Suporte a Bitcoin, Ethereum, Polygon, BSC, Solana, Avalanche, Base</li>
-                        <li>✅ Geração e verificação de proofs quânticas (ML-DSA)</li>
-                        <li>✅ Anchoring em Bitcoin (OP_RETURN) e EVM (Smart Contracts)</li>
-                        <li>✅ API REST completa e documentada</li>
-                        <li>✅ TypeScript definitions incluídas</li>
+                        <li>✅ {{ t('support_bitcoin_ethereum') or 'Support for Bitcoin, Ethereum, Polygon, BSC, Solana, Avalanche, Base' }}</li>
+                        <li>✅ {{ t('quantum_proof_generation_verification') or 'Quantum proof generation and verification (ML-DSA)' }}</li>
+                        <li>✅ {{ t('anchoring_bitcoin_evm') or 'Anchoring on Bitcoin (OP_RETURN) and EVM (Smart Contracts)' }}</li>
+                        <li>✅ {{ t('rest_api_complete_documented') or 'Complete and documented REST API' }}</li>
+                        <li>✅ {{ t('typescript_definitions') or 'TypeScript definitions included' }}</li>
                     </ul>
                 </div>
             </div>

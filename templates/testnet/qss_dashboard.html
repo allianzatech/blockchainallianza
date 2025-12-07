@@ -270,18 +270,18 @@
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div>
                                 <p class="text-slate-400 text-sm">Quantum Security</p>
-                                <p class="text-lg font-semibold">${data.quantum_security_available ? '✅ Disponível' : '❌ Indisponível'}</p>
+                                <p class="text-lg font-semibold">${data.quantum_security_available ? '✅ ' + (typeof t !== 'undefined' && t ? t('available') : 'Available') : '❌ ' + (typeof t !== 'undefined' && t ? t('not_available') : 'Not Available')}</p>
                             </div>
                             <div>
                                 <p class="text-slate-400 text-sm">ALZ-NIEV</p>
-                                <p class="text-lg font-semibold">${data.alz_niev_available ? '✅ Disponível' : '❌ Indisponível'}</p>
+                                <p class="text-lg font-semibold">${data.alz_niev_available ? '✅ ' + (typeof t !== 'undefined' && t ? t('available') : 'Available') : '❌ ' + (typeof t !== 'undefined' && t ? t('not_available') : 'Not Available')}</p>
                             </div>
                             <div>
-                                <p class="text-slate-400 text-sm">Chains Suportadas</p>
+                                <p class="text-slate-400 text-sm">${typeof t !== 'undefined' && t ? t('supported_chains') : 'Supported Chains'}</p>
                                 <p class="text-lg font-semibold">${data.supported_chains?.length || 11}</p>
                             </div>
                             <div>
-                                <p class="text-slate-400 text-sm">Algoritmos PQC</p>
+                                <p class="text-slate-400 text-sm">${typeof t !== 'undefined' && t ? t('pqc_algorithms') : 'PQC Algorithms'}</p>
                                 <p class="text-lg font-semibold">${data.signature_schemes?.length || 3}</p>
                             </div>
                         </div>

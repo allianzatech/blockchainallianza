@@ -559,6 +559,13 @@ TRANSLATIONS = {
         'merkle_proof': 'Merkle Proof',
         'use_instructions_data': 'Use instructions.data in OP_RETURN',
         'send_transaction': 'Send the transaction with transactionData',
+        'support_bitcoin_ethereum': 'Support for Bitcoin, Ethereum, Polygon, BSC, Solana, Avalanche, Base',
+        'quantum_proof_generation_verification': 'Quantum proof generation and verification (ML-DSA)',
+        'anchoring_bitcoin_evm': 'Anchoring on Bitcoin (OP_RETURN) and EVM (Smart Contracts)',
+        'typescript_definitions': 'TypeScript definitions included',
+        'qss_api_status': 'QSS API Status',
+        'loading': 'Loading...',
+        'loading_information': 'Loading information...',
     }
 }
 
