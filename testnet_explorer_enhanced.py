@@ -132,6 +132,68 @@ class EnhancedTestnetExplorer:
     # MÉTODOS MELHORADOS DE TRANSAÇÕES
     # =========================================================================
     
+    def get_transaction_by_hash(self, tx_hash: str) -> Optional[Dict]:
+        """Retorna uma transação específica pelo hash"""
+        try:
+            # 1. Procurar em transações pendentes de todos os shards
+            if hasattr(self.blockchain, 'pending_transactions'):
+                if isinstance(self.blockchain.pending_transactions, dict):
+                    # pending_transactions é um dicionário por shard
+                    for shard_id, shard_pending in self.blockchain.pending_transactions.items():
+                        if isinstance(shard_pending, list):
+                            for tx in shard_pending:
+                                if isinstance(tx, dict):
+                                    if tx.get("id") == tx_hash or tx.get("tx_hash") == tx_hash or tx.get("hash") == tx_hash:
+                                        return self._format_transaction_enhanced(tx)
+                elif isinstance(self.blockchain.pending_transactions, list):
+                    # Fallback: se for lista
+                    for tx in self.blockchain.pending_transactions:
+                        if isinstance(tx, dict):
+                            if tx.get("id") == tx_hash or tx.get("tx_hash") == tx_hash or tx.get("hash") == tx_hash:
+                                return self._format_transaction_enhanced(tx)
+            
+            # 2. Procurar no banco de dados
+            try:
+                from db_manager import DBManager
+                db_manager = DBManager()
+                db_txs = db_manager.execute_query(
+                    "SELECT id, sender, receiver, amount, type, timestamp, network, is_public FROM transactions_history WHERE id = ?",
+                    (tx_hash,)
+                )
+                if db_txs:
+                    tx_id, sender, receiver, amount, tx_type, timestamp, network, is_public = db_txs[0]
+                    tx = {
+                        "id": tx_id,
+                        "hash": tx_id,
+                        "tx_hash": tx_id,
+                        "sender": sender,
+                        "receiver": receiver,
+                        "amount": amount,
+                        "type": tx_type,
+                        "timestamp": timestamp,
+                        "network": network or "allianza",
+                        "is_public": bool(is_public) if is_public is not None else True
+                    }
+                    return self._format_transaction_enhanced(tx)
+            except Exception as db_err:
+                pass
+            
+            # 3. Procurar nos blocos
+            blocks = self.get_recent_blocks(limit=100)
+            for block in blocks:
+                transactions = block.get("transactions", [])
+                if isinstance(transactions, list):
+                    for tx in transactions:
+                        if isinstance(tx, dict):
+                            if tx.get("id") == tx_hash or tx.get("tx_hash") == tx_hash or tx.get("hash") == tx_hash:
+                                return self._format_transaction_enhanced(tx)
+            
+            return None
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return None
+    
     def get_recent_transactions(self, limit: int = 50) -> List[Dict]:
         """Retorna transações recentes com informações detalhadas"""
         try:
