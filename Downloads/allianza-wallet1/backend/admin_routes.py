@@ -416,12 +416,26 @@ def admin_unstake():
 @admin_bp.route('/admin/process-payments', methods=['POST'])
 @admin_required
 def process_payments():
-    data = request.json
-    payment_ids = data.get('payment_ids', [])
-    admin_user = data.get('admin_user', 'admin')
-    
-    if not payment_ids:
-        return jsonify({"error": "Nenhum pagamento selecionado"}), 400
+    try:
+        data = request.json or {}
+        payment_ids = data.get('payment_ids', [])
+        admin_user = data.get('admin_user', 'admin')
+        
+        print(f"📥 Dados recebidos: {data}")
+        print(f"📋 payment_ids: {payment_ids} (tipo: {type(payment_ids)})")
+        
+        # ✅ Aceitar tanto lista quanto string única
+        if isinstance(payment_ids, (int, str)):
+            payment_ids = [int(payment_ids)]
+        elif not isinstance(payment_ids, list):
+            payment_ids = []
+        
+        if not payment_ids:
+            print("❌ Nenhum payment_id fornecido")
+            return jsonify({"error": "Nenhum pagamento selecionado. Envie 'payment_ids' como array ou número único."}), 400
+    except Exception as e:
+        print(f"❌ Erro ao processar requisição: {e}")
+        return jsonify({"error": f"Erro ao processar requisição: {str(e)}"}), 400
     
     print(f"🔄 Processando {len(payment_ids)} pagamentos: {payment_ids}")
     

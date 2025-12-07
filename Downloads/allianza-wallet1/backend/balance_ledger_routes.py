@@ -58,27 +58,50 @@ def token_required(f):
     return decorated_function
 
 def get_user_id_from_token(token):
-    """Extrair user_id do token mock"""
+    """Extrair user_id do token mock - formato: mock_token_{user_id}"""
     try:
+        # ✅ Extrair user_id do formato mock_token_{user_id}
         parts = token.split("_")
         if len(parts) >= 3 and parts[0] == "mock" and parts[1] == "token":
-            return int(parts[2])
-    except (ValueError, IndexError):
-        pass
+            user_id = int(parts[2])
+            # ✅ Verificar se o user_id existe no banco (validação)
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT id FROM users WHERE id = %s", (user_id,))
+            user = cursor.fetchone()
+            conn.close()
+            if user:
+                return user_id
+            else:
+                print(f"⚠️ Token contém user_id {user_id} mas usuário não existe no banco")
+    except (ValueError, IndexError, Exception) as e:
+        print(f"⚠️ Erro ao extrair user_id do token '{token}': {e}")
     return None
 
 
 @balance_ledger_bp.route('/balances/me', methods=['GET'])
 @token_required
 def get_my_balance():
-    """Obter saldo do usuário autenticado"""
+    """Obter saldo do usuário autenticado - BUSCA REAL DO BANCO"""
     try:
         user_id = request.user_id
         
+        if not user_id:
+            return jsonify({"error": "User ID não encontrado no token"}), 401
+        
+        print(f"💰 Buscando saldo para user_id: {user_id}")
+        
         conn = get_db_connection()
+        # ✅ psycopg (psycopg3) já retorna dict_row por padrão
         cursor = conn.cursor()
         
-        # Buscar saldo do usuário
+        # ✅ Buscar email do usuário para debug
+        cursor.execute("SELECT email FROM users WHERE id = %s", (user_id,))
+        user = cursor.fetchone()
+        user_email = user.get('email', 'unknown') if user else 'unknown'
+        print(f"📧 Usuário: {user_email} (ID: {user_id})")
+        
+        # ✅ Buscar saldo do usuário (SEMPRE DO BANCO REAL - não mock)
         cursor.execute("""
             SELECT 
                 user_id,
@@ -88,13 +111,13 @@ def get_my_balance():
                 staking_balance,
                 updated_at
             FROM balances
-            WHERE user_id = %s
+            WHERE user_id = %s AND asset = 'ALZ'
         """, (user_id,))
         
         balance_row = cursor.fetchone()
         
         if not balance_row:
-            # Criar saldo inicial se não existir
+            # ✅ Criar saldo inicial se não existir (ZERO - não usar mock)
             cursor.execute("""
                 INSERT INTO balances (user_id, asset, available, locked, staking_balance)
                 VALUES (%s, 'ALZ', 0.0, 0.0, 0.0)
@@ -102,20 +125,42 @@ def get_my_balance():
             """, (user_id,))
             balance_row = cursor.fetchone()
             conn.commit()
+            print(f"✅ Saldo inicial criado para user_id {user_id}: 0 ALZ")
+        
+        # ✅ Formatar resposta com valores REAIS do banco
+        # psycopg3 retorna dict_row, então podemos acessar como dict
+        if balance_row:
+            available = float(balance_row.get('available') or 0)
+            locked = float(balance_row.get('locked') or 0)
+            staking = float(balance_row.get('staking_balance') or 0)
+            total = available + locked + staking
+            
+            print(f"💰 Saldo encontrado para {user_email}: available={available}, locked={locked}, staking={staking}, total={total}")
+            
+            balance_data = {
+                "user_id": balance_row.get('user_id', user_id),
+                "asset": balance_row.get('asset', 'ALZ'),
+                "available": available,
+                "locked": locked,
+                "staking_balance": staking,
+                "total": total,
+                "updated_at": balance_row.get('updated_at').isoformat() if balance_row.get('updated_at') else None
+            }
+        else:
+            # Fallback se balance_row for None (não deveria acontecer)
+            print(f"⚠️ balance_row é None para user_id {user_id}")
+            balance_data = {
+                "user_id": user_id,
+                "asset": 'ALZ',
+                "available": 0,
+                "locked": 0,
+                "staking_balance": 0,
+                "total": 0,
+                "updated_at": None
+            }
         
         cursor.close()
         conn.close()
-        
-        # Formatar resposta
-        balance_data = {
-            "user_id": balance_row['user_id'],
-            "asset": balance_row['asset'],
-            "available": float(balance_row['available']),
-            "locked": float(balance_row['locked']),
-            "staking_balance": float(balance_row['staking_balance']),
-            "total": float(balance_row['available']) + float(balance_row['locked']) + float(balance_row['staking_balance']),
-            "updated_at": balance_row['updated_at'].isoformat() if balance_row['updated_at'] else None
-        }
         
         return jsonify({
             "success": True,
@@ -170,24 +215,25 @@ def get_ledger_history():
             WHERE user_id = %s
         """, (user_id,))
         
-        total_count = cursor.fetchone()['total']
+        total_result = cursor.fetchone()
+        total_count = total_result.get('total', 0) if total_result else 0
         
         cursor.close()
         conn.close()
         
-        # Formatar resposta
+        # ✅ Formatar resposta com valores REAIS do banco
         history = []
         for entry in entries:
             history.append({
-                "id": entry['id'],
-                "user_id": entry['user_id'],
-                "asset": entry['asset'],
-                "amount": float(entry['amount']),
-                "entry_type": entry['entry_type'],
-                "related_id": entry['related_id'],
-                "description": entry['description'],
-                "created_at": entry['created_at'].isoformat() if entry['created_at'] else None,
-                "idempotency_key": entry['idempotency_key']
+                "id": entry.get('id'),
+                "user_id": entry.get('user_id'),
+                "asset": entry.get('asset', 'ALZ'),
+                "amount": float(entry.get('amount', 0)),
+                "entry_type": entry.get('entry_type'),
+                "related_id": entry.get('related_id'),
+                "description": entry.get('description', ''),
+                "created_at": entry.get('created_at').isoformat() if entry.get('created_at') else None,
+                "idempotency_key": entry.get('idempotency_key')
             })
         
         return jsonify({
@@ -263,8 +309,11 @@ def login():
         cursor.close()
         conn.close()
         
-        # Gerar token mock (em produção use JWT)
+        # ✅ Gerar token que identifica o usuário
+        # Formato: mock_token_{user_id} - o user_id está no token
         token = f"mock_token_{user['id']}"
+        
+        print(f"🔑 Token gerado para usuário {user['id']} ({user['email']}): {token}")
         
         return jsonify({
             "success": True,
