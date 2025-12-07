@@ -132,7 +132,13 @@ class TestnetFaucet:
             # Calcular saldo inicial do faucet (10% do supply total = 100 milhões)
             FAUCET_INITIAL_BALANCE = int(TOTAL_SUPPLY * 0.10)  # 10% do supply total
             
-            # Verificar se a carteira do faucet existe
+            # Verificar se a carteira existe no banco de dados
+            existing_wallet = db_manager.execute_query(
+                "SELECT address, private_key FROM wallets WHERE address = ?",
+                (FAUCET_ADDRESS,)
+            )
+            
+            # Verificar se a carteira do faucet existe na memória
             if FAUCET_ADDRESS not in self.blockchain.wallets:
                 print(f"🔧 Criando carteira para o faucet: {FAUCET_ADDRESS}")
                 
@@ -169,6 +175,27 @@ class TestnetFaucet:
                 )
                 
                 print(f"✅ Carteira do faucet criada com sucesso! Saldo: {FAUCET_INITIAL_BALANCE:,} ALZ ({FAUCET_INITIAL_BALANCE/TOTAL_SUPPLY*100:.1f}% do supply)")
+            elif not existing_wallet or not existing_wallet[0] or not existing_wallet[0][1]:
+                # Carteira existe na memória mas não no banco ou sem chave privada
+                print(f"⚠️  Carteira do faucet existe na memória mas não no banco ou sem chave privada. Recriando...")
+                # Recriar carteira
+                private_key, public_key = AdvancedCrypto.generate_keypair()
+                encrypted_private_key = cipher.encrypt(
+                    private_key.private_bytes(
+                        encoding=serialization.Encoding.PEM,
+                        format=serialization.PrivateFormat.PKCS8,
+                        encryption_algorithm=serialization.NoEncryption()
+                    )
+                ).decode()
+                public_key_pem = public_key.public_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PublicFormat.SubjectPublicKeyInfo
+                ).decode()
+                db_manager.execute_commit(
+                    "INSERT OR REPLACE INTO wallets (address, vtx, staked_vtx, public_key, private_key, blockchain_source, external_address) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (FAUCET_ADDRESS, FAUCET_INITIAL_BALANCE, 0, public_key_pem, encrypted_private_key, "allianza", None)
+                )
+                print(f"✅ Chave privada do faucet recriada e salva no banco!")
             else:
                 # Verificar se tem saldo suficiente
                 balance = self.blockchain.wallets[FAUCET_ADDRESS].get("ALZ", 0)
@@ -194,31 +221,66 @@ class TestnetFaucet:
             from allianza_blockchain import cipher
             from cryptography.hazmat.primitives import serialization
             
+            # Garantir que a carteira existe antes de buscar a chave
+            self._ensure_faucet_wallet()
+            
             # Buscar chave privada criptografada do banco
             rows = db_manager.execute_query(
                 "SELECT private_key FROM wallets WHERE address = ?",
                 (FAUCET_ADDRESS,)
             )
             
-            if not rows or not rows[0][0]:
-                print(f"❌ Chave privada do faucet não encontrada no banco de dados")
-                return None
+            if not rows or not rows[0] or not rows[0][0]:
+                print(f"⚠️  Chave privada do faucet não encontrada no banco de dados. Tentando criar carteira...")
+                # Tentar criar a carteira novamente
+                self._ensure_faucet_wallet()
+                # Tentar buscar novamente
+                rows = db_manager.execute_query(
+                    "SELECT private_key FROM wallets WHERE address = ?",
+                    (FAUCET_ADDRESS,)
+                )
+                if not rows or not rows[0] or not rows[0][0]:
+                    print(f"❌ Não foi possível criar/obter chave privada do faucet")
+                    return None
             
             encrypted_private_key = rows[0][0]
             
-            # Descriptografar chave privada
-            private_key_pem = cipher.decrypt(encrypted_private_key.encode())
-            private_key = serialization.load_pem_private_key(
-                private_key_pem,
-                password=None,
-                backend=None
-            )
+            if not encrypted_private_key:
+                print(f"❌ Chave privada criptografada está vazia")
+                return None
             
-            return private_key
+            # Descriptografar chave privada
+            try:
+                # Verificar se já é bytes ou string
+                if isinstance(encrypted_private_key, bytes):
+                    private_key_pem = cipher.decrypt(encrypted_private_key)
+                else:
+                    private_key_pem = cipher.decrypt(encrypted_private_key.encode())
+                
+                private_key = serialization.load_pem_private_key(
+                    private_key_pem,
+                    password=None,
+                    backend=None
+                )
+                
+                print(f"✅ Chave privada do faucet obtida com sucesso")
+                return private_key
+            except Exception as decrypt_error:
+                print(f"❌ Erro ao descriptografar chave privada: {decrypt_error}")
+                import traceback
+                traceback.print_exc()
+                return None
+            
         except Exception as e:
             print(f"❌ Erro ao obter chave privada do faucet: {e}")
             import traceback
             traceback.print_exc()
+            # Tentar criar a carteira novamente em caso de erro
+            try:
+                print(f"🔄 Tentando recriar carteira do faucet...")
+                self._ensure_faucet_wallet()
+            except Exception as recreate_error:
+                print(f"❌ Erro ao recriar carteira: {recreate_error}")
             return None
     
     def _get_client_ip(self, request) -> str:
