@@ -372,16 +372,17 @@ def process_automatic_payment(email, amount_alz, method, external_id):
             # ✅ NÃO gerar wallet - usuário usará wallet Allianza (saldo bloqueado)
             wallet_address = None
             private_key = None
-            temp_password = f"temp_{secrets.token_hex(8)}"
-            hashed_password = generate_password_hash(temp_password)
+            # ✅ NÃO criar senha temporária - deixar NULL para permitir registro posterior
+            hashed_password = None
+            nickname = f"User_{email.split('@')[0]}"
             
             cursor.execute(
                 "INSERT INTO users (email, password, wallet_address, private_key, nickname) VALUES (%s, %s, %s, %s, %s) RETURNING id",
-                (email, hashed_password, wallet_address, private_key, f"User_{email.split('@')[0]}")
+                (email, hashed_password, wallet_address, private_key, nickname)
             )
             user_id = cursor.fetchone()['id']
             user_created = True
-            print(f"👤 Usuário criado: {email} - Wallet Allianza (será gerada no login)")
+            print(f"👤 Usuário criado SEM senha (será definida no registro): {email} (ID: {user_id})")
         else:
             user_id = user['id']
             wallet_address = user['wallet_address']  # Pode ser None se não tiver wallet ainda
@@ -687,8 +688,9 @@ def site_purchase():
                 private_key = None
                 print(f"💼 Wallet não fornecida - tokens serão bloqueados na wallet Allianza")
             
-            temp_password = f"temp_{secrets.token_hex(8)}"
-            hashed_password = generate_password_hash(temp_password)
+            # ✅ NÃO criar senha temporária - deixar NULL para permitir registro posterior
+            # O usuário completará o registro quando se cadastrar
+            hashed_password = None
             nickname = f"User_{email.split('@')[0]}"
             
             cursor.execute(
@@ -697,7 +699,7 @@ def site_purchase():
             )
             user_id = cursor.fetchone()['id']
             user_created = True
-            print(f"👤 Usuário criado com senha temporária: {email}")
+            print(f"👤 Usuário criado SEM senha (será definida no registro): {email} (ID: {user_id})")
         else:
             user_id = user['id']
             # ✅ Se usuário forneceu wallet e quer usar própria, atualizar
@@ -1057,8 +1059,8 @@ def create_direct_crypto_payment():
                 # ✅ NÃO gerar wallet - usuário usará wallet Allianza (saldo bloqueado)
                 wallet_address = None
                 private_key = None
-                temp_password = f"temp_{secrets.token_hex(8)}"
-                hashed_password = generate_password_hash(temp_password)
+                # ✅ NÃO criar senha temporária - deixar NULL para permitir registro posterior
+                hashed_password = None
                 nickname = f"User_{email.split('@')[0]}"
                 
                 cursor.execute(
@@ -1066,7 +1068,7 @@ def create_direct_crypto_payment():
                     (email, hashed_password, nickname, wallet_address, private_key)
                 )
                 user_id = cursor.fetchone()['id']
-                print(f"👤 Usuário criado: {email} - Wallet Allianza (será gerada no login)")
+                print(f"👤 Usuário criado SEM senha (será definida no registro): {email} (ID: {user_id})")
             else:
                 user_id = user['id']
                 wallet_address = user['wallet_address']  # Pode ser None se não tiver wallet ainda
