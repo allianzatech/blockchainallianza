@@ -4093,8 +4093,8 @@ def serve_css():
         return Response(basic_css, mimetype='text/css')
 
 @app.route('/health', methods=['GET'])
-def health_check():
-    """Health check geral do sistema"""
+def system_health_check():
+    """Health check geral do sistema (detalhado)"""
     return jsonify({
         "status": "healthy",
         "service": "Allianza Blockchain",
