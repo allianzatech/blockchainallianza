@@ -303,10 +303,10 @@
                 } else {
                     const resultType = 'error';
                     const description = {
-                        statusTitle: 'Erro',
-                        description: data.error || 'Erro ao verificar assinatura'
+                        statusTitle: 'Error',
+                        description: data.error || 'Error verifying signature'
                     };
-                    createModernModal('Verificação QRS-3', data, resultType, description);
+                    createModernModal('QRS-3 Verification', data, resultType, description);
                     resultDiv.innerHTML = '';
                 }
             } catch (error) {
@@ -316,10 +316,10 @@
                 };
                 const resultType = 'error';
                 const description = {
-                    statusTitle: 'Erro ao Processar',
+                    statusTitle: 'Error Processing',
                     description: error.message
                 };
-                createModernModal('Verificação QRS-3', errorData, resultType, description);
+                createModernModal('QRS-3 Verification', errorData, resultType, description);
                 resultDiv.innerHTML = '';
             }
         });

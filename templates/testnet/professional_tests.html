@@ -53,7 +53,7 @@
                     <h3 class="font-semibold mb-2">1.1. {{ t('pqc_key_generation') or 'PQC Key Generation' }}</h3>
                     <p class="text-sm text-gray-400 mb-3">ML-DSA, ML-KEM, SPHINCS+</p>
                     <button onclick="runTest('1_1_pqc_key_generation')" class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded font-bold">
-                        Executar
+                        Execute
                     </button>
                     <div id="result_1_1_pqc_key_generation" class="mt-2 text-sm hidden"></div>
                 </div>
@@ -61,7 +61,7 @@
                     <h3 class="font-semibold mb-2">1.2. {{ t('qrs3_signature') or 'QRS-3 Signature' }}</h3>
                     <p class="text-sm text-gray-400 mb-3">ECDSA + ML-DSA + SPHINCS+</p>
                     <button onclick="runTest('1_2_qrs3_signature')" class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded font-bold">
-                        Executar
+                        Execute
                     </button>
                     <div id="result_1_2_qrs3_signature" class="mt-2 text-sm hidden"></div>
                 </div>
@@ -69,7 +69,7 @@
                     <h3 class="font-semibold mb-2">1.3. {{ t('pqc_audit') or 'PQC Audit' }}</h3>
                     <p class="text-sm text-gray-400 mb-3">Verificação e validação</p>
                     <button onclick="runTest('1_3_pqc_audit_verification')" class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded font-bold">
-                        Executar
+                        Execute
                     </button>
                     <div id="result_1_3_pqc_audit_verification" class="mt-2 text-sm hidden"></div>
                 </div>
@@ -84,15 +84,15 @@
                     <h3 class="font-semibold mb-2">2.1. {{ t('proof_of_lock') or 'Proof-of-Lock' }}</h3>
                     <p class="text-sm text-gray-400 mb-3">Polygon → Bitcoin</p>
                     <button onclick="runTest('2_1_proof_of_lock')" class="w-full bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-bold">
-                        Executar
+                        Execute
                     </button>
                     <div id="result_2_1_proof_of_lock" class="mt-2 text-sm hidden"></div>
                 </div>
                 <div class="bg-gray-800 p-4 rounded-lg">
                     <h3 class="font-semibold mb-2">2.2. {{ t('gasless_interoperability') or 'Gasless Interoperability' }}</h3>
-                    <p class="text-sm text-gray-400 mb-3">Relay sem gas</p>
+                    <p class="text-sm text-gray-400 mb-3">Gasless relay</p>
                     <button onclick="runTest('2_2_gasless_interoperability')" class="w-full bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-bold">
-                        Executar
+                        Execute
                     </button>
                     <div id="result_2_2_gasless_interoperability" class="mt-2 text-sm hidden"></div>
                 </div>
@@ -100,7 +100,7 @@
                     <h3 class="font-semibold mb-2">2.3. {{ t('bitcoin_to_evm') or 'Bitcoin → EVM' }}</h3>
                     <p class="text-sm text-gray-400 mb-3">{{ t('real_conversion') or 'Real conversion' }}</p>
                     <button onclick="runTest('2_3_bitcoin_evm_conversion')" class="w-full bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-bold">
-                        Executar
+                        Execute
                     </button>
                     <div id="result_2_3_bitcoin_evm_conversion" class="mt-2 text-sm hidden"></div>
                 </div>
@@ -138,7 +138,7 @@
                     <h3 class="font-semibold mb-2">5. Smart Contracts</h3>
                     <p class="text-sm text-gray-400 mb-3">ALZ-VM execution</p>
                     <button onclick="runTest('5_smart_contracts')" class="w-full bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded font-bold">
-                        Executar
+                        Execute
                     </button>
                     <div id="result_5_smart_contracts" class="mt-2 text-sm hidden"></div>
                 </div>
@@ -176,7 +176,7 @@
             </div>
         </div>
 
-        <!-- Botão Executar Todos -->
+        <!-- Execute All Button -->
         <div class="mb-8">
             <button onclick="runAllTests()" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-6 py-4 rounded-lg font-bold text-lg">
                 🚀 {{ t('execute_all_tests') or 'Execute All Tests' }}
@@ -295,10 +295,10 @@
         function copyResults() {
             const content = document.getElementById('allResultsContent').textContent;
             navigator.clipboard.writeText(content).then(() => {
-                alert('✅ Resultados copiados para a área de transferência!');
+                alert('✅ Results copied to clipboard!');
             }).catch(err => {
-                console.error('Erro ao copiar:', err);
-                alert('❌ Erro ao copiar. Tente selecionar e copiar manualmente.');
+                console.error('Error copying:', err);
+                alert('❌ Error copying. Try selecting and copying manually.');
             });
         }
 

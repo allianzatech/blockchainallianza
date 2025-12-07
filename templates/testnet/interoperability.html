@@ -101,7 +101,7 @@
             </p>
         </div>
 
-        <!-- Transferência Real -->
+        <!-- Real Transfer -->
         <div class="main-card mb-6">
             <div class="flex items-center gap-3 mb-4">
                 <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
@@ -183,7 +183,7 @@
             </div>
 
             <button onclick="executeRealTransfer()" class="btn-primary">
-                <i class="fas fa-rocket mr-2"></i>🚀 Executar Transferência REAL
+                <i class="fas fa-rocket mr-2"></i>🚀 Execute REAL Transfer
             </button>
 
             <div id="transferResult" class="mt-4 hidden"></div>
@@ -249,7 +249,7 @@
             }
         }
 
-        // Executar transferência real
+        // Execute real transfer
         async function executeRealTransfer() {
             const sourceChain = document.getElementById('sourceChain').value;
             const targetChain = document.getElementById('targetChain').value;
@@ -258,18 +258,18 @@
             const recipient = document.getElementById('recipient').value.trim();
 
             if (!recipient) {
-                alert('Por favor, insira um endereço destinatário');
+                alert('Please enter a recipient address');
                 return;
             }
 
             if (amount <= 0) {
-                alert('A quantidade deve ser maior que zero');
+                alert('Amount must be greater than zero');
                 return;
             }
 
             const resultDiv = document.getElementById('transferResult');
             resultDiv.classList.remove('hidden');
-            resultDiv.innerHTML = '<p class="text-blue-400 flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i>⏳ Executando transferência REAL...<br><span class="text-sm text-gray-400">Isso pode levar alguns segundos...</span></p>';
+            resultDiv.innerHTML = '<p class="text-blue-400 flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i>⏳ Executing REAL transfer...<br><span class="text-sm text-gray-400">This may take a few seconds...</span></p>';
 
             try {
                 const response = await fetch('/api/interoperability/transfer-real', {
@@ -287,7 +287,7 @@
                 const contentType = response.headers.get('content-type');
                 if (!contentType || !contentType.includes('application/json')) {
                     const text = await response.text();
-                    throw new Error(`Resposta não é JSON. Status: ${response.status}. Resposta: ${text.substring(0, 200)}`);
+                    throw new Error(`Response is not JSON. Status: ${response.status}. Response: ${text.substring(0, 200)}`);
                 }
 
                 const data = await response.json();
