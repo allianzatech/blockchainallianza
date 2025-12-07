@@ -3,7 +3,7 @@
 Faucet, Explorer, Verificador QRS-3, Testes Públicos
 """
 
-from flask import Blueprint, jsonify, request, render_template, send_file, make_response
+from flask import Blueprint, jsonify, request, render_template, send_file, make_response, Response
 from pathlib import Path
 import json
 import os
@@ -149,9 +149,13 @@ def init_testnet_routes(app, blockchain_instance, quantum_security_instance, bri
 # ROTAS PRINCIPAIS
 # =============================================================================
 
-@testnet_bp.route('/')
+@testnet_bp.route('/', methods=['GET', 'HEAD'])
 def testnet_dashboard():
     """Dashboard principal da testnet"""
+    # Para HEAD requests (monitores), retornar apenas status OK
+    if request.method == 'HEAD':
+        return Response(status=200)
+    
     network_info = get_network_info()
     stats = explorer.get_network_stats() if explorer else {
         "total_blocks": 0,
