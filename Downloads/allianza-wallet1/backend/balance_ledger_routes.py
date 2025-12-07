@@ -69,6 +69,7 @@ def get_user_id_from_token(token):
             cursor = conn.cursor()
             cursor.execute("SELECT id FROM users WHERE id = %s", (user_id,))
             user = cursor.fetchone()
+            cursor.close()
             conn.close()
             if user:
                 return user_id
@@ -76,6 +77,8 @@ def get_user_id_from_token(token):
                 print(f"⚠️ Token contém user_id {user_id} mas usuário não existe no banco")
     except (ValueError, IndexError, Exception) as e:
         print(f"⚠️ Erro ao extrair user_id do token '{token}': {e}")
+        import traceback
+        traceback.print_exc()
     return None
 
 
@@ -95,11 +98,28 @@ def get_my_balance():
         # ✅ psycopg (psycopg3) já retorna dict_row por padrão
         cursor = conn.cursor()
         
-        # ✅ Buscar email do usuário para debug
-        cursor.execute("SELECT email FROM users WHERE id = %s", (user_id,))
+        # ✅ Buscar email e nickname do usuário para debug
+        cursor.execute("SELECT email, nickname FROM users WHERE id = %s", (user_id,))
         user = cursor.fetchone()
         user_email = user.get('email', 'unknown') if user else 'unknown'
-        print(f"📧 Usuário: {user_email} (ID: {user_id})")
+        user_nickname = user.get('nickname', 'unknown') if user else 'unknown'
+        print(f"📧 Usuário: {user_email} ({user_nickname}) - ID: {user_id}")
+        
+        # ✅ DEBUG: Verificar se há pagamentos pendentes para este email
+        cursor.execute("""
+            SELECT id, email, amount, status, user_id, wallet_address 
+            FROM payments 
+            WHERE email = %s AND status = 'pending'
+            ORDER BY id DESC
+            LIMIT 5
+        """, (user_email,))
+        pending_payments = cursor.fetchall()
+        if pending_payments:
+            print(f"📋 Pagamentos pendentes encontrados para {user_email}: {len(pending_payments)}")
+            for payment in pending_payments:
+                print(f"   - Payment ID {payment.get('id')}: {payment.get('amount')} | user_id={payment.get('user_id')} | wallet={payment.get('wallet_address')}")
+        else:
+            print(f"⚠️ Nenhum pagamento pendente encontrado para {user_email}")
         
         # ✅ Buscar saldo do usuário (SEMPRE DO BANCO REAL - não mock)
         cursor.execute("""
@@ -129,26 +149,55 @@ def get_my_balance():
         
         # ✅ Formatar resposta com valores REAIS do banco
         # psycopg3 retorna dict_row, então podemos acessar como dict
-        if balance_row:
-            available = float(balance_row.get('available') or 0)
-            locked = float(balance_row.get('locked') or 0)
-            staking = float(balance_row.get('staking_balance') or 0)
-            total = available + locked + staking
-            
-            print(f"💰 Saldo encontrado para {user_email}: available={available}, locked={locked}, staking={staking}, total={total}")
-            
-            balance_data = {
-                "user_id": balance_row.get('user_id', user_id),
-                "asset": balance_row.get('asset', 'ALZ'),
-                "available": available,
-                "locked": locked,
-                "staking_balance": staking,
-                "total": total,
-                "updated_at": balance_row.get('updated_at').isoformat() if balance_row.get('updated_at') else None
-            }
-        else:
-            # Fallback se balance_row for None (não deveria acontecer)
-            print(f"⚠️ balance_row é None para user_id {user_id}")
+        try:
+            if balance_row:
+                # ✅ Acesso seguro aos campos do dict
+                available = float(balance_row.get('available') or 0)
+                locked = float(balance_row.get('locked') or 0)
+                staking = float(balance_row.get('staking_balance') or 0)
+                total = available + locked + staking
+                
+                print(f"💰 Saldo encontrado para {user_email} ({user_nickname}): available={available}, locked={locked}, staking={staking}, total={total}")
+                
+                # ✅ Tratamento seguro para updated_at
+                updated_at_value = balance_row.get('updated_at')
+                updated_at_str = None
+                if updated_at_value:
+                    try:
+                        if hasattr(updated_at_value, 'isoformat'):
+                            updated_at_str = updated_at_value.isoformat()
+                        else:
+                            updated_at_str = str(updated_at_value)
+                    except Exception as e:
+                        print(f"⚠️ Erro ao formatar updated_at: {e}")
+                        updated_at_str = None
+                
+                balance_data = {
+                    "user_id": balance_row.get('user_id', user_id),
+                    "asset": balance_row.get('asset', 'ALZ'),
+                    "available": available,
+                    "locked": locked,
+                    "staking_balance": staking,
+                    "total": total,
+                    "updated_at": updated_at_str
+                }
+            else:
+                # Fallback se balance_row for None (não deveria acontecer)
+                print(f"⚠️ balance_row é None para user_id {user_id}")
+                balance_data = {
+                    "user_id": user_id,
+                    "asset": 'ALZ',
+                    "available": 0,
+                    "locked": 0,
+                    "staking_balance": 0,
+                    "total": 0,
+                    "updated_at": None
+                }
+        except Exception as e:
+            print(f"❌ Erro ao formatar balance_data: {e}")
+            import traceback
+            traceback.print_exc()
+            # Retornar saldo zero em caso de erro
             balance_data = {
                 "user_id": user_id,
                 "asset": 'ALZ',
@@ -158,9 +207,11 @@ def get_my_balance():
                 "total": 0,
                 "updated_at": None
             }
-        
-        cursor.close()
-        conn.close()
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
         
         return jsonify({
             "success": True,
@@ -171,7 +222,20 @@ def get_my_balance():
         print(f"❌ Erro ao buscar saldo: {e}")
         import traceback
         traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
+        # ✅ Retornar saldo zero em caso de erro, mas ainda assim retornar JSON válido
+        return jsonify({
+            "success": True,
+            "balance": {
+                "user_id": request.user_id if hasattr(request, 'user_id') else None,
+                "asset": 'ALZ',
+                "available": 0,
+                "locked": 0,
+                "staking_balance": 0,
+                "total": 0,
+                "updated_at": None
+            },
+            "error": str(e)
+        }), 200  # Retornar 200 para não quebrar o frontend, mas incluir erro na resposta
 
 
 @balance_ledger_bp.route('/ledger/history', methods=['GET'])
@@ -285,13 +349,28 @@ def login():
         # Verificar senha (simplificado - em produção use check_password_hash)
         from werkzeug.security import check_password_hash
         
-        if not check_password_hash(user['password'], password):
+        # ✅ Acesso seguro aos campos do dict
+        user_password = user.get('password')
+        if not user_password:
             cursor.close()
             conn.close()
             return jsonify({"error": "Credenciais inválidas"}), 401
         
+        try:
+            if not check_password_hash(user_password, password):
+                cursor.close()
+                conn.close()
+                return jsonify({"error": "Credenciais inválidas"}), 401
+        except Exception as e:
+            print(f"❌ Erro ao verificar senha: {e}")
+            import traceback
+            traceback.print_exc()
+            cursor.close()
+            conn.close()
+            return jsonify({"error": "Erro ao verificar credenciais"}), 500
+        
         # ✅ GERAR WALLET AUTOMATICAMENTE SE NÃO TIVER (primeiro login)
-        wallet_address = user['wallet_address']
+        wallet_address = user.get('wallet_address')
         if not wallet_address:
             from generate_wallet import generate_polygon_wallet
             private_key, wallet_address = generate_polygon_wallet()
@@ -301,27 +380,31 @@ def login():
                 UPDATE users 
                 SET wallet_address = %s, private_key = %s 
                 WHERE id = %s
-            """, (wallet_address, private_key, user['id']))
+            """, (wallet_address, private_key, user.get('id')))
             
             conn.commit()
-            print(f"👛 Wallet gerada automaticamente no login: {wallet_address} para usuário {user['id']}")
+            print(f"👛 Wallet gerada automaticamente no login: {wallet_address} para usuário {user.get('id')}")
         
         cursor.close()
         conn.close()
         
         # ✅ Gerar token que identifica o usuário
         # Formato: mock_token_{user_id} - o user_id está no token
-        token = f"mock_token_{user['id']}"
+        user_id = user.get('id')
+        user_email = user.get('email', 'unknown')
+        user_nickname = user.get('nickname') or user_email.split('@')[0]  # ✅ Usar email se não tiver nickname
         
-        print(f"🔑 Token gerado para usuário {user['id']} ({user['email']}): {token}")
+        token = f"mock_token_{user_id}"
+        
+        print(f"🔑 Token gerado para usuário {user_id} ({user_email} - {user_nickname}): {token}")
         
         return jsonify({
             "success": True,
             "token": token,
             "user": {
-                "id": user['id'],
-                "email": user['email'],
-                "nickname": user['nickname'],
+                "id": user_id,
+                "email": user_email,
+                "nickname": user_nickname,  # ✅ Garantir que sempre tenha nickname
                 "wallet_address": wallet_address  # ✅ Retornar wallet_address atualizado (pode ter sido gerado)
             }
         }), 200
@@ -338,22 +421,102 @@ def register():
     """Registrar novo usuário"""
     try:
         data = request.json
-        email = data.get('email')
+        email = data.get('email', '').strip().lower()  # ✅ Normalizar email (trim + lowercase)
         password = data.get('password')
         nickname = data.get('nickname', email.split('@')[0])
         
         if not email or not password:
             return jsonify({"error": "Email e senha são obrigatórios"}), 400
         
+        print(f"📝 Tentativa de registro: email={email}, nickname={nickname}")
+        
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # Verificar se usuário já existe
-        cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
-        if cursor.fetchone():
+        # ✅ Verificar se usuário já existe (com email normalizado)
+        cursor.execute("SELECT id, password, nickname FROM users WHERE LOWER(TRIM(email)) = %s", (email,))
+        existing_user = cursor.fetchone()
+        
+        if existing_user:
+            user_id = existing_user.get('id')
+            existing_password = existing_user.get('password')
+            existing_nickname = existing_user.get('nickname')
+            
+            print(f"🔍 Usuário existente encontrado: ID={user_id}, tem_senha={bool(existing_password)}, senha={existing_password[:20] if existing_password else 'NULL'}...")
+            
+            # ✅ Verificar se o usuário já tem senha configurada
+            if existing_password and existing_password.strip():  # ✅ Verificar se não é NULL nem vazio
+                # Tentar verificar a senha fornecida com a senha existente
+                from werkzeug.security import check_password_hash
+                try:
+                    if check_password_hash(existing_password, password):
+                        # ✅ Senha correta - fazer login automaticamente
+                        print(f"✅ Senha correta - fazendo login automático para {email}")
+                        token = f"mock_token_{user_id}"
+                        cursor.close()
+                        conn.close()
+                        return jsonify({
+                            "success": True,
+                            "token": token,
+                            "user": {
+                                "id": user_id,
+                                "email": email,
+                                "nickname": existing_nickname or nickname
+                            },
+                            "message": "Login realizado com sucesso"
+                        }), 200
+                    else:
+                        # ❌ Senha incorreta
+                        print(f"❌ Senha incorreta para {email}")
+                        cursor.close()
+                        conn.close()
+                        return jsonify({"error": "Email já cadastrado. Senha incorreta. Use a opção de login."}), 400
+                except Exception as e:
+                    print(f"⚠️ Erro ao verificar senha: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    # Se houver erro na verificação, tratar como senha inválida e permitir atualizar
+                    print(f"⚠️ Tratando como senha inválida e permitindo atualização")
+            
+            # ✅ Usuário existe mas sem senha válida (NULL ou vazia) - permitir completar registro
+            print(f"✅ Email {email} existe mas sem senha válida (password={existing_password}) - completando registro (ID: {user_id})")
+            from werkzeug.security import generate_password_hash
+            hashed_password = generate_password_hash(password)
+            
+            # Atualizar senha e nickname
+            cursor.execute("""
+                UPDATE users 
+                SET password = %s, nickname = COALESCE(NULLIF(%s, ''), nickname), updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """, (hashed_password, nickname, user_id))
+            
+            conn.commit()
+            print(f"✅ Registro completado para usuário existente: {email} (ID: {user_id})")
+            
+            # Gerar token
+            token = f"mock_token_{user_id}"
+            
             cursor.close()
             conn.close()
-            return jsonify({"error": "Email já cadastrado"}), 400
+            
+            return jsonify({
+                "success": True,
+                "token": token,
+                "user": {
+                    "id": user_id,
+                    "email": email,
+                    "nickname": nickname or existing_nickname
+                },
+                "message": "Registro completado com sucesso"
+            }), 200
+        
+        # ✅ Verificar novamente com email normalizado (para evitar race condition)
+        cursor.execute("SELECT id FROM users WHERE LOWER(TRIM(email)) = %s", (email,))
+        if cursor.fetchone():
+            print(f"⚠️ Email {email} já existe (verificação dupla)")
+            cursor.close()
+            conn.close()
+            return jsonify({"error": "Email já cadastrado. Tente fazer login."}), 400
         
         # Gerar carteira
         from generate_wallet import generate_polygon_wallet
@@ -363,7 +526,7 @@ def register():
         from werkzeug.security import generate_password_hash
         hashed_password = generate_password_hash(password)
         
-        # Criar usuário
+        # Criar usuário (usando email normalizado)
         cursor.execute("""
             INSERT INTO users (email, password, nickname, wallet_address, private_key)
             VALUES (%s, %s, %s, %s, %s)

@@ -372,16 +372,17 @@ def process_automatic_payment(email, amount_alz, method, external_id):
             # ✅ NÃO gerar wallet - usuário usará wallet Allianza (saldo bloqueado)
             wallet_address = None
             private_key = None
-            temp_password = f"temp_{secrets.token_hex(8)}"
-            hashed_password = generate_password_hash(temp_password)
+            # ✅ NÃO criar senha temporária - deixar NULL para permitir registro posterior
+            hashed_password = None
+            nickname = f"User_{email.split('@')[0]}"
             
             cursor.execute(
                 "INSERT INTO users (email, password, wallet_address, private_key, nickname) VALUES (%s, %s, %s, %s, %s) RETURNING id",
-                (email, hashed_password, wallet_address, private_key, f"User_{email.split('@')[0]}")
+                (email, hashed_password, wallet_address, private_key, nickname)
             )
             user_id = cursor.fetchone()['id']
             user_created = True
-            print(f"👤 Usuário criado: {email} - Wallet Allianza (será gerada no login)")
+            print(f"👤 Usuário criado SEM senha (será definida no registro): {email} (ID: {user_id})")
         else:
             user_id = user['id']
             wallet_address = user['wallet_address']  # Pode ser None se não tiver wallet ainda
@@ -687,8 +688,9 @@ def site_purchase():
                 private_key = None
                 print(f"💼 Wallet não fornecida - tokens serão bloqueados na wallet Allianza")
             
-            temp_password = f"temp_{secrets.token_hex(8)}"
-            hashed_password = generate_password_hash(temp_password)
+            # ✅ NÃO criar senha temporária - deixar NULL para permitir registro posterior
+            # O usuário completará o registro quando se cadastrar
+            hashed_password = None
             nickname = f"User_{email.split('@')[0]}"
             
             cursor.execute(
@@ -697,7 +699,7 @@ def site_purchase():
             )
             user_id = cursor.fetchone()['id']
             user_created = True
-            print(f"👤 Usuário criado com senha temporária: {email}")
+            print(f"👤 Usuário criado SEM senha (será definida no registro): {email} (ID: {user_id})")
         else:
             user_id = user['id']
             # ✅ Se usuário forneceu wallet e quer usar própria, atualizar
@@ -725,11 +727,30 @@ def site_purchase():
         # ✅ SE NÃO TEM WALLET_ADDRESS, BLOQUEAR TOKENS (adicionar em locked)
         # O usuário verá o saldo bloqueado quando fizer login na wallet Allianza
         if not wallet_address_from_user or not use_own_wallet:
+            # ✅ Verificar saldo antes do UPDATE
             cursor.execute(
-                "UPDATE balances SET locked = locked + %s WHERE user_id = %s AND asset = 'ALZ'",
+                "SELECT available, locked, staking_balance FROM balances WHERE user_id = %s AND asset = 'ALZ'",
+                (user_id,)
+            )
+            balance_before = cursor.fetchone()
+            locked_before = balance_before.get('locked', 0) if balance_before else 0
+            print(f"📊 Saldo ANTES do bloqueio para user_id {user_id} ({email}): locked={locked_before}")
+            
+            cursor.execute(
+                "UPDATE balances SET locked = locked + %s, updated_at = CURRENT_TIMESTAMP WHERE user_id = %s AND asset = 'ALZ'",
                 (amount_alz, user_id)
             )
+            
+            # ✅ Verificar saldo DEPOIS do UPDATE
+            cursor.execute(
+                "SELECT available, locked, staking_balance FROM balances WHERE user_id = %s AND asset = 'ALZ'",
+                (user_id,)
+            )
+            balance_after = cursor.fetchone()
+            locked_after = balance_after.get('locked', 0) if balance_after else 0
             print(f"🔒 Tokens bloqueados: {amount_alz} ALZ adicionados em locked (usuário verá ao fazer login)")
+            print(f"📊 Saldo DEPOIS do bloqueio para user_id {user_id} ({email}): locked={locked_after} (era {locked_before})")
+            print(f"✅ UPDATE executado: {cursor.rowcount} linha(s) afetada(s)")
         else:
             # Se tem wallet externa, adicionar em available (será enviado depois)
             cursor.execute(
@@ -747,7 +768,30 @@ def site_purchase():
         )
         print(f"💾 Payment atualizado: user_id={user_id}, wallet_address={final_wallet_address or 'None (wallet Allianza)'}")
         
+        # ✅ Verificar saldo final antes do commit
+        cursor.execute(
+            "SELECT available, locked, staking_balance FROM balances WHERE user_id = %s AND asset = 'ALZ'",
+            (user_id,)
+        )
+        balance_final = cursor.fetchone()
+        if balance_final:
+            print(f"✅ Saldo FINAL antes do commit para user_id {user_id} ({email}): available={balance_final.get('available', 0)}, locked={balance_final.get('locked', 0)}, staking={balance_final.get('staking_balance', 0)}")
+        else:
+            print(f"⚠️ ATENÇÃO: Saldo não encontrado para user_id {user_id} ({email}) antes do commit!")
+        
         conn.commit()
+        print(f"✅ COMMIT executado com sucesso para user_id {user_id} ({email})")
+        
+        # ✅ Verificar saldo DEPOIS do commit (para confirmar que foi salvo)
+        cursor.execute(
+            "SELECT available, locked, staking_balance FROM balances WHERE user_id = %s AND asset = 'ALZ'",
+            (user_id,)
+        )
+        balance_after_commit = cursor.fetchone()
+        if balance_after_commit:
+            print(f"✅ Saldo CONFIRMADO após commit para user_id {user_id} ({email}): available={balance_after_commit.get('available', 0)}, locked={balance_after_commit.get('locked', 0)}, staking={balance_after_commit.get('staking_balance', 0)}")
+        else:
+            print(f"❌ ERRO: Saldo não encontrado após commit para user_id {user_id} ({email})!")
         
         # Registrar transação na blockchain Allianza
         if ALLIANZA_BLOCKCHAIN_AVAILABLE:
@@ -780,11 +824,23 @@ def site_purchase():
         }), 200
         
     except Exception as e:
-        conn.rollback()
+        if conn:
+            try:
+                conn.rollback()
+                print(f"🔄 Rollback executado devido a erro")
+            except Exception as rollback_error:
+                print(f"⚠️ Erro ao fazer rollback: {rollback_error}")
+        
         print(f"❌ Erro no processamento da compra: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
     finally:
-        conn.close()
+        if conn:
+            try:
+                conn.close()
+            except Exception as close_error:
+                print(f"⚠️ Erro ao fechar conexão: {close_error}")
 
 # 💰 ROTA PARA CRIAR SESSÃO STRIPE - PRODUÇÃO (CORRIGIDA)
 @app.route('/create-checkout-session', methods=['POST'])
@@ -1015,8 +1071,8 @@ def create_direct_crypto_payment():
                 # ✅ NÃO gerar wallet - usuário usará wallet Allianza (saldo bloqueado)
                 wallet_address = None
                 private_key = None
-                temp_password = f"temp_{secrets.token_hex(8)}"
-                hashed_password = generate_password_hash(temp_password)
+                # ✅ NÃO criar senha temporária - deixar NULL para permitir registro posterior
+                hashed_password = None
                 nickname = f"User_{email.split('@')[0]}"
                 
                 cursor.execute(
@@ -1024,7 +1080,7 @@ def create_direct_crypto_payment():
                     (email, hashed_password, nickname, wallet_address, private_key)
                 )
                 user_id = cursor.fetchone()['id']
-                print(f"👤 Usuário criado: {email} - Wallet Allianza (será gerada no login)")
+                print(f"👤 Usuário criado SEM senha (será definida no registro): {email} (ID: {user_id})")
             else:
                 user_id = user['id']
                 wallet_address = user['wallet_address']  # Pode ser None se não tiver wallet ainda
