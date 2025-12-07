@@ -47,6 +47,23 @@ except ImportError as e:
 # Criar blueprint SEM prefixo - rotas na raiz
 testnet_bp = Blueprint('testnet', __name__, url_prefix='')
 
+# Garantir que função t() está disponível nos templates do blueprint
+try:
+    from i18n_system import t as i18n_t
+except ImportError:
+    # Fallback se i18n não estiver disponível
+    def i18n_t(key, default=None):
+        return default or key
+
+# Adicionar context processor ao blueprint para injetar t() nos templates
+@testnet_bp.context_processor
+def inject_i18n():
+    """Injeta função de tradução nos templates do testnet"""
+    return {
+        't': i18n_t,
+        'lang': 'en'  # Default, pode ser melhorado depois
+    }
+
 # Instâncias globais (serão inicializadas)
 faucet = None
 explorer = None
@@ -61,6 +78,23 @@ alz_niev = None
 leaderboard = None
 
 def init_testnet_routes(app, blockchain_instance, quantum_security_instance, bridge_instance=None):
+    """Inicializar rotas do testnet com tratamento robusto de i18n"""
+    # Garantir que função t() está disponível nos templates do blueprint
+    try:
+        from i18n_system import t
+    except ImportError:
+        # Fallback se i18n não estiver disponível
+        def t(key, default=None):
+            return default or key
+    
+    # Adicionar context processor ao blueprint para injetar t() nos templates
+    @testnet_bp.context_processor
+    def inject_i18n():
+        """Injeta função de tradução nos templates do testnet"""
+        return {
+            't': t,
+            'lang': 'en'  # Default, pode ser melhorado depois
+        }
     """Inicializa as rotas da testnet"""
     global faucet, explorer, proof_generator, quantum_security, wallet_generator, professional_tests
     global status_page, quantum_dashboard, public_tests, alz_niev, leaderboard
