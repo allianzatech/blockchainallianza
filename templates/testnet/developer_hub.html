@@ -202,20 +202,20 @@ if (result.valid) {
             <div class="step-card bg-gray-700 rounded-lg p-6 mb-4">
                 <div class="flex items-center mb-4">
                     <div class="bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">4</div>
-                    <h3 class="text-xl font-semibold">Ancorar na Blockchain</h3>
+                    <h3 class="text-xl font-semibold">{{ t('anchor_on_blockchain') or 'Anchor on Blockchain' }}</h3>
                 </div>
                 <div class="mb-4">
-                    <p class="text-gray-300 mb-2 font-semibold">Bitcoin (OP_RETURN):</p>
+                    <p class="text-gray-300 mb-2 font-semibold">{{ t('bitcoin_opreturn') or 'Bitcoin (OP_RETURN)' }}:</p>
                     <div class="code-block mb-4" style="position: relative;">
-                        <button class="btn-copy-code" onclick="copyCodeBlock(this)" title="Copiar código">
-                            <i class="fas fa-copy"></i> Copiar
+                        <button class="btn-copy-code" onclick="copyCodeBlock(this)" title="{{ t('copy') or 'Copy' }}">
+                            <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
                         </button>
                         <code>
 const instructions = await QSS.anchorOnBitcoin(proof, 'tb1q...');
-// Use instructions.data no OP_RETURN
+// {{ t('use_instructions_data') or 'Use instructions.data in OP_RETURN' }}
                         </code>
                     </div>
-                    <p class="text-gray-300 mb-2 font-semibold">Ethereum/Polygon (Smart Contract):</p>
+                    <p class="text-gray-300 mb-2 font-semibold">{{ t('ethereum_polygon_smart_contract') or 'Ethereum/Polygon (Smart Contract)' }}:</p>
                     <div class="code-block" style="position: relative;">
                         <button class="btn-copy-code" onclick="copyCodeBlock(this)" title="Copiar código">
                             <i class="fas fa-copy"></i> Copiar

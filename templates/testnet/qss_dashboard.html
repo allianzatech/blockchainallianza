@@ -335,12 +335,16 @@
                     currentProof = data.quantum_proof;
                     displayProof(data.quantum_proof);
                     await getAnchorInstructions('bitcoin');
-                    resultDiv.innerHTML = '<p class="text-green-400"><i class="fas fa-check-circle mr-2"></i>Prova gerada com sucesso!</p>';
+                    const successText = typeof t !== 'undefined' && t ? t('proof_generated_success') : 'Proof generated successfully!';
+                    resultDiv.innerHTML = '<p class="text-green-400"><i class="fas fa-check-circle mr-2"></i>' + successText + '</p>';
                 } else {
-                    resultDiv.innerHTML = `<p class="text-red-400"><i class="fas fa-times-circle mr-2"></i>Erro: ${data.error || 'Erro desconhecido'}</p>`;
+                    const errorText = typeof t !== 'undefined' && t ? t('error') : 'Error';
+                    const unknownErrorText = typeof t !== 'undefined' && t ? t('error_unknown') : 'Unknown error';
+                    resultDiv.innerHTML = `<p class="text-red-400"><i class="fas fa-times-circle mr-2"></i>${errorText}: ${data.error || unknownErrorText}</p>`;
                 }
             } catch (error) {
-                resultDiv.innerHTML = `<p class="text-red-400"><i class="fas fa-times-circle mr-2"></i>Erro: ${error.message}</p>`;
+                const errorText = typeof t !== 'undefined' && t ? t('error') : 'Error';
+                resultDiv.innerHTML = `<p class="text-red-400"><i class="fas fa-times-circle mr-2"></i>${errorText}: ${error.message}</p>`;
             }
         }
 
@@ -350,13 +354,15 @@
             const blockHeight = document.getElementById('eth-block-height').value;
             
             if (!txHash) {
-                alert('Por favor, insira um TX Hash Ethereum');
+                const enterEthHashText = typeof t !== 'undefined' && t ? t('please_enter_ethereum_tx_hash') : 'Please enter an Ethereum TX Hash';
+                alert(enterEthHashText);
                 return;
             }
             
             const resultDiv = document.getElementById('eth-result');
             resultDiv.classList.remove('hidden');
-            resultDiv.innerHTML = '<p class="text-yellow-400"><i class="fas fa-spinner fa-spin mr-2"></i>Gerando prova quântica...</p>';
+            const generatingText = typeof t !== 'undefined' && t ? t('generating_quantum_proof') : 'Generating quantum proof...';
+            resultDiv.innerHTML = '<p class="text-yellow-400"><i class="fas fa-spinner fa-spin mr-2"></i>' + generatingText + '</p>';
             
             try {
                 const response = await fetch('/api/qss/generate-proof', {
@@ -378,12 +384,16 @@
                     currentProof = data.quantum_proof;
                     displayProof(data.quantum_proof);
                     await getAnchorInstructions('ethereum');
-                    resultDiv.innerHTML = '<p class="text-green-400"><i class="fas fa-check-circle mr-2"></i>Prova gerada com sucesso!</p>';
+                    const successText = typeof t !== 'undefined' && t ? t('proof_generated_success') : 'Proof generated successfully!';
+                    resultDiv.innerHTML = '<p class="text-green-400"><i class="fas fa-check-circle mr-2"></i>' + successText + '</p>';
                 } else {
-                    resultDiv.innerHTML = `<p class="text-red-400"><i class="fas fa-times-circle mr-2"></i>Erro: ${data.error || 'Erro desconhecido'}</p>`;
+                    const errorText = typeof t !== 'undefined' && t ? t('error') : 'Error';
+                    const unknownErrorText = typeof t !== 'undefined' && t ? t('error_unknown') : 'Unknown error';
+                    resultDiv.innerHTML = `<p class="text-red-400"><i class="fas fa-times-circle mr-2"></i>${errorText}: ${data.error || unknownErrorText}</p>`;
                 }
             } catch (error) {
-                resultDiv.innerHTML = `<p class="text-red-400"><i class="fas fa-times-circle mr-2"></i>Erro: ${error.message}</p>`;
+                const errorText = typeof t !== 'undefined' && t ? t('error') : 'Error';
+                resultDiv.innerHTML = `<p class="text-red-400"><i class="fas fa-times-circle mr-2"></i>${errorText}: ${error.message}</p>`;
             }
         }
 

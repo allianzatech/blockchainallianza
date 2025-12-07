@@ -550,6 +550,15 @@ TRANSLATIONS = {
         'method': 'Method',
         'data': 'Data',
         'proof_hash_label': 'Proof Hash',
+        'anchor_on_blockchain': 'Anchor on Blockchain',
+        'bitcoin_opreturn': 'Bitcoin (OP_RETURN)',
+        'ethereum_polygon_smart_contract': 'Ethereum/Polygon (Smart Contract)',
+        'works_with_blockchains': 'Works with Bitcoin, Ethereum, Polygon, BSC, Solana, Avalanche, Base and any blockchain!',
+        'proof_valid': 'Proof valid!',
+        'ml_dsa_signature': 'ML-DSA Signature',
+        'merkle_proof': 'Merkle Proof',
+        'use_instructions_data': 'Use instructions.data in OP_RETURN',
+        'send_transaction': 'Send the transaction with transactionData',
     }
 }
 
