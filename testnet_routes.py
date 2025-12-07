@@ -1994,6 +1994,11 @@ def qss_dashboard_page():
     """Dashboard do Quantum Security Service (QSS)"""
     return render_template('testnet/qss_dashboard.html')
 
+@testnet_bp.route('/tests/complete', methods=['GET'])
+def tests_complete_page():
+    """Página de testes completos - 41 validações"""
+    return render_template('testnet/tests_complete.html')
+
 @testnet_bp.route('/api/stress-test', methods=['POST'])
 def api_stress_test():
     """Executar teste de estresse para gerar muitas transações"""

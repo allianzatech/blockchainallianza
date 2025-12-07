@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="{{ lang or 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Testes Completos - Allianza Testnet</title>
+    <title>{{ t('complete_tests_title') or 'Complete Tests - Allianza Testnet' }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -31,9 +31,9 @@
     <div class="container mx-auto px-4 py-8">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-4xl font-bold mb-2">🧪 Testes Completos - 41 Validações</h1>
-            <p class="text-gray-400">Execute todos os testes documentados e verifique os resultados</p>
-            <a href="javascript:history.back()" class="btn-back mt-2">Voltar</a>
+            <h1 class="text-4xl font-bold mb-2">🧪 {{ t('complete_tests_title') or 'Complete Tests - 41 Validations' }}</h1>
+            <p class="text-gray-400">{{ t('complete_tests_subtitle') or 'Execute all documented tests and verify results' }}</p>
+            <a href="javascript:history.back()" class="btn-back mt-2">{{ t('back') or 'Back' }}</a>
         </div>
 
         <!-- Suites de Testes -->
@@ -43,9 +43,9 @@
                 <h3 class="text-xl font-semibold mb-2">
                     <i class="fas fa-check-circle text-blue-400"></i> Complete Validation Suite
                 </h3>
-                <p class="text-gray-400 mb-4">8 testes de validação completa</p>
+                <p class="text-gray-400 mb-4">{{ t('8_validation_tests') or '8 complete validation tests' }}</p>
                 <button onclick="runCompleteValidation()" class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition">
-                    Executar Testes
+                    {{ t('execute_tests') or 'Execute Tests' }}
                 </button>
             </div>
 
@@ -54,9 +54,9 @@
                 <h3 class="text-xl font-semibold mb-2">
                     <i class="fas fa-exclamation-triangle text-red-400"></i> Critical Tests Suite
                 </h3>
-                <p class="text-gray-400 mb-4">6 testes críticos</p>
+                <p class="text-gray-400 mb-4">{{ t('6_critical_tests') or '6 critical tests' }}</p>
                 <button onclick="runCriticalTests()" class="w-full bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition">
-                    Executar Testes
+                    {{ t('execute_tests') or 'Execute Tests' }}
                 </button>
             </div>
 
@@ -65,9 +65,9 @@
                 <h3 class="text-xl font-semibold mb-2">
                     <i class="fas fa-star text-purple-400"></i> Professional Suite
                 </h3>
-                <p class="text-gray-400 mb-4">14 testes profissionais</p>
+                <p class="text-gray-400 mb-4">{{ t('14_professional_tests') or '14 professional tests' }}</p>
                 <button onclick="runProfessionalSuite()" class="w-full bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded transition">
-                    Executar Testes
+                    {{ t('execute_tests') or 'Execute Tests' }}
                 </button>
             </div>
         </div>
@@ -76,22 +76,22 @@
         <div class="mb-8">
             <div class="bg-gradient-to-r from-green-600 to-blue-600 p-6 rounded-lg">
                 <h3 class="text-2xl font-semibold mb-2">
-                    <i class="fas fa-rocket"></i> Executar Todos os 41 Testes
+                    <i class="fas fa-rocket"></i> {{ t('execute_all_41_tests') or 'Execute All 41 Tests' }}
                 </h3>
-                <p class="text-gray-200 mb-4">Execute todas as suites de uma vez (pode levar vários minutos)</p>
+                <p class="text-gray-200 mb-4">{{ t('execute_all_description') or 'Execute all suites at once (may take several minutes)' }}</p>
                 <button onclick="runAllTests()" class="bg-white text-gray-900 px-6 py-3 rounded font-semibold hover:bg-gray-100 transition">
-                    <i class="fas fa-play"></i> Executar Todos
+                    <i class="fas fa-play"></i> {{ t('execute_all_button') or 'Execute All' }}
                 </button>
             </div>
         </div>
 
         <!-- Resultados -->
         <div id="results" class="hidden">
-            <h2 class="text-2xl font-semibold mb-4">📊 Resultados</h2>
+            <h2 class="text-2xl font-semibold mb-4">📊 {{ t('results') or 'Results' }}</h2>
             <div id="results-content" class="bg-gray-800 p-6 rounded-lg">
                 <div class="text-center">
                     <i class="fas fa-spinner fa-spin text-4xl text-blue-400"></i>
-                    <p class="mt-4">Executando testes...</p>
+                    <p class="mt-4">{{ t('executing_tests') or 'Executing tests...' }}</p>
                 </div>
             </div>
         </div>
