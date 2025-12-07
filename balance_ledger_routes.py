@@ -442,10 +442,10 @@ def register():
             existing_password = existing_user.get('password')
             existing_nickname = existing_user.get('nickname')
             
-            print(f"🔍 Usuário existente encontrado: ID={user_id}, tem_senha={bool(existing_password)}")
+            print(f"🔍 Usuário existente encontrado: ID={user_id}, tem_senha={bool(existing_password)}, senha={existing_password[:20] if existing_password else 'NULL'}...")
             
-            # ✅ Verificar se o usuário já tem senha configurada (tentando fazer login)
-            if existing_password:
+            # ✅ Verificar se o usuário já tem senha configurada
+            if existing_password and existing_password.strip():  # ✅ Verificar se não é NULL nem vazio
                 # Tentar verificar a senha fornecida com a senha existente
                 from werkzeug.security import check_password_hash
                 try:
@@ -473,11 +473,13 @@ def register():
                         return jsonify({"error": "Email já cadastrado. Senha incorreta. Use a opção de login."}), 400
                 except Exception as e:
                     print(f"⚠️ Erro ao verificar senha: {e}")
-                    # Se houver erro, tratar como senha inválida e permitir atualizar
-                    pass
+                    import traceback
+                    traceback.print_exc()
+                    # Se houver erro na verificação, tratar como senha inválida e permitir atualizar
+                    print(f"⚠️ Tratando como senha inválida e permitindo atualização")
             
-            # ✅ Usuário existe mas sem senha válida (criado durante pagamento) - permitir completar registro
-            print(f"✅ Email {email} existe mas sem senha válida - completando registro (ID: {user_id})")
+            # ✅ Usuário existe mas sem senha válida (NULL ou vazia) - permitir completar registro
+            print(f"✅ Email {email} existe mas sem senha válida (password={existing_password}) - completando registro (ID: {user_id})")
             from werkzeug.security import generate_password_hash
             hashed_password = generate_password_hash(password)
             
