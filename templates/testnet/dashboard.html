@@ -33,8 +33,13 @@
     <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-4xl font-bold mb-2">🌐 Allianza Testnet</h1>
-            <p class="text-gray-400">Primeira testnet do mundo com proteção quântica nativa</p>
+            <h1 class="text-4xl font-bold mb-2">🌐 {{ t('dashboard_title') or 'Allianza Testnet' }}</h1>
+            <p class="text-gray-400">{{ t('dashboard_subtitle') or 'World\'s first testnet with native quantum protection' }}</p>
+            <!-- Language Switcher -->
+            <div class="mt-2 flex gap-2">
+                <a href="/set-language/pt" class="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded {{ 'bg-blue-600' if lang == 'pt' else '' }}">🇧🇷 PT</a>
+                <a href="/set-language/en" class="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded {{ 'bg-blue-600' if lang == 'en' else '' }}">🇺🇸 EN</a>
+            </div>
         </div>
 
         <!-- Network Info -->
@@ -56,19 +61,19 @@
         <!-- Stats -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
             <div class="bg-blue-900 p-6 rounded-lg">
-                <h3 class="text-sm text-gray-400 mb-1">Total de Blocos</h3>
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('total_blocks') or 'Total Blocks' }}</h3>
                 <p class="text-3xl font-bold">{{ stats.total_blocks }}</p>
             </div>
             <div class="bg-green-900 p-6 rounded-lg">
-                <h3 class="text-sm text-gray-400 mb-1">Total de Transações</h3>
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('total_transactions') or 'Total Transactions' }}</h3>
                 <p class="text-3xl font-bold">{{ stats.total_transactions }}</p>
             </div>
             <div class="bg-purple-900 p-6 rounded-lg">
-                <h3 class="text-sm text-gray-400 mb-1">TPS (24h)</h3>
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('tps_24h') or 'TPS (24h)' }}</h3>
                 <p class="text-3xl font-bold">{{ stats.tps_24h_avg }}</p>
             </div>
             <div class="bg-yellow-900 p-6 rounded-lg">
-                <h3 class="text-sm text-gray-400 mb-1">Latência Média</h3>
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('avg_latency') or 'Average Latency' }}</h3>
                 <p class="text-3xl font-bold">{{ stats.latency_avg_ms }}ms</p>
             </div>
         </div>
@@ -152,34 +157,34 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 mb-6 sm:mb-8">
             <a href="/faucet" class="bg-green-600 hover:bg-green-700 p-3 sm:p-4 rounded-lg text-center transition transform hover:scale-105">
                 <i class="fas fa-faucet text-2xl sm:text-3xl mb-1"></i>
-                <h3 class="text-sm sm:text-base font-semibold">Faucet</h3>
-                <p class="text-xs text-gray-300 hidden sm:block">Obter tokens</p>
+                <h3 class="text-sm sm:text-base font-semibold">{{ t('faucet') or 'Faucet' }}</h3>
+                <p class="text-xs text-gray-300 hidden sm:block">{{ t('obtain_tokens') or 'Obtain tokens' }}</p>
             </a>
             <a href="/explorer" class="bg-blue-600 hover:bg-blue-700 p-3 sm:p-4 rounded-lg text-center transition transform hover:scale-105">
                 <i class="fas fa-search text-2xl sm:text-3xl mb-1"></i>
-                <h3 class="text-sm sm:text-base font-semibold">Explorer</h3>
-                <p class="text-xs text-gray-300 hidden sm:block">Blocos e transações</p>
+                <h3 class="text-sm sm:text-base font-semibold">{{ t('explorer') or 'Explorer' }}</h3>
+                <p class="text-xs text-gray-300 hidden sm:block">{{ t('explore_blocks') or 'Blocks and transactions' }}</p>
             </a>
             <a href="/qrs3-verifier" class="bg-purple-600 hover:bg-purple-700 p-3 sm:p-4 rounded-lg text-center transition transform hover:scale-105">
                 <i class="fas fa-shield-alt text-2xl sm:text-3xl mb-1"></i>
-                <h3 class="text-sm sm:text-base font-semibold">QRS-3</h3>
-                <p class="text-xs text-gray-300 hidden sm:block">Verificador</p>
+                <h3 class="text-sm sm:text-base font-semibold">{{ t('qrs3_verifier') or 'QRS-3' }}</h3>
+                <p class="text-xs text-gray-300 hidden sm:block">{{ t('verify_signatures') or 'Verify signatures' }}</p>
             </a>
             <a href="/dashboard/quantum-attack-simulator" class="bg-gradient-to-br from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 p-3 sm:p-4 rounded-lg text-center transition transform hover:scale-105 shadow-lg">
                 <i class="fas fa-flask text-2xl sm:text-3xl mb-1"></i>
-                <h3 class="text-sm sm:text-base font-semibold">Simulador</h3>
-                <p class="text-xs text-gray-300 hidden sm:block">Ataque Quântico</p>
+                <h3 class="text-sm sm:text-base font-semibold">{{ t('quantum_attack_simulator') or 'Simulator' }}</h3>
+                <p class="text-xs text-gray-300 hidden sm:block">{{ t('test_security') or 'Quantum Attack' }}</p>
             </a>
             <a href="/qss" class="bg-gradient-to-br from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 p-3 sm:p-4 rounded-lg text-center transition transform hover:scale-105 shadow-lg">
                 <i class="fas fa-shield-virus text-2xl sm:text-3xl mb-1"></i>
-                <h3 class="text-sm sm:text-base font-semibold">QSS</h3>
-                <p class="text-xs text-gray-300 hidden sm:block">Security Service</p>
+                <h3 class="text-sm sm:text-base font-semibold">{{ t('quantum_security_service') or 'QSS' }}</h3>
+                <p class="text-xs text-gray-300 hidden sm:block">{{ t('quantum_security_other') or 'Security Service' }}</p>
             </a>
         </div>
 
         <!-- Novas Funcionalidades Profissionais -->
         <div class="mb-8">
-            <h2 class="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">🔐 Funcionalidades Profissionais</h2>
+            <h2 class="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">🔐 {{ t('professional_features') or 'Professional Features' }}</h2>
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
                 <a href="/status" class="bg-gray-800 hover:bg-gray-700 p-3 sm:p-4 rounded-lg border border-green-500 transition">
                     <i class="fas fa-chart-line text-2xl sm:text-3xl mb-1 text-green-400"></i>

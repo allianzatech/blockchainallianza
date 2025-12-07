@@ -145,6 +145,16 @@ def init_testnet_routes(app, blockchain_instance, quantum_security_instance, bri
         except Exception as e:
             print(f"⚠️  Gerador automático de transações não disponível: {e}")
         
+        # Inicializar teste de estresse
+        try:
+            from testnet_stress_test import TestnetStressTest
+            stress_test = TestnetStressTest(blockchain_instance, quantum_security_instance)
+            # Executar teste inicial para popular transações
+            stress_test.run_stress_test(count=50, delay=0.05)
+            print("🔥 Teste de estresse inicial executado!")
+        except Exception as e:
+            print(f"⚠️  Teste de estresse não disponível: {e}")
+        
         return app
     except Exception as e:
         print(f"⚠️  Erro ao inicializar testnet: {e}")
@@ -1983,6 +1993,34 @@ def api_quantum_attack_simulator_statistics():
 def qss_dashboard_page():
     """Dashboard do Quantum Security Service (QSS)"""
     return render_template('testnet/qss_dashboard.html')
+
+@testnet_bp.route('/api/stress-test', methods=['POST'])
+def api_stress_test():
+    """Executar teste de estresse para gerar muitas transações"""
+    try:
+        from testnet_stress_test import TestnetStressTest
+        
+        data = request.get_json() or {}
+        count = data.get('count', 100)
+        delay = data.get('delay', 0.1)
+        tps = data.get('tps')
+        duration = data.get('duration', 60)
+        
+        stress_test = TestnetStressTest(allianza_blockchain, quantum_security)
+        
+        if tps:
+            # Teste contínuo
+            result = stress_test.run_continuous_stress(tps=tps, duration=duration)
+        else:
+            # Teste em lote
+            result = stress_test.run_stress_test(count=count, delay=delay)
+        
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
 
 @testnet_bp.route('/api/alz-niev/status', methods=['GET'])
 def api_alz_niev_status():

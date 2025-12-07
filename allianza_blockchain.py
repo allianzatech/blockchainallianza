@@ -17,7 +17,7 @@ from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends import default_backend
 from cryptography.fernet import Fernet
 from base58_utils import generate_allianza_address, validate_allianza_address
-from flask import Flask, jsonify, request, render_template, send_from_directory
+from flask import Flask, jsonify, request, render_template, send_from_directory, session
 from flask_socketio import SocketIO, emit
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -1288,6 +1288,22 @@ if not SECRET_KEY:
         SECRET_KEY = secrets.token_hex(32)
         print("⚠️  SECRET_KEY gerada automaticamente (apenas para desenvolvimento)")
 app.config['SECRET_KEY'] = SECRET_KEY
+
+# =============================================================================
+# SISTEMA DE INTERNACIONALIZAÇÃO (i18n)
+# =============================================================================
+try:
+    from i18n_system import setup_i18n
+    setup_i18n(app)
+    I18N_AVAILABLE = True
+    print("🌍 Sistema de i18n inicializado!")
+except ImportError as e:
+    I18N_AVAILABLE = False
+    print(f"⚠️  Sistema de i18n não disponível: {e}")
+    # Criar função fallback
+    @app.context_processor
+    def inject_translations():
+        return {'t': lambda key, default=None: default or key, 'current_language': 'en', 'lang': 'en'}
 
 # CORS: Restringir origens permitidas (não usar "*" em produção)
 # Sempre restringir em produção, permitir todas apenas em desenvolvimento
