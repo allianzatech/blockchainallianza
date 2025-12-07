@@ -9,13 +9,24 @@ import os
 import json
 import time
 import requests
-import schedule
 import threading
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
-from dotenv import load_dotenv
 
-load_dotenv()
+# Tornar schedule opcional
+try:
+    import schedule
+    SCHEDULE_AVAILABLE = True
+except ImportError:
+    SCHEDULE_AVAILABLE = False
+    schedule = None
+    print("⚠️  schedule não disponível - gerenciador automático de faucet desabilitado")
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 class AutoFaucetManager:
     """
