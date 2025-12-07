@@ -217,18 +217,33 @@ class TestnetFaucet:
     def _get_faucet_private_key(self):
         """Obtém a chave privada do faucet do banco de dados"""
         try:
+            print(f"🔍 Iniciando busca da chave privada do faucet...")
             from db_manager import db_manager
-            from allianza_blockchain import cipher
+            from allianza_blockchain import cipher, ENCRYPTION_KEY
             from cryptography.hazmat.primitives import serialization
+            from cryptography.fernet import Fernet
+            
+            # Verificar se o cipher está disponível
+            if cipher is None:
+                print(f"⚠️  Cipher não está disponível. Tentando criar novo...")
+                if ENCRYPTION_KEY:
+                    cipher = Fernet(ENCRYPTION_KEY)
+                else:
+                    print(f"❌ ENCRYPTION_KEY não está disponível")
+                    return None
             
             # Garantir que a carteira existe antes de buscar a chave
+            print(f"🔧 Garantindo que a carteira do faucet existe...")
             self._ensure_faucet_wallet()
             
             # Buscar chave privada criptografada do banco
+            print(f"🔍 Buscando chave privada no banco de dados...")
             rows = db_manager.execute_query(
                 "SELECT private_key FROM wallets WHERE address = ?",
                 (FAUCET_ADDRESS,)
             )
+            
+            print(f"📊 Resultado da busca: {len(rows) if rows else 0} linhas encontradas")
             
             if not rows or not rows[0] or not rows[0][0]:
                 print(f"⚠️  Chave privada do faucet não encontrada no banco de dados. Tentando criar carteira...")
@@ -240,14 +255,17 @@ class TestnetFaucet:
                     (FAUCET_ADDRESS,)
                 )
                 if not rows or not rows[0] or not rows[0][0]:
-                    print(f"❌ Não foi possível criar/obter chave privada do faucet")
+                    print(f"❌ Não foi possível criar/obter chave privada do faucet após tentativa de recriação")
                     return None
+                print(f"✅ Chave privada encontrada após recriação da carteira")
             
             encrypted_private_key = rows[0][0]
             
             if not encrypted_private_key:
                 print(f"❌ Chave privada criptografada está vazia")
                 return None
+            
+            print(f"🔓 Tentando descriptografar chave privada (tamanho: {len(str(encrypted_private_key))} caracteres)...")
             
             # Descriptografar chave privada
             try:
@@ -257,22 +275,29 @@ class TestnetFaucet:
                 else:
                     private_key_pem = cipher.decrypt(encrypted_private_key.encode())
                 
+                print(f"✅ Chave descriptografada com sucesso. Carregando chave privada...")
+                
                 private_key = serialization.load_pem_private_key(
                     private_key_pem,
                     password=None,
                     backend=None
                 )
                 
-                print(f"✅ Chave privada do faucet obtida com sucesso")
+                print(f"✅ Chave privada do faucet obtida e carregada com sucesso!")
                 return private_key
             except Exception as decrypt_error:
-                print(f"❌ Erro ao descriptografar chave privada: {decrypt_error}")
+                print(f"❌ Erro ao descriptografar chave privada: {type(decrypt_error).__name__}: {decrypt_error}")
                 import traceback
                 traceback.print_exc()
                 return None
             
+        except ImportError as import_error:
+            print(f"❌ Erro de importação ao obter chave privada: {import_error}")
+            import traceback
+            traceback.print_exc()
+            return None
         except Exception as e:
-            print(f"❌ Erro ao obter chave privada do faucet: {e}")
+            print(f"❌ Erro ao obter chave privada do faucet: {type(e).__name__}: {e}")
             import traceback
             traceback.print_exc()
             # Tentar criar a carteira novamente em caso de erro
