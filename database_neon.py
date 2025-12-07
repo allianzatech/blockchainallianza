@@ -60,6 +60,18 @@ class NeonDatabase:
             ''')
             print("✅ Tabela 'users' criada/verificada")
             
+            # ✅ MIGRAÇÃO: Alterar coluna password para permitir NULL (se já existir com NOT NULL)
+            try:
+                cursor.execute("""
+                    ALTER TABLE users 
+                    ALTER COLUMN password DROP NOT NULL;
+                """)
+                print("✅ Coluna 'password' alterada para permitir NULL")
+            except Exception as e:
+                # Se a coluna já permite NULL ou não existe constraint, ignorar erro
+                if "does not exist" not in str(e) and "does not have" not in str(e):
+                    print(f"ℹ️  Coluna 'password' já permite NULL ou não tem constraint: {e}")
+            
             # Tabela de saldos
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS balances (
