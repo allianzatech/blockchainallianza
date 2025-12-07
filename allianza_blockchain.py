@@ -1310,6 +1310,21 @@ else:
 socketio = SocketIO(app, cors_allowed_origins=allowed_origins, async_mode='threading')
 
 # =============================================================================
+# ROTA GET / PARA UPTIMEROBOT E MONITORES
+# =============================================================================
+@app.route('/', methods=['GET'])
+def health_check():
+    """
+    Rota de health check para monitores (UptimeRobot, Render, etc.)
+    Retorna 200 OK para manter o servidor ativo e evitar sleep mode
+    """
+    return jsonify({
+        "status": "OK",
+        "service": "Allianza Blockchain",
+        "version": "1.0.0"
+    }), 200
+
+# =============================================================================
 # MIDDLEWARE DE MELHORIAS - NOVA SEÇÃO
 # =============================================================================
 if IMPROVEMENTS_AVAILABLE:
