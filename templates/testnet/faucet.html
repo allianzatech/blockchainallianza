@@ -74,15 +74,15 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div class="bg-gray-800 p-4 rounded-lg">
                 <h3 class="text-sm text-gray-400">{{ t('total_sent') or 'Total Sent' }}</h3>
-                <p class="text-2xl font-bold">{{ faucet_stats.total_sent }}</p>
+                <p class="text-2xl font-bold">{{ faucet_stats.get('total_sent', 0) if faucet_stats else 0 }}</p>
             </div>
             <div class="bg-gray-800 p-4 rounded-lg">
                 <h3 class="text-sm text-gray-400">{{ t('total_rejected') or 'Total Rejected' }}</h3>
-                <p class="text-2xl font-bold">{{ faucet_stats.total_rejected }}</p>
+                <p class="text-2xl font-bold">{{ faucet_stats.get('total_rejected', 0) if faucet_stats else 0 }}</p>
             </div>
             <div class="bg-gray-800 p-4 rounded-lg">
                 <h3 class="text-sm text-gray-400">{{ t('amount_per_request') or 'Amount per Request' }}</h3>
-                <p class="text-2xl font-bold">{{ faucet_stats.amount_per_request }} ALZ-T</p>
+                <p class="text-2xl font-bold">{{ faucet_stats.get('amount_per_request', 1000) if faucet_stats else 1000 }} ALZ-T</p>
             </div>
         </div>
 
