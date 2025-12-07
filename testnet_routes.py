@@ -375,7 +375,23 @@ def api_leaderboard_stats():
 def faucet_page():
     """Página do faucet"""
     try:
-        faucet_stats = faucet.get_stats() if faucet else {
+        # Obter stats do faucet com tratamento robusto
+        if faucet:
+            try:
+                faucet_stats = faucet.get_stats()
+                # Garantir que é um dict e tem todas as chaves necessárias
+                if not isinstance(faucet_stats, dict):
+                    faucet_stats = {}
+            except Exception as e:
+                print(f"⚠️  Erro ao obter stats do faucet: {e}")
+                import traceback
+                traceback.print_exc()
+                faucet_stats = {}
+        else:
+            faucet_stats = {}
+        
+        # Garantir que todas as chaves necessárias existem
+        default_stats = {
             "total_requests": 0,
             "total_sent": 0,
             "total_rejected": 0,
@@ -386,26 +402,81 @@ def faucet_page():
                 "cooldown_hours": 1
             }
         }
-        logs = faucet.get_logs(limit=20) if faucet else []
-    except Exception as e:
-        print(f"⚠️  Erro ao obter stats do faucet: {e}")
-        faucet_stats = {
-            "total_requests": 0,
-            "total_sent": 0,
-            "total_rejected": 0,
-            "amount_per_request": 1000,
-            "limits": {
-                "max_per_ip_per_day": 10,
-                "max_per_address_per_day": 5,
-                "cooldown_hours": 1
-            }
-        }
-        logs = []
+        
+        # Mesclar com defaults para garantir todas as chaves
+        for key, value in default_stats.items():
+            if key not in faucet_stats:
+                faucet_stats[key] = value
+            elif key == "limits" and isinstance(value, dict):
+                # Mesclar limites também
+                for limit_key, limit_value in value.items():
+                    if limit_key not in faucet_stats.get("limits", {}):
+                        if "limits" not in faucet_stats:
+                            faucet_stats["limits"] = {}
+                        faucet_stats["limits"][limit_key] = limit_value
+        
+        # Obter logs com tratamento robusto
+        try:
+            logs = faucet.get_logs(limit=20) if faucet else []
+            if not isinstance(logs, list):
+                logs = []
+        except Exception as e:
+            print(f"⚠️  Erro ao obter logs do faucet: {e}")
+            logs = []
+        
+        # Garantir que logs têm estrutura válida
+        safe_logs = []
+        for log in logs:
+            if isinstance(log, dict):
+                # Garantir que tem campos necessários
+                safe_log = {
+                    "address": log.get("address", "Unknown")[:42],
+                    "timestamp": log.get("timestamp", ""),
+                    "tx_hash": log.get("tx_hash", ""),
+                    "amount": log.get("amount", 0)
+                }
+                safe_logs.append(safe_log)
+        
+        # Renderizar template com tratamento de erro
+        try:
+            return render_template('testnet/faucet.html',
+                                 faucet_stats=faucet_stats,
+                                 logs=safe_logs,
+                                 faucet_available=faucet is not None)
+        except Exception as e:
+            import traceback
+            error_trace = traceback.format_exc()
+            print(f"❌ Erro ao renderizar template faucet.html: {e}")
+            print(error_trace)
+            # Retornar página de erro amigável
+            return f"""
+            <html>
+            <head><title>Faucet - Allianza Testnet</title></head>
+            <body style="font-family: Arial; padding: 50px; background: #1a1a1a; color: white;">
+            <h1>💰 Faucet - Allianza Testnet</h1>
+            <p>O faucet está temporariamente indisponível. Por favor, tente novamente em alguns instantes.</p>
+            <p><a href="/" style="color: #60a5fa;">Voltar ao Dashboard</a> | <a href="/explorer" style="color: #60a5fa;">Explorer</a></p>
+            <pre style="background: #2a2a2a; padding: 20px; border-radius: 5px; overflow: auto; font-size: 12px;">{str(e)}</pre>
+            </body>
+            </html>
+            """, 500
     
-    return render_template('testnet/faucet.html',
-                         faucet_stats=faucet_stats,
-                         logs=logs,
-                         faucet_available=faucet is not None)
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"❌ Erro crítico na rota /faucet: {e}")
+        print(error_trace)
+        return f"""
+        <html>
+        <head><title>Error - Faucet</title></head>
+        <body style="font-family: Arial; padding: 50px; background: #1a1a1a; color: white;">
+        <h1>⚠️ Erro no Faucet</h1>
+        <p>Ocorreu um erro ao carregar a página do faucet.</p>
+        <p><a href="/" style="color: #60a5fa;">Voltar ao Dashboard</a></p>
+        <pre style="background: #2a2a2a; padding: 20px; border-radius: 5px; overflow: auto; font-size: 12px;">{str(e)}</pre>
+        </body>
+        </html>
+        """, 500
 
 @testnet_bp.route('/api/faucet/request', methods=['POST'])
 def faucet_request():
