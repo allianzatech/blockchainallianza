@@ -90,18 +90,22 @@
         <div class="bg-gray-800 p-6 rounded-lg">
             <h2 class="text-2xl font-semibold mb-4">{{ t('recent_logs') or 'Recent Logs' }}</h2>
             <div class="space-y-2">
-                {% for log in logs %}
-                <div class="bg-gray-700 p-3 rounded">
-                    <div class="flex justify-between">
-                        <span class="font-mono text-sm">{{ log.address[:20] }}...</span>
-                        <span class="text-xs text-gray-400">{{ log.timestamp }}</span>
+                {% if logs and logs|length > 0 %}
+                    {% for log in logs %}
+                    <div class="bg-gray-700 p-3 rounded">
+                        <div class="flex justify-between">
+                            <span class="font-mono text-sm">{{ (log.address if log.address else 'Unknown')[:20] }}...</span>
+                            <span class="text-xs text-gray-400">{{ log.timestamp if log.timestamp else '' }}</span>
+                        </div>
+                        <div class="text-xs text-gray-400 mt-1">
+                            TX: <span class="font-mono">{{ (log.tx_hash if log.tx_hash else '')[:20] }}...</span> | 
+                            Amount: {{ log.amount if log.amount else 0 }} ALZ-T
+                        </div>
                     </div>
-                    <div class="text-xs text-gray-400 mt-1">
-                        TX: <span class="font-mono">{{ log.tx_hash[:20] }}...</span> | 
-                        Amount: {{ log.amount }} ALZ-T
-                    </div>
-                </div>
-                {% endfor %}
+                    {% endfor %}
+                {% else %}
+                    <p class="text-gray-400 text-center py-4">{{ t('no_logs_yet') or 'No logs yet. Be the first to request tokens!' }}</p>
+                {% endif %}
             </div>
         </div>
     </div>
