@@ -220,18 +220,36 @@ class TestnetFaucet:
         try:
             print(f"🔍 Iniciando busca da chave privada do faucet...")
             from db_manager import db_manager
-            from allianza_blockchain import cipher, ENCRYPTION_KEY
             from cryptography.hazmat.primitives import serialization
             from cryptography.fernet import Fernet
             
-            # Verificar se o cipher está disponível
-            if cipher is None:
-                print(f"⚠️  Cipher não está disponível. Tentando criar novo...")
-                if ENCRYPTION_KEY:
-                    cipher = Fernet(ENCRYPTION_KEY)
-                else:
-                    print(f"❌ ENCRYPTION_KEY não está disponível")
+            # Importar cipher de forma segura
+            try:
+                from allianza_blockchain import cipher, ENCRYPTION_KEY
+                current_cipher = cipher
+            except (ImportError, AttributeError) as import_err:
+                print(f"⚠️  Erro ao importar cipher: {import_err}. Tentando criar novo...")
+                try:
+                    # Tentar carregar ENCRYPTION_KEY de variável de ambiente ou arquivo
+                    import os
+                    encryption_key_file = "secrets/encryption_key.key"
+                    if os.getenv("ENCRYPTION_KEY"):
+                        ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY").encode()
+                    elif os.path.exists(encryption_key_file):
+                        with open(encryption_key_file, "rb") as f:
+                            ENCRYPTION_KEY = f.read()
+                    else:
+                        print(f"❌ ENCRYPTION_KEY não encontrada em variável de ambiente nem em arquivo")
+                        return None
+                    current_cipher = Fernet(ENCRYPTION_KEY)
+                except Exception as cipher_err:
+                    print(f"❌ Erro ao criar cipher: {cipher_err}")
                     return None
+            
+            # Verificar se o cipher está disponível
+            if current_cipher is None:
+                print(f"❌ Cipher é None após tentativas de criação")
+                return None
             
             # Garantir que a carteira existe antes de buscar a chave (lazy initialization)
             if not self._faucet_wallet_initialized:
@@ -274,9 +292,9 @@ class TestnetFaucet:
             try:
                 # Verificar se já é bytes ou string
                 if isinstance(encrypted_private_key, bytes):
-                    private_key_pem = cipher.decrypt(encrypted_private_key)
+                    private_key_pem = current_cipher.decrypt(encrypted_private_key)
                 else:
-                    private_key_pem = cipher.decrypt(encrypted_private_key.encode())
+                    private_key_pem = current_cipher.decrypt(encrypted_private_key.encode())
                 
                 print(f"✅ Chave descriptografada com sucesso. Carregando chave privada...")
                 
