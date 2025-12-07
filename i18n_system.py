@@ -8,7 +8,7 @@ Detecção automática de idioma por IP/país
 import json
 import requests
 from typing import Dict, Optional
-from flask import request, g, session
+from flask import request, g, session, jsonify, redirect
 import logging
 
 logger = logging.getLogger(__name__)
@@ -190,10 +190,19 @@ def setup_i18n(app):
     @app.route('/set-language/<language>', methods=['POST', 'GET'])
     def set_language(language):
         """Permite usuário escolher idioma manualmente"""
+        from flask import redirect, url_for
         if language in ['en', 'pt']:
             session['language'] = language
-            return jsonify({'success': True, 'language': language})
-        return jsonify({'success': False, 'error': 'Invalid language'}), 400
+            # Redirecionar de volta para a página anterior ou dashboard
+            referer = request.headers.get('Referer', '/')
+            # Se for requisição AJAX, retornar JSON
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json:
+                return jsonify({'success': True, 'language': language})
+            # Caso contrário, redirecionar
+            return redirect(referer if referer else '/')
+        # Se idioma inválido, redirecionar de volta
+        referer = request.headers.get('Referer', '/')
+        return redirect(referer if referer else '/')
     
     logger.info("🌍 Sistema de i18n configurado!")
     print("🌍 Sistema de i18n configurado!")

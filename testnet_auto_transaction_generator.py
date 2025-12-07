@@ -43,28 +43,27 @@ class TestnetAutoTransactionGenerator:
     def _initialize_test_addresses(self):
         """Inicializar endereços de teste com saldos"""
         try:
+            # Garantir que wallets existe
+            if not hasattr(self.blockchain, 'wallets'):
+                self.blockchain.wallets = {}
+            
             for address in self.test_addresses:
-                if not hasattr(self.blockchain, 'wallets') or address not in self.blockchain.wallets:
-                    # Criar carteira se não existir
-                    if hasattr(self.blockchain, 'create_wallet'):
-                        self.blockchain.create_wallet()
-                    else:
-                        # Criar manualmente
-                        if not hasattr(self.blockchain, 'wallets'):
-                            self.blockchain.wallets = {}
-                        
-                        self.blockchain.wallets[address] = {
-                            "ALZ": 1000.0,  # Saldo inicial de 1000 ALZ
-                            "staked": 0,
-                            "blockchain_source": "allianza",
-                            "external_address": None
-                        }
+                if address not in self.blockchain.wallets:
+                    # Criar carteira manualmente
+                    self.blockchain.wallets[address] = {
+                        "ALZ": 1000.0,  # Saldo inicial de 1000 ALZ
+                        "staked": 0,
+                        "blockchain_source": "allianza",
+                        "external_address": None
+                    }
                 else:
                     # Garantir saldo mínimo
-                    if self.blockchain.wallets[address]["ALZ"] < 100:
+                    if self.blockchain.wallets[address].get("ALZ", 0) < 100:
                         self.blockchain.wallets[address]["ALZ"] = 1000.0
         except Exception as e:
             logger.warning(f"⚠️  Erro ao inicializar endereços de teste: {e}")
+            import traceback
+            logger.debug(traceback.format_exc())
     
     def generate_test_transaction(self) -> Optional[Dict]:
         """Gera uma transação de teste"""
@@ -73,9 +72,21 @@ class TestnetAutoTransactionGenerator:
             sender = random.choice(self.test_addresses)
             receiver = random.choice([addr for addr in self.test_addresses if addr != sender])
             
-            # Verificar saldo do remetente
-            if not hasattr(self.blockchain, 'wallets') or sender not in self.blockchain.wallets:
+            # Garantir que wallets existe e endereços estão inicializados
+            if not hasattr(self.blockchain, 'wallets'):
+                self.blockchain.wallets = {}
+            
+            if sender not in self.blockchain.wallets:
                 self._initialize_test_addresses()
+            
+            # Verificar se ainda não existe após inicialização
+            if sender not in self.blockchain.wallets:
+                self.blockchain.wallets[sender] = {
+                    "ALZ": 1000.0,
+                    "staked": 0,
+                    "blockchain_source": "allianza",
+                    "external_address": None
+                }
             
             sender_balance = self.blockchain.wallets.get(sender, {}).get("ALZ", 0)
             
