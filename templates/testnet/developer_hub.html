@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="{{ lang or 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🚀 Developer Hub - Allianza Testnet</title>
+    <title>🚀 {{ t('developer_hub') or 'Developer Hub - Allianza Testnet' }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -60,24 +60,24 @@
     <div class="container mx-auto px-4 py-8 max-w-6xl">
         <!-- Header -->
         <div class="mb-8">
-            <a href="javascript:history.back()" class="btn-back mb-4">Voltar</a>
-            <h1 class="text-4xl font-bold mb-2">🚀 Developer Hub</h1>
-            <p class="text-gray-400 mb-2">Comece a integrar segurança quântica em minutos</p>
+            <a href="javascript:history.back()" class="btn-back mb-4">{{ t('back') or 'Back' }}</a>
+            <h1 class="text-4xl font-bold mb-2">🚀 {{ t('developer_hub') or 'Developer Hub' }}</h1>
+            <p class="text-gray-400 mb-2">{{ t('start_integrating_quantum') or 'Start integrating quantum security in minutes' }}</p>
             <div class="flex items-center gap-4 text-sm flex-wrap">
                 <span class="bg-green-600 text-white px-3 py-1 rounded-full font-semibold">
-                    <i class="fas fa-check-circle mr-1"></i>SDK v1.0.0 Disponível
+                    <i class="fas fa-check-circle mr-1"></i>{{ t('sdk_available') or 'SDK v1.0.0 Available' }}
                 </span>
                 <a href="https://www.npmjs.com/package/allianza-qss-js" target="_blank" class="text-blue-400 hover:text-blue-300">
-                    <i class="fab fa-npm mr-1"></i>Ver no npm
+                    <i class="fab fa-npm mr-1"></i>{{ t('view_on_npm') or 'View on npm' }}
                 </a>
                 <span class="text-gray-500">
-                    <i class="fas fa-calendar mr-1"></i>Atualizado: Dez 2025
+                    <i class="fas fa-calendar mr-1"></i>{{ t('updated') or 'Updated' }}: Dez 2025
                 </span>
                 <button onclick="tryItNow()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-1 rounded-full font-semibold transition">
-                    <i class="fas fa-play mr-1"></i>Try It Now
+                    <i class="fas fa-play mr-1"></i>{{ t('try_it_now') or 'Try It Now' }}
                 </button>
                 <button onclick="showChangelog()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-1 rounded-full font-semibold transition">
-                    <i class="fas fa-list mr-1"></i>Changelog
+                    <i class="fas fa-list mr-1"></i>{{ t('changelog') or 'Changelog' }}
                 </button>
             </div>
         </div>
@@ -86,18 +86,18 @@
         <div class="bg-gray-800 rounded-lg p-6 mb-8">
             <h2 class="text-2xl font-semibold mb-4">
                 <i class="fas fa-rocket text-yellow-400 mr-2"></i>
-                Quick Start Guide
+                {{ t('quick_start_guide') or 'Quick Start Guide' }}
             </h2>
             
             <!-- Step 1: Install SDK -->
             <div class="step-card bg-gray-700 rounded-lg p-6 mb-4">
                 <div class="flex items-center mb-4">
                     <div class="bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">1</div>
-                    <h3 class="text-xl font-semibold">Instalar o SDK</h3>
+                    <h3 class="text-xl font-semibold">{{ t('install_sdk') or 'Install the SDK' }}</h3>
                 </div>
                 
                 <div class="mb-4">
-                    <p class="text-gray-300 mb-3 font-semibold">📦 Instalação via npm:</p>
+                    <p class="text-gray-300 mb-3 font-semibold">📦 {{ t('npm_installation') or 'Installation via npm:' }}</p>
                     <div class="code-block mb-3" style="position: relative;">
                         <button class="btn-copy-code" onclick="copyCodeBlock(this)" title="Copiar comando">
                             <i class="fas fa-copy"></i> Copiar
