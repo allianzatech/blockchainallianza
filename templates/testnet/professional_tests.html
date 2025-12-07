@@ -50,7 +50,7 @@
             <h2 class="text-2xl font-bold mb-4">🟦 1. {{ t('quantum_layer_tests') or 'Quantum Layer Tests (PQC / QRS-3)' }}</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div class="bg-gray-800 p-4 rounded-lg">
-                    <h3 class="font-semibold mb-2">1.1. Geração de Chaves PQC</h3>
+                    <h3 class="font-semibold mb-2">1.1. {{ t('pqc_key_generation') or 'PQC Key Generation' }}</h3>
                     <p class="text-sm text-gray-400 mb-3">ML-DSA, ML-KEM, SPHINCS+</p>
                     <button onclick="runTest('1_1_pqc_key_generation')" class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded font-bold">
                         Executar
@@ -58,7 +58,7 @@
                     <div id="result_1_1_pqc_key_generation" class="mt-2 text-sm hidden"></div>
                 </div>
                 <div class="bg-gray-800 p-4 rounded-lg">
-                    <h3 class="font-semibold mb-2">1.2. Assinatura QRS-3</h3>
+                    <h3 class="font-semibold mb-2">1.2. {{ t('qrs3_signature') or 'QRS-3 Signature' }}</h3>
                     <p class="text-sm text-gray-400 mb-3">ECDSA + ML-DSA + SPHINCS+</p>
                     <button onclick="runTest('1_2_qrs3_signature')" class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded font-bold">
                         Executar
@@ -66,7 +66,7 @@
                     <div id="result_1_2_qrs3_signature" class="mt-2 text-sm hidden"></div>
                 </div>
                 <div class="bg-gray-800 p-4 rounded-lg">
-                    <h3 class="font-semibold mb-2">1.3. Auditoria PQC</h3>
+                    <h3 class="font-semibold mb-2">1.3. {{ t('pqc_audit') or 'PQC Audit' }}</h3>
                     <p class="text-sm text-gray-400 mb-3">Verificação e validação</p>
                     <button onclick="runTest('1_3_pqc_audit_verification')" class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded font-bold">
                         Executar
@@ -78,10 +78,10 @@
 
         <!-- Seção 2: Testes de Interoperabilidade -->
         <div class="mb-8">
-            <h2 class="text-2xl font-bold mb-4">🌐 2. Testes de Interoperabilidade</h2>
+            <h2 class="text-2xl font-bold mb-4">🌐 2. {{ t('interoperability_tests') or 'Interoperability Tests' }}</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div class="bg-gray-800 p-4 rounded-lg">
-                    <h3 class="font-semibold mb-2">2.1. Proof-of-Lock</h3>
+                    <h3 class="font-semibold mb-2">2.1. {{ t('proof_of_lock') or 'Proof-of-Lock' }}</h3>
                     <p class="text-sm text-gray-400 mb-3">Polygon → Bitcoin</p>
                     <button onclick="runTest('2_1_proof_of_lock')" class="w-full bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-bold">
                         Executar
@@ -89,7 +89,7 @@
                     <div id="result_2_1_proof_of_lock" class="mt-2 text-sm hidden"></div>
                 </div>
                 <div class="bg-gray-800 p-4 rounded-lg">
-                    <h3 class="font-semibold mb-2">2.2. Gasless Interoperability</h3>
+                    <h3 class="font-semibold mb-2">2.2. {{ t('gasless_interoperability') or 'Gasless Interoperability' }}</h3>
                     <p class="text-sm text-gray-400 mb-3">Relay sem gas</p>
                     <button onclick="runTest('2_2_gasless_interoperability')" class="w-full bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-bold">
                         Executar
@@ -97,7 +97,7 @@
                     <div id="result_2_2_gasless_interoperability" class="mt-2 text-sm hidden"></div>
                 </div>
                 <div class="bg-gray-800 p-4 rounded-lg">
-                    <h3 class="font-semibold mb-2">2.3. Bitcoin ↔ EVM</h3>
+                    <h3 class="font-semibold mb-2">2.3. {{ t('bitcoin_to_evm') or 'Bitcoin → EVM' }}</h3>
                     <p class="text-sm text-gray-400 mb-3">Conversão real</p>
                     <button onclick="runTest('2_3_bitcoin_evm_conversion')" class="w-full bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-bold">
                         Executar
@@ -179,7 +179,7 @@
         <!-- Botão Executar Todos -->
         <div class="mb-8">
             <button onclick="runAllTests()" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-6 py-4 rounded-lg font-bold text-lg">
-                🚀 Executar Todos os Testes
+                🚀 {{ t('execute_all_tests') or 'Execute All Tests' }}
             </button>
         </div>
 
@@ -290,7 +290,7 @@
         // Verificar status ao carregar
         document.addEventListener('DOMContentLoaded', function() {
             const statusDiv = document.getElementById('status');
-            statusDiv.innerHTML = '<p class="text-green-400">✅ Testes Profissionais disponíveis</p>';
+            statusDiv.innerHTML = '<p class="text-green-400">✅ ' + (typeof t !== 'undefined' ? t('professional_tests_available') : 'Professional Tests available') + '</p>';
         });
     </script>
 </body>
