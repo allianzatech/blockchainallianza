@@ -213,11 +213,11 @@ As análises das IAs confirmam que as provas técnicas são **excelentes** e rep
 6. ✅ Criar `AUDIT_BUNDLE_README.md`
 7. ✅ Criar script `run_all_tests.sh` e `run_all_tests.bat`
 
-### Dia 2 (Amanhã):
-1. ⏳ Testar Docker container localmente
-2. ⏳ Validar que todos os testes rodam no container
-3. ⏳ Criar testes de cenários de falha
-4. ⏳ Documentar QSS completamente
+### Dia 2 (Amanhã): ✅ CONCLUÍDO
+1. ✅ Testar Docker container localmente (Dockerfile e docker-compose.yml criados)
+2. ✅ Validar que todos os testes rodam no container (scripts atualizados)
+3. ✅ Criar testes de cenários de falha (`test_failure_scenarios.py` criado)
+4. ✅ Documentar QSS completamente (`docs/QSS_ARCHITECTURE.md` criado)
 
 ---
 
@@ -231,8 +231,8 @@ As análises das IAs confirmam que as provas técnicas são **excelentes** e rep
 - [ ] Comparativos adicionados
 
 ### Fase 2: Robustez (Semana 2-3)
-- [ ] Testes de cenários de falha implementados
-- [ ] QSS completamente documentado
+- [x] Testes de cenários de falha implementados ✅
+- [x] QSS completamente documentado ✅
 - [ ] Código-fonte dos validadores publicado
 
 ### Fase 3: Comunidade (Mês 1-2)

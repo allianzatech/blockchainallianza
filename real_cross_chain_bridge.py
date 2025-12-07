@@ -241,6 +241,12 @@ class RealCrossChainBridge:
         self._reserves_setup = False
         self._exchange_rates_updated = False
         
+        # Inicializar atributos Web3 como None (serão configurados em setup_connections)
+        self.polygon_w3 = None
+        self.bsc_w3 = None
+        self.eth_w3 = None
+        self.base_w3 = None
+        
         # Setup básico (sem conexões pesadas)
         self.setup_reserves()
         
@@ -458,6 +464,10 @@ class RealCrossChainBridge:
         Obter instância Web3 para uma chain específica
         NOVA OTIMIZAÇÃO: Connection pool inteligente com métricas de latência
         """
+        # Garantir que conexões estejam configuradas
+        if not self._connections_setup:
+            self.setup_connections(lazy=False)
+        
         chain_lower = chain.lower()
         start_time = time.time()
         
@@ -609,10 +619,10 @@ class RealCrossChainBridge:
                     continue
             
             # Verificar conexões
-            print(f"✅ Polygon: {'Conectado' if self.polygon_w3.is_connected() else 'Desconectado'}")
-            print(f"✅ BSC: {'Conectado' if self.bsc_w3.is_connected() else 'Desconectado'}")
-            print(f"✅ Ethereum: {'Conectado' if self.eth_w3.is_connected() else 'Desconectado'}")
-            print(f"✅ Base: {'Conectado' if self.base_w3.is_connected() else 'Desconectado'}")
+            print(f"✅ Polygon: {'Conectado' if self.polygon_w3 and self.polygon_w3.is_connected() else 'Desconectado'}")
+            print(f"✅ BSC: {'Conectado' if self.bsc_w3 and self.bsc_w3.is_connected() else 'Desconectado'}")
+            print(f"✅ Ethereum: {'Conectado' if self.eth_w3 and self.eth_w3.is_connected() else 'Desconectado'}")
+            print(f"✅ Base: {'Conectado' if self.base_w3 and self.base_w3.is_connected() else 'Desconectado'}")
             print(f"✅ Bitcoin: BlockCypher API configurada")
             
         except Exception as e:

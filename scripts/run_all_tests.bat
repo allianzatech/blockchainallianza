@@ -38,6 +38,26 @@ echo.
 REM Executar testes críticos
 echo 📋 FASE 3: Critical Tests Suite
 echo.
+python test_failure_scenarios.py
+if %ERRORLEVEL% EQU 0 (
+    set /a PASSED_TESTS+=1
+    echo ✅ Failure Scenarios: PASSOU
+) else (
+    set /a FAILED_TESTS+=1
+    echo ❌ Failure Scenarios: FALHOU
+)
+set /a TOTAL_TESTS+=1
+
+python test_atomicity_failure.py
+if %ERRORLEVEL% EQU 0 (
+    set /a PASSED_TESTS+=1
+    echo ✅ Atomicity Failure: PASSOU
+) else (
+    set /a FAILED_TESTS+=1
+    echo ❌ Atomicity Failure: FALHOU
+)
+set /a TOTAL_TESTS+=1
+echo.
 
 REM Executar suite profissional
 echo 📋 FASE 4: Professional Suite

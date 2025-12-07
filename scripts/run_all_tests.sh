@@ -62,6 +62,9 @@ echo ""
 # Executar testes críticos
 echo "📋 FASE 3: Critical Tests Suite"
 echo ""
+run_test "Failure Scenarios" "test_failure_scenarios.py"
+run_test "Atomicity Failure" "test_atomicity_failure.py"
+echo ""
 
 # Executar suite profissional
 echo "📋 FASE 4: Professional Suite"
