@@ -341,15 +341,10 @@ class AutoFaucetManager:
     
     def start_scheduler(self, interval_hours: int = 12):
         """Inicia agendador para verificar a cada X horas"""
-        # Verificar se schedule está disponível
+        # Verificar se schedule está disponível - tentar importar diretamente
         try:
             import schedule as schedule_module
         except ImportError:
-            print("⚠️  schedule não disponível - gerenciador automático não pode ser iniciado")
-            print("   Para habilitar, instale: pip install schedule")
-            return None
-        
-        if schedule is None:
             print("⚠️  schedule não disponível - gerenciador automático não pode ser iniciado")
             print("   Para habilitar, instale: pip install schedule")
             return None
