@@ -132,6 +132,19 @@ def init_testnet_routes(app, blockchain_instance, quantum_security_instance, bri
                 import traceback
                 traceback.print_exc()
         
+        # Inicializar gerador automático de transações
+        try:
+            from testnet_auto_transaction_generator import TestnetAutoTransactionGenerator
+            auto_tx_generator = TestnetAutoTransactionGenerator(blockchain_instance, quantum_security_instance)
+            # Gerar lote inicial de transações
+            initial_txs = auto_tx_generator.generate_batch(count=20)
+            print(f"✅ {len(initial_txs)} transações iniciais geradas!")
+            # Iniciar gerador automático (1 transação a cada 30 segundos)
+            auto_tx_generator.start(interval=30)
+            print("🔄 Gerador automático de transações ativado!")
+        except Exception as e:
+            print(f"⚠️  Gerador automático de transações não disponível: {e}")
+        
         return app
     except Exception as e:
         print(f"⚠️  Erro ao inicializar testnet: {e}")
