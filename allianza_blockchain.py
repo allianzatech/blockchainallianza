@@ -272,7 +272,32 @@ INITIAL_BALANCE = 1000
 TOTAL_SUPPLY = 1_000_000_000
 RESERVE_ADDRESS = "allianza_reserve"
 CASHBACK_RATE = 0.05
-ENCRYPTION_KEY = Fernet.generate_key()
+
+# ENCRYPTION_KEY: Carregar de variável de ambiente ou arquivo, ou gerar e persistir
+ENCRYPTION_KEY_FILE = "secrets/encryption_key.key"
+if os.getenv("ENCRYPTION_KEY"):
+    # Carregar de variável de ambiente
+    ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY").encode()
+elif os.path.exists(ENCRYPTION_KEY_FILE):
+    # Carregar de arquivo
+    try:
+        with open(ENCRYPTION_KEY_FILE, "rb") as f:
+            ENCRYPTION_KEY = f.read()
+    except Exception as e:
+        logger.warning(f"Erro ao carregar ENCRYPTION_KEY do arquivo: {e}. Gerando nova chave...")
+        ENCRYPTION_KEY = Fernet.generate_key()
+        # Salvar para uso futuro
+        os.makedirs(os.path.dirname(ENCRYPTION_KEY_FILE), exist_ok=True)
+        with open(ENCRYPTION_KEY_FILE, "wb") as f:
+            f.write(ENCRYPTION_KEY)
+else:
+    # Gerar nova chave e persistir
+    ENCRYPTION_KEY = Fernet.generate_key()
+    os.makedirs(os.path.dirname(ENCRYPTION_KEY_FILE), exist_ok=True)
+    with open(ENCRYPTION_KEY_FILE, "wb") as f:
+        f.write(ENCRYPTION_KEY)
+    logger.info(f"✅ Nova ENCRYPTION_KEY gerada e salva em {ENCRYPTION_KEY_FILE}")
+
 cipher = Fernet(ENCRYPTION_KEY)
 
 # Conexão com o Banco de Dados
@@ -4287,6 +4312,8 @@ try:
     print("🌐 ALLIANZA TESTNET: Testnet profissional carregada!")
     
     # Registrar rota health check DEPOIS do blueprint para garantir prioridade
+    # NOTA: A rota do blueprint testnet_bp já trata HEAD corretamente
+    # Esta rota serve como fallback caso o blueprint não esteja disponível
     @app.route('/', methods=['GET', 'HEAD'])
     def health_check():
         """
@@ -4295,17 +4322,18 @@ try:
         Suporta GET e HEAD para compatibilidade com diferentes monitores
         Esta rota é registrada DEPOIS do blueprint do testnet para ter prioridade
         """
+        from flask import Response
+        
+        # Para HEAD requests, retornar apenas status 200 sem body
+        if request.method == 'HEAD':
+            return Response(status=200)
+        
+        # Para GET, retornar JSON com status
         response_data = {
             "status": "OK",
             "service": "Allianza Blockchain",
             "version": "1.0.0"
         }
-        
-        # Para HEAD, retornar apenas headers sem body
-        if request.method == 'HEAD':
-            response = jsonify({})
-            response.status_code = 200
-            return response
         
         return jsonify(response_data), 200
     
