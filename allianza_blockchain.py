@@ -1312,17 +1312,26 @@ socketio = SocketIO(app, cors_allowed_origins=allowed_origins, async_mode='threa
 # =============================================================================
 # ROTA GET / PARA UPTIMEROBOT E MONITORES
 # =============================================================================
-@app.route('/', methods=['GET'])
+@app.route('/', methods=['GET', 'HEAD'])
 def health_check():
     """
     Rota de health check para monitores (UptimeRobot, Render, etc.)
     Retorna 200 OK para manter o servidor ativo e evitar sleep mode
+    Suporta GET e HEAD para compatibilidade com diferentes monitores
     """
-    return jsonify({
+    response_data = {
         "status": "OK",
         "service": "Allianza Blockchain",
         "version": "1.0.0"
-    }), 200
+    }
+    
+    # Para HEAD, retornar apenas headers sem body
+    if request.method == 'HEAD':
+        response = jsonify({})
+        response.status_code = 200
+        return response
+    
+    return jsonify(response_data), 200
 
 # =============================================================================
 # MIDDLEWARE DE MELHORIAS - NOVA SEÇÃO
