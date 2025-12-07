@@ -654,16 +654,16 @@
 <body>
     <div class="container">
         <a href="/" class="btn-back">
-Voltar
+{{ t('back') or 'Back' }}
         </a>
         
-        <h1>🔬 Simulador de Ataque Quântico</h1>
-        <p class="subtitle">Veja visualmente como um ataque quântico funciona e por que a Allianza está protegida</p>
+        <h1>🔬 {{ t('quantum_attack_simulator') or 'Quantum Attack Simulator' }}</h1>
+        <p class="subtitle">{{ t('see_visually_how_attack_works') or 'See visually how a quantum attack works and why Allianza is protected' }}</p>
         
         <!-- Botão Principal -->
         <div class="btn-container">
             <button class="btn btn-primary" onclick="startTest()" id="start-btn">
-                🚀 Executar Teste Quântico
+                🚀 {{ t('run_quantum_test') or 'Run Quantum Test' }}
             </button>
         </div>
         
