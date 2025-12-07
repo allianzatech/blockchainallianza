@@ -824,11 +824,23 @@ def site_purchase():
         }), 200
         
     except Exception as e:
-        conn.rollback()
+        if conn:
+            try:
+                conn.rollback()
+                print(f"🔄 Rollback executado devido a erro")
+            except Exception as rollback_error:
+                print(f"⚠️ Erro ao fazer rollback: {rollback_error}")
+        
         print(f"❌ Erro no processamento da compra: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
     finally:
-        conn.close()
+        if conn:
+            try:
+                conn.close()
+            except Exception as close_error:
+                print(f"⚠️ Erro ao fechar conexão: {close_error}")
 
 # 💰 ROTA PARA CRIAR SESSÃO STRIPE - PRODUÇÃO (CORRIGIDA)
 @app.route('/create-checkout-session', methods=['POST'])
