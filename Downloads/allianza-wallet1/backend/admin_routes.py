@@ -5,7 +5,36 @@ from flask import Blueprint, request, jsonify
 from flask_cors import CORS
 from functools import wraps
 import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+
+# ✅ Import opcional de payment_expiration (pode não existir em alguns ambientes)
+try:
+    from payment_expiration import expire_old_payments, set_payment_expiration, add_expires_at_column
+    PAYMENT_EXPIRATION_AVAILABLE = True
+    
+    # ✅ GARANTIR QUE A COLUNA EXISTS NA INICIALIZAÇÃO
+    try:
+        add_expires_at_column()
+        print("✅ Coluna 'expires_at' verificada/criada com sucesso")
+    except Exception as e:
+        print(f"⚠️  Aviso ao verificar coluna expires_at: {e}")
+        
+except ImportError:
+    PAYMENT_EXPIRATION_AVAILABLE = False
+    print("⚠️  payment_expiration não disponível - funcionalidade de expiração desabilitada")
+    
+    # Funções stub para evitar erros
+    def expire_old_payments():
+        return {"success": True, "expired_count": 0, "message": "Funcionalidade não disponível"}
+    def set_payment_expiration(payment_id, days=10):
+        pass
+    def add_expires_at_column():
+        pass
+
+# ✅ CARREGAR VARIÁVEIS DE AMBIENTE PRIMEIRO
+from dotenv import load_dotenv
+load_dotenv()
+
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
@@ -15,17 +44,29 @@ CORS(admin_bp, resources={r"/admin/*": {"origins": "*"}})
 # ✅ CONFIGURAÇÃO ÚNICA - Evitar conflitos
 def get_db_connection():
     """Conexão única com o banco para evitar conflitos"""
-    DATABASE_URL = os.getenv('DATABASE_URL')
+    # ✅ FALLBACK: Usar NEON_DATABASE_URL se DATABASE_URL não existir
+    DATABASE_URL = os.getenv('DATABASE_URL') or os.getenv('NEON_DATABASE_URL')
     if not DATABASE_URL:
-        raise ValueError("DATABASE_URL não configurada")
+        raise ValueError("DATABASE_URL ou NEON_DATABASE_URL não configurada")
     
+    print(f"🔗 Conectando ao banco usando: {'DATABASE_URL' if os.getenv('DATABASE_URL') else 'NEON_DATABASE_URL (fallback)'}")
     conn = psycopg2.connect(DATABASE_URL)
     conn.autocommit = False
     return conn
 
 # ✅ CONSTANTES GLOBAIS - Evitar recálculos
-ALZ_PRICE_BRL = 0.10  # 1 ALZ = R$ 0,10
-SITE_ADMIN_TOKEN = os.getenv('VITE_SITE_ADMIN_TOKEN', 'allianza_super_admin_2024_CdE25$$$')
+# ✅ ATUALIZADO: Valor do token mudou para USD
+ALZ_PRICE_USD = 0.10  # 1 ALZ = $0,10 USD
+ALZ_PRICE_BRL = 0.10  # Mantido para compatibilidade (será calculado via cotação USD/BRL)
+
+# ✅ CARREGAR TOKEN DA VARIÁVEL DE AMBIENTE (com debug)
+_env_token = os.getenv('VITE_SITE_ADMIN_TOKEN')
+if _env_token:
+    SITE_ADMIN_TOKEN = _env_token
+    print(f"✅ VITE_SITE_ADMIN_TOKEN carregado: {_env_token[:10]}... (comprimento: {len(_env_token)})")
+else:
+    SITE_ADMIN_TOKEN = 'allianza_super_admin_2024_CdE25$$$'
+    print(f"⚠️  VITE_SITE_ADMIN_TOKEN não encontrado, usando valor padrão: {SITE_ADMIN_TOKEN[:10]}...")
 
 def admin_required(f):
     @wraps(f)
@@ -47,14 +88,23 @@ def admin_required(f):
     return decorated_function
 
 # ✅ FUNÇÃO DE CÁLCULO GLOBAL
+# ✅ ATUALIZADO: 1 ALZ = $0,10 USD
 def calculate_alz_from_brl(amount_brl):
     """Calcula ALZ a partir de BRL de forma consistente"""
-    return float(amount_brl) / ALZ_PRICE_BRL
+    # Se amount_brl está em BRL, converter: BRL → USD → ALZ
+    # Assumindo cotação USD/BRL = 5.50
+    usd_to_brl_rate = 5.50
+    amount_usd = float(amount_brl) / usd_to_brl_rate  # BRL → USD
+    return amount_usd / ALZ_PRICE_USD  # USD → ALZ (1 ALZ = $0,10 USD)
+
+def calculate_alz_from_usd(amount_usd):
+    """Calcula ALZ a partir de USD (método preferido)"""
+    return float(amount_usd) / ALZ_PRICE_USD  # 1 ALZ = $0,10 USD
 
 # ✅ ROTA DE HEALTH CHECK MELHORADA
 @admin_bp.route('/health', methods=['GET'])
 def health_check():
-    """Verifica saúde do backend e banco"""
+    """Verifica saúde do backend e banco - sempre retorna JSON válido"""
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -86,29 +136,61 @@ def health_check():
         }), 200
         
     except Exception as e:
+        # ✅ CORRIGIDO: Sempre retornar JSON válido, mesmo em caso de erro
         return jsonify({
             "status": "unhealthy",
             "database": "disconnected",
             "error": str(e),
             "timestamp": datetime.utcnow().isoformat()
-        }), 500
+        }), 200  # Retornar 200 para não quebrar o frontend
 
 # ✅ DASHBOARD CORRIGIDO
 @admin_bp.route('/admin/payments', methods=['GET'])
 @admin_required
 def get_payments():
-    conn = get_db_connection()
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
-    
+    conn = None
     try:
         print("📥 Buscando pagamentos do banco...")
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
         
-        cursor.execute('''
-            SELECT id, email, amount, method, status, created_at, 
-                   processed_at, tx_hash, metadata, wallet_address
-            FROM payments 
-            ORDER BY created_at DESC
-        ''')
+        # ✅ VERIFICAR SE COLUNA expires_at EXISTE
+        cursor.execute("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name='payments' AND column_name='expires_at'
+        """)
+        has_expires_at = cursor.fetchone() is not None
+        
+        # ✅ TENTAR CRIAR COLUNA SE NÃO EXISTIR
+        if not has_expires_at:
+            try:
+                if PAYMENT_EXPIRATION_AVAILABLE:
+                    add_expires_at_column()
+                    has_expires_at = True
+                    print("✅ Coluna 'expires_at' criada com sucesso")
+                else:
+                    print("⚠️  payment_expiration não disponível, pulando criação de coluna")
+            except Exception as e:
+                print(f"⚠️  Não foi possível criar coluna expires_at: {e}")
+        
+        # ✅ SELECT DINÂMICO BASEADO NA EXISTÊNCIA DA COLUNA
+        if has_expires_at:
+            cursor.execute('''
+                SELECT id, email, amount, method, status, created_at, 
+                       processed_at, tx_hash, metadata, wallet_address, expires_at
+                FROM payments 
+                ORDER BY created_at DESC
+            ''')
+        else:
+            # SELECT sem expires_at se coluna não existir
+            cursor.execute('''
+                SELECT id, email, amount, method, status, created_at, 
+                       processed_at, tx_hash, metadata, wallet_address
+                FROM payments 
+                ORDER BY created_at DESC
+            ''')
+        
         payments = cursor.fetchall()
         
         print(f"✅ Encontrados {len(payments)} pagamentos")
@@ -131,24 +213,32 @@ def get_payments():
             "success": True,
             "data": corrected_payments,
             "count": len(corrected_payments),
-            "calculation_note": "ALZ = BRL / 0.10 (1 ALZ = R$ 0,10)"
+            "calculation_note": "ALZ = USD / 0.10 (1 ALZ = $0,10 USD)"
         }), 200
         
     except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
         print(f"❌ Erro ao carregar pagamentos: {str(e)}")
-        return jsonify({"error": f"Erro no servidor: {str(e)}"}), 500
+        print(f"📋 Traceback completo:\n{error_trace}")
+        return jsonify({
+            "success": False,
+            "error": f"Erro no servidor: {str(e)}",
+            "type": type(e).__name__
+        }), 500
     finally:
-        conn.close()
+        if conn:
+            conn.close()
 
 # ✅ ROTA PARA LISTAR TODOS OS STAKES
 @admin_bp.route('/admin/stakes', methods=['GET'])
 @admin_required
 def get_all_stakes():
-    conn = get_db_connection()
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
-    
+    conn = None
     try:
         print("📥 Buscando todos os stakes do banco...")
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
         
         # Buscar todos os stakes (ativos e inativos)
         cursor.execute('''
@@ -170,14 +260,14 @@ def get_all_stakes():
             
             # Converter datas para ISO format
             for key in ['start_date', 'end_date', 'last_reward_claim', 'withdrawn_at']:
-                if formatted_stake[key] and hasattr(formatted_stake[key], 'isoformat'):
+                if formatted_stake.get(key) and hasattr(formatted_stake[key], 'isoformat'):
                     formatted_stake[key] = formatted_stake[key].isoformat()
-                elif formatted_stake[key]:
+                elif formatted_stake.get(key):
                     formatted_stake[key] = formatted_stake[key].strftime('%Y-%m-%dT%H:%M:%S.%fZ')
             
             # Garantir que os numéricos sejam floats
             for key in ['amount', 'apy', 'estimated_reward', 'accrued_reward', 'early_withdrawal_penalty', 'actual_return', 'penalty_applied']:
-                if formatted_stake[key] is not None:
+                if formatted_stake.get(key) is not None:
                     formatted_stake[key] = float(formatted_stake[key])
 
             formatted_stakes.append(formatted_stake)
@@ -189,10 +279,18 @@ def get_all_stakes():
         }), 200
         
     except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
         print(f"❌ Erro ao carregar stakes: {str(e)}")
-        return jsonify({"error": f"Erro no servidor: {str(e)}"}), 500
+        print(f"📋 Traceback completo:\n{error_trace}")
+        return jsonify({
+            "success": False,
+            "error": f"Erro no servidor: {str(e)}",
+            "type": type(e).__name__
+        }), 500
     finally:
-        conn.close()
+        if conn:
+            conn.close()
 
 # ✅ ROTA PARA UNSTAKE FORÇADO PELO ADMIN
 @admin_bp.route('/admin/unstake', methods=['POST'])
@@ -377,6 +475,19 @@ def process_payments():
                     user_id = cursor.fetchone()['id']
                     print(f"✅ Novo usuário criado: {user_id}")
                 
+                # ✅ VERIFICAR SE É LIBERAÇÃO DE TOKENS BLOQUEADOS OU ENVIO EXTERNO
+                release_to_allianza_wallet = data.get('release_to_allianza_wallet', False)
+                payment_wallet_address = None
+                
+                # Buscar wallet_address do pagamento
+                cursor.execute(
+                    "SELECT wallet_address FROM payments WHERE id = %s",
+                    (payment_id,)
+                )
+                payment_data = cursor.fetchone()
+                if payment_data:
+                    payment_wallet_address = payment_data.get('wallet_address')
+                
                 # ✅ VERIFICAR/CRIAR BALANCE
                 cursor.execute(
                     "SELECT id FROM balances WHERE user_id = %s AND asset = 'ALZ'",
@@ -386,16 +497,35 @@ def process_payments():
                 
                 if not balance:
                     cursor.execute(
-                        "INSERT INTO balances (user_id, asset, available, staking_balance) VALUES (%s, 'ALZ', 0, 0)",
+                        "INSERT INTO balances (user_id, asset, available, locked, staking_balance) VALUES (%s, 'ALZ', 0, 0, 0)",
                         (user_id,)
                     )
                     print(f"✅ Balance criado para usuário {user_id}")
                 
-                # ✅ CREDITAR TOKENS
-                cursor.execute(
-                    "UPDATE balances SET available = available + %s WHERE user_id = %s AND asset = 'ALZ'",
-                    (alz_amount, user_id)
-                )
+                # ✅ LÓGICA: Se não tem wallet_address OU release_to_allianza_wallet = true
+                # Adicionar tokens em LOCKED (bloqueados) ao invés de available
+                if not payment_wallet_address or release_to_allianza_wallet:
+                    # ✅ LIBERAR TOKENS BLOQUEADOS (mover de locked para available)
+                    if release_to_allianza_wallet:
+                        cursor.execute(
+                            "UPDATE balances SET locked = locked - %s, available = available + %s WHERE user_id = %s AND asset = 'ALZ' AND locked >= %s",
+                            (alz_amount, alz_amount, user_id, alz_amount)
+                        )
+                        print(f"🔓 Tokens liberados: {alz_amount} ALZ movidos de locked para available")
+                    else:
+                        # ✅ BLOQUEAR TOKENS (adicionar em locked)
+                        cursor.execute(
+                            "UPDATE balances SET locked = locked + %s WHERE user_id = %s AND asset = 'ALZ'",
+                            (alz_amount, user_id)
+                        )
+                        print(f"🔒 Tokens bloqueados: {alz_amount} ALZ adicionados em locked")
+                else:
+                    # ✅ CREDITAR TOKENS DIRETAMENTE (para wallet externa)
+                    cursor.execute(
+                        "UPDATE balances SET available = available + %s WHERE user_id = %s AND asset = 'ALZ'",
+                        (alz_amount, user_id)
+                    )
+                    print(f"✅ Tokens creditados: {alz_amount} ALZ adicionados em available")
                 
                 # ✅ REGISTRAR NO LEDGER
                 cursor.execute(
@@ -466,8 +596,29 @@ def get_stats():
         circulating_result = cursor.fetchone()
         circulating = float(circulating_result['circulating'] or 0)
         
-        # ✅ PAGAMENTOS PENDENTES CALCULADOS CORRETAMENTE
-        cursor.execute("SELECT SUM(amount) as pending_brl FROM payments WHERE status = 'pending'")
+        # ✅ VERIFICAR SE COLUNA expires_at EXISTE
+        cursor.execute("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name='payments' AND column_name='expires_at'
+        """)
+        has_expires_at = cursor.fetchone() is not None
+        
+        # ✅ PAGAMENTOS PENDENTES CALCULADOS CORRETAMENTE (apenas não expirados)
+        # ✅ CORRIGIDO: Não contar pagamentos expirados no pending_distribution
+        if has_expires_at:
+            cursor.execute("""
+                SELECT SUM(amount) as pending_brl 
+                FROM payments 
+                WHERE status = 'pending' 
+                AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)
+            """)
+        else:
+            cursor.execute("""
+                SELECT SUM(amount) as pending_brl 
+                FROM payments 
+                WHERE status = 'pending'
+            """)
         pending_brl_result = cursor.fetchone()
         pending_brl = float(pending_brl_result['pending_brl'] or 0)
         pending_alz = calculate_alz_from_brl(pending_brl)
@@ -479,6 +630,7 @@ def get_stats():
                 (SELECT COUNT(*) FROM payments) as total_payments,
                 (SELECT COUNT(*) FROM payments WHERE status = 'completed') as completed_payments,
                 (SELECT COUNT(*) FROM payments WHERE status = 'pending') as pending_payments,
+                (SELECT COUNT(*) FROM payments WHERE status = 'expired') as expired_payments,
                 (SELECT SUM(amount) FROM payments WHERE status = 'completed') as total_processed_brl
         ''')
         stats_result = cursor.fetchone()
@@ -588,6 +740,22 @@ def manual_token_send():
         return jsonify({"error": str(e)}), 500
     finally:
         conn.close()
+
+# ✅ DEBUG CORRIGIDO - Endpoint público para verificar token configurado
+@admin_bp.route('/debug-token-info', methods=['GET'])
+def debug_token_info():
+    """Endpoint público para debug - mostra qual token o backend está esperando"""
+    env_token = os.getenv('VITE_SITE_ADMIN_TOKEN', 'NOT_FOUND')
+    return jsonify({
+        "token_from_env": env_token[:20] + "..." if len(env_token) > 20 else env_token,
+        "token_length": len(env_token) if env_token != 'NOT_FOUND' else 0,
+        "token_first_10": env_token[:10] if env_token != 'NOT_FOUND' else "NOT_FOUND",
+        "token_last_10": env_token[-10:] if env_token != 'NOT_FOUND' and len(env_token) > 10 else "NOT_FOUND",
+        "env_var_exists": env_token != 'NOT_FOUND',
+        "site_admin_token_used": SITE_ADMIN_TOKEN[:20] + "..." if len(SITE_ADMIN_TOKEN) > 20 else SITE_ADMIN_TOKEN,
+        "site_admin_token_length": len(SITE_ADMIN_TOKEN),
+        "message": "Debug de token - verifique se VITE_SITE_ADMIN_TOKEN está configurado"
+    }), 200
 
 # ✅ DEBUG CORRIGIDO
 @admin_bp.route('/admin/debug-token', methods=['GET'])
