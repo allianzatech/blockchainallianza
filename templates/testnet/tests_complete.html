@@ -105,6 +105,18 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
                 });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 200)}`);
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Expected JSON but got ${contentType}. Response: ${text.substring(0, 200)}`);
+                }
+
                 const data = await response.json();
                 showResults('Complete Validation Suite', data);
             } catch (error) {
@@ -119,6 +131,18 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
                 });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 200)}`);
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Expected JSON but got ${contentType}. Response: ${text.substring(0, 200)}`);
+                }
+
                 const data = await response.json();
                 showResults('Critical Tests Suite', data);
             } catch (error) {
@@ -154,8 +178,20 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
                 });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 200)}`);
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Expected JSON but got ${contentType}. Response: ${text.substring(0, 200)}`);
+                }
+
                 const data = await response.json();
-                showResults('Todos os Testes (41 Validações)', data);
+                showResults('All Tests (41 Validations)', data);
             } catch (error) {
                 showError(error);
             }
@@ -166,7 +202,7 @@
             document.getElementById('results-content').innerHTML = `
                 <div class="text-center">
                     <i class="fas fa-spinner fa-spin text-4xl text-blue-400"></i>
-                    <p class="mt-4">Executando testes... Isso pode levar alguns minutos.</p>
+                    <p class="mt-4">Executing tests... This may take a few minutes.</p>
                 </div>
             `;
         }
@@ -188,7 +224,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                         <div class="bg-green-900 p-4 rounded">
                             <div class="text-2xl font-bold">${summary.total_validations || summary.total_tests || 'N/A'}</div>
-                            <div class="text-sm text-gray-300">Total de Testes</div>
+                            <div class="text-sm text-gray-300">Total Tests</div>
                         </div>
                         <div class="bg-blue-900 p-4 rounded">
                             <div class="text-2xl font-bold">${summary.successful_validations || summary.successful_tests || 'N/A'}</div>

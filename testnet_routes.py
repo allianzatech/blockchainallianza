@@ -316,19 +316,19 @@ def faucet_request():
         if not address:
             return jsonify({
                 "success": False,
-                "error": "Endereço é obrigatório"
+                "error": "Address is required"
             }), 400
         
         if not is_valid_testnet_address(address):
             return jsonify({
                 "success": False,
-                "error": "Endereço inválido. Deve começar com ALZ1 e ter 42 caracteres."
+                "error": "Invalid address. Must start with ALZ1 and have 42 characters."
             }), 400
         
         if not faucet:
             return jsonify({
                 "success": False,
-                "error": "Faucet não inicializado"
+                "error": "Faucet not initialized"
             }), 500
         
         result = faucet.request_tokens(address, request)
@@ -341,7 +341,7 @@ def faucet_request():
     except Exception as e:
         return jsonify({
             "success": False,
-            "error": f"Erro interno: {str(e)}"
+            "error": f"Internal error: {str(e)}"
         }), 500
 
 @testnet_bp.route('/api/faucet/logs', methods=['GET'])
@@ -808,7 +808,7 @@ def api_qrs3_verify():
     except Exception as e:
         return jsonify({
             "success": False,
-            "error": f"Erro interno: {str(e)}"
+            "error": f"Internal error: {str(e)}"
         }), 500
 
 # =============================================================================
