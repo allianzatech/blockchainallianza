@@ -643,6 +643,8 @@ TRANSLATIONS = {
         'sphincs_valid': 'SPHINCS Valid',
         'valid': 'Valid',
         'complete_json_response': 'Complete JSON Response',
+        'invalid': 'Invalid',
+        'proof_json': 'Proof JSON',
     }
 }
 

@@ -102,7 +102,7 @@ function createModernModal(title, data, type = 'success', options = {}) {
                 
                 <div class="mt-4">
                     <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-sm font-semibold text-gray-400">Resposta JSON Completa</h3>
+                        <h3 class="text-sm font-semibold text-gray-400">${typeof t !== 'undefined' && t ? t('complete_json_response') : 'Complete JSON Response'}</h3>
                         <button class="btn-copy-modern" onclick="copyJsonFromModal(this, '${modalId}')">
                             <i class="fas fa-copy"></i>
                             <span>Copiar JSON</span>
@@ -165,7 +165,7 @@ function generateVerificationDetails(details) {
         <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-4">
             <h3 class="font-bold text-yellow-400 mb-3 flex items-center gap-2">
                 <i class="fas fa-clipboard-check"></i>
-                Detalhes da Verificação
+                ${typeof t !== 'undefined' && t ? t('verification_details') : 'Verification Details'}
             </h3>
             <div class="verification-grid">
                 ${items}
