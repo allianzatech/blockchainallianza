@@ -52,6 +52,36 @@ TRANSLATIONS = {
         'execute_tests': 'Execute testes reais',
         'complete_suite': 'Suite completa de testes',
         'execute_all': 'Execute todos os testes documentados',
+        # Network Info
+        'network_id': 'Network ID',
+        'chain_id': 'Chain ID',
+        'version': 'Versão',
+        # Developer Hub & Leaderboard
+        'quick_start_guide': 'Quick Start Guide',
+        'start_integrating': 'Comece a integrar em minutos',
+        'ranking': 'Ranking',
+        'developers': 'desenvolvedores',
+        # Recent Activity
+        'view_all': 'Ver todas',
+        'ran_test': 'executou um teste',
+        'generated_proof': 'gerou uma prova quântica',
+        'made_qss_request': 'fez uma requisição QSS',
+        'points': 'pontos',
+        # Professional Features buttons
+        'status': 'Status',
+        'monitoring': 'Monitoramento',
+        'qrs3_dashboard': 'Dashboard',
+        'interop': 'Interop',
+        'cross_chain': 'Cross-chain',
+        '5_layers': '5 Camadas',
+        'tests': 'Testes',
+        'public': 'Públicos',
+        'professional': 'Profissionais',
+        'complete_suite_short': 'Suite completa',
+        '41_validations': '41 Validações',
+        'complete': 'Completas',
+        # Network Status
+        'network_status_title': 'Status da Rede',
     },
     'en': {
         # Dashboard
@@ -90,6 +120,36 @@ TRANSLATIONS = {
         'execute_tests': 'Execute real tests',
         'complete_suite': 'Complete test suite',
         'execute_all': 'Execute all documented tests',
+        # Network Info
+        'network_id': 'Network ID',
+        'chain_id': 'Chain ID',
+        'version': 'Version',
+        # Developer Hub & Leaderboard
+        'quick_start_guide': 'Quick Start Guide',
+        'start_integrating': 'Start integrating in minutes',
+        'ranking': 'Ranking',
+        'developers': 'developers',
+        # Recent Activity
+        'view_all': 'View all',
+        'ran_test': 'ran a test',
+        'generated_proof': 'generated a quantum proof',
+        'made_qss_request': 'made a QSS request',
+        'points': 'points',
+        # Professional Features buttons
+        'status': 'Status',
+        'monitoring': 'Monitoring',
+        'qrs3_dashboard': 'Dashboard',
+        'interop': 'Interop',
+        'cross_chain': 'Cross-chain',
+        '5_layers': '5 Layers',
+        'tests': 'Tests',
+        'public': 'Public',
+        'professional': 'Professional',
+        'complete_suite_short': 'Complete suite',
+        '41_validations': '41 Validations',
+        'complete': 'Complete',
+        # Network Status
+        'network_status_title': 'Network Status',
     }
 }
 
