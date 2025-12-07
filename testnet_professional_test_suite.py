@@ -2358,11 +2358,11 @@ def init_professional_tests(app, blockchain_instance, quantum_security_instance,
     # Error handler para garantir que sempre retorne JSON
     @professional_tests_bp.errorhandler(404)
     def handle_404(e):
-        return jsonify({"success": False, "error": "Rota não encontrada"}), 404
+        return jsonify({"success": False, "error": "Route not found"}), 404
     
     @professional_tests_bp.errorhandler(500)
     def handle_500(e):
-        return jsonify({"success": False, "error": "Erro interno do servidor"}), 500
+        return jsonify({"success": False, "error": "Internal server error"}), 500
     
     @professional_tests_bp.errorhandler(Exception)
     def handle_exception(e):
@@ -2384,28 +2384,40 @@ def professional_tests_dashboard():
 @professional_tests_bp.route('/api/run-all', methods=['POST'])
 def api_run_all_tests():
     """Executar todos os testes"""
-    if not professional_suite:
-        return jsonify({"error": "Professional Test Suite não inicializada"}), 500
-    
-    results = professional_suite.run_all_tests()
-    return jsonify(results)
+    try:
+        if not professional_suite:
+            return jsonify({
+                "success": False,
+                "error": "Professional Test Suite not initialized"
+            }), 500
+        
+        results = professional_suite.run_all_tests()
+        return jsonify(results), 200
+    except Exception as e:
+        import traceback
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "type": type(e).__name__,
+            "traceback": traceback.format_exc() if os.getenv('DEBUG') == 'True' else None
+        }), 500
 
 @professional_tests_bp.route('/api/run-test', methods=['POST'])
 def api_run_test():
     """Executar teste específico (aceita test_id no body)"""
     try:
         if not professional_suite:
-            return jsonify({"success": False, "error": "Professional Test Suite não inicializada"}), 500
+            return jsonify({"success": False, "error": "Professional Test Suite not initialized"}), 500
         
         # Garantir que o request é JSON
         if not request.is_json:
-            return jsonify({"success": False, "error": "Content-Type deve ser application/json"}), 400
+            return jsonify({"success": False, "error": "Content-Type must be application/json"}), 400
         
         data = request.get_json() or {}
         test_id = data.get('test_id')
         
         if not test_id:
-            return jsonify({"success": False, "error": "test_id não fornecido"}), 400
+            return jsonify({"success": False, "error": "test_id not provided"}), 400
         
         test_methods = {
             "1_1_pqc_key_generation": professional_suite.test_1_1_pqc_key_generation,
@@ -2454,7 +2466,7 @@ def api_run_test_by_path(test_id):
     """Executar teste específico (aceita test_id no path)"""
     try:
         if not professional_suite:
-            return jsonify({"success": False, "error": "Professional Test Suite não inicializada"}), 500
+            return jsonify({"success": False, "error": "Professional Test Suite not initialized"}), 500
         
         test_methods = {
             "1_1_pqc_key_generation": professional_suite.test_1_1_pqc_key_generation,
