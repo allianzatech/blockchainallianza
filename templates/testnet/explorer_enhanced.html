@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="{{ lang or 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -56,39 +56,39 @@
     <div class="container mx-auto px-4 py-8">
         <!-- Header -->
         <div class="mb-6">
-            <a href="javascript:history.back()" class="btn-back mb-4">Voltar</a>
-            <h1 class="text-4xl font-bold mb-2">🔍 Explorer</h1>
-            <p class="text-gray-400">Explore blocos, transações e estatísticas detalhadas da rede</p>
+            <a href="javascript:history.back()" class="btn-back mb-4">{{ t('back') or 'Back' }}</a>
+            <h1 class="text-4xl font-bold mb-2">🔍 {{ t('explorer') or 'Explorer' }}</h1>
+            <p class="text-gray-400">{{ t('explore_blocks_transactions') or 'Explore blocks, transactions and detailed network statistics' }}</p>
         </div>
 
         <!-- Stats Melhoradas -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <div class="stat-card bg-blue-900 p-4 rounded-lg border-2 border-blue-500">
-                <h3 class="text-sm text-gray-400 mb-1">Total de Blocos</h3>
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('total_blocks') or 'Total Blocks' }}</h3>
                 <p class="text-3xl font-bold">{{ stats.total_blocks }}</p>
                 {% if stats.last_block_index %}
-                <p class="text-xs text-gray-400 mt-1">Último: #{{ stats.last_block_index }}</p>
+                <p class="text-xs text-gray-400 mt-1">{{ t('last') or 'Last' }}: #{{ stats.last_block_index }}</p>
                 {% endif %}
             </div>
             <div class="stat-card bg-green-900 p-4 rounded-lg border-2 border-green-500">
-                <h3 class="text-sm text-gray-400 mb-1">Total de Transações</h3>
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('total_transactions') or 'Total Transactions' }}</h3>
                 <p class="text-3xl font-bold">{{ stats.total_transactions }}</p>
                 {% if stats.pending_transactions %}
-                <p class="text-xs text-gray-400 mt-1">{{ stats.pending_transactions }} pendentes</p>
+                <p class="text-xs text-gray-400 mt-1">{{ stats.pending_transactions }} {{ t('pending') or 'pending' }}</p>
                 {% endif %}
             </div>
             <div class="stat-card bg-purple-900 p-4 rounded-lg border-2 border-purple-500">
                 <h3 class="text-sm text-gray-400 mb-1">TPS (24h)</h3>
                 <p class="text-3xl font-bold">{{ stats.tps_24h_avg }}</p>
                 {% if stats.tps_current %}
-                <p class="text-xs text-gray-400 mt-1">Atual: {{ stats.tps_current }}/s</p>
+                <p class="text-xs text-gray-400 mt-1">{{ t('current') or 'Current' }}: {{ stats.tps_current }}/s</p>
                 {% endif %}
             </div>
             <div class="stat-card bg-yellow-900 p-4 rounded-lg border-2 border-yellow-500">
-                <h3 class="text-sm text-gray-400 mb-1">Latência Média</h3>
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('average_latency') or 'Average Latency' }}</h3>
                 <p class="text-3xl font-bold">{{ stats.latency_avg_ms }}ms</p>
                 {% if stats.active_shards %}
-                <p class="text-xs text-gray-400 mt-1">{{ stats.active_shards }} shards ativos</p>
+                <p class="text-xs text-gray-400 mt-1">{{ stats.active_shards }} {{ t('active_shards') or 'active shards' }}</p>
                 {% endif %}
             </div>
         </div>
@@ -103,11 +103,11 @@
                 </h3>
                 <div class="space-y-2">
                     <div class="flex justify-between">
-                        <span class="text-gray-400">Transações:</span>
+                        <span class="text-gray-400">{{ t('transactions') or 'Transactions' }}:</span>
                         <span class="font-bold">{{ stats.cross_chain.total_transactions }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-400">Volume Total:</span>
+                        <span class="text-gray-400">{{ t('total_volume') or 'Total Volume' }}:</span>
                         <span class="font-bold">{{ "%.2f"|format(stats.cross_chain.total_volume) }}</span>
                     </div>
                     <div class="flex justify-between">
@@ -121,11 +121,11 @@
             {% if stats.quantum_security %}
             <div class="bg-gray-800 p-6 rounded-lg border-2 border-purple-500">
                 <h3 class="text-xl font-semibold mb-4 text-purple-400">
-                    <i class="fas fa-atom mr-2"></i>Segurança Quântica
+                    <i class="fas fa-atom mr-2"></i>{{ t('quantum_security') or 'Quantum Security' }}
                 </h3>
                 <div class="space-y-2">
                     <div class="flex justify-between">
-                        <span class="text-gray-400">Assinadas com PQC:</span>
+                        <span class="text-gray-400">{{ t('signed_with_pqc') or 'Signed with PQC' }}:</span>
                         <span class="font-bold">{{ stats.quantum_security.quantum_signed_count }}</span>
                     </div>
                     <div class="flex justify-between">
@@ -133,7 +133,7 @@
                         <span class="font-bold">{{ stats.quantum_security.quantum_percentage }}%</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-400">QRS-3 Verificadas:</span>
+                        <span class="text-gray-400">{{ t('qrs3_verified') or 'QRS-3 Verified' }}:</span>
                         <span class="font-bold">{{ stats.quantum_security.qrs3_verified_count }}</span>
                     </div>
                 </div>
@@ -145,7 +145,7 @@
         <!-- Chains Suportadas -->
         {% if stats.chains_supported %}
         <div class="mb-8 bg-gray-800 p-4 rounded-lg">
-            <h3 class="text-lg font-semibold mb-2">🌐 Blockchains Suportadas</h3>
+            <h3 class="text-lg font-semibold mb-2">🌐 {{ t('supported_blockchains') or 'Supported Blockchains' }}</h3>
             <div class="flex flex-wrap gap-2">
                 {% for chain in stats.chains_supported %}
                 <span class="badge badge-blue">{{ chain }}</span>
@@ -157,13 +157,13 @@
         <!-- Blocks Melhorados -->
         <div class="mb-8">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-semibold">📦 Blocos Recentes</h2>
-                <span class="text-sm text-gray-400">{{ blocks|length }} blocos</span>
+                <h2 class="text-2xl font-semibold">📦 {{ t('recent_blocks') or 'Recent Blocks' }}</h2>
+                <span class="text-sm text-gray-400">{{ blocks|length }} {{ t('blocks') or 'blocks' }}</span>
             </div>
             
             {% if blocks|length > 0 and blocks[0].transaction_count == 0 %}
             <div class="bg-blue-900/30 border border-blue-500/50 rounded-lg p-4 mb-4 text-sm text-blue-200">
-                <p><strong>ℹ️ Informação:</strong> Os blocos estão sendo criados, mas ainda não há transações pendentes para incluir neles. Isso é normal - blocos vazios são criados periodicamente para manter a rede ativa. Quando houver transações, elas aparecerão aqui automaticamente.</p>
+                <p><strong>ℹ️ {{ t('information') or 'Information' }}:</strong> {{ t('blocks_being_created_info') or 'Blocks are being created, but there are no pending transactions to include yet. This is normal - empty blocks are created periodically to keep the network active. When there are transactions, they will appear here automatically.' }}</p>
             </div>
             {% endif %}
             <div class="space-y-3">
@@ -192,10 +192,10 @@
                         </div>
                         <div class="text-right">
                             <div class="text-2xl font-bold text-green-400">{{ block.transaction_count }}</div>
-                            <div class="text-xs text-gray-400">transações</div>
+                            <div class="text-xs text-gray-400">{{ t('transactions') or 'transactions' }}</div>
                             {% if block.statistics %}
                             <div class="text-xs text-gray-400 mt-1">
-                                Total: {{ "%.2f"|format(block.statistics.total_amount) }}
+                                {{ t('total') or 'Total' }}: {{ "%.2f"|format(block.statistics.total_amount) }}
                             </div>
                             {% endif %}
                         </div>
@@ -212,8 +212,8 @@
                             <span class="font-bold">{{ block.statistics.quantum_signed_count }}</span>
                         </div>
                         <div>
-                            <span class="text-gray-500">Tamanho:</span>
-                            <span class="font-bold">{{ block.size_bytes }} bytes</span>
+                            <span class="text-gray-500">{{ t('size') or 'Size' }}:</span>
+                            <span class="font-bold">{{ block.size_bytes }} {{ t('bytes') or 'bytes' }}</span>
                         </div>
                     </div>
                     {% endif %}
@@ -222,24 +222,24 @@
                         <a href="/api/proofs/block/{{ block.index }}?format=json" 
                            class="text-xs bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded"
                            onclick="copyBlockJSON({{ block.index }}); return false;">
-                            <i class="fas fa-copy mr-1"></i>Copiar JSON
+                            <i class="fas fa-copy mr-1"></i>{{ t('copy_json') or 'Copy JSON' }}
                         </a>
                         <a href="/api/proofs/block/{{ block.index }}?format=json" 
                            target="_blank"
                            class="text-xs bg-gray-600 hover:bg-gray-700 px-3 py-1 rounded">
-                            <i class="fas fa-external-link-alt mr-1"></i>Abrir JSON
+                            <i class="fas fa-external-link-alt mr-1"></i>{{ t('open_json') or 'Open JSON' }}
                         </a>
                         {% if block.transaction_count > 0 %}
                         <button onclick="toggleBlockTransactions({{ block.index }})" 
                                 class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded">
-                            <i class="fas fa-list mr-1"></i>Ver Transações
+                            <i class="fas fa-list mr-1"></i>{{ t('view_transactions') or 'View Transactions' }}
                         </button>
                         {% endif %}
                     </div>
                     
                     <!-- Transações do bloco (ocultas por padrão) -->
                     <div id="block-{{ block.index }}-transactions" class="hidden mt-4 pt-4 border-t border-gray-700">
-                        <h4 class="text-sm font-semibold mb-2">Transações do Bloco:</h4>
+                        <h4 class="text-sm font-semibold mb-2">{{ t('block_transactions') or 'Block Transactions' }}:</h4>
                         <div class="space-y-2">
                             {% for tx in block.transactions[:5] %}
                             <div class="bg-gray-900 p-3 rounded text-xs">
@@ -250,7 +250,7 @@
                             </div>
                             {% endfor %}
                             {% if block.transaction_count > 5 %}
-                            <p class="text-xs text-gray-500">... e mais {{ block.transaction_count - 5 }} transações</p>
+                            <p class="text-xs text-gray-500">... {{ t('and_more') or 'and more' }} {{ block.transaction_count - 5 }} {{ t('transactions') or 'transactions' }}</p>
                             {% endif %}
                         </div>
                     </div>
@@ -262,8 +262,8 @@
         <!-- Transactions Melhoradas -->
         <div>
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-semibold">💸 Transações Recentes</h2>
-                <span class="text-sm text-gray-400">{{ transactions|length }} transações</span>
+                <h2 class="text-2xl font-semibold">💸 {{ t('recent_transactions') or 'Recent Transactions' }}</h2>
+                <span class="text-sm text-gray-400">{{ transactions|length }} {{ t('transactions') or 'transactions' }}</span>
             </div>
             <div class="space-y-3">
                 {% for tx in transactions %}
@@ -293,14 +293,14 @@
                             </div>
                             <div class="text-sm text-gray-400 space-y-1">
                                 <p>
-                                    <span class="text-gray-500">De:</span> 
+                                    <span class="text-gray-500">{{ t('from') or 'From' }}:</span> 
                                     <span class="font-mono">{{ tx.from_short }}</span>
                                     <span class="text-gray-600">→</span>
-                                    <span class="text-gray-500">Para:</span> 
+                                    <span class="text-gray-500">{{ t('to') or 'To' }}:</span> 
                                     <span class="font-mono">{{ tx.to_short }}</span>
                                 </p>
                                 <p>
-                                    <span class="text-gray-500">Valor:</span> 
+                                    <span class="text-gray-500">{{ t('amount') or 'Amount' }}:</span> 
                                     <span class="font-bold text-green-400">{{ tx.amount_formatted }}</span>
                                     {% if tx.gas_cost > 0 %}
                                     <span class="text-gray-600">|</span>
@@ -314,7 +314,7 @@
                                     <span class="text-gray-600">({{ tx.timestamp_relative }})</span>
                                     {% if tx.confirmations > 0 %}
                                     <span class="text-gray-600">|</span>
-                                    <span class="text-gray-500">Confirmações:</span> 
+                                    <span class="text-gray-500">{{ t('confirmations') or 'Confirmations' }}:</span> 
                                     <span class="text-green-400">{{ tx.confirmations }}</span>
                                     {% endif %}
                                 </p>
@@ -329,17 +329,17 @@
                     <div class="mt-3 flex gap-2 flex-wrap">
                         <button onclick="copyTransactionJSON('{{ tx.tx_hash }}')" 
                                 class="text-xs bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">
-                            <i class="fas fa-copy mr-1"></i>Copiar JSON
+                            <i class="fas fa-copy mr-1"></i>{{ t('copy_json') or 'Copy JSON' }}
                         </button>
                         <a href="/api/proofs/transaction/{{ tx.tx_hash }}?format=json" 
                            target="_blank"
                            class="text-xs bg-gray-600 hover:bg-gray-700 px-3 py-1 rounded">
-                            <i class="fas fa-external-link-alt mr-1"></i>Abrir JSON
+                            <i class="fas fa-external-link-alt mr-1"></i>{{ t('open_json') or 'Open JSON' }}
                         </a>
                         {% if tx.explorer_url %}
                         <a href="{{ tx.explorer_url }}" target="_blank"
                            class="text-xs bg-cyan-600 hover:bg-cyan-700 px-3 py-1 rounded">
-                            <i class="fas fa-external-link-alt mr-1"></i>Explorer Externo
+                            <i class="fas fa-external-link-alt mr-1"></i>{{ t('external_explorer') or 'External Explorer' }}
                         </a>
                         {% endif %}
                         {% if tx.has_quantum_signature %}
