@@ -349,26 +349,10 @@ def faucet_request():
             }), 400
         
         if not faucet:
-            # Tentar reinicializar o faucet
-            try:
-                from testnet_faucet import TestnetFaucet
-                global faucet
-                # Tentar obter instâncias do app context ou usar fallback
-                try:
-                    from flask import current_app
-                    blockchain_inst = current_app.config.get('blockchain_instance')
-                    quantum_inst = current_app.config.get('quantum_security_instance')
-                    if blockchain_inst and quantum_inst:
-                        faucet = TestnetFaucet(blockchain_inst, quantum_inst)
-                        print("✅ Faucet reinicializado com sucesso!")
-                except:
-                    pass
-                
-                if not faucet:
-                    return jsonify({
-                        "success": False,
-                        "error": "Faucet service is temporarily unavailable. Please try again later."
-                    }), 503
+            return jsonify({
+                "success": False,
+                "error": "Faucet service is temporarily unavailable. Please contact support or try again later."
+            }), 503
             except Exception as init_error:
                 print(f"⚠️  Erro ao reinicializar faucet: {init_error}")
                 return jsonify({
