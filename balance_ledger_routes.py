@@ -92,12 +92,13 @@ def get_my_balance():
         print(f"💰 Buscando saldo para user_id: {user_id}")
         
         conn = get_db_connection()
+        # ✅ psycopg (psycopg3) já retorna dict_row por padrão
         cursor = conn.cursor()
         
         # ✅ Buscar email do usuário para debug
         cursor.execute("SELECT email FROM users WHERE id = %s", (user_id,))
         user = cursor.fetchone()
-        user_email = user['email'] if user else 'unknown'
+        user_email = user.get('email', 'unknown') if user else 'unknown'
         print(f"📧 Usuário: {user_email} (ID: {user_id})")
         
         # ✅ Buscar saldo do usuário (SEMPRE DO BANCO REAL - não mock)
@@ -126,26 +127,40 @@ def get_my_balance():
             conn.commit()
             print(f"✅ Saldo inicial criado para user_id {user_id}: 0 ALZ")
         
+        # ✅ Formatar resposta com valores REAIS do banco
+        # psycopg3 retorna dict_row, então podemos acessar como dict
+        if balance_row:
+            available = float(balance_row.get('available') or 0)
+            locked = float(balance_row.get('locked') or 0)
+            staking = float(balance_row.get('staking_balance') or 0)
+            total = available + locked + staking
+            
+            print(f"💰 Saldo encontrado para {user_email}: available={available}, locked={locked}, staking={staking}, total={total}")
+            
+            balance_data = {
+                "user_id": balance_row.get('user_id', user_id),
+                "asset": balance_row.get('asset', 'ALZ'),
+                "available": available,
+                "locked": locked,
+                "staking_balance": staking,
+                "total": total,
+                "updated_at": balance_row.get('updated_at').isoformat() if balance_row.get('updated_at') else None
+            }
+        else:
+            # Fallback se balance_row for None (não deveria acontecer)
+            print(f"⚠️ balance_row é None para user_id {user_id}")
+            balance_data = {
+                "user_id": user_id,
+                "asset": 'ALZ',
+                "available": 0,
+                "locked": 0,
+                "staking_balance": 0,
+                "total": 0,
+                "updated_at": None
+            }
+        
         cursor.close()
         conn.close()
-        
-        # ✅ Formatar resposta com valores REAIS do banco
-        available = float(balance_row['available'] or 0)
-        locked = float(balance_row['locked'] or 0)
-        staking = float(balance_row['staking_balance'] or 0)
-        total = available + locked + staking
-        
-        print(f"💰 Saldo encontrado para {user_email}: available={available}, locked={locked}, staking={staking}, total={total}")
-        
-        balance_data = {
-            "user_id": balance_row['user_id'],
-            "asset": balance_row['asset'],
-            "available": available,
-            "locked": locked,
-            "staking_balance": staking,
-            "total": total,
-            "updated_at": balance_row['updated_at'].isoformat() if balance_row['updated_at'] else None
-        }
         
         return jsonify({
             "success": True,
@@ -200,24 +215,25 @@ def get_ledger_history():
             WHERE user_id = %s
         """, (user_id,))
         
-        total_count = cursor.fetchone()['total']
+        total_result = cursor.fetchone()
+        total_count = total_result.get('total', 0) if total_result else 0
         
         cursor.close()
         conn.close()
         
-        # Formatar resposta
+        # ✅ Formatar resposta com valores REAIS do banco
         history = []
         for entry in entries:
             history.append({
-                "id": entry['id'],
-                "user_id": entry['user_id'],
-                "asset": entry['asset'],
-                "amount": float(entry['amount']),
-                "entry_type": entry['entry_type'],
-                "related_id": entry['related_id'],
-                "description": entry['description'],
-                "created_at": entry['created_at'].isoformat() if entry['created_at'] else None,
-                "idempotency_key": entry['idempotency_key']
+                "id": entry.get('id'),
+                "user_id": entry.get('user_id'),
+                "asset": entry.get('asset', 'ALZ'),
+                "amount": float(entry.get('amount', 0)),
+                "entry_type": entry.get('entry_type'),
+                "related_id": entry.get('related_id'),
+                "description": entry.get('description', ''),
+                "created_at": entry.get('created_at').isoformat() if entry.get('created_at') else None,
+                "idempotency_key": entry.get('idempotency_key')
             })
         
         return jsonify({
