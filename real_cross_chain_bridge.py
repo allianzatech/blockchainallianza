@@ -1,6 +1,6 @@
 # real_cross_chain_bridge.py
 # 🌉 SISTEMA ROBUSTO DE INTEROPERABILIDADE REAL CROSS-CHAIN
-# INÉDITO: Transferências REAIS entre blockchains completamente diferentes
+# UNIQUE: REAL transfers between completely different blockchains
 # Exemplo: Polygon → Bitcoin, Ethereum → Solana, BSC → Polygon
 
 import os
@@ -24,15 +24,15 @@ try:
     from monitoring_system import global_monitoring
     IMPROVEMENTS_AVAILABLE = True
 except ImportError as e:
-    print(f"⚠️  Módulos de melhorias não disponíveis: {e}")
+    print(f"⚠️  Improvement modules not available: {e}")
     IMPROVEMENTS_AVAILABLE = False
 
 load_dotenv()
 
 class RealCrossChainBridge:
     """
-    Sistema Robusto de Interoperabilidade Real Cross-Chain
-    Permite transferências REAIS entre blockchains completamente diferentes:
+    Robust Real Cross-Chain Interoperability System
+    Allows REAL transfers between completely different blockchains:
     - Polygon → Bitcoin
     - Ethereum → Solana
     - BSC → Polygon
@@ -175,7 +175,7 @@ class RealCrossChainBridge:
             
             self.improvements_available = True
         except ImportError as e:
-            print(f"⚠️  Módulos de melhorias não disponíveis: {e}")
+            print(f"⚠️  Improvement modules not available: {e}")
             self.async_processor_full = None
         
         # NOVA MELHORIA: Tokenomics e Governança
@@ -4255,7 +4255,7 @@ class RealCrossChainBridge:
         source_private_key: Optional[str] = None
     ) -> Dict:
         """
-        Transferência REAL cross-chain entre blockchains diferentes
+        REAL cross-chain transfer between different blockchains
         Exemplo: Polygon → Bitcoin, Ethereum → BSC, etc.
         
         Funcionamento:
@@ -5064,7 +5064,7 @@ class RealCrossChainBridge:
                 "target_tx": target_tx_result,  # Resultado completo (compatibilidade)
                 "source_tx_hash": source_tx_result.get("tx_hash") if source_tx_result else None,
                 "target_tx_hash": target_tx_result.get("tx_hash") if target_tx_result else None,
-                "message": f"🎉 Transferência REAL {source_chain} → {target_chain} concluída!",
+                "message": f"🎉 REAL Transfer {source_chain} → {target_chain} completed!",
                 "explorers": {
                     "source": source_tx_result.get("explorer_url") if source_tx_result else None,
                     "target": target_tx_result.get("explorer_url") if target_tx_result else None

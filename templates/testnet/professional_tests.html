@@ -222,7 +222,7 @@
         async function runTest(testId) {
             const resultDiv = document.getElementById(`result_${testId}`);
             resultDiv.classList.remove('hidden');
-            resultDiv.innerHTML = '<p class="text-yellow-400">⏳ Executando...</p>';
+            resultDiv.innerHTML = '<p class="text-yellow-400">⏳ Executing...</p>';
 
             try {
                 const response = await fetch('/professional-tests/api/run-test', {
@@ -231,15 +231,29 @@
                     body: JSON.stringify({ test_id: testId })
                 });
 
+                // Verificar se a resposta é OK
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 200)}`);
+                }
+
+                // Verificar se o Content-Type é JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Expected JSON but got ${contentType}. Response: ${text.substring(0, 200)}`);
+                }
+
                 const data = await response.json();
                 
                 if (data.success) {
-                    resultDiv.innerHTML = `<p class="text-green-400">✅ Sucesso!</p><pre class="text-xs mt-2">${JSON.stringify(data, null, 2).substring(0, 200)}...</pre>`;
+                    resultDiv.innerHTML = `<p class="text-green-400">✅ Success!</p><pre class="text-xs mt-2">${JSON.stringify(data, null, 2).substring(0, 200)}...</pre>`;
                 } else {
-                    resultDiv.innerHTML = `<p class="text-red-400">❌ Falhou: ${data.error || 'Erro desconhecido'}</p>`;
+                    resultDiv.innerHTML = `<p class="text-red-400">❌ Failed: ${data.error || 'Unknown error'}</p>`;
                 }
             } catch (error) {
-                resultDiv.innerHTML = `<p class="text-red-400">❌ Erro: ${error.message}</p>`;
+                resultDiv.innerHTML = `<p class="text-red-400">❌ Error: ${error.message}</p>`;
+                console.error('Error executing test:', error);
             }
         }
 
@@ -248,7 +262,7 @@
             const allResultsDiv = document.getElementById('allResults');
             const allResultsContent = document.getElementById('allResultsContent');
             allResultsDiv.classList.remove('hidden');
-            allResultsContent.textContent = '⏳ Executando todos os testes...\n\nIsso pode levar alguns minutos...';
+            allResultsContent.textContent = '⏳ Executing all tests...\n\nThis may take a few minutes...';
 
             try {
                 const response = await fetch('/professional-tests/api/run-all', {
@@ -256,10 +270,24 @@
                     headers: {'Content-Type': 'application/json'}
                 });
 
+                // Verificar se a resposta é OK
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 200)}`);
+                }
+
+                // Verificar se o Content-Type é JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Expected JSON but got ${contentType}. Response: ${text.substring(0, 200)}`);
+                }
+
                 const data = await response.json();
                 allResultsContent.textContent = JSON.stringify(data, null, 2);
             } catch (error) {
-                allResultsContent.textContent = `Erro: ${error.message}`;
+                allResultsContent.textContent = `Error executing tests: ${error.message}\n\nPlease check the server logs for more details.`;
+                console.error('Error executing tests:', error);
             }
         }
 

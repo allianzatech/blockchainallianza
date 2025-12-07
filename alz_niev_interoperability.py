@@ -1,7 +1,7 @@
 # alz_niev_interoperability.py
 # 🌐 ALZ-NIEV (Non-Intermediate Execution Validation)
-# Primeiro mecanismo global de interoperabilidade sem intermediários
-# 5 Camadas: ELNI, ZKEF, UP-NMT, MCL, AES
+# First global interoperability mechanism without intermediaries
+# 5 Layers: ELNI, ZKEF, UP-NMT, MCL, AES
 
 import hashlib
 import json
@@ -14,7 +14,7 @@ import requests
 from web3 import Web3
 from dotenv import load_dotenv
 
-# Importar bridge real para transferências reais
+# Import real bridge for real transfers
 try:
     from real_cross_chain_bridge import RealCrossChainBridge
     REAL_BRIDGE_AVAILABLE = True
@@ -99,7 +99,7 @@ class ELNI:
         """
         execution_id = f"elni_{int(time.time())}_{hashlib.sha256(json.dumps(function_params, sort_keys=True).encode()).hexdigest()[:16]}"
         
-        print(f"🔵 ELNI: Executando função nativa {function_name} em {target_chain}")
+        print(f"🔵 ELNI: Executing native function {function_name} on {target_chain}")
         print(f"   Source: {source_chain}")
         print(f"   Target: {target_chain}")
         print(f"   Function: {function_name}")
@@ -520,7 +520,7 @@ class AES:
         """
         execution_id = f"aes_{int(time.time())}_{hashlib.sha256(str(chains).encode()).hexdigest()[:16]}"
         
-        print(f"🔴 AES: Executando transação atômica multi-chain")
+        print(f"🔴 AES: Executing atomic multi-chain transaction")
         print(f"   Chains envolvidas: {len(chains)}")
         for i, (chain, func, params) in enumerate(chains):
             print(f"   {i+1}. {chain}: {func}")
@@ -544,14 +544,14 @@ class AES:
                 break
         
         if not all_success:
-            print(f"❌ AES: Execução atômica falhou - revertendo execuções já realizadas")
+            print(f"❌ AES: Atomic execution failed - reverting already executed operations")
             # ROLLBACK: Reverter execuções que já foram bem-sucedidas antes da falha
             rollback_results = self._rollback_executions(results, chains, elni)
             return {
                 **results,
                 "rollback_performed": True,
                 "rollback_results": rollback_results,
-                "error": "Execução falhou - todas as execuções foram revertidas para garantir atomicidade"
+                "error": "Execution failed - all executions were reverted to ensure atomicity"
             }
         
         # Fase 2: Gerar provas para todas as execuções
@@ -602,14 +602,14 @@ class AES:
                 break
         
         if not all_verified:
-            print(f"❌ AES: Verificação de provas falhou - revertendo execuções")
+            print(f"❌ AES: Proof verification failed - reverting executions")
             # ROLLBACK: Reverter todas as execuções que foram bem-sucedidas
             rollback_results = self._rollback_executions(results, chains, elni)
             return {
                 **results,
                 "rollback_performed": True,
                 "rollback_results": rollback_results,
-                "error": "Verificação de provas falhou - todas as execuções foram revertidas"
+                "error": "Proof verification failed - all executions were reverted"
             }
         
         # Fase 4: Confirmar atomicamente em todas as chains
@@ -649,13 +649,13 @@ class AES:
         
         CRÍTICO: Este método prova a atomicidade do sistema AES
         """
-        print(f"\n🔄 ROLLBACK: Revertendo execuções para garantir atomicidade")
+        print(f"\n🔄 ROLLBACK: Reverting executions to ensure atomicity")
         rollback_results = {}
         
         for i, (chain, function_name, params) in enumerate(chains):
             result = results.get(chain)
             if result and result.success:
-                print(f"   🔄 Revertendo execução em {chain}...")
+                print(f"   🔄 Reverting execution on {chain}...")
                 
                 # Criar função de rollback/compensação
                 # Em produção, isso seria uma transação de compensação na blockchain
@@ -705,12 +705,12 @@ class AES:
         Reverte todas as execuções que foram bem-sucedidas
         Garante atomicidade: todas ou nenhuma
         """
-        print(f"\n🔄 ROLLBACK: Revertendo execuções para garantir atomicidade")
+        print(f"\n🔄 ROLLBACK: Reverting executions to ensure atomicity")
         rollback_results = {}
         
         for chain, result in results.items():
             if result.success:
-                print(f"   🔄 Revertendo execução em {chain}...")
+                print(f"   🔄 Reverting execution on {chain}...")
                 
                 # Tentar reverter a execução
                 # Em produção, isso seria uma transação de compensação na blockchain
@@ -744,8 +744,8 @@ class AES:
 class ALZNIEV:
     """
     🌐 ALZ-NIEV: Non-Intermediate Execution Validation
-    Sistema completo de interoperabilidade com 5 camadas
-    Integrado com transferências REAIS via real_cross_chain_bridge
+    Complete interoperability system with 5 layers
+    Integrated with REAL transfers via real_cross_chain_bridge
     """
     
     def __init__(self):
@@ -759,9 +759,9 @@ class ALZNIEV:
         if REAL_BRIDGE_AVAILABLE and RealCrossChainBridge:
             try:
                 self.real_bridge = RealCrossChainBridge()
-                print("🌉 Bridge Real: Integrado ao ALZ-NIEV!")
+                print("🌉 Real Bridge: Integrated with ALZ-NIEV!")
             except Exception as e:
-                print(f"⚠️  Erro ao inicializar bridge real: {e}")
+                print(f"⚠️  Error initializing real bridge: {e}")
                 self.real_bridge = None
         else:
             self.real_bridge = None
@@ -773,7 +773,7 @@ class ALZNIEV:
         print("   🟡 MCL: Multi-Consensus Layer")
         print("   🔴 AES: Atomic Execution Sync")
         if self.real_bridge:
-            print("   🌉 Bridge Real: Transferências REAIS habilitadas!")
+            print("   🌉 Real Bridge: REAL Transfers enabled!")
     
     def execute_cross_chain_with_proofs(
         self,
@@ -783,10 +783,10 @@ class ALZNIEV:
         function_params: Dict[str, Any]
     ) -> ExecutionResult:
         """
-        Executa função cross-chain com todas as camadas de prova
+        Executes cross-chain function with all proof layers
         """
         print(f"\n{'='*70}")
-        print(f"🌐 ALZ-NIEV: Execução Cross-Chain Completa")
+        print(f"🌐 ALZ-NIEV: Complete Cross-Chain Execution")
         print(f"{'='*70}")
         print(f"Source: {source_chain}")
         print(f"Target: {target_chain}")
@@ -862,8 +862,8 @@ class ALZNIEV:
         source_private_key: Optional[str] = None
     ) -> Dict:
         """
-        Transferência REAL cross-chain usando ALZ-NIEV + Bridge Real
-        Combina as 5 camadas de prova com transferência real de ativos
+        REAL cross-chain transfer using ALZ-NIEV + Real Bridge
+        Combines the 5 proof layers with real asset transfer
         """
         print(f"\n🔍 [LOG] real_transfer: INÍCIO")
         print(f"🔍 [LOG] Parâmetros: source_chain={source_chain}, target_chain={target_chain}, amount={amount}")
@@ -880,14 +880,14 @@ class ALZNIEV:
             }
         
         if not self.real_bridge:
-            print(f"❌ [LOG] Bridge real não disponível")
+            print(f"❌ [LOG] Real bridge not available")
             return {
                 "success": False,
-                "error": "Bridge real não disponível"
+                "error": "Real bridge not available"
             }
         
         print(f"\n{'='*70}")
-        print(f"🌐 ALZ-NIEV: Transferência REAL Cross-Chain")
+        print(f"🌐 ALZ-NIEV: REAL Cross-Chain Transfer")
         print(f"{'='*70}")
         print(f"Source: {source_chain}")
         print(f"Target: {target_chain}")
@@ -1135,12 +1135,12 @@ class ALZNIEV:
                         "block_height": proofs.get("consensus_proof").block_height if proofs.get("consensus_proof") else None
                     }
                 },
-                "message": f"🎉 Transferência REAL {source_chain} → {target_chain} com ALZ-NIEV concluída!",
-                "note": "✅ Transferência REAL executada com todas as 5 camadas de prova ALZ-NIEV"
+                "message": f"🎉 REAL Transfer {source_chain} → {target_chain} with ALZ-NIEV completed!",
+                "note": "✅ REAL Transfer executed with all 5 ALZ-NIEV proof layers"
             }
             
             print(f"\n{'='*70}")
-            print(f"✅ ALZ-NIEV: Transferência REAL concluída!")
+            print(f"✅ ALZ-NIEV: REAL Transfer completed!")
             print(f"{'='*70}")
             
             return result
