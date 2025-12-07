@@ -208,10 +208,16 @@ def get_my_balance():
                 "updated_at": None
             }
         finally:
-            if cursor:
-                cursor.close()
-            if conn:
-                conn.close()
+            if 'cursor' in locals() and cursor:
+                try:
+                    cursor.close()
+                except:
+                    pass
+            if 'conn' in locals() and conn:
+                try:
+                    conn.close()
+                except:
+                    pass
         
         return jsonify({
             "success": True,
@@ -222,6 +228,17 @@ def get_my_balance():
         print(f"❌ Erro ao buscar saldo: {e}")
         import traceback
         traceback.print_exc()
+        # ✅ Fechar conexões em caso de erro
+        if 'cursor' in locals() and cursor:
+            try:
+                cursor.close()
+            except:
+                pass
+        if 'conn' in locals() and conn:
+            try:
+                conn.close()
+            except:
+                pass
         # ✅ Retornar saldo zero em caso de erro, mas ainda assim retornar JSON válido
         return jsonify({
             "success": True,
@@ -282,23 +299,43 @@ def get_ledger_history():
         total_result = cursor.fetchone()
         total_count = total_result.get('total', 0) if total_result else 0
         
-        cursor.close()
-        conn.close()
-        
-        # ✅ Formatar resposta com valores REAIS do banco
+        # ✅ Formatar resposta com valores REAIS do banco (antes de fechar conexão)
         history = []
         for entry in entries:
-            history.append({
-                "id": entry.get('id'),
-                "user_id": entry.get('user_id'),
-                "asset": entry.get('asset', 'ALZ'),
-                "amount": float(entry.get('amount', 0)),
-                "entry_type": entry.get('entry_type'),
-                "related_id": entry.get('related_id'),
-                "description": entry.get('description', ''),
-                "created_at": entry.get('created_at').isoformat() if entry.get('created_at') else None,
-                "idempotency_key": entry.get('idempotency_key')
-            })
+            if not entry:
+                continue
+            try:
+                created_at_value = entry.get('created_at')
+                created_at_str = None
+                if created_at_value:
+                    try:
+                        if hasattr(created_at_value, 'isoformat'):
+                            created_at_str = created_at_value.isoformat()
+                        else:
+                            created_at_str = str(created_at_value)
+                    except Exception as e:
+                        print(f"⚠️ Erro ao formatar created_at: {e}")
+                        created_at_str = None
+                
+                history.append({
+                    "id": entry.get('id'),
+                    "user_id": entry.get('user_id'),
+                    "asset": entry.get('asset', 'ALZ'),
+                    "amount": float(entry.get('amount', 0)),
+                    "entry_type": entry.get('entry_type'),
+                    "related_id": entry.get('related_id'),
+                    "description": entry.get('description', ''),
+                    "created_at": created_at_str,
+                    "idempotency_key": entry.get('idempotency_key')
+                })
+            except Exception as e:
+                print(f"⚠️ Erro ao formatar entrada do ledger: {e}")
+                import traceback
+                traceback.print_exc()
+                continue
+        
+        cursor.close()
+        conn.close()
         
         return jsonify({
             "success": True,
@@ -315,7 +352,25 @@ def get_ledger_history():
         print(f"❌ Erro ao buscar histórico: {e}")
         import traceback
         traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
+        # ✅ Retornar JSON válido mesmo em caso de erro
+        if 'conn' in locals():
+            try:
+                if 'cursor' in locals() and cursor:
+                    cursor.close()
+                conn.close()
+            except:
+                pass
+        return jsonify({
+            "success": True,
+            "history": [],
+            "pagination": {
+                "total": 0,
+                "limit": limit,
+                "offset": offset,
+                "has_more": False
+            },
+            "error": str(e)
+        }), 200  # Retornar 200 para não quebrar o frontend
 
 
 @balance_ledger_bp.route('/login', methods=['POST'])
