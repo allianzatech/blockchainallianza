@@ -126,7 +126,8 @@ class TestnetFaucet:
     def _ensure_faucet_wallet(self):
         """Garante que o endereço do faucet tenha uma carteira criada com saldo suficiente"""
         try:
-            from db_manager import db_manager
+            from db_manager import DBManager
+            db_manager = DBManager()
             from allianza_blockchain import AdvancedCrypto, cipher, TOTAL_SUPPLY
             from cryptography.hazmat.primitives import serialization
             
@@ -203,7 +204,8 @@ class TestnetFaucet:
                 if balance < FAUCET_AMOUNT * 100:  # Garantir saldo para pelo menos 100 requisições
                     print(f"⚠️  Saldo do faucet baixo: {balance:,} ALZ")
                     # Recarregar saldo do faucet para 10% do supply
-                    from db_manager import db_manager
+                    from db_manager import DBManager
+                    db_manager = DBManager()
                     self.blockchain.wallets[FAUCET_ADDRESS]["ALZ"] = FAUCET_INITIAL_BALANCE
                     db_manager.execute_commit(
                         "UPDATE wallets SET vtx = ? WHERE address = ?",
@@ -219,7 +221,8 @@ class TestnetFaucet:
         """Obtém a chave privada do faucet do banco de dados"""
         try:
             print(f"🔍 Iniciando busca da chave privada do faucet...")
-            from db_manager import db_manager
+            from db_manager import DBManager
+            db_manager = DBManager()
             from cryptography.hazmat.primitives import serialization
             from cryptography.fernet import Fernet
             
