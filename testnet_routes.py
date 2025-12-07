@@ -67,7 +67,14 @@ def init_testnet_routes(app, blockchain_instance, quantum_security_instance, bri
     
     try:
         quantum_security = quantum_security_instance
-        faucet = TestnetFaucet(blockchain_instance, quantum_security_instance)
+        try:
+            faucet = TestnetFaucet(blockchain_instance, quantum_security_instance)
+            print("✅ Faucet inicializado com sucesso!")
+        except Exception as e:
+            print(f"⚠️  Erro ao inicializar Faucet: {e}")
+            import traceback
+            traceback.print_exc()
+            faucet = None
         # Explorer melhorado com bridge e quantum security
         explorer = TestnetExplorer(blockchain_instance)
         # Se tiver EnhancedTestnetExplorer disponível, usar ele
@@ -289,22 +296,38 @@ def api_leaderboard_stats():
 @testnet_bp.route('/faucet', methods=['GET'])
 def faucet_page():
     """Página do faucet"""
-    faucet_stats = faucet.get_stats() if faucet else {
-        "total_requests": 0,
-        "total_sent": 0,
-        "total_rejected": 0,
-        "amount_per_request": 1000,
-        "limits": {
-            "max_per_ip_per_day": 10,
-            "max_per_address_per_day": 5,
-            "cooldown_hours": 1
+    try:
+        faucet_stats = faucet.get_stats() if faucet else {
+            "total_requests": 0,
+            "total_sent": 0,
+            "total_rejected": 0,
+            "amount_per_request": 1000,
+            "limits": {
+                "max_per_ip_per_day": 10,
+                "max_per_address_per_day": 5,
+                "cooldown_hours": 1
+            }
         }
-    }
-    logs = faucet.get_logs(limit=20) if faucet else []
+        logs = faucet.get_logs(limit=20) if faucet else []
+    except Exception as e:
+        print(f"⚠️  Erro ao obter stats do faucet: {e}")
+        faucet_stats = {
+            "total_requests": 0,
+            "total_sent": 0,
+            "total_rejected": 0,
+            "amount_per_request": 1000,
+            "limits": {
+                "max_per_ip_per_day": 10,
+                "max_per_address_per_day": 5,
+                "cooldown_hours": 1
+            }
+        }
+        logs = []
     
     return render_template('testnet/faucet.html',
                          faucet_stats=faucet_stats,
-                         logs=logs)
+                         logs=logs,
+                         faucet_available=faucet is not None)
 
 @testnet_bp.route('/api/faucet/request', methods=['POST'])
 def faucet_request():
@@ -326,10 +349,32 @@ def faucet_request():
             }), 400
         
         if not faucet:
-            return jsonify({
-                "success": False,
-                "error": "Faucet not initialized"
-            }), 500
+            # Tentar reinicializar o faucet
+            try:
+                from testnet_faucet import TestnetFaucet
+                global faucet
+                # Tentar obter instâncias do app context ou usar fallback
+                try:
+                    from flask import current_app
+                    blockchain_inst = current_app.config.get('blockchain_instance')
+                    quantum_inst = current_app.config.get('quantum_security_instance')
+                    if blockchain_inst and quantum_inst:
+                        faucet = TestnetFaucet(blockchain_inst, quantum_inst)
+                        print("✅ Faucet reinicializado com sucesso!")
+                except:
+                    pass
+                
+                if not faucet:
+                    return jsonify({
+                        "success": False,
+                        "error": "Faucet service is temporarily unavailable. Please try again later."
+                    }), 503
+            except Exception as init_error:
+                print(f"⚠️  Erro ao reinicializar faucet: {init_error}")
+                return jsonify({
+                    "success": False,
+                    "error": "Faucet service is temporarily unavailable. Please try again later."
+                }), 503
         
         result = faucet.request_tokens(address, request)
         
@@ -339,6 +384,10 @@ def faucet_request():
             return jsonify(result), 400
     
     except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"❌ Erro no faucet_request: {e}")
+        print(error_trace)
         return jsonify({
             "success": False,
             "error": f"Internal error: {str(e)}"
