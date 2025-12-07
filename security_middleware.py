@@ -27,11 +27,11 @@ def setup_security_headers(app):
         # Ideal: Migrar todos os scripts inline para arquivos externos ou usar nonces
         csp = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' cdn.tailwindcss.com cdnjs.cloudflare.com cdn.jsdelivr.net; "
-            "style-src 'self' 'unsafe-inline' cdn.tailwindcss.com cdnjs.cloudflare.com; "
+            "script-src 'self' 'unsafe-inline' cdn.tailwindcss.com cdnjs.cloudflare.com cdn.jsdelivr.net translate.googleapis.com; "
+            "style-src 'self' 'unsafe-inline' cdn.tailwindcss.com cdnjs.cloudflare.com www.gstatic.com; "
             "img-src 'self' data: https:; "
             "font-src 'self' data: cdnjs.cloudflare.com; "
-            "connect-src 'self' https://testnet.allianza.tech wss://testnet.allianza.tech; "
+            "connect-src 'self' https://testnet.allianza.tech wss://testnet.allianza.tech translate.googleapis.com; "
             "frame-ancestors 'none'; "
             "base-uri 'self'; "
             "form-action 'self'; "
