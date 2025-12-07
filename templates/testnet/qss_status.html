@@ -200,7 +200,7 @@
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-2xl font-bold flex items-center gap-3">
                     <i class="fas fa-server text-blue-400"></i>
-                    Status do Serviço
+                    {{ t('service_status') or 'Service Status' }}
                 </h2>
                 <span id="statusBadge" class="status-badge status-offline">Carregando...</span>
             </div>

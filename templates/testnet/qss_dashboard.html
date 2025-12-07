@@ -289,7 +289,8 @@
                 } else {
                     statusBadge.className = 'status-badge status-offline';
                     statusBadge.textContent = 'Offline';
-                    serviceInfo.innerHTML = '<p class="text-red-400">Serviço não disponível</p>';
+                    const notAvailText = typeof t !== 'undefined' && t ? t('service_not_available') : 'Service not available';
+                    serviceInfo.innerHTML = '<p class="text-red-400">' + notAvailText + '</p>';
                 }
             } catch (error) {
                 console.error('Erro ao verificar status:', error);
@@ -304,13 +305,15 @@
             const blockHeight = document.getElementById('btc-block-height').value;
             
             if (!txHash) {
-                alert('Por favor, insira um TX Hash Bitcoin');
+                const enterHashText = typeof t !== 'undefined' && t ? t('please_enter_bitcoin_tx_hash') : 'Please enter a Bitcoin TX Hash';
+                alert(enterHashText);
                 return;
             }
             
             const resultDiv = document.getElementById('btc-result');
             resultDiv.classList.remove('hidden');
-            resultDiv.innerHTML = '<p class="text-yellow-400"><i class="fas fa-spinner fa-spin mr-2"></i>Gerando prova quântica...</p>';
+            const generatingText = typeof t !== 'undefined' && t ? t('generating_quantum_proof') : 'Generating quantum proof...';
+            resultDiv.innerHTML = '<p class="text-yellow-400"><i class="fas fa-spinner fa-spin mr-2"></i>' + generatingText + '</p>';
             
             try {
                 const response = await fetch('/api/qss/generate-proof', {

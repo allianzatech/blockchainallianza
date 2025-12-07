@@ -99,7 +99,7 @@
                 <div class="mb-4">
                     <p class="text-gray-300 mb-3 font-semibold">📦 {{ t('npm_installation') or 'Installation via npm:' }}</p>
                     <div class="code-block mb-3" style="position: relative;">
-                        <button class="btn-copy-code" onclick="copyCodeBlock(this)" title="Copiar comando">
+                        <button class="btn-copy-code" onclick="copyCodeBlock(this)" title="{{ t('copy') or 'Copy' }}">
                             <i class="fas fa-copy"></i> Copiar
                         </button>
                         <code>npm install allianza-qss-js</code>
@@ -130,13 +130,13 @@
                         <pre id="tryItOutput" class="text-xs text-gray-300 overflow-x-auto"></pre>
                     </div>
                     
-                    <p class="text-gray-300 mb-3 font-semibold">🔧 Alternativa: API REST Direta</p>
+                    <p class="text-gray-300 mb-3 font-semibold">🔧 {{ t('alternative_rest_api') or 'Alternative: Direct REST API' }}</p>
                     <div class="code-block mb-2" style="position: relative;">
                         <button class="btn-copy-code" onclick="copyCodeBlock(this)" title="Copiar código">
-                            <i class="fas fa-copy"></i> Copiar
+                            <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
                         </button>
                         <code>
-// Exemplo JavaScript (API REST)
+// {{ t('javascript_example_rest') or 'JavaScript Example (REST API)' }}
 const response = await fetch('https://testnet.allianza.tech/api/qss/generate-proof', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -155,16 +155,16 @@ const proof = await response.json();
             <div class="step-card bg-gray-700 rounded-lg p-6 mb-4">
                 <div class="flex items-center mb-4">
                     <div class="bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">2</div>
-                    <h3 class="text-xl font-semibold">Gerar Prova Quântica</h3>
+                    <h3 class="text-xl font-semibold">{{ t('generate_quantum_proof') or 'Generate Quantum Proof' }}</h3>
                 </div>
                 <div class="code-block mb-4" style="position: relative;">
                     <button class="btn-copy-code" onclick="copyCodeBlock(this)" title="Copiar código">
-                        <i class="fas fa-copy"></i> Copiar
+                        <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
                     </button>
                     <code>
 import QSS from 'allianza-qss-js';
 
-// Gerar prova para qualquer blockchain
+// {{ t('generate_proof_for_any_blockchain') or 'Generate proof for any blockchain' }}
 const proof = await QSS.generateProof('bitcoin', txHash);
 
 console.log('Proof Hash:', proof.proof_hash);
@@ -237,14 +237,14 @@ const { transactionData } = await QSS.anchorOnEVM(
         <div class="bg-gray-800 rounded-lg p-6 mb-8">
             <h2 class="text-2xl font-semibold mb-4">
                 <i class="fas fa-code text-green-400 mr-2"></i>
-                Exemplos de API REST
+                {{ t('rest_api_examples') or 'REST API Examples' }}
             </h2>
             
             <div class="mb-4">
-                <h3 class="text-lg font-semibold mb-2 text-cyan-400">Gerar Prova</h3>
+                <h3 class="text-lg font-semibold mb-2 text-cyan-400">{{ t('generate_proof_api') or 'Generate Proof' }}</h3>
                 <div class="code-block mb-2" style="position: relative;">
                     <button class="btn-copy-code" onclick="copyCodeBlock(this)" title="Copiar código">
-                        <i class="fas fa-copy"></i> Copiar
+                        <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
                     </button>
                     <code>
 POST https://testnet.allianza.tech/api/qss/generate-proof
@@ -259,10 +259,10 @@ Content-Type: application/json
             </div>
 
             <div class="mb-4">
-                <h3 class="text-lg font-semibold mb-2 text-cyan-400">Verificar Prova</h3>
+                <h3 class="text-lg font-semibold mb-2 text-cyan-400">{{ t('verify_proof_api') or 'Verify Proof' }}</h3>
                 <div class="code-block mb-2" style="position: relative;">
                     <button class="btn-copy-code" onclick="copyCodeBlock(this)" title="Copiar código">
-                        <i class="fas fa-copy"></i> Copiar
+                        <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
                     </button>
                     <code>
 POST https://testnet.allianza.tech/api/qss/verify-proof
@@ -276,10 +276,10 @@ Content-Type: application/json
             </div>
 
             <div class="mb-4">
-                <h3 class="text-lg font-semibold mb-2 text-cyan-400">Ancorar Prova</h3>
+                <h3 class="text-lg font-semibold mb-2 text-cyan-400">{{ t('anchor_proof_api') or 'Anchor Proof' }}</h3>
                 <div class="code-block mb-2" style="position: relative;">
                     <button class="btn-copy-code" onclick="copyCodeBlock(this)" title="Copiar código">
-                        <i class="fas fa-copy"></i> Copiar
+                        <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
                     </button>
                     <code>
 POST https://testnet.allianza.tech/api/qss/anchor-proof
@@ -295,7 +295,7 @@ Content-Type: application/json
             </div>
 
             <div class="mb-4">
-                <h3 class="text-lg font-semibold mb-2 text-cyan-400">Status do Serviço</h3>
+                <h3 class="text-lg font-semibold mb-2 text-cyan-400">{{ t('service_status_api') or 'Service Status' }}</h3>
                 <div class="code-block" style="position: relative;">
                     <button class="btn-copy-code" onclick="copyCodeBlock(this)" title="Copiar código">
                         <i class="fas fa-copy"></i> Copiar

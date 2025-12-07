@@ -525,6 +525,31 @@ TRANSLATIONS = {
         'quantum_attack_simulator': 'Quantum Attack Simulator',
         'see_visually_how_attack_works': 'See visually how a quantum attack works and why Allianza is protected',
         'run_quantum_test': 'Run Quantum Test',
+        # Developer Hub - API Examples
+        'rest_api_examples': 'REST API Examples',
+        'generate_quantum_proof': 'Generate Quantum Proof',
+        'verify_the_proof': 'Verify the Proof',
+        'generate_proof_api': 'Generate Proof',
+        'verify_proof_api': 'Verify Proof',
+        'anchor_proof_api': 'Anchor Proof',
+        'service_status_api': 'Service Status',
+        'alternative_rest_api': 'Alternative: Direct REST API',
+        'javascript_example_rest': 'JavaScript Example (REST API)',
+        'generate_proof_for_any_blockchain': 'Generate proof for any blockchain',
+        'rest_api_complete_documented': 'Complete and documented REST API',
+        # QSS Dashboard JavaScript
+        'no_proof_to_verify': 'No proof to verify',
+        'qss_proof_verification': 'QSS Proof Verification',
+        'error_verifying': 'Error Verifying',
+        'generating_quantum_proof': 'Generating quantum proof...',
+        'proof_generated_success': 'Proof generated successfully!',
+        'error_unknown': 'Unknown error',
+        'service_not_available': 'Service not available',
+        'please_enter_bitcoin_tx_hash': 'Please enter a Bitcoin TX Hash',
+        'please_enter_ethereum_tx_hash': 'Please enter an Ethereum TX Hash',
+        'method': 'Method',
+        'data': 'Data',
+        'proof_hash_label': 'Proof Hash',
     }
 }
 
