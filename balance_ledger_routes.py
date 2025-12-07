@@ -105,6 +105,22 @@ def get_my_balance():
         user_nickname = user.get('nickname', 'unknown') if user else 'unknown'
         print(f"📧 Usuário: {user_email} ({user_nickname}) - ID: {user_id}")
         
+        # ✅ DEBUG: Verificar se há pagamentos pendentes para este email
+        cursor.execute("""
+            SELECT id, email, amount, status, user_id, wallet_address 
+            FROM payments 
+            WHERE email = %s AND status = 'pending'
+            ORDER BY id DESC
+            LIMIT 5
+        """, (user_email,))
+        pending_payments = cursor.fetchall()
+        if pending_payments:
+            print(f"📋 Pagamentos pendentes encontrados para {user_email}: {len(pending_payments)}")
+            for payment in pending_payments:
+                print(f"   - Payment ID {payment.get('id')}: {payment.get('amount')} | user_id={payment.get('user_id')} | wallet={payment.get('wallet_address')}")
+        else:
+            print(f"⚠️ Nenhum pagamento pendente encontrado para {user_email}")
+        
         # ✅ Buscar saldo do usuário (SEMPRE DO BANCO REAL - não mock)
         cursor.execute("""
             SELECT 
