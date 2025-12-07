@@ -371,12 +371,6 @@ def faucet_request():
                 "success": False,
                 "error": "Faucet service is temporarily unavailable. Please contact support or try again later."
             }), 503
-            except Exception as init_error:
-                print(f"⚠️  Erro ao reinicializar faucet: {init_error}")
-                return jsonify({
-                    "success": False,
-                    "error": "Faucet service is temporarily unavailable. Please try again later."
-                }), 503
         
         result = faucet.request_tokens(address, request)
         
