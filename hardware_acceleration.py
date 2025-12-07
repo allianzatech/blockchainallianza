@@ -191,3 +191,12 @@ class HardwareAcceleration:
 
 
 
+
+
+
+
+
+
+
+
+

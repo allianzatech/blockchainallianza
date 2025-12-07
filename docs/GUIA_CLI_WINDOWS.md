@@ -245,3 +245,12 @@ python cli/allianza_cli.py validator --help
 
 
 
+
+
+
+
+
+
+
+
+

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="{{ lang or 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>🔐 Dashboard de Segurança Quântica - Allianza Testnet</title>
+    <title>🔐 {{ t('quantum_security_dashboard') or 'Quantum Security Dashboard - Allianza Testnet' }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -64,15 +64,15 @@
         <div class="mb-8">
             <a href="javascript:history.back()" class="btn-back mb-4 inline-flex">
                 <i class="fas fa-arrow-left"></i>
-                <span>Voltar</span>
+                <span>{{ t('back') or 'Back' }}</span>
             </a>
             <div class="flex items-center gap-3 mb-2">
                 <div class="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center text-2xl">
                     🔐
                 </div>
                 <div>
-                    <h1 class="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Dashboard de Segurança Quântica</h1>
-                    <p class="text-gray-400 text-sm mt-1">Métricas QRS-3, Entropia Quântica e Performance PQC</p>
+                    <h1 class="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{{ t('quantum_security_dashboard') or 'Quantum Security Dashboard' }}</h1>
+                    <p class="text-gray-400 text-sm mt-1">{{ t('qrs3_metrics_subtitle') or 'QRS-3 Metrics, Quantum Entropy and PQC Performance' }}</p>
                 </div>
             </div>
         </div>
@@ -83,29 +83,29 @@
                 <div class="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
                     <i class="fas fa-shield-alt text-purple-400 text-xl"></i>
                 </div>
-                <h2 class="text-2xl font-bold">Status QRS-3</h2>
+                <h2 class="text-2xl font-bold">{{ t('qrs3_status') or 'QRS-3 Status' }}</h2>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                 <div class="metric-card">
-                    <p class="text-gray-400 text-sm mb-2 font-medium">Status</p>
+                    <p class="text-gray-400 text-sm mb-2 font-medium">{{ t('status') or 'Status' }}</p>
                     <p class="text-2xl font-bold text-green-400">{{ dashboard.qrs3_metrics.status|upper }}</p>
                 </div>
                 <div class="metric-card">
-                    <p class="text-gray-400 text-sm mb-2 font-medium">Nível de Redundância</p>
+                    <p class="text-gray-400 text-sm mb-2 font-medium">{{ t('redundancy_level') or 'Redundancy Level' }}</p>
                     <p class="text-2xl font-bold text-purple-400">{{ dashboard.qrs3_metrics.redundancy_level }}</p>
                 </div>
                 <div class="metric-card">
-                    <p class="text-gray-400 text-sm mb-2 font-medium">Taxa de Uso</p>
+                    <p class="text-gray-400 text-sm mb-2 font-medium">{{ t('usage_rate') or 'Usage Rate' }}</p>
                     <p class="text-2xl font-bold text-blue-400">{{ "%.2f"|format(dashboard.qrs3_metrics.usage_rate_percent) }}%</p>
                 </div>
                 <div class="metric-card">
-                    <p class="text-gray-400 text-sm mb-2 font-medium">Transações QRS-3</p>
+                    <p class="text-gray-400 text-sm mb-2 font-medium">{{ t('qrs3_transactions') or 'QRS-3 Transactions' }}</p>
                     <p class="text-2xl font-bold text-yellow-400">{{ dashboard.qrs3_metrics.total_qrs3_transactions }}</p>
                 </div>
             </div>
             
             <div class="metric-card bg-gray-800/50">
-                <p class="text-sm font-semibold mb-3 text-gray-300">Algoritmos Ativos:</p>
+                <p class="text-sm font-semibold mb-3 text-gray-300">{{ t('active_algorithms') or 'Active Algorithms:' }}</p>
                 <div class="flex flex-wrap gap-3">
                     <span class="px-4 py-2 rounded-lg bg-green-500/20 border border-green-500 text-green-300 font-semibold text-sm">✅ ECDSA</span>
                     <span class="px-4 py-2 rounded-lg bg-green-500/20 border border-green-500 text-green-300 font-semibold text-sm">✅ ML-DSA</span>

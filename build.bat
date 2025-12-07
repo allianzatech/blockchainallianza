@@ -39,3 +39,12 @@ if %ERRORLEVEL% NEQ 0 (
 echo ✅ Build concluído com sucesso!
 echo 📁 CSS compilado em: static\css\output.css
 
+
+
+
+
+
+
+
+
+

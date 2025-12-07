@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="{{ lang or 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>💰 Transferência Real Cross-Chain - Allianza Testnet</title>
+    <title>💰 {{ t('real_cross_chain_transfer') or 'Real Cross-Chain Transfer - Allianza Testnet' }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/css/testnet-modern.css">
@@ -76,18 +76,18 @@
         <div class="mb-8">
             <a href="javascript:history.back()" class="btn-back mb-4 inline-flex">
                 <i class="fas fa-arrow-left"></i>
-                <span>Voltar</span>
+                <span>{{ t('back') or 'Back' }}</span>
             </a>
             <div class="flex items-center gap-3 mb-2">
                 <div class="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center text-2xl">
                     💰
                 </div>
                 <div>
-                    <h1 class="text-4xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">Transferência Real Cross-Chain</h1>
-                    <p class="text-gray-400 text-sm mt-1">Envie tokens REAIS entre blockchains diferentes</p>
+                    <h1 class="text-4xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">{{ t('real_cross_chain_transfer') or 'Real Cross-Chain Transfer' }}</h1>
+                    <p class="text-gray-400 text-sm mt-1">{{ t('send_real_tokens') or 'Send REAL tokens between different blockchains' }}</p>
                     <p class="text-sm text-yellow-400 mt-2 flex items-center gap-2">
                         <i class="fas fa-check-circle"></i>
-                        As transferências aparecem nos explorers e são 100% reais!
+                        {{ t('transfers_appear_explorers') or 'Transfers appear on explorers and are 100% real!' }}
                     </p>
                 </div>
             </div>
@@ -97,7 +97,7 @@
         <div id="status" class="main-card mb-6">
             <p class="text-yellow-400 flex items-center gap-2">
                 <i class="fas fa-spinner fa-spin"></i>
-                ⏳ Verificando status...
+                ⏳ {{ t('checking_status') or 'Checking status...' }}
             </p>
         </div>
 
@@ -107,13 +107,13 @@
                 <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
                     <i class="fas fa-exchange-alt text-green-400 text-xl"></i>
                 </div>
-                <h2 class="text-2xl font-bold">📝 Preencha os Dados da Transferência</h2>
+                <h2 class="text-2xl font-bold">📝 {{ t('fill_transfer_data') or 'Fill in the Transfer Data' }}</h2>
             </div>
-            <p class="text-sm text-gray-400 mb-6">Simples: escolha origem, destino, quantidade e endereço. É só isso!</p>
+            <p class="text-sm text-gray-400 mb-6">{{ t('simple_instructions') or 'Simple: choose origin, destination, quantity, and address. That\'s it!' }}</p>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-sm font-medium mb-2 text-gray-300">Blockchain de Origem</label>
+                    <label class="block text-sm font-medium mb-2 text-gray-300">{{ t('origin_blockchain') or 'Origin Blockchain' }}</label>
                     <select id="sourceChain" class="input-modern w-full">
                         <option value="polygon">Polygon (Amoy)</option>
                         <option value="ethereum">Ethereum (Sepolia)</option>
@@ -123,7 +123,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-2 text-gray-300">Blockchain de Destino</label>
+                    <label class="block text-sm font-medium mb-2 text-gray-300">{{ t('destination_blockchain') or 'Destination Blockchain' }}</label>
                     <select id="targetChain" class="input-modern w-full">
                         <option value="bitcoin">Bitcoin (Testnet)</option>
                         <option value="polygon">Polygon (Amoy)</option>
@@ -136,11 +136,11 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-sm font-medium mb-2 text-gray-300">Quantidade</label>
+                    <label class="block text-sm font-medium mb-2 text-gray-300">{{ t('quantity') or 'Quantity' }}</label>
                     <input type="number" id="amount" step="0.0001" value="0.1" class="input-modern w-full">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-2 text-gray-300">Token</label>
+                    <label class="block text-sm font-medium mb-2 text-gray-300">{{ t('token') or 'Token' }}</label>
                     <select id="tokenSymbol" class="input-modern w-full">
                         <option value="MATIC">MATIC</option>
                         <option value="ETH">ETH</option>
@@ -151,7 +151,7 @@
             </div>
 
             <div class="mb-6">
-                <label class="block text-sm font-medium mb-2 text-gray-300">Endereço Destinatário</label>
+                <label class="block text-sm font-medium mb-2 text-gray-300">{{ t('recipient_address') or 'Recipient Address' }}</label>
                 <input type="text" id="recipient" placeholder="0x... ou tb1q..." class="input-modern w-full">
             </div>
 
@@ -195,14 +195,13 @@
                 <div class="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
                     <i class="fas fa-atom text-purple-400 text-xl"></i>
                 </div>
-                <h2 class="text-2xl font-bold">🧬 Tecnologia ALZ-NIEV</h2>
+                <h2 class="text-2xl font-bold">🧬 {{ t('alz_niev_technology') or 'ALZ-NIEV Technology' }}</h2>
             </div>
             <p class="text-sm text-gray-300 mb-4">
-                Por trás desta interface simples, está o sistema ALZ-NIEV com 5 camadas de segurança e provas criptográficas.
-                Você não precisa entender isso - apenas faça sua transferência e tudo funciona automaticamente!
+                {{ t('alz_niev_behind_interface') or 'Behind this simple interface is the ALZ-NIEV system with 5 layers of security and cryptographic proofs. You don\'t need to understand this - just make your transfer and everything works automatically!' }}
             </p>
             <details class="text-sm">
-                <summary class="cursor-pointer text-blue-400 hover:text-blue-300 font-semibold mb-4">Ver detalhes técnicos (opcional)</summary>
+                <summary class="cursor-pointer text-blue-400 hover:text-blue-300 font-semibold mb-4">{{ t('view_technical_details') or 'View technical details (optional)' }}</summary>
                 <div class="mt-4 grid grid-cols-1 md:grid-cols-5 gap-4">
                     <div class="bg-blue-500/20 border border-blue-500 rounded-lg p-4">
                         <h3 class="font-bold mb-1 text-blue-300">🔵 ELNI</h3>
@@ -238,9 +237,12 @@
                 
                 const statusDiv = document.getElementById('status');
                 if (data.available) {
-                    statusDiv.innerHTML = '<p class="text-green-400 flex items-center gap-2"><i class="fas fa-check-circle"></i>✅ Sistema de interoperabilidade disponível e pronto para transferências REAIS!</p>';
+                    const availableText = typeof t !== 'undefined' && t ? t('interoperability_available') : 'Interoperability system available and ready for REAL transfers!';
+                    statusDiv.innerHTML = '<p class="text-green-400 flex items-center gap-2"><i class="fas fa-check-circle"></i>✅ ' + availableText + '</p>';
                 } else {
-                    statusDiv.innerHTML = '<p class="text-yellow-400 flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i>⚠️ Sistema em modo limitado: ' + (data.error || 'Não disponível') + '</p>';
+                    const limitedText = typeof t !== 'undefined' && t ? t('system_limited_mode') : 'System in limited mode:';
+                    const notAvailText = typeof t !== 'undefined' && t ? t('not_available') : 'Not available';
+                    statusDiv.innerHTML = '<p class="text-yellow-400 flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i>⚠️ ' + limitedText + ' ' + (data.error || notAvailText) + '</p>';
                 }
             } catch (error) {
                 document.getElementById('status').innerHTML = '<p class="text-yellow-400 flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i>⚠️ Verificando status...</p>';
@@ -293,18 +295,24 @@
                 // Usar modal moderno para mostrar resultado
                 if (data.success) {
                     const resultType = 'success';
+                    const transferTitle = typeof t !== 'undefined' && t ? t('real_cross_chain_transfer') : 'Real Cross-Chain Transfer';
+                    const successTitle = typeof t !== 'undefined' && t ? t('real_transfer_executed') : 'Real Transfer Executed';
+                    const successDesc = typeof t !== 'undefined' && t ? t('transfer_success_explorers') : 'Transfer executed successfully and will appear on explorers!';
                     const description = {
-                        statusTitle: 'Transferência Real Executada',
-                        description: 'A transferência foi executada com sucesso e aparecerá nos explorers!'
+                        statusTitle: successTitle,
+                        description: successDesc
                     };
-                    createModernModal('Transferência Cross-Chain', data, resultType, description);
+                    createModernModal(transferTitle, data, resultType, description);
                 } else {
                     const resultType = 'error';
+                    const transferTitle = typeof t !== 'undefined' && t ? t('real_cross_chain_transfer') : 'Real Cross-Chain Transfer';
+                    const errorTitle = typeof t !== 'undefined' && t ? t('transfer_error') : 'Transfer Error';
+                    const errorDesc = data.error || (typeof t !== 'undefined' && t ? t('error_executing_transfer') : 'Error executing transfer');
                     const description = {
-                        statusTitle: 'Erro na Transferência',
-                        description: data.error || 'Erro ao executar transferência'
+                        statusTitle: errorTitle,
+                        description: errorDesc
                     };
-                    createModernModal('Transferência Cross-Chain', data, resultType, description);
+                    createModernModal(transferTitle, data, resultType, description);
                 }
                 resultDiv.innerHTML = '';
             } catch (error) {
@@ -313,11 +321,13 @@
                     error: error.message
                 };
                 const resultType = 'error';
+                const transferTitle = typeof t !== 'undefined' && t ? t('real_cross_chain_transfer') : 'Real Cross-Chain Transfer';
+                const errorTitle = typeof t !== 'undefined' && t ? t('error_executing') : 'Error Executing';
                 const description = {
-                    statusTitle: 'Erro ao Executar',
+                    statusTitle: errorTitle,
                     description: error.message
                 };
-                createModernModal('Transferência Cross-Chain', errorData, resultType, description);
+                createModernModal(transferTitle, errorData, resultType, description);
                 resultDiv.innerHTML = '';
             }
         }

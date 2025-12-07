@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="{{ lang or 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Quantum Security Service (QSS) - Allianza Blockchain</title>
+    <title>{{ t('quantum_security_service') or 'Quantum Security Service (QSS) - Allianza Blockchain' }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/css/testnet-modern.css">
@@ -113,7 +113,7 @@
             <div class="mb-4 sm:mb-6">
                 <a href="javascript:history.back()" class="btn-back inline-flex">
                     <i class="fas fa-arrow-left"></i>
-                    <span>Voltar</span>
+                    <span>{{ t('back') or 'Back' }}</span>
                 </a>
             </div>
             <div class="flex items-center gap-3">
@@ -122,9 +122,9 @@
                 </div>
                 <div>
                     <h1 class="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                        Quantum Security Service (QSS)
+                        {{ t('quantum_security_service') or 'Quantum Security Service (QSS)' }}
                     </h1>
-                    <p class="text-slate-400 text-sm">Segurança quântica para Bitcoin, Ethereum e outras blockchains</p>
+                    <p class="text-slate-400 text-sm">{{ t('qss_subtitle') or 'Quantum security for Bitcoin, Ethereum and other blockchains' }}</p>
                 </div>
             </div>
         </div>
@@ -137,12 +137,12 @@
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-2xl font-semibold">
                     <i class="fas fa-server text-cyan-400 mr-2"></i>
-                    Status do Serviço
+                    {{ t('service_status') or 'Service Status' }}
                 </h2>
-                <span id="service-status" class="status-badge status-offline">Verificando...</span>
+                <span id="service-status" class="status-badge status-offline">{{ t('checking') or 'Checking...' }}</span>
             </div>
             <div id="service-info" class="text-slate-300">
-                <p>Carregando informações do serviço...</p>
+                <p>{{ t('loading_service_info') or 'Loading service information...' }}</p>
             </div>
         </div>
 
@@ -150,21 +150,21 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <!-- Teste Bitcoin -->
             <div class="main-card">
-                <h3 class="text-xl font-semibold mb-4">
+                    <h3 class="text-xl font-semibold mb-4">
                     <i class="fab fa-bitcoin text-orange-400 mr-2"></i>
-                    Teste de Segurança Quântica - Bitcoin
+                    {{ t('quantum_security_test_bitcoin') or 'Quantum Security Test - Bitcoin' }}
                 </h3>
                 <p class="text-slate-400 mb-4">
-                    Gere uma prova quântica para uma transação Bitcoin e ancore no OP_RETURN
+                    {{ t('generate_quantum_proof_bitcoin') or 'Generate a quantum proof for a Bitcoin transaction and anchor it in OP_RETURN' }}
                 </p>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium mb-2">TX Hash Bitcoin</label>
+                        <label class="block text-sm font-medium mb-2">{{ t('bitcoin_tx_hash') or 'Bitcoin TX Hash' }}</label>
                         <input type="text" id="btc-tx-hash" 
                                placeholder="Ex: 89b6d1b46c2a1f93bd1d9ccc95dd25b46a81c7f37cb7b2a11abbebd29ddafaeb" 
                                class="input-modern w-full">
                         <p class="text-xs text-slate-400 mt-1">
-                            💡 Use um hash real do <a href="https://blockstream.info/testnet/" target="_blank" class="text-cyan-400 hover:underline">Blockstream Explorer</a>
+                            💡 {{ t('use_real_hash_blockstream') or 'Use a real hash from Blockstream Explorer' }} <a href="https://blockstream.info/testnet/" target="_blank" class="text-cyan-400 hover:underline">Blockstream Explorer</a>
                         </p>
                     </div>
                     <div>
@@ -176,7 +176,7 @@
                     <button onclick="testBitcoinSecurity()" 
                             class="btn-test w-full" style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);">
                         <i class="fas fa-shield-alt mr-2"></i>
-                        Gerar Prova Quântica Bitcoin
+                        {{ t('generate_proof') or 'Generate Proof' }} Bitcoin
                     </button>
                 </div>
                 <div id="btc-result" class="mt-4 hidden"></div>
@@ -184,21 +184,21 @@
 
             <!-- Teste Ethereum -->
             <div class="main-card">
-                <h3 class="text-xl font-semibold mb-4">
+                    <h3 class="text-xl font-semibold mb-4">
                     <i class="fab fa-ethereum text-blue-400 mr-2"></i>
-                    Teste de Segurança Quântica - Ethereum
+                    {{ t('quantum_security_test_ethereum') or 'Quantum Security Test - Ethereum' }}
                 </h3>
                 <p class="text-slate-400 mb-4">
-                    Gere uma prova quântica para uma transação Ethereum e ancore via Smart Contract
+                    {{ t('generate_quantum_proof_ethereum') or 'Generate a quantum proof for an Ethereum transaction and anchor via Smart Contract' }}
                 </p>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium mb-2">TX Hash Ethereum</label>
+                        <label class="block text-sm font-medium mb-2">{{ t('ethereum_tx_hash') or 'Ethereum TX Hash' }}</label>
                         <input type="text" id="eth-tx-hash" 
                                placeholder="Ex: 0x03008e09df2465e5ce67c179cf8b86b6f533a14ddfef643612a91d833dad4008" 
                                class="input-modern w-full">
                         <p class="text-xs text-slate-400 mt-1">
-                            💡 Use um hash real do <a href="https://amoy.polygonscan.com/" target="_blank" class="text-blue-400 hover:underline">Polygon Explorer</a> ou <a href="https://sepolia.etherscan.io/" target="_blank" class="text-blue-400 hover:underline">Ethereum Sepolia</a>
+                            💡 {{ t('use_real_hash_polygon') or 'Use a real hash from Polygon Explorer or Ethereum Sepolia' }} <a href="https://amoy.polygonscan.com/" target="_blank" class="text-blue-400 hover:underline">Polygon Explorer</a> ou <a href="https://sepolia.etherscan.io/" target="_blank" class="text-blue-400 hover:underline">Ethereum Sepolia</a>
                         </p>
                     </div>
                     <div>
@@ -210,7 +210,7 @@
                     <button onclick="testEthereumSecurity()" 
                             class="btn-test w-full" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
                         <i class="fas fa-shield-alt mr-2"></i>
-                        Gerar Prova Quântica Ethereum
+                        {{ t('generate_proof') or 'Generate Proof' }} Ethereum
                     </button>
                 </div>
                 <div id="eth-result" class="mt-4 hidden"></div>
@@ -219,23 +219,23 @@
 
         <!-- Resultado da Prova -->
         <div id="proof-result" class="main-card hidden">
-            <h3 class="text-xl font-semibold mb-4">
+                <h3 class="text-xl font-semibold mb-4">
                 <i class="fas fa-certificate text-purple-400 mr-2"></i>
-                Prova Quântica Gerada
+                {{ t('quantum_proof_generated') or 'Quantum Proof Generated' }}
             </h3>
             <div id="proof-content" class="proof-card rounded-lg p-4 font-mono text-sm overflow-x-auto"></div>
             <div class="mt-4 flex gap-4">
                 <button onclick="verifyProof()" 
                         class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition">
-                    <i class="fas fa-check-circle mr-2"></i>Verificar Prova
+                    <i class="fas fa-check-circle mr-2"></i>{{ t('verify_proof') or 'Verify Proof' }}
                 </button>
                 <button onclick="copyProof()" 
                         class="bg-slate-700 hover:bg-slate-600 px-6 py-3 rounded-lg font-semibold transition copy-btn">
-                    <i class="fas fa-copy mr-2"></i>Copiar JSON
+                    <i class="fas fa-copy mr-2"></i>{{ t('copy') or 'Copy' }} JSON
                 </button>
                 <button onclick="downloadProof()" 
                         class="bg-slate-700 hover:bg-slate-600 px-6 py-3 rounded-lg font-semibold transition">
-                    <i class="fas fa-download mr-2"></i>Download
+                    <i class="fas fa-download mr-2"></i>{{ t('download') or 'Download' }}
                 </button>
             </div>
         </div>
@@ -244,7 +244,7 @@
         <div id="anchor-instructions" class="main-card mt-6 hidden">
             <h3 class="text-xl font-semibold mb-4">
                 <i class="fas fa-anchor text-yellow-400 mr-2"></i>
-                Instruções de Ancoragem
+                {{ t('anchor_instructions') or 'Anchor Instructions' }}
             </h3>
             <div id="anchor-content" class="space-y-4"></div>
         </div>
