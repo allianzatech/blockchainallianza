@@ -155,7 +155,7 @@ function generateVerificationDetails(details) {
             <div class="verification-item">
                 <span class="verification-item-label">${label}:</span>
                 <span class="verification-item-value ${isValid ? 'valid' : 'invalid'}">
-                    ${isValid ? '✓ Válido' : '✗ Inválido'}
+                    ${isValid ? '✓ ' + (typeof t !== 'undefined' && t ? t('valid') : 'Valid') : '✗ ' + (typeof t !== 'undefined' && t ? t('invalid') : 'Invalid')}
                 </span>
             </div>
         `;

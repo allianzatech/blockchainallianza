@@ -645,6 +645,7 @@ TRANSLATIONS = {
         'complete_json_response': 'Complete JSON Response',
         'invalid': 'Invalid',
         'proof_json': 'Proof JSON',
+        'close': 'Close',
     }
 }
 
