@@ -4269,6 +4269,30 @@ try:
     init_testnet_routes(app, allianza_blockchain, quantum_sys, bridge_instance)
     logger.info("🌐 ALLIANZA TESTNET: Rotas inicializadas!")
     print("🌐 ALLIANZA TESTNET: Testnet profissional carregada!")
+    
+    # Registrar rota health check DEPOIS do blueprint para garantir prioridade
+    @app.route('/', methods=['GET', 'HEAD'])
+    def health_check():
+        """
+        Rota de health check para monitores (UptimeRobot, Render, etc.)
+        Retorna 200 OK para manter o servidor ativo e evitar sleep mode
+        Suporta GET e HEAD para compatibilidade com diferentes monitores
+        Esta rota é registrada DEPOIS do blueprint do testnet para ter prioridade
+        """
+        response_data = {
+            "status": "OK",
+            "service": "Allianza Blockchain",
+            "version": "1.0.0"
+        }
+        
+        # Para HEAD, retornar apenas headers sem body
+        if request.method == 'HEAD':
+            response = jsonify({})
+            response.status_code = 200
+            return response
+        
+        return jsonify(response_data), 200
+    
     print("   • GET  / - Dashboard principal")
     print("   • GET  /explorer - Explorer da rede")
     print("   • GET  /faucet - Faucet")
