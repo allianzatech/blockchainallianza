@@ -141,9 +141,14 @@ class AutoFaucetManager:
         """Carrega histórico de últimas solicitações"""
         if os.path.exists(self.last_request_file):
             try:
-                with open(self.last_request_file, 'r') as f:
-                    return json.load(f)
-            except:
+                with open(self.last_request_file, 'r', encoding='utf-8') as f:
+                    data = f.read().strip()
+                    # Se arquivo está vazio, retornar dict vazio
+                    if not data or data == "":
+                        return {}
+                    return json.loads(data)
+            except (json.JSONDecodeError, ValueError, IOError):
+                # Se falhar, retornar dict vazio
                 return {}
         return {}
     

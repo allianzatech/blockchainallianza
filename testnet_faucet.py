@@ -6,10 +6,84 @@ Com rate limiting, PQC signatures e log público
 import time
 import hashlib
 import json
+import os
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 from collections import defaultdict
 from pathlib import Path
+
+# =============================================================================
+# FUNÇÕES AUXILIARES SEGURAS PARA JSON
+# =============================================================================
+
+def load_json_safe(path: str, default: Dict = None) -> Dict:
+    """
+    Carrega JSON de forma segura, criando arquivo se não existir
+    ou retornando default se estiver vazio/corrompido
+    """
+    if default is None:
+        default = {}
+    
+    # Criar diretório se não existir
+    dir_path = os.path.dirname(path)
+    if dir_path and not os.path.exists(dir_path):
+        os.makedirs(dir_path, exist_ok=True)
+    
+    # Se arquivo não existe, criar com JSON válido
+    if not os.path.exists(path):
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(default, f, indent=2)
+            return default
+        except Exception:
+            return default
+    
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = f.read().strip()
+            # Se arquivo está vazio, retornar default
+            if not data or data == "":
+                with open(path, "w", encoding="utf-8") as fw:
+                    json.dump(default, fw, indent=2)
+                return default
+            # Tentar fazer parse do JSON
+            return json.loads(data)
+    except (json.JSONDecodeError, ValueError, IOError) as e:
+        # Se falhar, criar arquivo novo com default
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(default, f, indent=2)
+        except Exception:
+            pass
+        return default
+
+def save_json_safe(path: str, data: Dict):
+    """
+    Salva JSON de forma segura, criando diretório se necessário
+    """
+    try:
+        # Criar diretório se não existir
+        dir_path = os.path.dirname(path)
+        if dir_path and not os.path.exists(dir_path):
+            os.makedirs(dir_path, exist_ok=True)
+        
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        print(f"⚠️  Erro ao salvar JSON em {path}: {e}")
+
+def parse_json_line_safe(line: str) -> Optional[Dict]:
+    """
+    Faz parse de uma linha JSON de forma segura
+    Retorna None se falhar
+    """
+    if not line or not line.strip():
+        return None
+    
+    try:
+        return json.loads(line.strip())
+    except (json.JSONDecodeError, ValueError):
+        return None
 
 from testnet_config import (
     FAUCET_AMOUNT,
@@ -260,13 +334,16 @@ class TestnetFaucet:
             try:
                 with open(log_file, "r", encoding="utf-8") as f:
                     for line in f:
-                        if line.strip():
-                            logs.append(json.loads(line))
+                        parsed = parse_json_line_safe(line)
+                        if parsed:
+                            logs.append(parsed)
                         if len(logs) >= limit:
                             break
                 if len(logs) >= limit:
                     break
-            except Exception:
+            except (IOError, OSError, Exception) as e:
+                # Continuar mesmo se houver erro em um arquivo
+                print(f"⚠️  Erro ao ler log {log_file}: {e}")
                 continue
         
         return logs[:limit]
