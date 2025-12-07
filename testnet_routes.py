@@ -827,7 +827,7 @@ def api_professional_proof_of_lock():
         if not professional_tests:
             return jsonify({
                 "success": False,
-                "error": "Professional tests não inicializado"
+                "error": "Professional tests not initialized"
             }), 500
         
         result = professional_tests.test_proof_of_lock_with_real_tx(
@@ -841,7 +841,7 @@ def api_professional_proof_of_lock():
     except Exception as e:
         return jsonify({
             "success": False,
-            "error": f"Erro: {str(e)}"
+            "error": f"Error: {str(e)}"
         }), 500
 
 @testnet_bp.route('/api/tests/professional/qrs3', methods=['POST'])
@@ -854,7 +854,7 @@ def api_professional_qrs3():
         if not professional_tests:
             return jsonify({
                 "success": False,
-                "error": "Professional tests não inicializado"
+                "error": "Professional tests not initialized"
             }), 500
         
         result = professional_tests.test_qrs3_signature_professional(message=message)
@@ -864,7 +864,166 @@ def api_professional_qrs3():
     except Exception as e:
         return jsonify({
             "success": False,
-            "error": f"Erro: {str(e)}"
+            "error": f"Error: {str(e)}"
+        }), 500
+
+# =============================================================================
+# TESTES COMPLETOS (Complete Validation, Critical, Professional, All)
+# =============================================================================
+
+@testnet_bp.route('/api/tests/complete-validation/run', methods=['POST'])
+def api_run_complete_validation():
+    """Executar Complete Validation Suite"""
+    try:
+        from testnet_professional_test_suite import professional_suite
+        
+        if not professional_suite or not professional_suite.complete_validation:
+            return jsonify({
+                "success": False,
+                "error": "Complete Validation Suite not available"
+            }), 500
+        
+        results = professional_suite.complete_validation.run_all_validation_tests()
+        return jsonify({
+            "success": True,
+            "results": results
+        }), 200
+    except Exception as e:
+        import traceback
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "traceback": traceback.format_exc() if os.getenv('DEBUG') == 'True' else None
+        }), 500
+
+@testnet_bp.route('/api/tests/critical/run', methods=['POST'])
+def api_run_critical_tests():
+    """Executar Critical Tests Suite"""
+    try:
+        from testnet_professional_test_suite import professional_suite
+        
+        if not professional_suite or not professional_suite.critical_suite:
+            return jsonify({
+                "success": False,
+                "error": "Critical Tests Suite not available"
+            }), 500
+        
+        results = professional_suite.critical_suite.run_all_critical_tests()
+        return jsonify({
+            "success": True,
+            "results": results
+        }), 200
+    except Exception as e:
+        import traceback
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "traceback": traceback.format_exc() if os.getenv('DEBUG') == 'True' else None
+        }), 500
+
+@testnet_bp.route('/api/tests/professional/run', methods=['POST'])
+def api_run_professional_suite():
+    """Executar Professional Test Suite"""
+    try:
+        from testnet_professional_test_suite import professional_suite
+        
+        if not professional_suite:
+            return jsonify({
+                "success": False,
+                "error": "Professional Test Suite not initialized"
+            }), 500
+        
+        results = professional_suite.run_all_tests(include_critical=False)
+        return jsonify({
+            "success": True,
+            "results": results
+        }), 200
+    except Exception as e:
+        import traceback
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "traceback": traceback.format_exc() if os.getenv('DEBUG') == 'True' else None
+        }), 500
+
+@testnet_bp.route('/api/tests/all/run', methods=['POST'])
+def api_run_all_tests():
+    """Executar todos os testes (Complete Validation + Critical + Professional)"""
+    try:
+        from testnet_professional_test_suite import professional_suite
+        
+        if not professional_suite:
+            return jsonify({
+                "success": False,
+                "error": "Professional Test Suite not initialized"
+            }), 500
+        
+        all_results = {
+            "start_time": datetime.now().isoformat(),
+            "suites": {}
+        }
+        
+        # Executar Complete Validation
+        if professional_suite.complete_validation:
+            try:
+                all_results["suites"]["complete_validation"] = professional_suite.complete_validation.run_all_validation_tests()
+            except Exception as e:
+                all_results["suites"]["complete_validation"] = {
+                    "success": False,
+                    "error": str(e)
+                }
+        
+        # Executar Critical Tests
+        if professional_suite.critical_suite:
+            try:
+                all_results["suites"]["critical_tests"] = professional_suite.critical_suite.run_all_critical_tests()
+            except Exception as e:
+                all_results["suites"]["critical_tests"] = {
+                    "success": False,
+                    "error": str(e)
+                }
+        
+        # Executar Professional Suite
+        try:
+            all_results["suites"]["professional"] = professional_suite.run_all_tests(include_critical=False)
+        except Exception as e:
+            all_results["suites"]["professional"] = {
+                "success": False,
+                "error": str(e)
+            }
+        
+        # Calcular estatísticas totais
+        total_tests = 0
+        successful_tests = 0
+        
+        for suite_name, suite_results in all_results["suites"].items():
+            if isinstance(suite_results, dict):
+                if "summary" in suite_results:
+                    total_tests += suite_results["summary"].get("total_tests", 0)
+                    successful_tests += suite_results["summary"].get("successful_tests", 0)
+                elif "tests" in suite_results:
+                    suite_tests = suite_results["tests"]
+                    if isinstance(suite_tests, dict):
+                        total_tests += len(suite_tests)
+                        successful_tests += sum(1 for t in suite_tests.values() if isinstance(t, dict) and t.get("success", False))
+        
+        all_results["summary"] = {
+            "total_tests": total_tests,
+            "successful_tests": successful_tests,
+            "failed_tests": total_tests - successful_tests,
+            "success_rate": (successful_tests / total_tests * 100) if total_tests > 0 else 0
+        }
+        
+        all_results["end_time"] = datetime.now().isoformat()
+        all_results["success"] = True
+        
+        return jsonify(all_results), 200
+    except Exception as e:
+        import traceback
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "traceback": traceback.format_exc() if os.getenv('DEBUG') == 'True' else None
         }), 500
 
 # =============================================================================
@@ -1198,7 +1357,7 @@ def api_run_public_tests():
         import traceback
         return jsonify({
             "success": False,
-            "error": f"Erro: {str(e)}",
+            "error": f"Error: {str(e)}",
             "traceback": traceback.format_exc()
         }), 500
 
@@ -1301,7 +1460,7 @@ def api_test_signature_validation():
         import traceback
         return jsonify({
             "success": False,
-            "error": f"Erro: {str(e)}",
+            "error": f"Error: {str(e)}",
             "traceback": traceback.format_exc()
         }), 500
 
@@ -1328,7 +1487,7 @@ def api_test_proof_of_lock():
         import traceback
         return jsonify({
             "success": False,
-            "error": f"Erro: {str(e)}",
+            "error": f"Error: {str(e)}",
             "traceback": traceback.format_exc()
         }), 500
 
@@ -1429,7 +1588,7 @@ def api_test_cross_chain_transfer():
         import traceback
         return jsonify({
             "success": False,
-            "error": f"Erro: {str(e)}",
+            "error": f"Error: {str(e)}",
             "traceback": traceback.format_exc()
         }), 500
 
@@ -1488,7 +1647,7 @@ def api_download_interoperability_proof(proof_id):
     except Exception as e:
         return jsonify({
             "success": False,
-            "error": f"Erro: {str(e)}"
+            "error": f"Error: {str(e)}"
         }), 500
 
 @testnet_bp.route('/verify-proof', methods=['GET', 'POST'])
@@ -1709,7 +1868,7 @@ def api_download_qrs3_proof(proof_id):
         import traceback
         return jsonify({
             "success": False,
-            "error": f"Erro: {str(e)}",
+            "error": f"Error: {str(e)}",
             "traceback": traceback.format_exc()
         }), 500
 
