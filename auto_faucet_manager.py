@@ -341,7 +341,15 @@ class AutoFaucetManager:
     
     def start_scheduler(self, interval_hours: int = 12):
         """Inicia agendador para verificar a cada X horas"""
-        if not SCHEDULE_AVAILABLE:
+        # Verificar se schedule está disponível
+        try:
+            import schedule as schedule_module
+        except ImportError:
+            print("⚠️  schedule não disponível - gerenciador automático não pode ser iniciado")
+            print("   Para habilitar, instale: pip install schedule")
+            return None
+        
+        if schedule is None:
             print("⚠️  schedule não disponível - gerenciador automático não pode ser iniciado")
             print("   Para habilitar, instale: pip install schedule")
             return None
@@ -361,7 +369,7 @@ class AutoFaucetManager:
         # Executar em thread separada
         def run_scheduler():
             while True:
-                schedule.run_pending()
+                schedule_module.run_pending()
                 time.sleep(60)  # Verificar a cada minuto
         
         scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
