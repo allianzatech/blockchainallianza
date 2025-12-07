@@ -161,8 +161,11 @@ class AutoFaucetManager:
             "chain": chain,
             "address": address
         }
-        with open(self.last_request_file, 'w') as f:
-            json.dump(last_requests, f, indent=2)
+        try:
+            with open(self.last_request_file, 'w', encoding='utf-8') as f:
+                json.dump(last_requests, f, indent=2, ensure_ascii=False)
+        except (IOError, OSError) as e:
+            print(f"⚠️  Erro ao salvar last_requests: {e}")
     
     def _can_request_faucet(self, chain: str, address: str) -> bool:
         """Verifica se pode solicitar faucet (respeitando intervalo de 12 horas)"""
