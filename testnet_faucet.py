@@ -119,8 +119,9 @@ class TestnetFaucet:
             "reasons": defaultdict(int)
         }
         
-        # Inicializar carteira do faucet se não existir
-        self._ensure_faucet_wallet()
+        # NÃO inicializar carteira aqui - será criada quando necessário
+        # A inicialização no __init__ pode falhar se o blockchain ainda não estiver pronto
+        self._faucet_wallet_initialized = False
     
     def _ensure_faucet_wallet(self):
         """Garante que o endereço do faucet tenha uma carteira criada com saldo suficiente"""
@@ -232,9 +233,11 @@ class TestnetFaucet:
                     print(f"❌ ENCRYPTION_KEY não está disponível")
                     return None
             
-            # Garantir que a carteira existe antes de buscar a chave
-            print(f"🔧 Garantindo que a carteira do faucet existe...")
-            self._ensure_faucet_wallet()
+            # Garantir que a carteira existe antes de buscar a chave (lazy initialization)
+            if not self._faucet_wallet_initialized:
+                print(f"🔧 Garantindo que a carteira do faucet existe (inicialização tardia)...")
+                self._ensure_faucet_wallet()
+                self._faucet_wallet_initialized = True
             
             # Buscar chave privada criptografada do banco
             print(f"🔍 Buscando chave privada no banco de dados...")
