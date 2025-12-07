@@ -98,7 +98,7 @@
                 </div>
                 <div class="bg-gray-800 p-4 rounded-lg">
                     <h3 class="font-semibold mb-2">2.3. {{ t('bitcoin_to_evm') or 'Bitcoin → EVM' }}</h3>
-                    <p class="text-sm text-gray-400 mb-3">Conversão real</p>
+                    <p class="text-sm text-gray-400 mb-3">{{ t('real_conversion') or 'Real conversion' }}</p>
                     <button onclick="runTest('2_3_bitcoin_evm_conversion')" class="w-full bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-bold">
                         Executar
                     </button>
@@ -109,21 +109,21 @@
 
         <!-- Seção 4: Testes de Blockchain Core -->
         <div class="mb-8">
-            <h2 class="text-2xl font-bold mb-4">⛓️ 4. Testes de Blockchain Core</h2>
+            <h2 class="text-2xl font-bold mb-4">⛓️ 4. {{ t('blockchain_core_tests') or 'Blockchain Core Tests' }}</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div class="bg-gray-800 p-4 rounded-lg">
-                    <h3 class="font-semibold mb-2">4.1. Consenso</h3>
+                    <h3 class="font-semibold mb-2">4.1. {{ t('consensus') or 'Consensus' }}</h3>
                     <p class="text-sm text-gray-400 mb-3">Multi-node consensus</p>
                     <button onclick="runTest('4_1_consensus')" class="w-full bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded font-bold">
-                        Executar
+                        {{ t('execute') or 'Execute' }}
                     </button>
                     <div id="result_4_1_consensus" class="mt-2 text-sm hidden"></div>
                 </div>
                 <div class="bg-gray-800 p-4 rounded-lg">
-                    <h3 class="font-semibold mb-2">4.2. Sincronização de Nós</h3>
+                    <h3 class="font-semibold mb-2">4.2. {{ t('node_synchronization') or 'Node Synchronization' }}</h3>
                     <p class="text-sm text-gray-400 mb-3">Node sync</p>
                     <button onclick="runTest('4_2_node_sync')" class="w-full bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded font-bold">
-                        Executar
+                        {{ t('execute') or 'Execute' }}
                     </button>
                     <div id="result_4_2_node_sync" class="mt-2 text-sm hidden"></div>
                 </div>
@@ -147,29 +147,29 @@
 
         <!-- Seção 8: Testes Opcionais -->
         <div class="mb-8">
-            <h2 class="text-2xl font-bold mb-4">🔬 8. Testes Opcionais</h2>
+            <h2 class="text-2xl font-bold mb-4">🔬 8. {{ t('optional_tests') or 'Optional Tests' }}</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div class="bg-gray-800 p-4 rounded-lg">
                     <h3 class="font-semibold mb-2">8.1. FHE</h3>
-                    <p class="text-sm text-gray-400 mb-3">Criptografia Homomórfica</p>
+                    <p class="text-sm text-gray-400 mb-3">{{ t('homomorphic_cryptography') or 'Homomorphic Cryptography' }}</p>
                     <button onclick="runTest('8_1_fhe')" class="w-full bg-pink-600 hover:bg-pink-700 px-4 py-2 rounded font-bold">
-                        Executar
+                        {{ t('execute') or 'Execute' }}
                     </button>
                     <div id="result_8_1_fhe" class="mt-2 text-sm hidden"></div>
                 </div>
                 <div class="bg-gray-800 p-4 rounded-lg">
                     <h3 class="font-semibold mb-2">8.2. QR-DID</h3>
-                    <p class="text-sm text-gray-400 mb-3">Identidade Quântico-Segura</p>
+                    <p class="text-sm text-gray-400 mb-3">{{ t('quantum_secure_identity') or 'Quantum-Secure Identity' }}</p>
                     <button onclick="runTest('8_2_qr_did')" class="w-full bg-pink-600 hover:bg-pink-700 px-4 py-2 rounded font-bold">
-                        Executar
+                        {{ t('execute') or 'Execute' }}
                     </button>
                     <div id="result_8_2_qr_did" class="mt-2 text-sm hidden"></div>
                 </div>
                 <div class="bg-gray-800 p-4 rounded-lg">
                     <h3 class="font-semibold mb-2">8.3. Wormhole Prevention</h3>
-                    <p class="text-sm text-gray-400 mb-3">Prevenção de exploits</p>
+                    <p class="text-sm text-gray-400 mb-3">{{ t('exploit_prevention') or 'Exploit Prevention' }}</p>
                     <button onclick="runTest('8_3_wormhole_prevention')" class="w-full bg-pink-600 hover:bg-pink-700 px-4 py-2 rounded font-bold">
-                        Executar
+                        {{ t('execute') or 'Execute' }}
                     </button>
                     <div id="result_8_3_wormhole_prevention" class="mt-2 text-sm hidden"></div>
                 </div>
@@ -186,13 +186,13 @@
         <!-- Resultados Gerais -->
         <div id="allResults" class="hidden bg-gray-800 p-6 rounded-lg mb-6">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl font-bold">📊 Resultados Completos</h3>
+                <h3 class="text-xl font-bold">📊 {{ t('complete_results') or 'Complete Results' }}</h3>
                 <div class="flex gap-2">
                     <button onclick="copyResults()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm font-semibold transition">
-                        <i class="fas fa-copy mr-2"></i>Copiar
+                        <i class="fas fa-copy mr-2"></i>{{ t('copy') or 'Copy' }}
                     </button>
                     <button onclick="downloadResults()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm font-semibold transition">
-                        <i class="fas fa-download mr-2"></i>Baixar
+                        <i class="fas fa-download mr-2"></i>{{ t('download') or 'Download' }}
                     </button>
                 </div>
             </div>

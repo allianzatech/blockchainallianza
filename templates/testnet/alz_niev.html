@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="{{ lang or 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
@@ -107,7 +107,7 @@
         <div class="mb-8">
             <a href="javascript:history.back()" class="btn-back mb-4 inline-flex">
                 <i class="fas fa-arrow-left"></i>
-                <span>Voltar</span>
+                <span>{{ t('back') or 'Back' }}</span>
             </a>
             <div class="flex items-center gap-3 mb-2">
                 <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-2xl">
@@ -115,7 +115,7 @@
                 </div>
                 <div>
                     <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">ALZ-NIEV</h1>
-                    <p class="text-gray-400 text-sm mt-1">Non-Intermediate Execution Validation - Interoperabilidade Única no Mundo</p>
+                    <p class="text-gray-400 text-sm mt-1">{{ t('alz_niev_subtitle') or 'Non-Intermediate Execution Validation - Unique Interoperability in the World' }}</p>
                 </div>
             </div>
         </div>
@@ -124,7 +124,7 @@
         <div id="status" class="main-card mb-6">
             <p class="text-yellow-400 flex items-center gap-2">
                 <i class="fas fa-spinner fa-spin"></i>
-                ⏳ Verificando status...
+                ⏳ {{ t('checking_status') or 'Checking status...' }}
             </p>
         </div>
 
@@ -132,33 +132,33 @@
         <div class="main-card mb-6">
             <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
                 <i class="fas fa-layer-group text-blue-400"></i>
-                As 5 Camadas do ALZ-NIEV
+                {{ t('the_5_layers') or 'The 5 Layers of ALZ-NIEV' }}
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div class="layer-card bg-blue-500/10 border-blue-500/30">
                     <h3 class="text-xl font-bold mb-2 text-blue-300">🔵 ELNI</h3>
                     <p class="text-sm text-gray-300 font-semibold">Execution-Level Native Interop</p>
-                    <p class="text-xs text-gray-400 mt-2">Execução nativa sem bridges</p>
+                    <p class="text-xs text-gray-400 mt-2">{{ t('native_execution_no_bridges') or 'Native execution without bridges' }}</p>
                 </div>
                 <div class="layer-card bg-purple-500/10 border-purple-500/30">
                     <h3 class="text-xl font-bold mb-2 text-purple-300">🟣 ZKEF</h3>
                     <p class="text-sm text-gray-300 font-semibold">Zero-Knowledge External Functions</p>
-                    <p class="text-xs text-gray-400 mt-2">Provas ZK sem relayers</p>
+                    <p class="text-xs text-gray-400 mt-2">{{ t('zk_proofs_no_relayers') or 'ZK proofs without relayers' }}</p>
                 </div>
                 <div class="layer-card bg-green-500/10 border-green-500/30">
                     <h3 class="text-xl font-bold mb-2 text-green-300">🟢 UP-NMT</h3>
                     <p class="text-sm text-gray-300 font-semibold">Universal Proof Normalized Merkle Tunneling</p>
-                    <p class="text-xs text-gray-400 mt-2">Provas Merkle universais</p>
+                    <p class="text-xs text-gray-400 mt-2">{{ t('universal_merkle_proofs') or 'Universal Merkle proofs' }}</p>
                 </div>
                 <div class="layer-card bg-yellow-500/10 border-yellow-500/30">
                     <h3 class="text-xl font-bold mb-2 text-yellow-300">🟡 MCL</h3>
                     <p class="text-sm text-gray-300 font-semibold">Multi-Consensus Layer</p>
-                    <p class="text-xs text-gray-400 mt-2">Suporte a qualquer consenso</p>
+                    <p class="text-xs text-gray-400 mt-2">{{ t('support_any_consensus') or 'Support for any consensus' }}</p>
                 </div>
                 <div class="layer-card bg-red-500/10 border-red-500/30">
                     <h3 class="text-xl font-bold mb-2 text-red-300">🔴 AES</h3>
                     <p class="text-sm text-gray-300 font-semibold">Atomic Execution Sync</p>
-                    <p class="text-xs text-gray-400 mt-2">Execução atômica multi-chain</p>
+                    <p class="text-xs text-gray-400 mt-2">{{ t('atomic_multi_chain_execution') or 'Atomic multi-chain execution' }}</p>
                 </div>
             </div>
         </div>
@@ -169,7 +169,7 @@
                 <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
                     <i class="fas fa-project-diagram text-blue-400 text-xl"></i>
                 </div>
-                <h2 class="text-2xl font-bold">🔵 Teste 1: Execução Cross-Chain (ELNI + Todas as Provas)</h2>
+                <h2 class="text-2xl font-bold">🔵 {{ t('test_1_cross_chain') or 'Test 1: Cross-Chain Execution (ELNI + All Proofs)' }}</h2>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -205,7 +205,7 @@
             </div>
 
             <button onclick="testExecution()" class="btn-primary">
-                <i class="fas fa-rocket mr-2"></i>🚀 Executar com ALZ-NIEV
+                <i class="fas fa-rocket mr-2"></i>🚀 {{ t('execute_with_alz_niev') or 'Execute with ALZ-NIEV' }}
             </button>
 
             <div id="executionResult" class="mt-4 hidden"></div>
@@ -217,7 +217,7 @@
                 <div class="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center">
                     <i class="fas fa-bolt text-red-400 text-xl"></i>
                 </div>
-                <h2 class="text-2xl font-bold">🔴 Teste 2: Execução Atômica Multi-Chain (AES)</h2>
+                <h2 class="text-2xl font-bold">🔴 {{ t('test_2_atomic') or 'Test 2: Atomic Multi-Chain Execution (AES)' }}</h2>
             </div>
             
             <div class="mb-4">
@@ -230,7 +230,7 @@
             </div>
 
             <button onclick="testAtomic()" class="btn-danger">
-                <i class="fas fa-bolt mr-2"></i>⚡ Executar Atomicamente
+                <i class="fas fa-bolt mr-2"></i>⚡ {{ t('execute_atomically') or 'Execute Atomically' }}
             </button>
 
             <div id="atomicResult" class="mt-4 hidden"></div>
@@ -240,12 +240,12 @@
         <div class="main-card bg-yellow-500/10 border-yellow-500/30">
             <p class="font-bold mb-2 text-yellow-300 flex items-center gap-2">
                 <i class="fas fa-coins"></i>
-                💰 Precisa de Tokens de Teste?
+                💰 {{ t('need_test_tokens') or 'Need Test Tokens?' }}
             </p>
-            <p class="text-sm mb-2 text-gray-300">Para executar funções que requerem saldo, use o faucet:</p>
+            <p class="text-sm mb-2 text-gray-300">{{ t('use_faucet_description') or 'To execute functions that require balance, use the faucet:' }}</p>
             <a href="/faucet" class="text-blue-400 hover:text-blue-300 font-semibold inline-flex items-center gap-2">
                 <i class="fas fa-faucet"></i>
-                → Acessar Faucet
+                → {{ t('access_faucet') or 'Access Faucet' }}
             </a>
         </div>
     </div>

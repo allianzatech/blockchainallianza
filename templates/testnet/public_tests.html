@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="{{ lang or 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Testes Públicos - Allianza Testnet</title>
+    <title>{{ t('public_tests') or 'Public Tests - Allianza Testnet' }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -31,19 +31,19 @@
     <div class="container mx-auto px-4 py-8">
         <div class="mb-6">
             <a href="javascript:history.back()" class="btn-back">
-Voltar
+{{ t('back') or 'Back' }}
             </a>
         </div>
 
-        <h1 class="text-4xl font-bold mb-2">🧪 Testes Públicos</h1>
-        <p class="text-gray-400 mb-8">Execute testes reais e veja os resultados em tempo real</p>
+        <h1 class="text-4xl font-bold mb-2">🧪 {{ t('public_tests') or 'Public Tests' }}</h1>
+        <p class="text-gray-400 mb-8">{{ t('public_tests_subtitle') or 'Execute real tests and see results in real time' }}</p>
 
         <!-- Botão Executar Todos -->
         <div class="bg-blue-900 p-6 rounded-lg mb-6">
             <button id="runAllTestsBtn" class="bg-blue-600 hover:bg-blue-700 px-8 py-4 rounded-lg font-semibold text-lg transition">
-                <i class="fas fa-play mr-2"></i>Executar Todos os Testes
+                <i class="fas fa-play mr-2"></i>{{ t('execute_all_tests') or 'Execute All Tests' }}
             </button>
-            <p class="text-sm text-gray-300 mt-2">Execute os 5 testes principais e veja os resultados detalhados</p>
+            <p class="text-sm text-gray-300 mt-2">{{ t('execute_5_main_tests') or 'Execute the 5 main tests and see detailed results' }}</p>
         </div>
 
         <!-- Testes Individuais -->
@@ -51,53 +51,53 @@ Voltar
             <div class="bg-gray-800 p-4 rounded-lg">
                 <h3 class="font-semibold mb-2">1. QRS-3 Signature</h3>
                 <button onclick="runTest('qrs3')" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded text-sm">
-                    Executar
+                    {{ t('execute') or 'Execute' }}
                 </button>
             </div>
             <div class="bg-gray-800 p-4 rounded-lg">
-                <h3 class="font-semibold mb-2">2. Interoperabilidade</h3>
+                <h3 class="font-semibold mb-2">2. {{ t('interoperability') or 'Interoperability' }}</h3>
                 <button onclick="runTest('interoperability')" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded text-sm">
-                    Executar
+                    {{ t('execute') or 'Execute' }}
                 </button>
             </div>
             <div class="bg-gray-800 p-4 rounded-lg">
                 <h3 class="font-semibold mb-2">3. Performance</h3>
                 <button onclick="runTest('performance')" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded text-sm">
-                    Executar
+                    {{ t('execute') or 'Execute' }}
                 </button>
             </div>
             <div class="bg-gray-800 p-4 rounded-lg">
-                <h3 class="font-semibold mb-2">4. Validação de Blocos</h3>
+                <h3 class="font-semibold mb-2">4. {{ t('block_validation') or 'Block Validation' }}</h3>
                 <button onclick="runTest('block_validation')" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded text-sm">
-                    Executar
+                    {{ t('execute') or 'Execute' }}
                 </button>
             </div>
             <div class="bg-gray-800 p-4 rounded-lg">
-                <h3 class="font-semibold mb-2">5. Segurança Quântica</h3>
+                <h3 class="font-semibold mb-2">5. {{ t('quantum_security') or 'Quantum Security' }}</h3>
                 <button onclick="runTest('quantum_security')" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded text-sm">
-                    Executar
+                    {{ t('execute') or 'Execute' }}
                 </button>
             </div>
         </div>
 
         <!-- Logs em Tempo Real -->
         <div class="bg-gray-800 p-6 rounded-lg mb-6">
-            <h2 class="text-2xl font-semibold mb-4">📋 Logs em Tempo Real</h2>
+            <h2 class="text-2xl font-semibold mb-4">📋 {{ t('real_time_logs') or 'Real-Time Logs' }}</h2>
             <div id="logsContainer" class="bg-gray-900 p-4 rounded font-mono text-sm max-h-96 overflow-y-auto">
-                <p class="text-gray-500">Aguardando execução de testes...</p>
+                <p class="text-gray-500">{{ t('waiting_test_execution') or 'Waiting for test execution...' }}</p>
             </div>
         </div>
 
         <!-- Resultados -->
         <div id="resultsContainer" class="hidden">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-2xl font-semibold">📊 Resultados</h2>
+                <h2 class="text-2xl font-semibold">📊 {{ t('results') or 'Results' }}</h2>
                 <div class="flex gap-2">
                     <button onclick="copyPublicResults()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm font-semibold transition">
-                        <i class="fas fa-copy mr-2"></i>Copiar
+                        <i class="fas fa-copy mr-2"></i>{{ t('copy') or 'Copy' }}
                     </button>
                     <button onclick="downloadPublicResults()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm font-semibold transition">
-                        <i class="fas fa-download mr-2"></i>Baixar
+                        <i class="fas fa-download mr-2"></i>{{ t('download') or 'Download' }}
                     </button>
                 </div>
             </div>
