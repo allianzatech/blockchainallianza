@@ -59,8 +59,16 @@ except ImportError:
 @testnet_bp.context_processor
 def inject_i18n():
     """Injeta função de tradução nos templates do testnet"""
+    def safe_t(key, default=None):
+        """Wrapper seguro para t() que sempre retorna string"""
+        try:
+            result = i18n_t(key, default)
+            return result if result else (default or key)
+        except:
+            return default or key
+    
     return {
-        't': i18n_t,
+        't': safe_t,
         'lang': 'en'  # Default, pode ser melhorado depois
     }
 
@@ -78,23 +86,6 @@ alz_niev = None
 leaderboard = None
 
 def init_testnet_routes(app, blockchain_instance, quantum_security_instance, bridge_instance=None):
-    """Inicializar rotas do testnet com tratamento robusto de i18n"""
-    # Garantir que função t() está disponível nos templates do blueprint
-    try:
-        from i18n_system import t
-    except ImportError:
-        # Fallback se i18n não estiver disponível
-        def t(key, default=None):
-            return default or key
-    
-    # Adicionar context processor ao blueprint para injetar t() nos templates
-    @testnet_bp.context_processor
-    def inject_i18n():
-        """Injeta função de tradução nos templates do testnet"""
-        return {
-            't': t,
-            'lang': 'en'  # Default, pode ser melhorado depois
-        }
     """Inicializa as rotas da testnet"""
     global faucet, explorer, proof_generator, quantum_security, wallet_generator, professional_tests
     global status_page, quantum_dashboard, public_tests, alz_niev, leaderboard
@@ -234,6 +225,8 @@ def init_testnet_routes(app, blockchain_instance, quantum_security_instance, bri
 @testnet_bp.route('/', methods=['GET', 'HEAD'])
 def testnet_dashboard():
     """Dashboard principal da testnet"""
+    from flask import Response
+    
     # Para HEAD requests (monitores), retornar apenas status OK
     if request.method == 'HEAD':
         return Response(status=200)

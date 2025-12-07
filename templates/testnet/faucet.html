@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ t('faucet') or 'Faucet - Allianza Testnet' }}</title>
+    <title>Faucet - Allianza Testnet</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -31,29 +31,29 @@
     <div class="container mx-auto px-4 py-8">
         <div class="mb-6">
             <a href="javascript:history.back()" class="btn-back">
-{{ t('back') or 'Back' }}
+                Back
             </a>
         </div>
 
-        <h1 class="text-4xl font-bold mb-2">💰 {{ t('faucet') or 'Faucet' }}</h1>
-        <p class="text-gray-400 mb-8">{{ t('get_test_tokens') or 'Get test tokens to try out the Allianza Testnet' }}</p>
+        <h1 class="text-4xl font-bold mb-2">💰 Faucet</h1>
+        <p class="text-gray-400 mb-8">Get test tokens to try out the Allianza Testnet</p>
 
         <!-- Gerar Wallet -->
         <div class="bg-blue-900 p-6 rounded-lg mb-6">
-            <h2 class="text-2xl font-semibold mb-4">👛 {{ t('no_address_generate') or 'Don\'t have an address? Generate one now!' }}</h2>
-            <p class="text-gray-300 mb-4">{{ t('generate_wallet_description') or 'Click the button below to generate a new wallet and get your Allianza address.' }}</p>
+            <h2 class="text-2xl font-semibold mb-4">👛 Don't have an address? Generate one now!</h2>
+            <p class="text-gray-300 mb-4">Click the button below to generate a new wallet and get your Allianza address.</p>
             <button id="generateWalletBtn" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition">
-                <i class="fas fa-wallet mr-2"></i>{{ t('generate_new_wallet') or 'Generate New Wallet' }}
+                <i class="fas fa-wallet mr-2"></i>Generate New Wallet
             </button>
             <div id="walletResult" class="mt-4 hidden"></div>
         </div>
 
         <!-- Form -->
         <div class="bg-gray-800 p-6 rounded-lg mb-8">
-            <h2 class="text-2xl font-semibold mb-4">{{ t('request_tokens') or 'Request Tokens' }}</h2>
+            <h2 class="text-2xl font-semibold mb-4">Request Tokens</h2>
             <form id="faucetForm" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium mb-2">{{ t('allianza_address') or 'Allianza Address' }}</label>
+                    <label class="block text-sm font-medium mb-2">Allianza Address</label>
                     <div class="flex gap-2">
                         <input type="text" id="address" placeholder="ALZ1..." 
                                class="flex-1 bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -61,10 +61,10 @@
                             <i class="fas fa-paste"></i>
                         </button>
                     </div>
-                    <p class="text-xs text-gray-400 mt-1">{{ t('must_start_alz1') or 'Must start with ALZ1 and have 42 characters' }}</p>
+                    <p class="text-xs text-gray-400 mt-1">Must start with ALZ1 and have 42 characters</p>
                 </div>
                 <button type="submit" class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition">
-                    <i class="fas fa-faucet mr-2"></i>{{ t('request_tokens') or 'Request Tokens' }}
+                    <i class="fas fa-faucet mr-2"></i>Request Tokens
                 </button>
             </form>
             <div id="result" class="mt-4 hidden"></div>
@@ -73,22 +73,22 @@
         <!-- Stats -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div class="bg-gray-800 p-4 rounded-lg">
-                <h3 class="text-sm text-gray-400">{{ t('total_sent') or 'Total Sent' }}</h3>
+                <h3 class="text-sm text-gray-400">Total Sent</h3>
                 <p class="text-2xl font-bold">{{ faucet_stats.get('total_sent', 0) if faucet_stats else 0 }}</p>
             </div>
             <div class="bg-gray-800 p-4 rounded-lg">
-                <h3 class="text-sm text-gray-400">{{ t('total_rejected') or 'Total Rejected' }}</h3>
+                <h3 class="text-sm text-gray-400">Total Rejected</h3>
                 <p class="text-2xl font-bold">{{ faucet_stats.get('total_rejected', 0) if faucet_stats else 0 }}</p>
             </div>
             <div class="bg-gray-800 p-4 rounded-lg">
-                <h3 class="text-sm text-gray-400">{{ t('amount_per_request') or 'Amount per Request' }}</h3>
+                <h3 class="text-sm text-gray-400">Amount per Request</h3>
                 <p class="text-2xl font-bold">{{ faucet_stats.get('amount_per_request', 1000) if faucet_stats else 1000 }} ALZ-T</p>
             </div>
         </div>
 
         <!-- Recent Logs -->
         <div class="bg-gray-800 p-6 rounded-lg">
-            <h2 class="text-2xl font-semibold mb-4">{{ t('recent_logs') or 'Recent Logs' }}</h2>
+            <h2 class="text-2xl font-semibold mb-4">Recent Logs</h2>
             <div class="space-y-2">
                 {% if logs and logs|length > 0 %}
                     {% for log in logs %}
