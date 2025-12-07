@@ -362,7 +362,7 @@ class AutoFaucetManager:
         self.check_all_addresses()
         
         # Agendar execuções periódicas
-        schedule.every(interval_hours).hours.do(self.check_all_addresses)
+        schedule_module.every(interval_hours).hours.do(self.check_all_addresses)
         
         print(f"✅ Agendador iniciado! Próxima verificação em {interval_hours} horas")
         
