@@ -71,33 +71,69 @@ class TestnetExplorer:
     def get_recent_transactions(self, limit: int = 50) -> List[Dict]:
         """Retorna transações recentes"""
         try:
-            # Obter transações pendentes
-            pending = []
-            if hasattr(self.blockchain, 'pending_transactions'):
-                pending = self.blockchain.pending_transactions[:limit]
-            
-            # Obter transações dos blocos recentes
-            blocks = self.get_recent_blocks(limit=10)
             transactions = []
             
+            # 1. Obter transações pendentes de TODOS os shards
+            if hasattr(self.blockchain, 'pending_transactions'):
+                if isinstance(self.blockchain.pending_transactions, dict):
+                    # pending_transactions é um dicionário por shard: {0: [], 1: [], ...}
+                    for shard_id, shard_pending in self.blockchain.pending_transactions.items():
+                        if isinstance(shard_pending, list):
+                            transactions.extend(shard_pending)
+                elif isinstance(self.blockchain.pending_transactions, list):
+                    # Fallback: se for lista (compatibilidade)
+                    transactions.extend(self.blockchain.pending_transactions)
+            
+            # 2. Obter transações do banco de dados (transactions_history)
+            try:
+                from db_manager import DBManager
+                db_manager = DBManager()
+                db_txs = db_manager.execute_query(
+                    "SELECT id, sender, receiver, amount, type, timestamp, network, is_public FROM transactions_history ORDER BY timestamp DESC LIMIT ?",
+                    (limit * 2,)  # Buscar mais para ter opções
+                )
+                
+                for tx_row in db_txs:
+                    tx_id, sender, receiver, amount, tx_type, timestamp, network, is_public = tx_row
+                    transactions.append({
+                        "id": tx_id,
+                        "sender": sender,
+                        "receiver": receiver,
+                        "amount": amount,
+                        "type": tx_type,
+                        "timestamp": timestamp,
+                        "network": network or "allianza",
+                        "is_public": bool(is_public) if is_public is not None else True
+                    })
+            except Exception as db_err:
+                # Se falhar ao buscar do banco, continuar sem essas transações
+                pass
+            
+            # 3. Obter transações dos blocos recentes
+            blocks = self.get_recent_blocks(limit=10)
             for block in blocks:
                 block_txs = block.get("transactions", [])
                 if isinstance(block_txs, list):
                     transactions.extend(block_txs)
             
-            # Adicionar pendentes
-            transactions.extend(pending)
-            
-            # Formatar e ordenar
+            # 4. Remover duplicatas (por id) e formatar
+            seen_ids = set()
             formatted_txs = []
-            for tx in transactions[:limit]:
-                formatted_txs.append(self._format_transaction(tx))
+            for tx in transactions:
+                tx_id = tx.get("id") or tx.get("tx_hash") or str(tx.get("hash", ""))
+                if tx_id and tx_id not in seen_ids:
+                    seen_ids.add(tx_id)
+                    formatted_tx = self._format_transaction(tx)
+                    if formatted_tx:
+                        formatted_txs.append(formatted_tx)
             
-            # Ordenar por timestamp (mais recente primeiro)
+            # 5. Ordenar por timestamp (mais recente primeiro)
             formatted_txs.sort(key=lambda x: x.get("timestamp", 0), reverse=True)
             
             return formatted_txs[:limit]
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             return []
     
     def get_transaction_by_hash(self, tx_hash: str) -> Optional[Dict]:
