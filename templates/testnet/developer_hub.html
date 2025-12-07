@@ -109,17 +109,16 @@
                         <div class="flex items-start">
                             <i class="fas fa-check-circle text-green-400 mr-2 mt-1"></i>
                             <div class="flex-1">
-                                <p class="text-green-200 text-sm font-semibold mb-1">✅ SDK Disponível no npm</p>
+                                <p class="text-green-200 text-sm font-semibold mb-1">✅ {{ t('sdk_available_npm') or 'SDK Available on npm' }}</p>
                                 <p class="text-green-300 text-xs mb-2">
-                                    O pacote <code class="bg-green-900/50 px-1 rounded">allianza-qss-js@1.0.0</code> está disponível no npm! 
-                                    Instale agora e comece a usar segurança quântica em seus projetos.
+                                    {{ t('package_available_npm') or 'The allianza-qss-js@1.0.0 package is available on npm! Install now and start using quantum security in your projects.' }}
                                 </p>
                                 <div class="flex gap-2 mt-2">
                                     <button onclick="tryGenerateProof()" class="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 rounded transition">
-                                        <i class="fas fa-play mr-1"></i>Try It Now
+                                        <i class="fas fa-play mr-1"></i>{{ t('try_it_now') or 'Try It Now' }}
                                     </button>
                                     <a href="https://www.npmjs.com/package/allianza-qss-js" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded transition inline-block">
-                                        <i class="fab fa-npm mr-1"></i>Ver no npm
+                                        <i class="fab fa-npm mr-1"></i>{{ t('view_on_npm') or 'View on npm' }}
                                     </a>
                                 </div>
                             </div>
@@ -311,7 +310,7 @@ GET https://testnet.allianza.tech/api/qss/status
         <div class="bg-gray-800 rounded-lg p-6 mb-8">
             <h2 class="text-2xl font-semibold mb-4">
                 <i class="fas fa-lightbulb text-yellow-400 mr-2"></i>
-                Casos de Uso
+                {{ t('use_cases') or 'Use Cases' }}
             </h2>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -320,7 +319,7 @@ GET https://testnet.allianza.tech/api/qss/status
                         <i class="fas fa-exchange-alt mr-2"></i>Cross-Chain Bridges
                     </h3>
                     <p class="text-gray-300 text-sm">
-                        Prove que uma transação em Polygon foi validada e ancore no Bitcoin.
+                        {{ t('prove_polygon_validated_anchor_bitcoin') or 'Prove that a Polygon transaction was validated and anchor it on Bitcoin.' }}
                     </p>
                 </div>
                 
@@ -329,7 +328,7 @@ GET https://testnet.allianza.tech/api/qss/status
                         <i class="fas fa-wallet mr-2"></i>Exchanges
                     </h3>
                     <p class="text-gray-300 text-sm">
-                        Gere provas quânticas para saques e verifique antes de processar.
+                        {{ t('generate_quantum_proofs_withdrawals') or 'Generate quantum proofs for withdrawals and verify before processing.' }}
                     </p>
                 </div>
                 
@@ -338,16 +337,16 @@ GET https://testnet.allianza.tech/api/qss/status
                         <i class="fas fa-coins mr-2"></i>DeFi Protocols
                     </h3>
                     <p class="text-gray-300 text-sm">
-                        Proteja interações de smart contracts com provas quânticas.
+                        {{ t('protect_smart_contract_interactions') or 'Protect smart contract interactions with quantum proofs.' }}
                     </p>
                 </div>
                 
                 <div class="bg-gray-700 rounded-lg p-4">
                     <h3 class="text-lg font-semibold mb-2 text-red-400">
-                        <i class="fas fa-shield-alt mr-2"></i>Auditoria
+                        <i class="fas fa-shield-alt mr-2"></i>{{ t('audit') or 'Audit' }}
                     </h3>
                     <p class="text-gray-300 text-sm">
-                        Certifique transações importantes com provas verificáveis.
+                        {{ t('certify_important_transactions') or 'Certify important transactions with verifiable proofs.' }}
                     </p>
                 </div>
             </div>
@@ -357,7 +356,7 @@ GET https://testnet.allianza.tech/api/qss/status
         <div class="bg-gray-800 rounded-lg p-6">
             <h2 class="text-2xl font-semibold mb-4">
                 <i class="fas fa-book text-blue-400 mr-2"></i>
-                Recursos
+                {{ t('resources') or 'Resources' }}
             </h2>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -365,14 +364,14 @@ GET https://testnet.allianza.tech/api/qss/status
                     <h3 class="text-lg font-semibold mb-2">
                         <i class="fas fa-shield-virus mr-2"></i>QSS Dashboard
                     </h3>
-                    <p class="text-gray-300 text-sm">Teste o QSS diretamente no navegador</p>
+                    <p class="text-gray-300 text-sm">{{ t('test_qss_browser') or 'Test QSS directly in the browser' }}</p>
                 </a>
                 
                 <a href="/qss/status" class="bg-gray-700 hover:bg-gray-600 rounded-lg p-4 transition">
                     <h3 class="text-lg font-semibold mb-2">
                         <i class="fas fa-server mr-2"></i>API Status
                     </h3>
-                    <p class="text-gray-300 text-sm">Verifique o status da API em tempo real</p>
+                    <p class="text-gray-300 text-sm">{{ t('check_api_status_realtime') or 'Check API status in real-time' }}</p>
                 </a>
                 
                 <a href="https://www.npmjs.com/package/allianza-qss-js" target="_blank" class="bg-gradient-to-br from-green-700 to-green-800 rounded-lg p-4 border border-green-600 hover:from-green-600 hover:to-green-700 transition">
@@ -380,12 +379,12 @@ GET https://testnet.allianza.tech/api/qss/status
                         <h3 class="text-lg font-semibold">
                             <i class="fab fa-npm mr-2"></i>npm Package
                         </h3>
-                        <span class="bg-green-500 text-green-900 text-xs font-bold px-2 py-1 rounded">✅ DISPONÍVEL</span>
+                        <span class="bg-green-500 text-green-900 text-xs font-bold px-2 py-1 rounded">✅ {{ t('available') or 'AVAILABLE' }}</span>
                     </div>
                     <p class="text-green-200 text-sm mb-2 font-mono">allianza-qss-js</p>
                     <p class="text-green-300 text-xs">
                         <i class="fas fa-check-circle mr-1"></i>
-                        Instale agora: npm install allianza-qss-js
+                        {{ t('install_now_npm') or 'Install now: npm install allianza-qss-js' }}
                     </p>
                 </a>
                 
@@ -394,12 +393,12 @@ GET https://testnet.allianza.tech/api/qss/status
                         <h3 class="text-lg font-semibold">
                             <i class="fab fa-github mr-2"></i>GitHub Repository
                         </h3>
-                        <span class="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">⭐ PÚBLICO</span>
+                        <span class="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">⭐ {{ t('public') or 'PUBLIC' }}</span>
                     </div>
                     <p class="text-gray-200 text-sm mb-2 font-mono">allianzablockchainpublic</p>
                     <p class="text-gray-300 text-xs">
                         <i class="fas fa-code mr-1"></i>
-                        Código fonte, exemplos e documentação
+                        {{ t('source_code_examples_docs') or 'Source code, examples and documentation' }}
                     </p>
                 </a>
             </div>
