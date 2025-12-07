@@ -118,6 +118,108 @@ class TestnetFaucet:
             "total_rejected": 0,
             "reasons": defaultdict(int)
         }
+        
+        # Inicializar carteira do faucet se não existir
+        self._ensure_faucet_wallet()
+    
+    def _ensure_faucet_wallet(self):
+        """Garante que o endereço do faucet tenha uma carteira criada com saldo suficiente"""
+        try:
+            from db_manager import db_manager
+            from allianza_blockchain import AdvancedCrypto, cipher, TOTAL_SUPPLY
+            from cryptography.hazmat.primitives import serialization
+            
+            # Calcular saldo inicial do faucet (10% do supply total = 100 milhões)
+            FAUCET_INITIAL_BALANCE = int(TOTAL_SUPPLY * 0.10)  # 10% do supply total
+            
+            # Verificar se a carteira do faucet existe
+            if FAUCET_ADDRESS not in self.blockchain.wallets:
+                print(f"🔧 Criando carteira para o faucet: {FAUCET_ADDRESS}")
+                
+                # Gerar chave privada e pública
+                private_key, public_key = AdvancedCrypto.generate_keypair()
+                
+                # Criar carteira no blockchain
+                self.blockchain.wallets[FAUCET_ADDRESS] = {
+                    "ALZ": FAUCET_INITIAL_BALANCE,  # 10% do supply total (100 milhões)
+                    "staked": 0,
+                    "blockchain_source": "allianza",
+                    "external_address": None
+                }
+                self.blockchain.staking_pool[FAUCET_ADDRESS] = 0
+                
+                # Criptografar e armazenar chave privada
+                encrypted_private_key = cipher.encrypt(
+                    private_key.private_bytes(
+                        encoding=serialization.Encoding.PEM,
+                        format=serialization.PrivateFormat.PKCS8,
+                        encryption_algorithm=serialization.NoEncryption()
+                    )
+                ).decode()
+                
+                # Salvar no banco de dados
+                public_key_pem = public_key.public_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PublicFormat.SubjectPublicKeyInfo
+                ).decode()
+                
+                db_manager.execute_commit(
+                    "INSERT OR REPLACE INTO wallets (address, vtx, staked_vtx, public_key, private_key, blockchain_source, external_address) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (FAUCET_ADDRESS, FAUCET_INITIAL_BALANCE, 0, public_key_pem, encrypted_private_key, "allianza", None)
+                )
+                
+                print(f"✅ Carteira do faucet criada com sucesso! Saldo: {FAUCET_INITIAL_BALANCE:,} ALZ ({FAUCET_INITIAL_BALANCE/TOTAL_SUPPLY*100:.1f}% do supply)")
+            else:
+                # Verificar se tem saldo suficiente
+                balance = self.blockchain.wallets[FAUCET_ADDRESS].get("ALZ", 0)
+                if balance < FAUCET_AMOUNT * 100:  # Garantir saldo para pelo menos 100 requisições
+                    print(f"⚠️  Saldo do faucet baixo: {balance:,} ALZ")
+                    # Recarregar saldo do faucet para 10% do supply
+                    from db_manager import db_manager
+                    self.blockchain.wallets[FAUCET_ADDRESS]["ALZ"] = FAUCET_INITIAL_BALANCE
+                    db_manager.execute_commit(
+                        "UPDATE wallets SET vtx = ? WHERE address = ?",
+                        (FAUCET_INITIAL_BALANCE, FAUCET_ADDRESS)
+                    )
+                    print(f"✅ Saldo do faucet recarregado para {FAUCET_INITIAL_BALANCE:,} ALZ ({FAUCET_INITIAL_BALANCE/TOTAL_SUPPLY*100:.1f}% do supply)")
+        except Exception as e:
+            print(f"⚠️  Erro ao garantir carteira do faucet: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def _get_faucet_private_key(self):
+        """Obtém a chave privada do faucet do banco de dados"""
+        try:
+            from db_manager import db_manager
+            from allianza_blockchain import cipher
+            from cryptography.hazmat.primitives import serialization
+            
+            # Buscar chave privada criptografada do banco
+            rows = db_manager.execute_query(
+                "SELECT private_key FROM wallets WHERE address = ?",
+                (FAUCET_ADDRESS,)
+            )
+            
+            if not rows or not rows[0][0]:
+                print(f"❌ Chave privada do faucet não encontrada no banco de dados")
+                return None
+            
+            encrypted_private_key = rows[0][0]
+            
+            # Descriptografar chave privada
+            private_key_pem = cipher.decrypt(encrypted_private_key.encode())
+            private_key = serialization.load_pem_private_key(
+                private_key_pem,
+                password=None,
+                backend=None
+            )
+            
+            return private_key
+        except Exception as e:
+            print(f"❌ Erro ao obter chave privada do faucet: {e}")
+            import traceback
+            traceback.print_exc()
+            return None
     
     def _get_client_ip(self, request) -> str:
         """Obtém o IP do cliente"""
@@ -211,62 +313,66 @@ class TestnetFaucet:
             # Gerar prova anti-abuso (PoW)
             pow_proof = self._generate_pow_proof(address, ip)
             
-            # Criar transação usando a API do blockchain
-            # O faucet precisa ter uma chave privada para assinar
-            # Por enquanto, vamos criar uma transação simples
-            tx = {
-                "from": FAUCET_ADDRESS,
-                "to": address,
-                "amount": FAUCET_AMOUNT,
-                "timestamp": time.time(),
-                "tx_hash": None  # Será gerado
-            }
+            # Obter chave privada do faucet
+            faucet_private_key = self._get_faucet_private_key()
+            if not faucet_private_key:
+                self.stats["total_rejected"] += 1
+                self.stats["reasons"]["no_private_key"] += 1
+                return {
+                    "success": False,
+                    "error": "Erro ao acessar chave privada do faucet. Por favor, tente novamente mais tarde.",
+                    "address": address
+                }
             
-            # Gerar hash da transação
-            tx_data = f"{tx['from']}:{tx['to']}:{tx['amount']}:{tx['timestamp']}"
-            tx['tx_hash'] = hashlib.sha256(tx_data.encode()).hexdigest()
+            # Verificar saldo do faucet
+            if FAUCET_ADDRESS not in self.blockchain.wallets:
+                self._ensure_faucet_wallet()
             
-            # Assinar com QRS-3 (se disponível)
-            if self.quantum_security:
-                try:
-                    # Gerar keypair temporário para o faucet
-                    keypair_id = f"faucet_{int(time.time())}"
-                    self.quantum_security.generate_qrs3_keypair(keypair_id)
-                    
-                    # Assinar transação com QRS-3
-                    message = f"{tx['from']}:{tx['to']}:{tx['amount']}:{tx['timestamp']}".encode()
-                    qrs3_signature = self.quantum_security.sign_qrs3(
-                        keypair_id=keypair_id,
-                        message=message,
-                        use_hybrid=True
-                    )
-                    tx['qrs3_signature'] = qrs3_signature
-                except Exception as e:
-                    # Fallback para assinatura normal
-                    pass
+            faucet_balance = self.blockchain.wallets.get(FAUCET_ADDRESS, {}).get("ALZ", 0)
+            if faucet_balance < FAUCET_AMOUNT:
+                self.stats["total_rejected"] += 1
+                self.stats["reasons"]["insufficient_balance"] += 1
+                return {
+                    "success": False,
+                    "error": f"Saldo insuficiente no faucet. Saldo atual: {faucet_balance} ALZ",
+                    "address": address
+                }
             
-            # Adicionar transação ao blockchain
-            # Tentar usar add_transaction se disponível
+            # Criar transação usando o método correto do blockchain
             try:
-                if hasattr(self.blockchain, 'add_transaction'):
-                    result = self.blockchain.add_transaction(tx)
-                    if isinstance(result, dict) and result.get("success"):
-                        tx_hash = result.get("tx_hash", tx['tx_hash'])
-                    else:
-                        # Se add_transaction não retornar dict, usar tx_hash gerado
-                        tx_hash = tx['tx_hash']
-                elif hasattr(self.blockchain, 'pending_transactions'):
-                    # Adicionar diretamente às transações pendentes
-                    self.blockchain.pending_transactions.append(tx)
-                    tx_hash = tx['tx_hash']
-                else:
-                    tx_hash = tx['tx_hash']
+                transaction = self.blockchain.create_transaction(
+                    sender=FAUCET_ADDRESS,
+                    receiver=address,
+                    amount=FAUCET_AMOUNT,
+                    private_key=faucet_private_key,
+                    is_public=True,
+                    network="allianza"
+                )
                 
+                tx_hash = transaction.get("id", "")
                 success = True
+                
+            except ValueError as e:
+                # Erro de validação (ex: saldo insuficiente)
+                self.stats["total_rejected"] += 1
+                self.stats["reasons"]["validation_error"] += 1
+                return {
+                    "success": False,
+                    "error": str(e),
+                    "address": address
+                }
             except Exception as e:
-                # Em caso de erro, ainda retornar sucesso com tx_hash
-                tx_hash = tx['tx_hash']
-                success = True
+                # Outro erro
+                print(f"❌ Erro ao criar transação do faucet: {e}")
+                import traceback
+                traceback.print_exc()
+                self.stats["total_rejected"] += 1
+                self.stats["reasons"]["transaction_error"] += 1
+                return {
+                    "success": False,
+                    "error": f"Erro ao processar transação: {str(e)}",
+                    "address": address
+                }
             
             if success:
                 
@@ -283,7 +389,6 @@ class TestnetFaucet:
                     "amount": FAUCET_AMOUNT,
                     "tx_hash": tx_hash,
                     "pow_proof": pow_proof,
-                    "qrs3_signature": tx.get('qrs3_signature', {}),
                     "status": "success"
                 }
                 self._save_log(log_entry)
@@ -298,14 +403,6 @@ class TestnetFaucet:
                     "tx_hash": tx_hash,
                     "pow_proof": pow_proof,
                     "timestamp": log_entry["timestamp"]
-                }
-            else:
-                self.stats["total_rejected"] += 1
-                self.stats["reasons"]["blockchain_error"] += 1
-                return {
-                    "success": False,
-                    "error": result.get("error", "Erro ao processar transação"),
-                    "address": address
                 }
         
         except Exception as e:
