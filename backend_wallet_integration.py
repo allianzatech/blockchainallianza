@@ -725,11 +725,30 @@ def site_purchase():
         # ✅ SE NÃO TEM WALLET_ADDRESS, BLOQUEAR TOKENS (adicionar em locked)
         # O usuário verá o saldo bloqueado quando fizer login na wallet Allianza
         if not wallet_address_from_user or not use_own_wallet:
+            # ✅ Verificar saldo antes do UPDATE
             cursor.execute(
-                "UPDATE balances SET locked = locked + %s WHERE user_id = %s AND asset = 'ALZ'",
+                "SELECT available, locked, staking_balance FROM balances WHERE user_id = %s AND asset = 'ALZ'",
+                (user_id,)
+            )
+            balance_before = cursor.fetchone()
+            locked_before = balance_before.get('locked', 0) if balance_before else 0
+            print(f"📊 Saldo ANTES do bloqueio para user_id {user_id} ({email}): locked={locked_before}")
+            
+            cursor.execute(
+                "UPDATE balances SET locked = locked + %s, updated_at = CURRENT_TIMESTAMP WHERE user_id = %s AND asset = 'ALZ'",
                 (amount_alz, user_id)
             )
+            
+            # ✅ Verificar saldo DEPOIS do UPDATE
+            cursor.execute(
+                "SELECT available, locked, staking_balance FROM balances WHERE user_id = %s AND asset = 'ALZ'",
+                (user_id,)
+            )
+            balance_after = cursor.fetchone()
+            locked_after = balance_after.get('locked', 0) if balance_after else 0
             print(f"🔒 Tokens bloqueados: {amount_alz} ALZ adicionados em locked (usuário verá ao fazer login)")
+            print(f"📊 Saldo DEPOIS do bloqueio para user_id {user_id} ({email}): locked={locked_after} (era {locked_before})")
+            print(f"✅ UPDATE executado: {cursor.rowcount} linha(s) afetada(s)")
         else:
             # Se tem wallet externa, adicionar em available (será enviado depois)
             cursor.execute(
@@ -747,7 +766,30 @@ def site_purchase():
         )
         print(f"💾 Payment atualizado: user_id={user_id}, wallet_address={final_wallet_address or 'None (wallet Allianza)'}")
         
+        # ✅ Verificar saldo final antes do commit
+        cursor.execute(
+            "SELECT available, locked, staking_balance FROM balances WHERE user_id = %s AND asset = 'ALZ'",
+            (user_id,)
+        )
+        balance_final = cursor.fetchone()
+        if balance_final:
+            print(f"✅ Saldo FINAL antes do commit para user_id {user_id} ({email}): available={balance_final.get('available', 0)}, locked={balance_final.get('locked', 0)}, staking={balance_final.get('staking_balance', 0)}")
+        else:
+            print(f"⚠️ ATENÇÃO: Saldo não encontrado para user_id {user_id} ({email}) antes do commit!")
+        
         conn.commit()
+        print(f"✅ COMMIT executado com sucesso para user_id {user_id} ({email})")
+        
+        # ✅ Verificar saldo DEPOIS do commit (para confirmar que foi salvo)
+        cursor.execute(
+            "SELECT available, locked, staking_balance FROM balances WHERE user_id = %s AND asset = 'ALZ'",
+            (user_id,)
+        )
+        balance_after_commit = cursor.fetchone()
+        if balance_after_commit:
+            print(f"✅ Saldo CONFIRMADO após commit para user_id {user_id} ({email}): available={balance_after_commit.get('available', 0)}, locked={balance_after_commit.get('locked', 0)}, staking={balance_after_commit.get('staking_balance', 0)}")
+        else:
+            print(f"❌ ERRO: Saldo não encontrado após commit para user_id {user_id} ({email})!")
         
         # Registrar transação na blockchain Allianza
         if ALLIANZA_BLOCKCHAIN_AVAILABLE:
