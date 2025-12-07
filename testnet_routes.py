@@ -204,37 +204,97 @@ def testnet_dashboard():
     if request.method == 'HEAD':
         return Response(status=200)
     
-    network_info = get_network_info()
-    stats = explorer.get_network_stats() if explorer else {
-        "total_blocks": 0,
-        "total_transactions": 0,
-        "pending_transactions": 0,
-        "tps_current": 0,
-        "tps_24h_avg": 0,
-        "latency_avg_ms": 0,
-        "active_shards": 0,
-        "validators_online": 0,
-        "network_status": "unknown"
-    }
-    faucet_stats = faucet.get_stats() if faucet else {
-        "total_requests": 0,
-        "total_sent": 0,
-        "total_rejected": 0,
-        "amount_per_request": 1000
-    }
+    try:
+        network_info = get_network_info()
+    except Exception as e:
+        print(f"⚠️  Erro ao obter network_info: {e}")
+        network_info = {}
+    
+    try:
+        stats = explorer.get_network_stats() if explorer else {
+            "total_blocks": 0,
+            "total_transactions": 0,
+            "pending_transactions": 0,
+            "tps_current": 0,
+            "tps_24h_avg": 0,
+            "latency_avg_ms": 0,
+            "active_shards": 0,
+            "validators_online": 0,
+            "network_status": "unknown"
+        }
+    except Exception as e:
+        print(f"⚠️  Erro ao obter stats do explorer: {e}")
+        stats = {
+            "total_blocks": 0,
+            "total_transactions": 0,
+            "pending_transactions": 0,
+            "tps_current": 0,
+            "tps_24h_avg": 0,
+            "latency_avg_ms": 0,
+            "active_shards": 0,
+            "validators_online": 0,
+            "network_status": "unknown"
+        }
+    
+    try:
+        faucet_stats = faucet.get_stats() if faucet else {
+            "total_requests": 0,
+            "total_sent": 0,
+            "total_rejected": 0,
+            "amount_per_request": 1000
+        }
+    except Exception as e:
+        print(f"⚠️  Erro ao obter stats do faucet: {e}")
+        faucet_stats = {
+            "total_requests": 0,
+            "total_sent": 0,
+            "total_rejected": 0,
+            "amount_per_request": 1000
+        }
     
     # Adicionar atividade recente e leaderboard
-    recent_activities = leaderboard.get_recent_activities(limit=10) if leaderboard else []
-    top_users = leaderboard.get_top_users(limit=5) if leaderboard else []
-    leaderboard_stats = leaderboard.get_stats_summary() if leaderboard else {}
+    try:
+        recent_activities = leaderboard.get_recent_activities(limit=10) if leaderboard else []
+    except Exception as e:
+        print(f"⚠️  Erro ao obter recent_activities: {e}")
+        recent_activities = []
     
-    return render_template('testnet/dashboard.html',
-                         network_info=network_info,
-                         stats=stats,
-                         faucet_stats=faucet_stats,
-                         recent_activities=recent_activities,
-                         top_users=top_users,
-                         leaderboard_stats=leaderboard_stats)
+    try:
+        top_users = leaderboard.get_top_users(limit=5) if leaderboard else []
+    except Exception as e:
+        print(f"⚠️  Erro ao obter top_users: {e}")
+        top_users = []
+    
+    try:
+        leaderboard_stats = leaderboard.get_stats_summary() if leaderboard else {}
+    except Exception as e:
+        print(f"⚠️  Erro ao obter leaderboard_stats: {e}")
+        leaderboard_stats = {}
+    
+    try:
+        return render_template('testnet/dashboard.html',
+                             network_info=network_info,
+                             stats=stats,
+                             faucet_stats=faucet_stats,
+                             recent_activities=recent_activities,
+                             top_users=top_users,
+                             leaderboard_stats=leaderboard_stats)
+    except Exception as e:
+        import traceback
+        print(f"❌ Erro ao renderizar dashboard: {e}")
+        traceback.print_exc()
+        # Retornar página de erro simples
+        return f"""
+        <html>
+        <head><title>Error - Allianza Testnet</title></head>
+        <body style="font-family: Arial; padding: 50px; background: #1a1a1a; color: white;">
+        <h1>⚠️ Dashboard Temporariamente Indisponível</h1>
+        <p>O dashboard está temporariamente indisponível. Por favor, tente novamente em alguns instantes.</p>
+        <p><a href="/explorer" style="color: #60a5fa;">Explorer</a> | <a href="/faucet" style="color: #60a5fa;">Faucet</a></p>
+        <pre style="background: #2a2a2a; padding: 20px; border-radius: 5px; overflow: auto;">{str(e)}</pre>
+        </body>
+        </html>
+        """, 500
 
 @testnet_bp.route('/explorer')
 def testnet_explorer_page():
