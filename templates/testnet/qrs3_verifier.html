@@ -194,7 +194,17 @@
                                 <div class="bg-blue-500/20 border border-blue-500 rounded-lg p-3">
                                     <p class="text-blue-300 font-medium mb-2">${typeof t !== 'undefined' && t ? t('instructions') : 'Instructions'}:</p>
                                     <ul class="text-xs text-blue-200 space-y-1 list-disc list-inside">
-                                        ${data.instructions.map(i => `<li>${i}</li>`).join('')}
+                                        ${data.instructions ? data.instructions.map(i => {
+                                            // Traduzir instruções se disponível
+                                            if (typeof t !== 'undefined' && t) {
+                                                if (i.includes('Copie a mensagem')) return `<li>${t('copy_message_above') || i}</li>`;
+                                                if (i.includes('Copie a assinatura')) return `<li>${t('copy_complete_json_signature') || i}</li>`;
+                                                if (i.includes('Cole no Verificador')) return `<li>${t('paste_qrs3_verifier') || i}</li>`;
+                                                if (i.includes('Clique em')) return `<li>${t('click_verify_signature') || i}</li>`;
+                                                if (i.includes('Deve mostrar')) return `<li>${t('should_show_valid') || i}</li>`;
+                                            }
+                                            return `<li>${i}</li>`;
+                                        }).join('') : ''}
                                     </ul>
                                 </div>
                                 ` : ''}

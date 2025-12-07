@@ -90,7 +90,7 @@
 
         <!-- Transactions -->
         <div>
-            <h2 class="text-2xl font-semibold mb-4">Transações Recentes</h2>
+            <h2 class="text-2xl font-semibold mb-4">{{ t('recent_transactions') or 'Recent Transactions' }}</h2>
             <div class="space-y-2">
                 {% for tx in transactions %}
                 <div class="bg-gray-800 p-4 rounded-lg">

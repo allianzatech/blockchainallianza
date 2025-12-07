@@ -158,27 +158,27 @@
             <div class="mb-6 p-4 bg-blue-500/20 border border-blue-500 rounded-lg">
                 <p class="text-sm font-bold mb-2 text-blue-300 flex items-center gap-2">
                     <i class="fas fa-lightbulb"></i>
-                    💡 Como funciona:
+                    💡 {{ t('how_it_works') or 'How it works:' }}
                 </p>
                 <ol class="text-xs text-gray-300 list-decimal list-inside space-y-1">
-                    <li>Escolha a blockchain de origem (ex: Polygon)</li>
-                    <li>Escolha a blockchain de destino (ex: Bitcoin)</li>
-                    <li>Digite a quantidade e o token</li>
-                    <li>Cole o endereço do destinatário</li>
-                    <li>Clique em "Executar Transferência REAL"</li>
-                    <li>A transferência aparecerá nos explorers!</li>
+                    <li>{{ t('choose_origin_blockchain') or 'Choose the origin blockchain (e.g. Polygon)' }}</li>
+                    <li>{{ t('choose_destination_blockchain') or 'Choose the destination blockchain (e.g. Bitcoin)' }}</li>
+                    <li>{{ t('enter_quantity_token') or 'Enter the quantity and token' }}</li>
+                    <li>{{ t('paste_recipient_address') or 'Paste the recipient address' }}</li>
+                    <li>{{ t('click_execute_real_transfer') or 'Click "Execute REAL Transfer"' }}</li>
+                    <li>{{ t('transfer_will_appear_explorers') or 'The transfer will appear on explorers!' }}</li>
                 </ol>
             </div>
 
             <div class="mb-6 p-4 bg-yellow-500/20 border border-yellow-500 rounded-lg">
                 <p class="text-sm font-bold mb-2 text-yellow-300 flex items-center gap-2">
                     <i class="fas fa-exclamation-triangle"></i>
-                    ⚠️ Importante:
+                    ⚠️ {{ t('important') or 'Important:' }}
                 </p>
                 <ul class="text-xs text-gray-300 list-disc list-inside space-y-1">
-                    <li>Esta é uma transferência REAL que aparecerá nos explorers</li>
-                    <li>Você precisa ter saldo suficiente na blockchain de origem</li>
-                    <li>Não tem saldo? Use o <a href="/faucet" class="text-blue-400 underline font-bold">Faucet</a> para obter tokens de teste</li>
+                    <li>{{ t('real_transfer_appear_explorers') or 'This is a REAL transfer that will appear on explorers' }}</li>
+                    <li>{{ t('need_sufficient_balance') or 'You need sufficient balance on the origin blockchain' }}</li>
+                    <li>{{ t('no_balance_use_faucet') or 'No balance? Use the Faucet to get test tokens' }}</li>
                 </ul>
             </div>
 
