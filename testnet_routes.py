@@ -67,11 +67,29 @@ def init_testnet_routes(app, blockchain_instance, quantum_security_instance, bri
     
     try:
         quantum_security = quantum_security_instance
+        
+        # Inicializar Faucet com tratamento robusto de erros
+        print("🔧 Tentando inicializar Faucet...")
         try:
+            if blockchain_instance is None:
+                print("⚠️  blockchain_instance é None!")
+            if quantum_security_instance is None:
+                print("⚠️  quantum_security_instance é None!")
+            
             faucet = TestnetFaucet(blockchain_instance, quantum_security_instance)
             print("✅ Faucet inicializado com sucesso!")
+        except ImportError as e:
+            print(f"❌ Erro de importação ao inicializar Faucet: {e}")
+            import traceback
+            traceback.print_exc()
+            faucet = None
+        except AttributeError as e:
+            print(f"❌ Erro de atributo ao inicializar Faucet: {e}")
+            import traceback
+            traceback.print_exc()
+            faucet = None
         except Exception as e:
-            print(f"⚠️  Erro ao inicializar Faucet: {e}")
+            print(f"❌ Erro ao inicializar Faucet: {type(e).__name__}: {e}")
             import traceback
             traceback.print_exc()
             faucet = None
