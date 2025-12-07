@@ -738,23 +738,111 @@ def api_block_proof(block_index):
 @testnet_bp.route('/api/proofs/transaction/<tx_hash>', methods=['GET'])
 def api_transaction_proof(tx_hash):
     """Gera e retorna prova de uma transação"""
-    format_type = request.args.get('format', 'json')
+    try:
+        format_type = request.args.get('format', 'json')
+        
+        if not explorer:
+            return jsonify({"error": "Explorer não inicializado"}), 500
+        
+        # Buscar transação
+        tx = explorer.get_transaction_by_hash(tx_hash)
+        if not tx:
+            # Tentar buscar do banco de dados como fallback
+            try:
+                from db_manager import DBManager
+                db_manager = DBManager()
+                db_txs = db_manager.execute_query(
+                    "SELECT id, sender, receiver, amount, type, timestamp, network, is_public FROM transactions_history WHERE id = ?",
+                    (tx_hash,)
+                )
+                if db_txs:
+                    tx_id, sender, receiver, amount, tx_type, timestamp, network, is_public = db_txs[0]
+                    tx = {
+                        "id": tx_id,
+                        "hash": tx_id,
+                        "tx_hash": tx_id,
+                        "sender": sender,
+                        "receiver": receiver,
+                        "amount": amount,
+                        "type": tx_type,
+                        "timestamp": timestamp,
+                        "network": network or "allianza",
+                        "is_public": bool(is_public) if is_public is not None else True
+                    }
+                else:
+                    return jsonify({"error": "Transação não encontrada"}), 404
+            except Exception as db_err:
+                return jsonify({"error": f"Transação não encontrada: {str(db_err)}"}), 404
+        
+        # Gerar prova
+        if not proof_generator:
+            # Se não tem proof_generator, retornar JSON simples da transação
+            response = make_response(jsonify({
+                "transaction": tx,
+                "proof_type": "simple",
+                "generated_at": datetime.utcnow().isoformat()
+            }))
+            response.headers['Content-Type'] = 'application/json'
+            response.headers['Content-Disposition'] = f'attachment; filename=transaction_proof_{tx_hash}.json'
+            return response
+        
+        proof = proof_generator.generate_transaction_proof(tx, format=format_type)
+        
+        if not proof:
+            # Fallback: retornar JSON da transação
+            response = make_response(jsonify({
+                "transaction": tx,
+                "proof_type": "simple",
+                "generated_at": datetime.utcnow().isoformat()
+            }))
+            response.headers['Content-Type'] = 'application/json'
+            response.headers['Content-Disposition'] = f'attachment; filename=transaction_proof_{tx_hash}.json'
+            return response
+        
+        # Verificar se é download de arquivo ou JSON direto
+        if format_type == "json":
+            if isinstance(proof, dict) and "filepath" in proof:
+                proof_path = Path(proof["filepath"])
+                if proof_path.exists():
+                    return send_file(
+                        str(proof_path),
+                        mimetype='application/json',
+                        as_attachment=True,
+                        download_name=f"transaction_proof_{tx_hash}.json"
+                    )
+                else:
+                    # Arquivo não existe, retornar JSON direto
+                    return jsonify(proof), 200
+            else:
+                # Proof é dict direto, retornar como JSON
+                response = make_response(jsonify(proof))
+                response.headers['Content-Type'] = 'application/json'
+                response.headers['Content-Disposition'] = f'attachment; filename=transaction_proof_{tx_hash}.json'
+                return response
+        elif format_type == "txt":
+            if isinstance(proof, dict) and "filepath" in proof:
+                proof_path = Path(proof["filepath"])
+                if proof_path.exists():
+                    return send_file(
+                        str(proof_path),
+                        mimetype='text/plain',
+                        as_attachment=True,
+                        download_name=f"transaction_proof_{tx_hash}.txt"
+                    )
+            # Fallback para JSON
+            return jsonify(proof), 200
+        else:
+            return jsonify(proof), 200
     
-    if not explorer:
-        return jsonify({"error": "Explorer não inicializado"}), 500
-    
-    tx = explorer.get_transaction_by_hash(tx_hash)
-    if not tx:
-        return jsonify({"error": "Transação não encontrada"}), 404
-    
-    proof = proof_generator.generate_transaction_proof(tx, format=format_type) if proof_generator else None
-    
-    if proof and format_type == "json":
-        return send_file(proof["filepath"], mimetype='application/json')
-    elif proof and format_type == "txt":
-        return send_file(proof["filepath"], mimetype='text/plain')
-    else:
-        return jsonify(proof), 200
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"❌ Erro ao gerar proof da transação {tx_hash}: {e}")
+        print(error_trace)
+        return jsonify({
+            "error": f"Erro ao gerar prova: {str(e)}",
+            "tx_hash": tx_hash
+        }), 500
 
 # =============================================================================
 # VERIFICADOR QRS-3
