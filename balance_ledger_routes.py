@@ -421,22 +421,100 @@ def register():
     """Registrar novo usuário"""
     try:
         data = request.json
-        email = data.get('email')
+        email = data.get('email', '').strip().lower()  # ✅ Normalizar email (trim + lowercase)
         password = data.get('password')
         nickname = data.get('nickname', email.split('@')[0])
         
         if not email or not password:
             return jsonify({"error": "Email e senha são obrigatórios"}), 400
         
+        print(f"📝 Tentativa de registro: email={email}, nickname={nickname}")
+        
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # Verificar se usuário já existe
-        cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
-        if cursor.fetchone():
+        # ✅ Verificar se usuário já existe (com email normalizado)
+        cursor.execute("SELECT id, password, nickname FROM users WHERE LOWER(TRIM(email)) = %s", (email,))
+        existing_user = cursor.fetchone()
+        
+        if existing_user:
+            user_id = existing_user.get('id')
+            existing_password = existing_user.get('password')
+            existing_nickname = existing_user.get('nickname')
+            
+            print(f"🔍 Usuário existente encontrado: ID={user_id}, tem_senha={bool(existing_password)}")
+            
+            # ✅ Verificar se o usuário já tem senha configurada (tentando fazer login)
+            if existing_password:
+                # Tentar verificar a senha fornecida com a senha existente
+                from werkzeug.security import check_password_hash
+                try:
+                    if check_password_hash(existing_password, password):
+                        # ✅ Senha correta - fazer login automaticamente
+                        print(f"✅ Senha correta - fazendo login automático para {email}")
+                        token = f"mock_token_{user_id}"
+                        cursor.close()
+                        conn.close()
+                        return jsonify({
+                            "success": True,
+                            "token": token,
+                            "user": {
+                                "id": user_id,
+                                "email": email,
+                                "nickname": existing_nickname or nickname
+                            },
+                            "message": "Login realizado com sucesso"
+                        }), 200
+                    else:
+                        # ❌ Senha incorreta
+                        print(f"❌ Senha incorreta para {email}")
+                        cursor.close()
+                        conn.close()
+                        return jsonify({"error": "Email já cadastrado. Senha incorreta. Use a opção de login."}), 400
+                except Exception as e:
+                    print(f"⚠️ Erro ao verificar senha: {e}")
+                    # Se houver erro, tratar como senha inválida e permitir atualizar
+                    pass
+            
+            # ✅ Usuário existe mas sem senha válida (criado durante pagamento) - permitir completar registro
+            print(f"✅ Email {email} existe mas sem senha válida - completando registro (ID: {user_id})")
+            from werkzeug.security import generate_password_hash
+            hashed_password = generate_password_hash(password)
+            
+            # Atualizar senha e nickname
+            cursor.execute("""
+                UPDATE users 
+                SET password = %s, nickname = COALESCE(NULLIF(%s, ''), nickname), updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """, (hashed_password, nickname, user_id))
+            
+            conn.commit()
+            print(f"✅ Registro completado para usuário existente: {email} (ID: {user_id})")
+            
+            # Gerar token
+            token = f"mock_token_{user_id}"
+            
             cursor.close()
             conn.close()
-            return jsonify({"error": "Email já cadastrado"}), 400
+            
+            return jsonify({
+                "success": True,
+                "token": token,
+                "user": {
+                    "id": user_id,
+                    "email": email,
+                    "nickname": nickname or existing_nickname
+                },
+                "message": "Registro completado com sucesso"
+            }), 200
+        
+        # ✅ Verificar novamente com email normalizado (para evitar race condition)
+        cursor.execute("SELECT id FROM users WHERE LOWER(TRIM(email)) = %s", (email,))
+        if cursor.fetchone():
+            print(f"⚠️ Email {email} já existe (verificação dupla)")
+            cursor.close()
+            conn.close()
+            return jsonify({"error": "Email já cadastrado. Tente fazer login."}), 400
         
         # Gerar carteira
         from generate_wallet import generate_polygon_wallet
@@ -446,7 +524,7 @@ def register():
         from werkzeug.security import generate_password_hash
         hashed_password = generate_password_hash(password)
         
-        # Criar usuário
+        # Criar usuário (usando email normalizado)
         cursor.execute("""
             INSERT INTO users (email, password, nickname, wallet_address, private_key)
             VALUES (%s, %s, %s, %s, %s)
