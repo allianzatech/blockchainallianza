@@ -111,24 +111,42 @@ class AutoFaucetManager:
                 "enabled": True
             }
         
-        # Polygon
-        polygon_address = os.getenv('POLYGON_ADDRESS') or os.getenv('POLYGON_TESTNET_ADDRESS')
-        if polygon_address:
-            config["polygon"] = {
-                "address": polygon_address,
-                "enabled": True
-            }
-        
         # Ethereum
         eth_address = os.getenv('ETHEREUM_ADDRESS') or os.getenv('ETHEREUM_TESTNET_ADDRESS')
+        # Se não tiver ETHEREUM_ADDRESS, tentar obter da conta Web3
+        if not eth_address:
+            try:
+                from contracts.ethereum_bridge import RealEthereumBridge
+                bridge = RealEthereumBridge()
+                if bridge.account:
+                    eth_address = bridge.account.address
+            except:
+                pass
+        
         if eth_address:
             config["ethereum"] = {
                 "address": eth_address,
                 "enabled": True
             }
         
-        # BSC
+        # Polygon (EVM-compatible, pode usar mesmo endereço Ethereum)
+        polygon_address = os.getenv('POLYGON_ADDRESS') or os.getenv('POLYGON_TESTNET_ADDRESS')
+        # Se não tiver POLYGON_ADDRESS configurado, usar o mesmo endereço Ethereum
+        if not polygon_address and eth_address:
+            polygon_address = eth_address
+        
+        if polygon_address:
+            config["polygon"] = {
+                "address": polygon_address,
+                "enabled": True
+            }
+        
+        # BSC (EVM-compatible, pode usar mesmo endereço Ethereum)
         bsc_address = os.getenv('BSC_ADDRESS') or os.getenv('BSC_TESTNET_ADDRESS')
+        # Se não tiver BSC_ADDRESS configurado, usar o mesmo endereço Ethereum
+        if not bsc_address and eth_address:
+            bsc_address = eth_address
+        
         if bsc_address:
             config["bsc"] = {
                 "address": bsc_address,
@@ -199,7 +217,8 @@ class AutoFaucetManager:
             elif chain in ["polygon", "ethereum", "bsc"]:
                 # Usar APIs de explorer
                 if chain == "polygon":
-                    url = f"https://api-testnet.polygonscan.com/api?module=account&action=balance&address={address}&tag=latest&apikey=YourApiKeyToken"
+                    # Usar Amoy testnet (novo testnet do Polygon)
+                    url = f"https://api-amoy.polygonscan.com/api?module=account&action=balance&address={address}&tag=latest&apikey=YourApiKeyToken"
                 elif chain == "ethereum":
                     url = f"https://api-sepolia.etherscan.io/api?module=account&action=balance&address={address}&tag=latest&apikey=YourApiKeyToken"
                 elif chain == "bsc":
