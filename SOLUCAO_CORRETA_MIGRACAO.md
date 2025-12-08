@@ -89,3 +89,5 @@ ALTER TABLE payments ADD COLUMN IF NOT EXISTS wallet_address VARCHAR(255);
 
 **Última atualização:** 2025-01-XX
 
+
+

@@ -74,3 +74,5 @@ Os seguintes arquivos foram atualizados no **frontend** e NÃO devem ser enviado
 
 **Última atualização:** 2025-01-07
 
+
+

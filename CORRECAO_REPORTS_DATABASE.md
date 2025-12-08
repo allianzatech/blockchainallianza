@@ -83,3 +83,5 @@ NEON_DATABASE_URL=postgresql://neondb_owner:npg_eK0UFHTc4wAJ@ep-lively-cell-af0g
 
 **Última atualização:** 2025-01-XX
 
+
+

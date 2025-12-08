@@ -380,3 +380,4 @@ As sugestões recebidas são **altamente relevantes** e focam em aumentar a conf
 3. Criar issues no GitHub para tracking
 4. Implementar em sprints de 1-2 semanas
 
+

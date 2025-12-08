@@ -95,3 +95,5 @@ As queries estavam tentando acessar colunas que:
 
 **Última atualização:** 2025-01-XX
 
+
+

@@ -101,14 +101,14 @@ pip install -r requirements.txt
 # 2. Run tests
 python tests/public/run_verification_tests.py
 
-# 3. Compare results with PROVAS_TECNICAS_COMPLETAS_FINAL.json
+# 3. Compare results with COMPLETE_TECHNICAL_PROOFS_FINAL.json
 python tests/public/verify_results.py
 ```
 
 #### ✅ Compare with Technical Proofs
 
 **Reference file:**
-- `PROVAS_TECNICAS_COMPLETAS_FINAL.json`
+- `COMPLETE_TECHNICAL_PROOFS_FINAL.json`
 
 **What to compare:**
 - [ ] Test results
@@ -213,7 +213,7 @@ python tests/public/test_qrs3_verification.py
 # Run performance test
 python tests/public/test_performance.py
 
-# Compare with PROVAS_TECNICAS_COMPLETAS_FINAL.json
+# Compare with COMPLETE_TECHNICAL_PROOFS_FINAL.json
 python tests/public/verify_performance.py
 ```
 
@@ -314,7 +314,7 @@ If you find issues during verification:
 - [TESTING.md](TESTING.md) - Testing guide
 - [SECURITY.md](SECURITY.md) - Security policy
 - [docs/API_REFERENCE.md](docs/API_REFERENCE.md) - API reference
-- [PROVAS_TECNICAS_COMPLETAS_FINAL.json](PROVAS_TECNICAS_COMPLETAS_FINAL.json) - Technical proofs
+- [COMPLETE_TECHNICAL_PROOFS_FINAL.json](COMPLETE_TECHNICAL_PROOFS_FINAL.json) - Technical proofs
 
 ---
 

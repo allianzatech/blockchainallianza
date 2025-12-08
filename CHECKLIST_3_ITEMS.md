@@ -123,3 +123,4 @@
 
 **Quando o GIF estiver pronto, você terá os 3 itens essenciais completos! 🎉**
 
+

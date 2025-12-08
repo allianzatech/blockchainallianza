@@ -41,7 +41,7 @@
 
 ### Published Technical Proofs
 
-- ✅ **Complete Proofs**: [`PROVAS_TECNICAS_COMPLETAS_FINAL.json`](PROVAS_TECNICAS_COMPLETAS_FINAL.json)
+- ✅ **Complete Proofs**: [`COMPLETE_TECHNICAL_PROOFS_FINAL.json`](COMPLETE_TECHNICAL_PROOFS_FINAL.json)
 - ✅ **Test Scripts**: [`tests/public/`](tests/public/) - All scripts that generated the proofs
 - ✅ **Active Testnet**: https://testnet.allianza.tech - Test in real-time
 
@@ -114,7 +114,7 @@ python tests/public/test_consensus.py
 ### Verify Technical Proofs
 
 1. Run scripts in [`tests/public/`](tests/public/)
-2. Compare results with [`PROVAS_TECNICAS_COMPLETAS_FINAL.json`](PROVAS_TECNICAS_COMPLETAS_FINAL.json)
+2. Compare results with [`COMPLETE_TECHNICAL_PROOFS_FINAL.json`](COMPLETE_TECHNICAL_PROOFS_FINAL.json)
 3. Verify transactions on testnet: https://testnet.allianza.tech/explorer
 
 ## 🌐 Public Testnet

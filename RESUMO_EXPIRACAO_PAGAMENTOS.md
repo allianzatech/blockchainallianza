@@ -137,3 +137,5 @@ O backend agora retorna:
 
 **Última atualização:** 2025-01-XX
 
+
+

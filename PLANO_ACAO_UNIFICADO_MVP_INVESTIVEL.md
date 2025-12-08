@@ -333,3 +333,4 @@ Todas as análises convergem em:
 
 **"Foca em provar que está vivo. O resto vem depois do primeiro investidor ou dos primeiros 100 tx no testnet."**
 
+

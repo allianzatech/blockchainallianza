@@ -105,3 +105,5 @@ Após o deploy, os logs devem mostrar:
 
 **Última atualização:** 2025-01-XX
 
+
+

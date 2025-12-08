@@ -202,3 +202,4 @@ Depois de criar o GIF:
 
 **Dica:** Se não conseguir gravar agora, pode usar um serviço online como **Loom** ou **CloudApp** para gravar e depois converter para GIF.
 
+

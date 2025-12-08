@@ -51,3 +51,5 @@ ALTER TABLE stakes ADD COLUMN IF NOT EXISTS metadata JSONB;
 
 **Última atualização:** 2025-01-XX
 
+
+

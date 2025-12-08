@@ -641,3 +641,4 @@ Você pode verificar uma prova usando:
 **Última Atualização:** 03 de Dezembro de 2025  
 **Mantido por:** Allianza Blockchain Team
 
+

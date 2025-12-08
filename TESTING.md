@@ -47,7 +47,7 @@ This script runs:
 ### Complete Tests (Reproduce Technical Proofs)
 
 ```bash
-# Run all tests that generated PROVAS_TECNICAS_COMPLETAS_FINAL.json
+# Run all tests that generated COMPLETE_TECHNICAL_PROOFS_FINAL.json
 python tests/public/run_all_tests.py
 ```
 
@@ -126,7 +126,7 @@ python tests/public/test_performance.py
 
 ### 1. Verify Test Results
 
-After running tests, compare with `PROVAS_TECNICAS_COMPLETAS_FINAL.json`:
+After running tests, compare with `COMPLETE_TECHNICAL_PROOFS_FINAL.json`:
 
 ```bash
 # Verify if results are consistent
@@ -264,7 +264,7 @@ Generates report in: `proofs/testnet/performance_report_YYYY-MM-DD.json`
 ## 🔗 Next Steps
 
 1. ✅ Run basic tests
-2. ✅ Compare with `PROVAS_TECNICAS_COMPLETAS_FINAL.json`
+2. ✅ Compare with `COMPLETE_TECHNICAL_PROOFS_FINAL.json`
 3. ✅ Verify transactions on testnet
 4. 📖 Read [VERIFICATION.md](VERIFICATION.md) for independent verification
 5. 🐛 Report issues in [SECURITY.md](SECURITY.md)

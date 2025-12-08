@@ -90,3 +90,5 @@ Mas a solução com fallback é **mais robusta** e funciona em ambos os casos.
 
 **Última atualização:** 2025-01-XX
 
+
+
