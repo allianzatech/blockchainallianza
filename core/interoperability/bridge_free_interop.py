@@ -280,7 +280,8 @@ class BridgeFreeInterop:
         recipient: str,
         private_key: Optional[str] = None,
         include_memo: bool = True,
-        zk_proof_id: Optional[str] = None
+        zk_proof_id: Optional[str] = None,
+        token_symbol: Optional[str] = "ETH"
     ) -> Dict:
         """
         Enviar transação REAL para blockchain
@@ -327,32 +328,34 @@ class BridgeFreeInterop:
                     
                     # Bitcoin como target: EVM → Bitcoin
                     if target_chain == "bitcoin":
-                        # Primeiro, criar uma transação na source chain (EVM) com memo
-                        # Depois, enviar para Bitcoin com OP_RETURN contendo o hash da source tx
-                        source_tx_result = None
-                        if source_chain in ["polygon", "ethereum", "bsc"]:
-                            # Enviar transação na source chain primeiro
-                            source_tx_result = self.send_real_transaction(
-                                source_chain=source_chain,
-                                target_chain=source_chain,  # Enviar na mesma chain primeiro
-                                amount=amount,
-                                recipient=recipient,
-                                private_key=private_key,
-                                include_memo=True,
-                                zk_proof_id=zk_proof_id
-                            )
+                        # Criar memo completo com UChainID e ZK Proof para incluir no OP_RETURN
+                        # O OP_RETURN do Bitcoin vai conter o memo hex completo
+                        op_return_data = None
+                        if memo_info:
+                            # Usar o memo_hex completo (limitado a 80 bytes pelo OP_RETURN)
+                            memo_hex = memo_info.get("memo_hex", "")
+                            # Limitar a 80 bytes (limite do OP_RETURN)
+                            if len(memo_hex) > 80:
+                                # Se for muito grande, usar apenas o UChainID + hash do ZK proof
+                                uchain_short = uchain_id.replace("UCHAIN-", "")[:32] if uchain_id else ""
+                                zk_hash = zk_proof_id[:32] if zk_proof_id else ""
+                                op_return_data = f"{uchain_short}{zk_hash}".encode('utf-8')[:80]
+                            else:
+                                op_return_data = bytes.fromhex(memo_hex) if memo_hex else None
                         
-                        # Agora enviar para Bitcoin com OP_RETURN
-                        if source_tx_result and source_tx_result.get("success"):
-                            source_tx_hash = source_tx_result.get("tx_hash", "")
-                        else:
-                            source_tx_hash = memo_info["memo_hex"][:64] if memo_info else ""
+                        # Enviar transação Bitcoin com OP_RETURN contendo o memo
+                        # A função send_bitcoin_transaction aceita source_tx_hash que será usado no OP_RETURN
+                        # Vamos passar o memo_hex como string para ser incluído no OP_RETURN
+                        memo_hex_str = memo_info.get("memo_hex", "") if memo_info else ""
+                        # Limitar a 80 bytes (limite do OP_RETURN do Bitcoin)
+                        if len(memo_hex_str) > 160:  # 80 bytes = 160 caracteres hex
+                            memo_hex_str = memo_hex_str[:160]
                         
                         result = bridge.send_bitcoin_transaction(
                             from_private_key=private_key or os.getenv('BITCOIN_PRIVATE_KEY'),
                             to_address=recipient,
                             amount_btc=amount_btc,
-                            source_tx_hash=source_tx_hash
+                            source_tx_hash=memo_hex_str  # Passar memo hex como source_tx_hash para OP_RETURN
                         )
                         
                         if result.get("success") and uchain_id:
@@ -366,12 +369,20 @@ class BridgeFreeInterop:
                     
                     # Bitcoin como source: Bitcoin → EVM
                     else:  # source_chain == "bitcoin"
+                        # Criar memo completo para incluir no OP_RETURN
+                        memo_hex_str = ""
+                        if memo_info:
+                            memo_hex_str = memo_info.get("memo_hex", "")
+                            # Limitar a 80 bytes (limite do OP_RETURN do Bitcoin)
+                            if len(memo_hex_str) > 160:  # 80 bytes = 160 caracteres hex
+                                memo_hex_str = memo_hex_str[:160]
+                        
                         # Enviar Bitcoin com OP_RETURN primeiro
                         bitcoin_result = bridge.send_bitcoin_transaction(
                             from_private_key=private_key or os.getenv('BITCOIN_PRIVATE_KEY'),
                             to_address=recipient,  # Endereço Bitcoin intermediário
                             amount_btc=amount_btc,
-                            source_tx_hash=None
+                            source_tx_hash=memo_hex_str if memo_hex_str else None  # Incluir memo no OP_RETURN
                         )
                         
                         if not bitcoin_result.get("success"):
