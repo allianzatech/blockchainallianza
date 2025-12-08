@@ -1,0 +1,48 @@
+{
+  "success": true,
+  "test_id": "cross_chain_1763771560",
+  "test_name": "Transferência Cross-Chain Real",
+  "results": {
+    "source_chain": "polygon",
+    "target_chain": "bitcoin",
+    "amount": 0.1,
+    "recipient": "tb1qxy2kgdygjrsqtzq2n0yrf2493p83kkfhrcndzj",
+    "source_tx_hash": "0xc74df17b4065f405ade963bd23d7d3315fb06003eeff17cf617da23b69aeee50",
+    "target_tx_hash": "ce90d22b19079ea13fdfe3e1e6f3f52f3707c33062048ea8a6915d0ac3c3567c",
+    "source_block_number": null,
+    "target_block_number": null,
+    "source_confirmations": null,
+    "target_confirmations": null,
+    "transfer_real": true,
+    "total_time_ms": 35439.97
+  },
+  "proofs": {
+    "transfer_proof": {
+      "source_tx_hash": "0xc74df17b4065f405ade963bd23d7d3315fb06003eeff17cf617da23b69aeee50",
+      "target_tx_hash": "ce90d22b19079ea13fdfe3e1e6f3f52f3707c33062048ea8a6915d0ac3c3567c",
+      "source_block_number": null,
+      "target_block_number": null,
+      "source_confirmations": null,
+      "target_confirmations": null,
+      "merkle_proof": null,
+      "spv_proof": null,
+      "source_explorer": "https://amoy.polygonscan.com/tx/0xc74df17b4065f405ade963bd23d7d3315fb06003eeff17cf617da23b69aeee50",
+      "target_explorer": "https://live.blockcypher.com/btc-testnet/tx/ce90d22b19079ea13fdfe3e1e6f3f52f3707c33062048ea8a6915d0ac3c3567c",
+      "verification_command": "python verify_allianza_proofs.py proofs/testnet/interoperability/cross_chain_1763771560.json",
+      "note": "✅ Transferência real executada na blockchain",
+      "real_transfer_instructions": null
+    }
+  },
+  "real_transfer_status": {
+    "can_execute_real": true,
+    "bridge_available": true,
+    "source_key_configured": true,
+    "target_key_configured": true,
+    "instructions": "✅ Transferência real disponível! Configure as chaves privadas no arquivo .env",
+    "env_vars_needed": {
+      "source": "POLYGON_PRIVATE_KEY",
+      "target": "BITCOIN_PRIVATE_KEY"
+    }
+  },
+  "timestamp": "2025-11-22T00:33:15.952800Z"
+}

@@ -1,0 +1,29 @@
+{
+  "payload": "Test payload for QRS-3 signature",
+  "payload_hash": "a894b304f7b68c8380bd24aa0122e18c747d0bdf6124660d52d06026225b3e35",
+  "signatures": {
+    "ecdsa": {
+      "algorithm": "ECDSA",
+      "signature": "ecdsa_sig_a894b304f7b68c83",
+      "verified": true
+    },
+    "ml_dsa": {
+      "algorithm": "ML-DSA-128",
+      "error": "PQCKeyManager.generate_ml_dsa_keypair() missing 1 required positional argument: 'key_id'",
+      "verified": false
+    },
+    "sphincs": {
+      "algorithm": "SPHINCS+ SHA2-128s",
+      "error": "'QuantumSecuritySystem' object has no attribute 'sign_sphincs'",
+      "verified": false
+    },
+    "qrs3_hybrid": {
+      "algorithm": "QRS-3 (ECDSA + ML-DSA + SPHINCS+)",
+      "ecdsa": true,
+      "ml_dsa": false,
+      "sphincs": false,
+      "all_verified": false
+    }
+  },
+  "timestamp": "2025-11-26T00:53:09.996251"
+}

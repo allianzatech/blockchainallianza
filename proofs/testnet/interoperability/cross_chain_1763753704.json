@@ -1,0 +1,59 @@
+{
+  "success": true,
+  "test_id": "cross_chain_1763753704",
+  "test_name": "Transferência Cross-Chain Real",
+  "results": {
+    "source_chain": "polygon",
+    "target_chain": "bitcoin",
+    "amount": 0.0001,
+    "recipient": "tb1qxy2kgdygjrsqtzq2n0yrf2493p83kkfhrcndzj",
+    "source_tx_hash": "0xb4b42941bc7cab77f294750597b2f12273e8cbde45bf04552dba88396d855f4c",
+    "target_tx_hash": "7f8d9f0d29a75adcec87143f33c4c8ad927f460517a0ed335fd5c611d22a40dd",
+    "source_block_number": null,
+    "target_block_number": null,
+    "source_confirmations": null,
+    "target_confirmations": null,
+    "transfer_real": false,
+    "total_time_ms": 32334.52
+  },
+  "proofs": {
+    "transfer_proof": {
+      "source_tx_hash": "0xb4b42941bc7cab77f294750597b2f12273e8cbde45bf04552dba88396d855f4c",
+      "target_tx_hash": "7f8d9f0d29a75adcec87143f33c4c8ad927f460517a0ed335fd5c611d22a40dd",
+      "source_block_number": null,
+      "target_block_number": null,
+      "source_confirmations": null,
+      "target_confirmations": null,
+      "merkle_proof": {
+        "merkle_root": "0xee016a9dcc3d3295af2275d0b8254c04fc215fe19e8beaa911883fe113165ff5",
+        "proof_path": [
+          "0xaca52796d18ea62135c2cf0b7b49ea9da24572f47afd871751ccc39b8152921c",
+          "0x3e05e4bd5516a68c814fe689b8438822d36c8ebfe4ed94b6d8164d34f747f955",
+          "0xcac8be59be82c41ff7010078b2e0cccb389c637f6c27c1e966814821a28f83ef",
+          "0x9bee71a75088f1f509d9543ff8190d9282831f5bd67291c0d5a6463331634754",
+          "0x34ca63fa3b4ef0c2d713f090e7007de01a1928e4dfc245c2b4ff6836ed2f58bf"
+        ],
+        "leaf_index": 0,
+        "tree_depth": 5
+      },
+      "spv_proof": null,
+      "source_explorer": "https://amoy.polygonscan.com/tx/0xb4b42941bc7cab77f294750597b2f12273e8cbde45bf04552dba88396d855f4c",
+      "target_explorer": "https://live.blockcypher.com/btc-testnet/tx/7f8d9f0d29a75adcec87143f33c4c8ad927f460517a0ed335fd5c611d22a40dd",
+      "verification_command": "python verify_allianza_proofs.py proofs/testnet/interoperability/cross_chain_1763753704.json",
+      "note": "⚠️ Transferência simulada. Para transferência real, configure chaves privadas e reservas de liquidez.",
+      "real_transfer_instructions": "✅ Transferência real disponível! Configure as chaves privadas no arquivo .env"
+    }
+  },
+  "real_transfer_status": {
+    "can_execute_real": true,
+    "bridge_available": true,
+    "source_key_configured": true,
+    "target_key_configured": true,
+    "instructions": "✅ Transferência real disponível! Configure as chaves privadas no arquivo .env",
+    "env_vars_needed": {
+      "source": "POLYGON_PRIVATE_KEY",
+      "target": "BITCOIN_PRIVATE_KEY"
+    }
+  },
+  "timestamp": "2025-11-21T19:35:36.809778Z"
+}

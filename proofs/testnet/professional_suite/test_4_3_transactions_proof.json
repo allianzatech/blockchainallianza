@@ -1,0 +1,36 @@
+{
+  "test_id": "test_4_3_transactions",
+  "name": "Testes de Transações",
+  "start_time": "2025-11-26T00:53:10.034044",
+  "tests": {
+    "send": {
+      "success": true,
+      "note": "Bridge não disponível - Simulado",
+      "simulated": true
+    },
+    "receive": {
+      "success": true,
+      "note": "Bridge não disponível - Simulado",
+      "simulated": true
+    },
+    "nonces": {
+      "success": true,
+      "nonces_generated": 5,
+      "unique_nonces": true,
+      "note": "Nonces únicos gerados e verificados"
+    },
+    "pool_congestion": {
+      "success": true,
+      "pending_transactions": 10,
+      "oldest_tx_age": 9.000001907348633,
+      "note": "Pool de transações monitorado"
+    },
+    "stress_test": {
+      "success": true,
+      "note": "Usar test_5_stress_test_10k para stress test completo",
+      "reference": "critical_tests_suite.test_5_stress_test_10k"
+    }
+  },
+  "success": true,
+  "duration": 1.8814692497253418
+}

@@ -1,75 +1,148 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="{{ lang or 'en' }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verificador QRS-3 - Allianza Testnet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>🔐 {{ t('qrs3_verifier') or 'QRS-3 Verifier - Allianza Testnet' }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/testnet-modern.css">
+    <script src="/static/js/testnet-modals.js"></script>
     <style>
-        /* Botão Voltar Padronizado */
-                .btn-back {
-            display: inline-block;
-            padding: 8px 16px;
-            background: #374151;
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
             color: white;
             text-decoration: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 14px;
-            transition: background 0.2s;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid #4b5563;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
-        
-        
-        
-    
         .btn-back:hover {
-            background: #4b5563;
+            background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
-</style>
+        .main-card {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border: 1px solid #374151;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+        }
+        .main-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(147, 51, 234, 0.3);
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px rgba(147, 51, 234, 0.4);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        .input-modern {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            transition: all 0.2s;
+        }
+        .input-modern:focus {
+            outline: none;
+            border-color: #9333ea;
+            box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+        }
+        @media (max-width: 768px) {
+            .main-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-white">
-    <div class="container mx-auto px-4 py-8">
-        <div class="mb-6">
-            <a href="/" class="btn-back">
-Voltar
+<body class="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 text-white min-h-screen">
+    <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-4xl">
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="javascript:history.back()" class="btn-back mb-4 inline-flex">
+                <i class="fas fa-arrow-left"></i>
+                <span>{{ t('back') or 'Back' }}</span>
             </a>
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center text-2xl">
+                    🔐
+                </div>
+                <div>
+                    <h1 class="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{{ t('qrs3_verifier') or 'QRS-3 Verifier' }}</h1>
+                    <p class="text-gray-400 text-sm mt-1">{{ t('verify_qrs3_signatures') or 'Verify QRS-3 quantum signatures (ECDSA + ML-DSA + SPHINCS+)' }}</p>
+                </div>
+            </div>
         </div>
 
-        <h1 class="text-4xl font-bold mb-2">🔐 Verificador QRS-3</h1>
-        <p class="text-gray-400 mb-8">Verifique assinaturas quânticas QRS-3 (ECDSA + ML-DSA + SPHINCS+)</p>
-
         <!-- Gerar Exemplo -->
-        <div class="bg-purple-900 p-6 rounded-lg mb-6 max-w-2xl">
-            <h2 class="text-2xl font-semibold mb-4">🧪 Não sabe como testar? Gere um exemplo!</h2>
-            <p class="text-gray-300 mb-4">Clique no botão abaixo para gerar uma mensagem e assinatura QRS-3 de exemplo que você pode verificar.</p>
-            <div class="space-y-3">
-                <div>
-                    <label class="block text-sm font-medium mb-2">Mensagem de Exemplo (opcional)</label>
-                    <input type="text" id="exampleMessage" placeholder="Hello Allianza Testnet!" 
-                           class="w-full bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+        <div class="main-card mb-6">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-magic text-purple-400 text-xl"></i>
                 </div>
-                <button id="generateExampleBtn" class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-semibold transition">
-                    <i class="fas fa-magic mr-2"></i>Gerar Exemplo de Assinatura QRS-3
+                <h2 class="text-2xl font-bold">🧪 {{ t('generate_example') or 'Generate Example' }}</h2>
+            </div>
+            <p class="text-gray-300 mb-4">{{ t('dont_know_how_to_test') or 'Don\'t know how to test? Generate an example QRS-3 message and signature that you can verify.' }}</p>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-300">{{ t('example_message_optional') or 'Example Message (optional)' }}</label>
+                    <input type="text" id="exampleMessage" placeholder="Hello Allianza Testnet!" 
+                           class="input-modern w-full">
+                </div>
+                <button id="generateExampleBtn" class="btn-primary w-full">
+                    <i class="fas fa-magic mr-2"></i>{{ t('generate_example_qrs3_signature') or 'Generate Example QRS-3 Signature' }}
                 </button>
             </div>
             <div id="exampleResult" class="mt-4 hidden"></div>
         </div>
 
-        <div class="bg-gray-800 p-6 rounded-lg max-w-2xl">
-            <h2 class="text-2xl font-semibold mb-4">Verificar Assinatura QRS-3</h2>
+        <!-- Verificar Assinatura -->
+        <div class="main-card">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-shield-alt text-blue-400 text-xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold">{{ t('verify_qrs3_signature') or 'Verify QRS-3 Signature' }}</h2>
+            </div>
             <form id="verifyForm" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium mb-2">Mensagem</label>
-                    <textarea id="message" rows="4" placeholder="Digite a mensagem original..."
-                              class="w-full bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    <label class="block text-sm font-medium mb-2 text-gray-300">{{ t('message') or 'Message' }}</label>
+                    <textarea id="message" rows="4" placeholder="{{ t('enter_original_message') or 'Enter the original message...' }}"
+                              class="input-modern w-full resize-none"></textarea>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-2">Assinatura QRS-3 (JSON)</label>
+                    <label class="block text-sm font-medium mb-2 text-gray-300">{{ t('qrs3_signature_json') or 'QRS-3 Signature (JSON)' }}</label>
                     <textarea id="signature" rows="8" placeholder='{"ecdsa": {...}, "ml_dsa": {...}, "sphincs": {...}}'
-                              class="w-full bg-gray-700 text-white px-4 py-2 rounded-lg font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                              class="input-modern w-full font-mono text-xs resize-none"></textarea>
                 </div>
-                <button type="submit" class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-semibold transition">
-                    <i class="fas fa-shield-alt mr-2"></i>Verificar Assinatura
+                <button type="submit" class="btn-primary w-full">
+                    <i class="fas fa-shield-alt mr-2"></i>{{ t('verify_signature') or 'Verify Signature' }}
                 </button>
             </form>
             <div id="result" class="mt-4 hidden"></div>
@@ -86,7 +159,7 @@ Voltar
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Gerando...';
             resultDiv.classList.remove('hidden');
-            resultDiv.innerHTML = '<p class="text-purple-400">Gerando assinatura QRS-3...</p>';
+            resultDiv.innerHTML = '<p class="text-purple-400"><i class="fas fa-spinner fa-spin mr-2"></i>Gerando assinatura QRS-3...</p>';
             
             try {
                 const response = await fetch('/api/qrs3/generate-example', {
@@ -103,46 +176,72 @@ Voltar
                     document.getElementById('signature').value = JSON.stringify(data.signature, null, 2);
                     
                     resultDiv.innerHTML = `
-                        <div class="bg-green-900 p-4 rounded">
-                            <p class="text-green-300 font-semibold mb-2">✅ Exemplo Gerado com Sucesso!</p>
-                            <div class="space-y-2 text-sm">
+                        <div class="bg-green-500/20 border border-green-500 rounded-lg p-4">
+                            <p class="text-green-400 font-semibold mb-3 flex items-center gap-2">
+                                <i class="fas fa-check-circle"></i>
+                                ✅ ${typeof t !== 'undefined' && t ? t('example_generated_success') : 'Example Generated Successfully!'}
+                            </p>
+                            <div class="space-y-3 text-sm">
                                 <div>
-                                    <p class="text-gray-300 font-medium">Mensagem:</p>
-                                    <p class="font-mono bg-gray-800 p-2 rounded">${data.message}</p>
+                                    <p class="text-gray-300 font-medium mb-1">${typeof t !== 'undefined' && t ? t('message') : 'Message'}:</p>
+                                    <p class="font-mono bg-gray-900/50 p-2 rounded border border-gray-700">${data.message}</p>
                                 </div>
-                                <div class="mt-2">
-                                    <p class="text-gray-300 font-medium">Status da Verificação:</p>
-                                    <p class="text-green-300">${data.verified ? '✅ Válida' : '❌ Inválida'}</p>
+                                <div>
+                                    <p class="text-gray-300 font-medium mb-1">${typeof t !== 'undefined' && t ? t('verification_status') : 'Verification Status'}:</p>
+                                    <p class="text-green-400 font-semibold">${data.verified ? '✅ ' + (typeof t !== 'undefined' && t ? t('valid_signature') : 'Valid') : '❌ ' + (typeof t !== 'undefined' && t ? t('invalid_signature') : 'Invalid')}</p>
                                 </div>
-                                <div class="mt-3 bg-blue-900 p-3 rounded">
-                                    <p class="text-blue-200 font-medium mb-1">Instruções:</p>
-                                    <ul class="text-xs text-blue-100 space-y-1">
-                                        ${data.instructions.map(i => `<li>${i}</li>`).join('')}
+                                ${data.instructions ? `
+                                <div class="bg-blue-500/20 border border-blue-500 rounded-lg p-3">
+                                    <p class="text-blue-300 font-medium mb-2">${typeof t !== 'undefined' && t ? t('instructions') : 'Instructions'}:</p>
+                                    <ul class="text-xs text-blue-200 space-y-1 list-disc list-inside">
+                                        ${data.instructions ? data.instructions.map(i => {
+                                            // Traduzir instruções se disponível
+                                            if (typeof t !== 'undefined' && t) {
+                                                if (i.includes('Copie a mensagem')) return `<li>${t('copy_message_above') || i}</li>`;
+                                                if (i.includes('Copie a assinatura')) return `<li>${t('copy_complete_json_signature') || i}</li>`;
+                                                if (i.includes('Cole no Verificador')) return `<li>${t('paste_qrs3_verifier') || i}</li>`;
+                                                if (i.includes('Clique em')) return `<li>${t('click_verify_signature') || i}</li>`;
+                                                if (i.includes('Deve mostrar')) return `<li>${t('should_show_valid') || i}</li>`;
+                                            }
+                                            return `<li>${i}</li>`;
+                                        }).join('') : ''}
                                     </ul>
                                 </div>
-                                <p class="text-yellow-300 text-xs mt-2">💡 Os campos foram preenchidos automaticamente. Clique em "Verificar Assinatura" para testar!</p>
+                                ` : ''}
+                                <p class="text-yellow-400 text-xs mt-3 flex items-center gap-2">
+                                    <i class="fas fa-lightbulb"></i>
+                                    💡 ${typeof t !== 'undefined' && t ? t('fields_auto_filled') : 'Fields were automatically filled. Click "Verify Signature" to test!'}
+                                </p>
                             </div>
                         </div>
                     `;
                 } else {
                     resultDiv.innerHTML = `
-                        <div class="bg-red-900 p-4 rounded">
-                            <p class="text-red-300">❌ ${data.error}</p>
+                        <div class="bg-red-500/20 border border-red-500 rounded-lg p-4">
+                            <p class="text-red-400 flex items-center gap-2">
+                                <i class="fas fa-times-circle"></i>
+                                ❌ ${data.error}
+                            </p>
                         </div>
                     `;
                 }
             } catch (error) {
                 resultDiv.innerHTML = `
-                    <div class="bg-red-900 p-4 rounded">
-                        <p class="text-red-300">❌ Erro: ${error.message}</p>
+                    <div class="bg-red-500/20 border border-red-500 rounded-lg p-4">
+                        <p class="text-red-400 flex items-center gap-2">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            ❌ ${typeof t !== 'undefined' && t ? t('error') : 'Error'}: ${error.message}
+                        </p>
                     </div>
                 `;
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-magic mr-2"></i>Gerar Exemplo de Assinatura QRS-3';
+                const generateText = typeof t !== 'undefined' && t ? t('generate_example_qrs3_signature') : 'Generate Example QRS-3 Signature';
+                btn.innerHTML = '<i class="fas fa-magic mr-2"></i>' + generateText;
             }
         });
         
+        // Verificar Assinatura
         document.getElementById('verifyForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const message = document.getElementById('message').value;
@@ -150,7 +249,8 @@ Voltar
             const resultDiv = document.getElementById('result');
             
             resultDiv.classList.remove('hidden');
-            resultDiv.innerHTML = '<p class="text-blue-400">Verificando...</p>';
+            const verifyingText = typeof t !== 'undefined' && t ? t('verifying') : 'Verifying...';
+            resultDiv.innerHTML = '<p class="text-blue-400 flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i>' + verifyingText + '</p>';
             
             try {
                 const signature = JSON.parse(signatureText);
@@ -165,61 +265,62 @@ Voltar
                 
                 if (data.success) {
                     if (data.verified) {
-                        // Detalhes da assinatura
-                        const sig = data.signature || {};
+                        // Usar modal moderno para mostrar resultado
+                        const resultType = 'success';
+                        const validTitle = typeof t !== 'undefined' && t ? t('valid_signature') : 'Valid signature';
+                        const validDesc = typeof t !== 'undefined' && t ? t('signature_verified') : 'Signature verified successfully';
+                        const description = {
+                            statusTitle: validTitle,
+                            description: validDesc
+                        };
                         
-                        resultDiv.innerHTML = `
-                            <div class="bg-green-900 p-4 rounded">
-                                <p class="text-green-300 text-xl font-semibold mb-3">✅ Assinatura Válida!</p>
-                                
-                                <div class="bg-gray-800 p-3 rounded mb-3">
-                                    <p class="text-sm font-medium text-gray-300 mb-2">Detalhes da Verificação:</p>
-                                    <div class="space-y-1 text-xs">
-                                        <div class="flex justify-between">
-                                            <span>ECDSA:</span>
-                                            <span class="text-green-400">✓ Verificado</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span>ML-DSA:</span>
-                                            <span class="text-green-400">✓ Verificado</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span>SPHINCS+:</span>
-                                            <span class="text-green-400">✓ Verificado</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="bg-blue-900 p-3 rounded mb-3">
-                                    <p class="text-blue-200 text-sm font-medium mb-1">📄 Prova Criptográfica:</p>
-                                    <p class="text-xs text-blue-100">Hash SHA-512: <span class="font-mono">${data.proof_hash || 'N/A'}</span></p>
-                                    ${data.proof ? `<a href="${data.proof}" class="text-blue-400 hover:text-blue-300 text-xs underline">📥 Baixar Prova (JSON)</a>` : ''}
-                                </div>
-                                
-                                <p class="text-xs text-gray-300 mt-2">✅ Esta é uma prova real de que a assinatura QRS-3 foi verificada com sucesso na Allianza Testnet!</p>
-                            </div>
-                        `;
+                        // Adicionar detalhes de verificação
+                        const verificationDetails = {
+                            ecdsa_valid: true,
+                            ml_dsa_valid: true,
+                            sphincs_valid: true
+                        };
+                        
+                        const dataWithDetails = {
+                            ...data,
+                            verification_details: verificationDetails
+                        };
+                        
+                        const verifyTitle = typeof t !== 'undefined' && t ? t('qrs3_verification') : 'QRS-3 Verification';
+                        createModernModal(verifyTitle, dataWithDetails, resultType, description);
                     } else {
-                        resultDiv.innerHTML = `
-                            <div class="bg-red-900 p-4 rounded">
-                                <p class="text-red-300 text-xl font-semibold">❌ Assinatura Inválida</p>
-                                <p class="text-sm mt-2 text-gray-300">A assinatura não pôde ser verificada. Verifique se a mensagem e a assinatura estão corretas.</p>
-                            </div>
-                        `;
+                        const resultType = 'warning';
+                        const invalidTitle = typeof t !== 'undefined' && t ? t('invalid_signature') : 'Invalid signature';
+                        const invalidDesc = typeof t !== 'undefined' && t ? t('signature_verification_failed') : 'Signature verification failed. Please check if the message and signature are correct.';
+                        const description = {
+                            statusTitle: invalidTitle,
+                            description: invalidDesc
+                        };
+                        const verifyTitle = typeof t !== 'undefined' && t ? t('qrs3_verification') : 'QRS-3 Verification';
+                        createModernModal(verifyTitle, data, resultType, description);
                     }
+                    resultDiv.innerHTML = '';
                 } else {
-                    resultDiv.innerHTML = `
-                        <div class="bg-red-900 p-4 rounded">
-                            <p class="text-red-300">❌ ${data.error}</p>
-                        </div>
-                    `;
+                    const resultType = 'error';
+                    const description = {
+                        statusTitle: 'Error',
+                        description: data.error || 'Error verifying signature'
+                    };
+                    createModernModal('QRS-3 Verification', data, resultType, description);
+                    resultDiv.innerHTML = '';
                 }
             } catch (error) {
-                resultDiv.innerHTML = `
-                    <div class="bg-red-900 p-4 rounded">
-                        <p class="text-red-300">❌ Erro ao processar: ${error.message}</p>
-                    </div>
-                `;
+                const errorData = {
+                    success: false,
+                    error: error.message
+                };
+                const resultType = 'error';
+                const description = {
+                    statusTitle: 'Error Processing',
+                    description: error.message
+                };
+                createModernModal('QRS-3 Verification', errorData, resultType, description);
+                resultDiv.innerHTML = '';
             }
         });
     </script>

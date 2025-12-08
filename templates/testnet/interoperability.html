@@ -1,60 +1,120 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="{{ lang or 'en' }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interoperabilidade - Transferências Reais - Allianza Testnet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>💰 {{ t('real_cross_chain_transfer') or 'Real Cross-Chain Transfer - Allianza Testnet' }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/testnet-modern.css">
+    <script src="/static/js/testnet-modals.js"></script>
     <style>
-        /* Botão Voltar Padronizado */
-                .btn-back {
-            display: inline-block;
-            padding: 8px 16px;
-            background: #374151;
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
             color: white;
             text-decoration: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 14px;
-            transition: background 0.2s;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid #4b5563;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
-        
-        
-        
-    
         .btn-back:hover {
-            background: #4b5563;
+            background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
-</style>
+        .main-card {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border: 1px solid #374151;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+            width: 100%;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4);
+        }
+        .input-modern {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            transition: all 0.2s;
+        }
+        .input-modern:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-white">
-    <div class="container mx-auto px-4 py-8">
+<body class="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 text-white min-h-screen">
+    <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-4xl">
         <!-- Header -->
         <div class="mb-8">
-            <div class="mb-6">
-                <a href="/" class="btn-back">
-Voltar
-                </a>
+            <a href="javascript:history.back()" class="btn-back mb-4 inline-flex">
+                <i class="fas fa-arrow-left"></i>
+                <span>{{ t('back') or 'Back' }}</span>
+            </a>
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center text-2xl">
+                    💰
+                </div>
+                <div>
+                    <h1 class="text-4xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">{{ t('real_cross_chain_transfer') or 'Real Cross-Chain Transfer' }}</h1>
+                    <p class="text-gray-400 text-sm mt-1">{{ t('send_real_tokens') or 'Send REAL tokens between different blockchains' }}</p>
+                    <p class="text-sm text-yellow-400 mt-2 flex items-center gap-2">
+                        <i class="fas fa-check-circle"></i>
+                        {{ t('transfers_appear_explorers') or 'Transfers appear on explorers and are 100% real!' }}
+                    </p>
+                </div>
             </div>
-            <h1 class="text-4xl font-bold mb-2">💰 Transferência Real Cross-Chain</h1>
-            <p class="text-gray-400">Envie tokens REAIS entre blockchains diferentes (Polygon, Bitcoin, Ethereum, etc.)</p>
-            <p class="text-sm text-yellow-400 mt-2">✅ As transferências aparecem nos explorers e são 100% reais!</p>
         </div>
 
         <!-- Status -->
-        <div id="status" class="mb-6 p-4 bg-gray-800 rounded-lg">
-            <p class="text-yellow-400">⏳ Verificando status...</p>
+        <div id="status" class="main-card mb-6">
+            <p class="text-yellow-400 flex items-center gap-2">
+                <i class="fas fa-spinner fa-spin"></i>
+                ⏳ {{ t('checking_status') or 'Checking status...' }}
+            </p>
         </div>
 
-        <!-- Transferência Real -->
-        <div class="bg-gray-800 p-6 rounded-lg mb-6">
-            <h2 class="text-2xl font-bold mb-4">📝 Preencha os Dados da Transferência</h2>
-            <p class="text-sm text-gray-400 mb-4">Simples: escolha origem, destino, quantidade e endereço. É só isso!</p>
+        <!-- Real Transfer -->
+        <div class="main-card mb-6">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-exchange-alt text-green-400 text-xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold">📝 {{ t('fill_transfer_data') or 'Fill in the Transfer Data' }}</h2>
+            </div>
+            <p class="text-sm text-gray-400 mb-6">{{ t('simple_instructions') or 'Simple: choose origin, destination, quantity, and address. That\'s it!' }}</p>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-sm font-medium mb-2">Blockchain de Origem</label>
-                    <select id="sourceChain" class="w-full bg-gray-700 text-white p-2 rounded">
+                    <label class="block text-sm font-medium mb-2 text-gray-300">{{ t('origin_blockchain') or 'Origin Blockchain' }}</label>
+                    <select id="sourceChain" class="input-modern w-full">
                         <option value="polygon">Polygon (Amoy)</option>
                         <option value="ethereum">Ethereum (Sepolia)</option>
                         <option value="bsc">BSC (Testnet)</option>
@@ -63,8 +123,8 @@ Voltar
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-2">Blockchain de Destino</label>
-                    <select id="targetChain" class="w-full bg-gray-700 text-white p-2 rounded">
+                    <label class="block text-sm font-medium mb-2 text-gray-300">{{ t('destination_blockchain') or 'Destination Blockchain' }}</label>
+                    <select id="targetChain" class="input-modern w-full">
                         <option value="bitcoin">Bitcoin (Testnet)</option>
                         <option value="polygon">Polygon (Amoy)</option>
                         <option value="ethereum">Ethereum (Sepolia)</option>
@@ -76,12 +136,12 @@ Voltar
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-sm font-medium mb-2">Quantidade</label>
-                    <input type="number" id="amount" step="0.0001" value="0.1" class="w-full bg-gray-700 text-white p-2 rounded">
+                    <label class="block text-sm font-medium mb-2 text-gray-300">{{ t('quantity') or 'Quantity' }}</label>
+                    <input type="number" id="amount" step="0.0001" value="0.1" class="input-modern w-full">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-2">Token</label>
-                    <select id="tokenSymbol" class="w-full bg-gray-700 text-white p-2 rounded">
+                    <label class="block text-sm font-medium mb-2 text-gray-300">{{ t('token') or 'Token' }}</label>
+                    <select id="tokenSymbol" class="input-modern w-full">
                         <option value="MATIC">MATIC</option>
                         <option value="ETH">ETH</option>
                         <option value="BNB">BNB</option>
@@ -90,83 +150,81 @@ Voltar
                 </div>
             </div>
 
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Endereço Destinatário</label>
-                <input type="text" id="recipient" placeholder="0x... ou tb1q..." class="w-full bg-gray-700 text-white p-2 rounded">
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2 text-gray-300">{{ t('recipient_address') or 'Recipient Address' }}</label>
+                <input type="text" id="recipient" placeholder="0x... ou tb1q..." class="input-modern w-full">
             </div>
 
-            <div class="mb-4 p-4 bg-blue-900 rounded">
-                <p class="text-sm font-bold mb-2">💡 Como funciona:</p>
+            <div class="mb-6 p-4 bg-blue-500/20 border border-blue-500 rounded-lg">
+                <p class="text-sm font-bold mb-2 text-blue-300 flex items-center gap-2">
+                    <i class="fas fa-lightbulb"></i>
+                    💡 {{ t('how_it_works') or 'How it works:' }}
+                </p>
                 <ol class="text-xs text-gray-300 list-decimal list-inside space-y-1">
-                    <li>Escolha a blockchain de origem (ex: Polygon)</li>
-                    <li>Escolha a blockchain de destino (ex: Bitcoin)</li>
-                    <li>Digite a quantidade e o token</li>
-                    <li>Cole o endereço do destinatário</li>
-                    <li>Clique em "Executar Transferência REAL"</li>
-                    <li>A transferência aparecerá nos explorers!</li>
+                    <li>{{ t('choose_origin_blockchain') or 'Choose the origin blockchain (e.g. Polygon)' }}</li>
+                    <li>{{ t('choose_destination_blockchain') or 'Choose the destination blockchain (e.g. Bitcoin)' }}</li>
+                    <li>{{ t('enter_quantity_token') or 'Enter the quantity and token' }}</li>
+                    <li>{{ t('paste_recipient_address') or 'Paste the recipient address' }}</li>
+                    <li>{{ t('click_execute_real_transfer') or 'Click "Execute REAL Transfer"' }}</li>
+                    <li>{{ t('transfer_will_appear_explorers') or 'The transfer will appear on explorers!' }}</li>
                 </ol>
             </div>
 
-            <div class="mb-4 p-4 bg-yellow-900 rounded">
-                <p class="text-sm font-bold mb-2">⚠️ Importante:</p>
+            <div class="mb-6 p-4 bg-yellow-500/20 border border-yellow-500 rounded-lg">
+                <p class="text-sm font-bold mb-2 text-yellow-300 flex items-center gap-2">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    ⚠️ {{ t('important') or 'Important:' }}
+                </p>
                 <ul class="text-xs text-gray-300 list-disc list-inside space-y-1">
-                    <li>Esta é uma transferência REAL que aparecerá nos explorers</li>
-                    <li>Você precisa ter saldo suficiente na blockchain de origem</li>
-                    <li>Não tem saldo? Use o <a href="/faucet" class="text-blue-400 underline font-bold">Faucet</a> para obter tokens de teste</li>
+                    <li>{{ t('real_transfer_appear_explorers') or 'This is a REAL transfer that will appear on explorers' }}</li>
+                    <li>{{ t('need_sufficient_balance') or 'You need sufficient balance on the origin blockchain' }}</li>
+                    <li>{{ t('no_balance_use_faucet') or 'No balance? Use the Faucet to get test tokens' }}</li>
                 </ul>
             </div>
 
-            <button onclick="executeRealTransfer()" class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded font-bold text-lg w-full">
-                🚀 Executar Transferência REAL
+            <button onclick="executeRealTransfer()" class="btn-primary">
+                <i class="fas fa-rocket mr-2"></i>🚀 Execute REAL Transfer
             </button>
 
-            <div id="transferResult" class="mt-4 hidden">
-                <div class="bg-gray-900 p-4 rounded">
-                    <h3 class="text-lg font-bold mb-2">Resultado da Transferência</h3>
-                    <pre id="transferResultContent" class="text-sm overflow-auto max-h-96"></pre>
-                </div>
-            </div>
+            <div id="transferResult" class="mt-4 hidden"></div>
         </div>
 
         <!-- Informação sobre ALZ-NIEV -->
-        <div class="bg-gray-800 p-6 rounded-lg mb-6">
-            <h2 class="text-2xl font-bold mb-4">🧬 Tecnologia ALZ-NIEV</h2>
+        <div class="main-card">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-atom text-purple-400 text-xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold">🧬 {{ t('alz_niev_technology') or 'ALZ-NIEV Technology' }}</h2>
+            </div>
             <p class="text-sm text-gray-300 mb-4">
-                Por trás desta interface simples, está o sistema ALZ-NIEV com 5 camadas de segurança e provas criptográficas.
-                Você não precisa entender isso - apenas faça sua transferência e tudo funciona automaticamente!
+                {{ t('alz_niev_behind_interface') or 'Behind this simple interface is the ALZ-NIEV system with 5 layers of security and cryptographic proofs. You don\'t need to understand this - just make your transfer and everything works automatically!' }}
             </p>
             <details class="text-sm">
-                <summary class="cursor-pointer text-blue-400 hover:text-blue-300">Ver detalhes técnicos (opcional)</summary>
+                <summary class="cursor-pointer text-blue-400 hover:text-blue-300 font-semibold mb-4">{{ t('view_technical_details') or 'View technical details (optional)' }}</summary>
                 <div class="mt-4 grid grid-cols-1 md:grid-cols-5 gap-4">
-                    <div class="bg-blue-900 p-4 rounded">
-                        <h3 class="font-bold mb-1">🔵 ELNI</h3>
+                    <div class="bg-blue-500/20 border border-blue-500 rounded-lg p-4">
+                        <h3 class="font-bold mb-1 text-blue-300">🔵 ELNI</h3>
                         <p class="text-xs text-gray-300">Execution-Level Native Interop</p>
                     </div>
-                    <div class="bg-purple-900 p-4 rounded">
-                        <h3 class="font-bold mb-1">🟣 ZKEF</h3>
+                    <div class="bg-purple-500/20 border border-purple-500 rounded-lg p-4">
+                        <h3 class="font-bold mb-1 text-purple-300">🟣 ZKEF</h3>
                         <p class="text-xs text-gray-300">Zero-Knowledge External Functions</p>
                     </div>
-                    <div class="bg-green-900 p-4 rounded">
-                        <h3 class="font-bold mb-1">🟢 UP-NMT</h3>
+                    <div class="bg-green-500/20 border border-green-500 rounded-lg p-4">
+                        <h3 class="font-bold mb-1 text-green-300">🟢 UP-NMT</h3>
                         <p class="text-xs text-gray-300">Universal Proof Normalized Merkle Tunneling</p>
                     </div>
-                    <div class="bg-yellow-900 p-4 rounded">
-                        <h3 class="font-bold mb-1">🟡 MCL</h3>
+                    <div class="bg-yellow-500/20 border border-yellow-500 rounded-lg p-4">
+                        <h3 class="font-bold mb-1 text-yellow-300">🟡 MCL</h3>
                         <p class="text-xs text-gray-300">Multi-Consensus Layer</p>
                     </div>
-                    <div class="bg-red-900 p-4 rounded">
-                        <h3 class="font-bold mb-1">🔴 AES</h3>
+                    <div class="bg-red-500/20 border border-red-500 rounded-lg p-4">
+                        <h3 class="font-bold mb-1 text-red-300">🔴 AES</h3>
                         <p class="text-xs text-gray-300">Atomic Execution Sync</p>
                     </div>
                 </div>
             </details>
-        </div>
-
-        <!-- Links -->
-        <div class="mb-6">
-            <a href="/" class="btn-back">
-                <i class="fas fa-arrow-left mr-1"></i>Voltar
-            </a>
         </div>
     </div>
 
@@ -179,16 +237,19 @@ Voltar
                 
                 const statusDiv = document.getElementById('status');
                 if (data.available) {
-                    statusDiv.innerHTML = '<p class="text-green-400">✅ Sistema de interoperabilidade disponível e pronto para transferências REAIS!</p>';
+                    const availableText = typeof t !== 'undefined' && t ? t('interoperability_available') : 'Interoperability system available and ready for REAL transfers!';
+                    statusDiv.innerHTML = '<p class="text-green-400 flex items-center gap-2"><i class="fas fa-check-circle"></i>✅ ' + availableText + '</p>';
                 } else {
-                    statusDiv.innerHTML = '<p class="text-yellow-400">⚠️ Sistema em modo limitado: ' + (data.error || 'Não disponível') + '</p>';
+                    const limitedText = typeof t !== 'undefined' && t ? t('system_limited_mode') : 'System in limited mode:';
+                    const notAvailText = typeof t !== 'undefined' && t ? t('not_available') : 'Not available';
+                    statusDiv.innerHTML = '<p class="text-yellow-400 flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i>⚠️ ' + limitedText + ' ' + (data.error || notAvailText) + '</p>';
                 }
             } catch (error) {
-                document.getElementById('status').innerHTML = '<p class="text-yellow-400">⚠️ Verificando status...</p>';
+                document.getElementById('status').innerHTML = '<p class="text-yellow-400 flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i>⚠️ Verificando status...</p>';
             }
         }
 
-        // Executar transferência real
+        // Execute real transfer
         async function executeRealTransfer() {
             const sourceChain = document.getElementById('sourceChain').value;
             const targetChain = document.getElementById('targetChain').value;
@@ -197,19 +258,18 @@ Voltar
             const recipient = document.getElementById('recipient').value.trim();
 
             if (!recipient) {
-                alert('Por favor, insira um endereço destinatário');
+                alert('Please enter a recipient address');
                 return;
             }
 
             if (amount <= 0) {
-                alert('A quantidade deve ser maior que zero');
+                alert('Amount must be greater than zero');
                 return;
             }
 
             const resultDiv = document.getElementById('transferResult');
-            const resultContent = document.getElementById('transferResultContent');
             resultDiv.classList.remove('hidden');
-            resultContent.textContent = '⏳ Executando transferência REAL...\n\nIsso pode levar alguns segundos...';
+            resultDiv.innerHTML = '<p class="text-blue-400 flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i>⏳ Executing REAL transfer...<br><span class="text-sm text-gray-400">This may take a few seconds...</span></p>';
 
             try {
                 const response = await fetch('/api/interoperability/transfer-real', {
@@ -224,38 +284,51 @@ Voltar
                     })
                 });
 
-                // Verificar se a resposta é JSON
                 const contentType = response.headers.get('content-type');
                 if (!contentType || !contentType.includes('application/json')) {
                     const text = await response.text();
-                    throw new Error(`Resposta não é JSON. Status: ${response.status}. Resposta: ${text.substring(0, 200)}`);
+                    throw new Error(`Response is not JSON. Status: ${response.status}. Response: ${text.substring(0, 200)}`);
                 }
 
                 const data = await response.json();
                 
+                // Usar modal moderno para mostrar resultado
                 if (data.success) {
-                    let resultText = '✅ Transferência REAL executada com sucesso!\n\n';
-                    resultText += '📊 Detalhes:\n';
-                    resultText += JSON.stringify(data, null, 2);
-                    
-                    if (data.source_tx) {
-                        resultText += '\n\n🔗 Links dos Explorers:\n';
-                        if (data.source_tx.startsWith('0x')) {
-                            resultText += `Polygon/EVM: https://amoy.polygonscan.com/tx/${data.source_tx}\n`;
-                        } else {
-                            resultText += `Bitcoin: https://blockstream.info/testnet/tx/${data.source_tx}\n`;
-                        }
-                    }
-                    
-                    resultContent.textContent = resultText;
-                    resultContent.classList.add('text-green-400');
+                    const resultType = 'success';
+                    const transferTitle = typeof t !== 'undefined' && t ? t('real_cross_chain_transfer') : 'Real Cross-Chain Transfer';
+                    const successTitle = typeof t !== 'undefined' && t ? t('real_transfer_executed') : 'Real Transfer Executed';
+                    const successDesc = typeof t !== 'undefined' && t ? t('transfer_success_explorers') : 'Transfer executed successfully and will appear on explorers!';
+                    const description = {
+                        statusTitle: successTitle,
+                        description: successDesc
+                    };
+                    createModernModal(transferTitle, data, resultType, description);
                 } else {
-                    resultContent.textContent = '❌ Erro na transferência:\n\n' + JSON.stringify(data, null, 2);
-                    resultContent.classList.add('text-red-400');
+                    const resultType = 'error';
+                    const transferTitle = typeof t !== 'undefined' && t ? t('real_cross_chain_transfer') : 'Real Cross-Chain Transfer';
+                    const errorTitle = typeof t !== 'undefined' && t ? t('transfer_error') : 'Transfer Error';
+                    const errorDesc = data.error || (typeof t !== 'undefined' && t ? t('error_executing_transfer') : 'Error executing transfer');
+                    const description = {
+                        statusTitle: errorTitle,
+                        description: errorDesc
+                    };
+                    createModernModal(transferTitle, data, resultType, description);
                 }
+                resultDiv.innerHTML = '';
             } catch (error) {
-                resultContent.textContent = '❌ Erro ao executar transferência:\n\n' + error.message;
-                resultContent.classList.add('text-red-400');
+                const errorData = {
+                    success: false,
+                    error: error.message
+                };
+                const resultType = 'error';
+                const transferTitle = typeof t !== 'undefined' && t ? t('real_cross_chain_transfer') : 'Real Cross-Chain Transfer';
+                const errorTitle = typeof t !== 'undefined' && t ? t('error_executing') : 'Error Executing';
+                const description = {
+                    statusTitle: errorTitle,
+                    description: error.message
+                };
+                createModernModal(transferTitle, errorData, resultType, description);
+                resultDiv.innerHTML = '';
             }
         }
 

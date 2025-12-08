@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="{{ lang or 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,30 +30,30 @@
 <body class="bg-gray-900 text-white">
     <div class="container mx-auto px-4 py-8">
         <div class="mb-6">
-            <a href="/" class="btn-back">
-Voltar
+            <a href="javascript:history.back()" class="btn-back">
+                Back
             </a>
         </div>
 
         <h1 class="text-4xl font-bold mb-2">💰 Faucet</h1>
-        <p class="text-gray-400 mb-8">Obtenha tokens de teste para experimentar a Allianza Testnet</p>
+        <p class="text-gray-400 mb-8">Get test tokens to try out the Allianza Testnet</p>
 
         <!-- Gerar Wallet -->
         <div class="bg-blue-900 p-6 rounded-lg mb-6">
-            <h2 class="text-2xl font-semibold mb-4">👛 Não tem endereço? Gere um agora!</h2>
-            <p class="text-gray-300 mb-4">Clique no botão abaixo para gerar uma nova wallet e obter seu endereço Allianza.</p>
+            <h2 class="text-2xl font-semibold mb-4">👛 Don't have an address? Generate one now!</h2>
+            <p class="text-gray-300 mb-4">Click the button below to generate a new wallet and get your Allianza address.</p>
             <button id="generateWalletBtn" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition">
-                <i class="fas fa-wallet mr-2"></i>Gerar Nova Wallet
+                <i class="fas fa-wallet mr-2"></i>Generate New Wallet
             </button>
             <div id="walletResult" class="mt-4 hidden"></div>
         </div>
 
         <!-- Form -->
         <div class="bg-gray-800 p-6 rounded-lg mb-8">
-            <h2 class="text-2xl font-semibold mb-4">Solicitar Tokens</h2>
+            <h2 class="text-2xl font-semibold mb-4">Request Tokens</h2>
             <form id="faucetForm" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium mb-2">Endereço Allianza</label>
+                    <label class="block text-sm font-medium mb-2">Allianza Address</label>
                     <div class="flex gap-2">
                         <input type="text" id="address" placeholder="ALZ1..." 
                                class="flex-1 bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -61,10 +61,10 @@ Voltar
                             <i class="fas fa-paste"></i>
                         </button>
                     </div>
-                    <p class="text-xs text-gray-400 mt-1">Deve começar com ALZ1 e ter 42 caracteres</p>
+                    <p class="text-xs text-gray-400 mt-1">Must start with ALZ1 and have 42 characters</p>
                 </div>
                 <button type="submit" class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition">
-                    <i class="fas fa-faucet mr-2"></i>Solicitar Tokens
+                    <i class="fas fa-faucet mr-2"></i>Request Tokens
                 </button>
             </form>
             <div id="result" class="mt-4 hidden"></div>
@@ -73,35 +73,39 @@ Voltar
         <!-- Stats -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div class="bg-gray-800 p-4 rounded-lg">
-                <h3 class="text-sm text-gray-400">Total Enviado</h3>
-                <p class="text-2xl font-bold">{{ faucet_stats.total_sent }}</p>
+                <h3 class="text-sm text-gray-400">Total Sent</h3>
+                <p class="text-2xl font-bold">{{ faucet_stats.get('total_sent', 0) if faucet_stats else 0 }}</p>
             </div>
             <div class="bg-gray-800 p-4 rounded-lg">
-                <h3 class="text-sm text-gray-400">Total Rejeitado</h3>
-                <p class="text-2xl font-bold">{{ faucet_stats.total_rejected }}</p>
+                <h3 class="text-sm text-gray-400">Total Rejected</h3>
+                <p class="text-2xl font-bold">{{ faucet_stats.get('total_rejected', 0) if faucet_stats else 0 }}</p>
             </div>
             <div class="bg-gray-800 p-4 rounded-lg">
-                <h3 class="text-sm text-gray-400">Quantidade por Requisição</h3>
-                <p class="text-2xl font-bold">{{ faucet_stats.amount_per_request }} ALZ-T</p>
+                <h3 class="text-sm text-gray-400">Amount per Request</h3>
+                <p class="text-2xl font-bold">{{ faucet_stats.get('amount_per_request', 1000) if faucet_stats else 1000 }} ALZ-T</p>
             </div>
         </div>
 
         <!-- Recent Logs -->
         <div class="bg-gray-800 p-6 rounded-lg">
-            <h2 class="text-2xl font-semibold mb-4">Logs Recentes</h2>
+            <h2 class="text-2xl font-semibold mb-4">Recent Logs</h2>
             <div class="space-y-2">
-                {% for log in logs %}
-                <div class="bg-gray-700 p-3 rounded">
-                    <div class="flex justify-between">
-                        <span class="font-mono text-sm">{{ log.address[:20] }}...</span>
-                        <span class="text-xs text-gray-400">{{ log.timestamp }}</span>
+                {% if logs and logs|length > 0 %}
+                    {% for log in logs %}
+                    <div class="bg-gray-700 p-3 rounded">
+                        <div class="flex justify-between">
+                            <span class="font-mono text-sm">{{ (log.address if log.address else 'Unknown')[:20] }}...</span>
+                            <span class="text-xs text-gray-400">{{ log.timestamp if log.timestamp else '' }}</span>
+                        </div>
+                        <div class="text-xs text-gray-400 mt-1">
+                            TX: <span class="font-mono">{{ (log.tx_hash if log.tx_hash else '')[:20] }}...</span> | 
+                            Amount: {{ log.amount if log.amount else 0 }} ALZ-T
+                        </div>
                     </div>
-                    <div class="text-xs text-gray-400 mt-1">
-                        TX: <span class="font-mono">{{ log.tx_hash[:20] }}...</span> | 
-                        Amount: {{ log.amount }} ALZ-T
-                    </div>
-                </div>
-                {% endfor %}
+                    {% endfor %}
+                {% else %}
+                    <p class="text-gray-400 text-center py-4">No logs yet. Be the first to request tokens!</p>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -122,19 +126,20 @@ Voltar
                 const data = await response.json();
                 
                 if (data.success && data.address) {
+                    const t = typeof window.t !== 'undefined' ? window.t : null;
                     walletResultDiv.innerHTML = `
                         <div class="bg-green-900 p-4 rounded">
-                            <p class="text-green-300 font-semibold mb-2">✅ Wallet Gerado com Sucesso!</p>
+                            <p class="text-green-300 font-semibold mb-2">✅ ${t && t('wallet_generated_success') ? t('wallet_generated_success') : 'Wallet Generated Successfully!'}</p>
                             <div class="space-y-2 text-sm">
                                 <div>
-                                    <p class="text-gray-300 font-medium">Endereço:</p>
+                                    <p class="text-gray-300 font-medium">${t && t('address') ? t('address') : 'Address'}:</p>
                                     <p class="font-mono bg-gray-800 p-2 rounded break-all">${data.address}</p>
                                     <button onclick="copyToClipboard('${data.address}')" class="mt-1 text-blue-400 hover:text-blue-300 text-xs">
                                         <i class="fas fa-copy"></i> Copiar
                                     </button>
                                 </div>
                                 <div class="mt-3">
-                                    <p class="text-yellow-300 font-medium">⚠️ Chave Privada (TESTNET APENAS):</p>
+                                    <p class="text-yellow-300 font-medium">⚠️ ${t && t('private_key_testnet_only') ? t('private_key_testnet_only') : 'Private Key (TESTNET ONLY)'}:</p>
                                     <p class="font-mono bg-gray-800 p-2 rounded break-all text-xs">${data.private_key}</p>
                                     <button onclick="copyToClipboard('${data.private_key}')" class="mt-1 text-blue-400 hover:text-blue-300 text-xs">
                                         <i class="fas fa-copy"></i> Copiar
@@ -142,7 +147,7 @@ Voltar
                                     <p class="text-red-300 text-xs mt-2">${data.message}</p>
                                 </div>
                                 <div class="mt-3 bg-blue-900 p-3 rounded">
-                                    <p class="text-blue-200 font-medium mb-1">Instruções:</p>
+                                    <p class="text-blue-200 font-medium mb-1">${t && t('instructions') ? t('instructions') : 'Instructions'}:</p>
                                     <ul class="text-xs text-blue-100 space-y-1">
                                         ${data.instructions.map(i => `<li>${i}</li>`).join('')}
                                     </ul>
@@ -191,6 +196,13 @@ Voltar
                     body: JSON.stringify({address})
                 });
                 
+                // Verificar se a resposta é JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Server returned non-JSON response (${response.status}): ${text.substring(0, 100)}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.success) {
@@ -202,14 +214,14 @@ Voltar
                                 <p class="font-mono text-xs break-all">${data.tx_hash}</p>
                                 <div class="mt-2 flex gap-2">
                                     <a href="/explorer" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-xs">
-                                        🔍 Ver no Explorer
+                                        🔍 ${(typeof window.t !== 'undefined' && window.t && window.t('view_explorer')) ? window.t('view_explorer') : 'View on Explorer'}
                                     </a>
                                     <a href="/api/proofs/transaction/${data.tx_hash}?format=json" class="bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded text-xs">
-                                        📄 Baixar Prova
+                                        📄 ${(typeof window.t !== 'undefined' && window.t && window.t('download_proof')) ? window.t('download_proof') : 'Download Proof'}
                                     </a>
                                 </div>
                             </div>
-                            <p class="text-xs text-gray-300 mt-2">✅ Esta é uma transação REAL na testnet! Você pode verificar no explorer.</p>
+                            <p class="text-xs text-gray-300 mt-2">✅ ${(typeof window.t !== 'undefined' && window.t && window.t('real_transaction_testnet')) ? window.t('real_transaction_testnet') : 'This is a REAL transaction on the testnet! You can verify it on the explorer.'}</p>
                         </div>
                     `;
                 } else {

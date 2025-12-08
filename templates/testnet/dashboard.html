@@ -33,8 +33,13 @@
     <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-4xl font-bold mb-2">🌐 Allianza Testnet</h1>
-            <p class="text-gray-400">Primeira testnet do mundo com proteção quântica nativa</p>
+            <h1 class="text-4xl font-bold mb-2">🌐 {{ t('dashboard_title') or 'Allianza Testnet' }}</h1>
+            <p class="text-gray-400">{{ t('dashboard_subtitle') or 'World\'s first testnet with native quantum protection' }}</p>
+            <!-- Language Switcher -->
+            <div class="mt-2 flex gap-2">
+                <a href="/set-language/pt" class="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded {{ 'bg-blue-600' if lang == 'pt' else '' }}">🇧🇷 PT</a>
+                <a href="/set-language/en" class="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded {{ 'bg-blue-600' if lang == 'en' else '' }}">🇺🇸 EN</a>
+            </div>
         </div>
 
         <!-- Network Info -->
@@ -48,7 +53,7 @@
                 <p class="text-2xl font-mono">{{ network_info.chain_id }}</p>
             </div>
             <div class="bg-gray-800 p-6 rounded-lg">
-                <h3 class="text-lg font-semibold mb-2">Versão</h3>
+                <h3 class="text-lg font-semibold mb-2">{{ t('version') or 'Version' }}</h3>
                 <p class="text-2xl">{{ network_info.version }}</p>
             </div>
         </div>
@@ -56,42 +61,42 @@
         <!-- Stats -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
             <div class="bg-blue-900 p-6 rounded-lg">
-                <h3 class="text-sm text-gray-400 mb-1">Total de Blocos</h3>
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('total_blocks') or 'Total Blocks' }}</h3>
                 <p class="text-3xl font-bold">{{ stats.total_blocks }}</p>
             </div>
             <div class="bg-green-900 p-6 rounded-lg">
-                <h3 class="text-sm text-gray-400 mb-1">Total de Transações</h3>
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('total_transactions') or 'Total Transactions' }}</h3>
                 <p class="text-3xl font-bold">{{ stats.total_transactions }}</p>
             </div>
             <div class="bg-purple-900 p-6 rounded-lg">
-                <h3 class="text-sm text-gray-400 mb-1">TPS (24h)</h3>
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('tps_24h') or 'TPS (24h)' }}</h3>
                 <p class="text-3xl font-bold">{{ stats.tps_24h_avg }}</p>
             </div>
             <div class="bg-yellow-900 p-6 rounded-lg">
-                <h3 class="text-sm text-gray-400 mb-1">Latência Média</h3>
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('avg_latency') or 'Average Latency' }}</h3>
                 <p class="text-3xl font-bold">{{ stats.latency_avg_ms }}ms</p>
             </div>
         </div>
 
         <!-- Developer Hub & Leaderboard -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 sm:mb-8">
-            <a href="/developer-hub" class="bg-gradient-to-br from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 p-6 rounded-lg transition transform hover:scale-105 shadow-lg">
-                <div class="flex items-center gap-4">
-                    <i class="fas fa-rocket text-5xl"></i>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <a href="/developer-hub" class="bg-gradient-to-br from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 p-4 sm:p-5 rounded-lg transition transform hover:scale-105 shadow-lg">
+                <div class="flex items-center gap-3 sm:gap-4">
+                    <i class="fas fa-rocket text-3xl sm:text-4xl"></i>
                     <div>
-                        <h3 class="text-2xl font-semibold mb-1">🚀 Developer Hub</h3>
-                        <p class="text-sm text-gray-200">Quick Start Guide do SDK</p>
-                        <p class="text-xs text-gray-300 mt-1">Comece a integrar em minutos</p>
+                        <h3 class="text-lg sm:text-xl font-semibold mb-1">🚀 {{ t('developer_hub') or 'Developer Hub' }}</h3>
+                        <p class="text-xs sm:text-sm text-gray-200">{{ t('quick_start_guide') or 'Quick Start Guide' }}</p>
+                        <p class="text-xs text-gray-300 mt-1 hidden sm:block">{{ t('start_integrating') or 'Start integrating in minutes' }}</p>
                     </div>
                 </div>
             </a>
-            <a href="/leaderboard" class="bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 p-6 rounded-lg transition transform hover:scale-105 shadow-lg">
-                <div class="flex items-center gap-4">
-                    <i class="fas fa-trophy text-5xl"></i>
+            <a href="/leaderboard" class="bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 p-4 sm:p-5 rounded-lg transition transform hover:scale-105 shadow-lg">
+                <div class="flex items-center gap-3 sm:gap-4">
+                    <i class="fas fa-trophy text-3xl sm:text-4xl"></i>
                     <div>
-                        <h3 class="text-2xl font-semibold mb-1">🏆 Leaderboard</h3>
-                        <p class="text-sm text-gray-200">Ranking de desenvolvedores</p>
-                        <p class="text-xs text-gray-300 mt-1">{{ leaderboard_stats.total_users or 0 }} desenvolvedores ativos</p>
+                        <h3 class="text-lg sm:text-xl font-semibold mb-1">🏆 {{ t('leaderboard') or 'Leaderboard' }}</h3>
+                        <p class="text-xs sm:text-sm text-gray-200">{{ t('ranking') or 'Ranking' }}</p>
+                        <p class="text-xs text-gray-300 mt-1 hidden sm:block">{{ leaderboard_stats.total_users or 0 }} {{ t('developers') or 'developers' }}</p>
                     </div>
                 </div>
             </a>
@@ -103,10 +108,10 @@
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-2xl font-semibold">
                     <i class="fas fa-history text-blue-400 mr-2"></i>
-                    Atividade Recente
+                    {{ t('recent_activity') or 'Recent Activity' }}
                 </h2>
                 <a href="/leaderboard" class="text-sm text-blue-400 hover:text-blue-300">
-                    Ver todas <i class="fas fa-arrow-right ml-1"></i>
+                    {{ t('view_all') or 'View all' }} <i class="fas fa-arrow-right ml-1"></i>
                 </a>
             </div>
             <div class="space-y-2 max-h-64 overflow-y-auto">
@@ -126,11 +131,11 @@
                             <p class="text-sm">
                                 <span class="font-semibold">{{ activity.user_name }}</span>
                                 {% if activity.type == "test_run" %}
-                                executou um teste
+                                {{ t('ran_test') or 'ran a test' }}
                                 {% elif activity.type == "proof_generated" %}
-                                gerou uma prova quântica
+                                {{ t('generated_proof') or 'generated a quantum proof' }}
                                 {% elif activity.type == "qss_request" %}
-                                fez uma requisição QSS
+                                {{ t('made_qss_request') or 'made a QSS request' }}
                                 {% endif %}
                             </p>
                             <p class="text-xs text-gray-400">
@@ -140,7 +145,7 @@
                     </div>
                     <div class="text-right">
                         <div class="text-sm font-semibold text-green-400">+{{ activity.points }}</div>
-                        <div class="text-xs text-gray-400">pontos</div>
+                        <div class="text-xs text-gray-400">{{ t('points') or 'points' }}</div>
                     </div>
                 </div>
                 {% endfor %}
@@ -149,92 +154,79 @@
         {% endif %}
 
         <!-- Quick Links -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
-            <a href="/faucet" class="bg-green-600 hover:bg-green-700 p-6 rounded-lg text-center transition transform hover:scale-105">
-                <i class="fas fa-faucet text-4xl mb-2"></i>
-                <h3 class="text-xl font-semibold">Faucet</h3>
-                <p class="text-sm text-gray-300">Obter tokens de teste</p>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 mb-6 sm:mb-8">
+            <a href="/faucet" class="bg-green-600 hover:bg-green-700 p-3 sm:p-4 rounded-lg text-center transition transform hover:scale-105">
+                <i class="fas fa-faucet text-2xl sm:text-3xl mb-1"></i>
+                <h3 class="text-sm sm:text-base font-semibold">{{ t('faucet') or 'Faucet' }}</h3>
+                <p class="text-xs text-gray-300 hidden sm:block">{{ t('obtain_tokens') or 'Obtain tokens' }}</p>
             </a>
-            <a href="/explorer" class="bg-blue-600 hover:bg-blue-700 p-6 rounded-lg text-center transition transform hover:scale-105">
-                <i class="fas fa-search text-4xl mb-2"></i>
-                <h3 class="text-xl font-semibold">Explorer</h3>
-                <p class="text-sm text-gray-300">Explorar blocos e transações</p>
+            <a href="/explorer" class="bg-blue-600 hover:bg-blue-700 p-3 sm:p-4 rounded-lg text-center transition transform hover:scale-105">
+                <i class="fas fa-search text-2xl sm:text-3xl mb-1"></i>
+                <h3 class="text-sm sm:text-base font-semibold">{{ t('explorer') or 'Explorer' }}</h3>
+                <p class="text-xs text-gray-300 hidden sm:block">{{ t('explore_blocks') or 'Blocks and transactions' }}</p>
             </a>
-            <a href="/qrs3-verifier" class="bg-purple-600 hover:bg-purple-700 p-6 rounded-lg text-center transition transform hover:scale-105">
-                <i class="fas fa-shield-alt text-4xl mb-2"></i>
-                <h3 class="text-xl font-semibold">Verificador QRS-3</h3>
-                <p class="text-sm text-gray-300">Verificar assinaturas quânticas</p>
+            <a href="/qrs3-verifier" class="bg-purple-600 hover:bg-purple-700 p-3 sm:p-4 rounded-lg text-center transition transform hover:scale-105">
+                <i class="fas fa-shield-alt text-2xl sm:text-3xl mb-1"></i>
+                <h3 class="text-sm sm:text-base font-semibold">{{ t('qrs3_verifier') or 'QRS-3' }}</h3>
+                <p class="text-xs text-gray-300 hidden sm:block">{{ t('verify_signatures') or 'Verify signatures' }}</p>
             </a>
-            <a href="/dashboard/quantum-attack-simulator" class="bg-gradient-to-br from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 p-6 rounded-lg text-center transition transform hover:scale-105 shadow-lg hover:shadow-2xl">
-                <i class="fas fa-flask text-4xl mb-2"></i>
-                <h3 class="text-xl font-semibold">🔬 Simulador de Ataque Quântico</h3>
-                <p class="text-sm text-gray-300">Testar segurança quântica</p>
+            <a href="/dashboard/quantum-attack-simulator" class="bg-gradient-to-br from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 p-3 sm:p-4 rounded-lg text-center transition transform hover:scale-105 shadow-lg">
+                <i class="fas fa-flask text-2xl sm:text-3xl mb-1"></i>
+                <h3 class="text-sm sm:text-base font-semibold">{{ t('quantum_attack_simulator') or 'Simulator' }}</h3>
+                <p class="text-xs text-gray-300 hidden sm:block">{{ t('test_security') or 'Quantum Attack' }}</p>
             </a>
-            <a href="/qss" class="bg-gradient-to-br from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 p-6 rounded-lg text-center transition transform hover:scale-105 shadow-lg hover:shadow-2xl">
-                <i class="fas fa-shield-virus text-4xl mb-2"></i>
-                <h3 class="text-xl font-semibold">🔐 Quantum Security Service</h3>
-                <p class="text-sm text-gray-300">Segurança quântica para outras blockchains</p>
+            <a href="/qss" class="bg-gradient-to-br from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 p-3 sm:p-4 rounded-lg text-center transition transform hover:scale-105 shadow-lg">
+                <i class="fas fa-shield-virus text-2xl sm:text-3xl mb-1"></i>
+                <h3 class="text-sm sm:text-base font-semibold">{{ t('quantum_security_service') or 'QSS' }}</h3>
+                <p class="text-xs text-gray-300 hidden sm:block">{{ t('quantum_security_other') or 'Security Service' }}</p>
             </a>
         </div>
 
         <!-- Novas Funcionalidades Profissionais -->
         <div class="mb-8">
-            <h2 class="text-2xl font-semibold mb-4">🔐 Funcionalidades Profissionais</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <a href="/status" class="bg-gray-800 hover:bg-gray-700 p-6 rounded-lg border-2 border-green-500 transition">
-                    <i class="fas fa-chart-line text-4xl mb-2 text-green-400"></i>
-                    <h3 class="text-xl font-semibold">Status Page</h3>
-                    <p class="text-sm text-gray-300">Monitoramento em tempo real</p>
-                    <p class="text-xs text-gray-400 mt-2">Uptime, componentes, incidentes</p>
+            <h2 class="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">🔐 {{ t('professional_features') or 'Professional Features' }}</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+                <a href="/status" class="bg-gray-800 hover:bg-gray-700 p-3 sm:p-4 rounded-lg border border-green-500 transition">
+                    <i class="fas fa-chart-line text-2xl sm:text-3xl mb-1 text-green-400"></i>
+                    <h3 class="text-sm sm:text-base font-semibold">{{ t('status') or 'Status' }}</h3>
+                    <p class="text-xs text-gray-300 hidden sm:block">{{ t('monitoring') or 'Monitoring' }}</p>
                 </a>
-                <a href="/quantum-security" class="bg-gray-800 hover:bg-gray-700 p-6 rounded-lg border-2 border-purple-500 transition">
-                    <i class="fas fa-atom text-4xl mb-2 text-purple-400"></i>
-                    <h3 class="text-xl font-semibold">Segurança Quântica</h3>
-                    <p class="text-sm text-gray-300">Dashboard QRS-3 e PQC</p>
-                    <p class="text-xs text-gray-400 mt-2">Métricas, entropia, performance</p>
+                <a href="/quantum-security" class="bg-gray-800 hover:bg-gray-700 p-3 sm:p-4 rounded-lg border border-purple-500 transition">
+                    <i class="fas fa-atom text-2xl sm:text-3xl mb-1 text-purple-400"></i>
+                    <h3 class="text-sm sm:text-base font-semibold">{{ t('qrs3_verifier') or 'QRS-3' }}</h3>
+                    <p class="text-xs text-gray-300 hidden sm:block">{{ t('qrs3_dashboard') or 'Dashboard' }}</p>
                 </a>
-                <a href="/interoperability" class="bg-gray-800 hover:bg-gray-700 p-6 rounded-lg border-2 border-blue-500 transition">
-                    <i class="fas fa-project-diagram text-4xl mb-2 text-blue-400"></i>
-                    <h3 class="text-xl font-semibold">Interoperabilidade</h3>
-                    <p class="text-sm text-gray-300">Teste cross-chain real</p>
-                    <p class="text-xs text-gray-400 mt-2">Validação, Proof-of-Lock, Transferências</p>
+                <a href="/interoperability" class="bg-gray-800 hover:bg-gray-700 p-3 sm:p-4 rounded-lg border border-blue-500 transition">
+                    <i class="fas fa-project-diagram text-2xl sm:text-3xl mb-1 text-blue-400"></i>
+                    <h3 class="text-sm sm:text-base font-semibold">{{ t('interop') or 'Interop' }}</h3>
+                    <p class="text-xs text-gray-300 hidden sm:block">{{ t('cross_chain') or 'Cross-chain' }}</p>
                 </a>
-                <a href="/alz-niev" class="bg-gray-800 hover:bg-gray-700 p-6 rounded-lg border-2 border-purple-500 transition">
-                    <i class="fas fa-atom text-4xl mb-2 text-purple-400"></i>
-                    <h3 class="text-xl font-semibold">ALZ-NIEV</h3>
-                    <p class="text-sm text-gray-300">Interoperabilidade Única</p>
-                    <p class="text-xs text-gray-400 mt-2">5 Camadas: ELNI, ZKEF, UP-NMT, MCL, AES</p>
+                <a href="/alz-niev" class="bg-gray-800 hover:bg-gray-700 p-3 sm:p-4 rounded-lg border border-purple-500 transition">
+                    <i class="fas fa-atom text-2xl sm:text-3xl mb-1 text-purple-400"></i>
+                    <h3 class="text-sm sm:text-base font-semibold">{{ t('alz_niev') or 'ALZ-NIEV' }}</h3>
+                    <p class="text-xs text-gray-300 hidden sm:block">{{ t('5_layers') or '5 Layers' }}</p>
                 </a>
-                <a href="/public-tests" class="bg-gray-800 hover:bg-gray-700 p-6 rounded-lg border-2 border-yellow-500 transition">
-                    <i class="fas fa-vial text-4xl mb-2 text-yellow-400"></i>
-                    <h3 class="text-xl font-semibold">Testes Públicos</h3>
-                    <p class="text-sm text-gray-300">Execute testes reais</p>
-                    <p class="text-xs text-gray-400 mt-2">5 testes com logs em tempo real</p>
+                <a href="/public-tests" class="bg-gray-800 hover:bg-gray-700 p-3 sm:p-4 rounded-lg border border-yellow-500 transition">
+                    <i class="fas fa-vial text-2xl sm:text-3xl mb-1 text-yellow-400"></i>
+                    <h3 class="text-sm sm:text-base font-semibold">{{ t('tests') or 'Tests' }}</h3>
+                    <p class="text-xs text-gray-300 hidden sm:block">{{ t('public') or 'Public' }}</p>
                 </a>
-                <a href="/dashboard/quantum-attack-simulator" class="bg-gray-800 hover:bg-gray-700 p-6 rounded-lg border-2 border-pink-500 transition transform hover:scale-105">
-                    <i class="fas fa-flask text-4xl mb-2 text-pink-400"></i>
-                    <h3 class="text-xl font-semibold">🔬 Simulador de Ataque Quântico</h3>
-                    <p class="text-sm text-gray-300">Teste segurança quântica</p>
-                    <p class="text-xs text-gray-400 mt-2">Comparação ECDSA vs PQC, provas verificáveis</p>
+                <a href="/professional-tests" class="bg-gray-800 hover:bg-gray-700 p-3 sm:p-4 rounded-lg border border-cyan-500 transition">
+                    <i class="fas fa-vial text-2xl sm:text-3xl mb-1 text-cyan-400"></i>
+                    <h3 class="text-sm sm:text-base font-semibold">{{ t('professional') or 'Professional' }}</h3>
+                    <p class="text-xs text-gray-300 hidden sm:block">{{ t('complete_suite_short') or 'Complete suite' }}</p>
                 </a>
-                <a href="/professional-tests" class="bg-gray-800 hover:bg-gray-700 p-6 rounded-lg border-2 border-cyan-500 transition transform hover:scale-105">
-                    <i class="fas fa-vial text-4xl mb-2 text-cyan-400"></i>
-                    <h3 class="text-xl font-semibold">🧪 Testes Profissionais</h3>
-                    <p class="text-sm text-gray-300">Suite completa de testes</p>
-                    <p class="text-xs text-gray-400 mt-2">Todos os testes obrigatórios para testnet profissional</p>
-                </a>
-                <a href="/tests/complete" class="bg-gradient-to-br from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 p-6 rounded-lg border-2 border-green-400 transition transform hover:scale-105 shadow-lg">
-                    <i class="fas fa-check-double text-4xl mb-2 text-white"></i>
-                    <h3 class="text-xl font-semibold">✅ 41 Validações Completas</h3>
-                    <p class="text-sm text-gray-200">Execute todos os testes documentados</p>
-                    <p class="text-xs text-gray-300 mt-2">Complete + Critical + Professional Suites</p>
+                <a href="/tests/complete" class="bg-gradient-to-br from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 p-3 sm:p-4 rounded-lg border border-green-400 transition shadow-lg">
+                    <i class="fas fa-check-double text-2xl sm:text-3xl mb-1 text-white"></i>
+                    <h3 class="text-sm sm:text-base font-semibold">{{ t('41_validations') or '41 Validations' }}</h3>
+                    <p class="text-xs text-gray-200 hidden sm:block">{{ t('complete') or 'Complete' }}</p>
                 </a>
             </div>
         </div>
 
         <!-- Status -->
         <div class="bg-gray-800 p-6 rounded-lg">
-            <h3 class="text-xl font-semibold mb-4">Status da Rede</h3>
+            <h3 class="text-xl font-semibold mb-4">{{ t('network_status_title') or 'Network Status' }}</h3>
             <div class="flex items-center">
                 <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
                 <span class="text-lg">{{ stats.network_status|upper }}</span>

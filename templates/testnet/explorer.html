@@ -30,22 +30,22 @@
 <body class="bg-gray-900 text-white">
     <div class="container mx-auto px-4 py-8">
         <div class="mb-6">
-            <a href="/" class="btn-back">
-Voltar
+            <a href="javascript:history.back()" class="btn-back">
+{{ t('back') or 'Back' }}
             </a>
         </div>
 
-        <h1 class="text-4xl font-bold mb-2">🔍 Explorer</h1>
-        <p class="text-gray-400 mb-8">Explore blocos, transações e estatísticas da rede</p>
+        <h1 class="text-4xl font-bold mb-2">🔍 {{ t('explorer') or 'Explorer' }}</h1>
+        <p class="text-gray-400 mb-8">{{ t('explore_blocks_transactions') or 'Explore blocks, transactions and network statistics' }}</p>
 
         <!-- Stats -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <div class="bg-blue-900 p-4 rounded-lg">
-                <h3 class="text-sm text-gray-400">Total de Blocos</h3>
+                <h3 class="text-sm text-gray-400">{{ t('total_blocks') or 'Total Blocks' }}</h3>
                 <p class="text-2xl font-bold">{{ stats.total_blocks }}</p>
             </div>
             <div class="bg-green-900 p-4 rounded-lg">
-                <h3 class="text-sm text-gray-400">Total de Transações</h3>
+                <h3 class="text-sm text-gray-400">{{ t('total_transactions') or 'Total Transactions' }}</h3>
                 <p class="text-2xl font-bold">{{ stats.total_transactions }}</p>
             </div>
             <div class="bg-purple-900 p-4 rounded-lg">
@@ -53,14 +53,14 @@ Voltar
                 <p class="text-2xl font-bold">{{ stats.tps_24h_avg }}</p>
             </div>
             <div class="bg-yellow-900 p-4 rounded-lg">
-                <h3 class="text-sm text-gray-400">Latência Média</h3>
+                <h3 class="text-sm text-gray-400">{{ t('average_latency') or 'Average Latency' }}</h3>
                 <p class="text-2xl font-bold">{{ stats.latency_avg_ms }}ms</p>
             </div>
         </div>
 
         <!-- Blocks -->
         <div class="mb-8">
-            <h2 class="text-2xl font-semibold mb-4">Blocos Recentes</h2>
+            <h2 class="text-2xl font-semibold mb-4">{{ t('recent_blocks') or 'Recent Blocks' }}</h2>
             <div class="space-y-2">
                 {% for block in blocks %}
                 <div class="bg-gray-800 p-4 rounded-lg">
@@ -81,7 +81,7 @@ Voltar
                     </div>
                     <div class="mt-2">
                         <p class="text-xs text-gray-400">Hash: <span class="font-mono">{{ block.hash[:20] }}...</span></p>
-                        <p class="text-xs text-gray-400">Transações: {{ block.transaction_count }} | Shard: {{ block.shard_id }}</p>
+                        <p class="text-xs text-gray-400">{{ t('transactions') or 'Transactions' }}: {{ block.transaction_count }} | {{ t('shard') or 'Shard' }}: {{ block.shard_id }}</p>
                     </div>
                 </div>
                 {% endfor %}
@@ -90,7 +90,7 @@ Voltar
 
         <!-- Transactions -->
         <div>
-            <h2 class="text-2xl font-semibold mb-4">Transações Recentes</h2>
+            <h2 class="text-2xl font-semibold mb-4">{{ t('recent_transactions') or 'Recent Transactions' }}</h2>
             <div class="space-y-2">
                 {% for tx in transactions %}
                 <div class="bg-gray-800 p-4 rounded-lg">

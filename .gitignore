@@ -76,4 +76,22 @@ htmlcov/
 *.tmp
 *.temp
 *.bak
+*.json.tmp
+faucet_last_requests.json
+gas_cost_analysis_*.json
+
+# Arquivos de teste temporários (manter apenas os essenciais)
+TESTE_*.py
+teste_*.py
+*_teste.py
+testar_*.py
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# CSS compilado - COMENTADO: precisa estar no repositório para funcionar no Render
+# static/css/output.css
 

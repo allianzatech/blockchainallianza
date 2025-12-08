@@ -1,0 +1,19 @@
+{
+  "success": false,
+  "test_id": "sig_validation_1763735638",
+  "test_name": "Validação Universal de Assinaturas",
+  "results": {
+    "chain": "bitcoin",
+    "tx_hash": "33584233ac2b1bb3ec1e998b226b552e89af9f803a999c8d3c019fc150909157",
+    "validation_result": {
+      "valid": false,
+      "tx_hash": "33584233ac2b1bb3ec1e998b226b552e89af9f803a999c8d3c019fc150909157",
+      "chain": "bitcoin",
+      "method": "UTXO/ECDSA secp256k1",
+      "details": "",
+      "error": "Transação Bitcoin não encontrada: 33584233ac2b1bb3ec1e998b226b552e89af9f803a999c8d3c019fc150909157"
+    },
+    "total_time_ms": 835.55
+  },
+  "timestamp": "2025-11-21T14:33:59.679388Z"
+}

@@ -2,113 +2,287 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>📊 QSS API Status - Allianza Testnet</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/testnet-modern.css">
+    <script src="/static/js/testnet-modals.js"></script>
     <style>
-                .btn-back {
-            display: inline-block;
-            padding: 8px 16px;
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
             background: #374151;
             color: white;
             text-decoration: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 14px;
-            transition: background 0.2s;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid #4b5563;
         }
-        
-        
-        
         .btn-back:hover {
             background: #4b5563;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
-.status-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: bold;
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .status-online { background: #10b981; color: white; }
-        .status-offline { background: #ef4444; color: white; }
-        .chain-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            background: #3b82f6;
+        .status-online { 
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            margin: 2px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        .status-offline { 
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+        .chain-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 14px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            margin: 4px;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+            transition: transform 0.2s;
+        }
+        .chain-badge:hover {
+            transform: scale(1.05);
+        }
+        .endpoint-card {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        .endpoint-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            border-color: #4b5563;
+        }
+        .btn-test {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            min-width: 100px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .btn-test:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .btn-test-primary {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+        }
+        .btn-test-primary:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+        }
+        .btn-test-secondary {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            color: white;
+        }
+        .btn-test-secondary:hover {
+            background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+        }
+        .service-card {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        .service-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            h1 {
+                font-size: 1.75rem;
+            }
+            h2 {
+                font-size: 1.5rem;
+            }
+            .btn-test {
+                min-width: 80px;
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+            .endpoint-card {
+                padding: 16px;
+            }
+            .grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .btn-test {
+                flex: 1;
+                min-width: 0;
+            }
+            .flex-wrap {
+                flex-direction: column;
+            }
+            .flex-wrap .btn-test {
+                width: 100%;
+            }
+        }
+        
+        /* Performance: Lazy loading para imagens */
+        img {
+            loading: lazy;
+        }
+        
+        /* Touch-friendly */
+        @media (hover: none) and (pointer: coarse) {
+            button, a, .clickable {
+                -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+                min-height: 44px;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-6xl">
+<body class="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 text-white min-h-screen">
+    <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-6xl">
         <!-- Header -->
         <div class="mb-8">
-            <a href="/" class="btn-back mb-4">
-Voltar
+            <a href="javascript:history.back()" class="btn-back mb-4 inline-flex">
+                <i class="fas fa-arrow-left"></i>
+                <span>Voltar</span>
             </a>
-            <h1 class="text-4xl font-bold mb-2">📊 QSS API Status</h1>
-            <p class="text-gray-400">Status em tempo real do Quantum Security Service</p>
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-2xl">
+                    📊
+                </div>
+                <div>
+                    <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">QSS API Status</h1>
+                    <p class="text-gray-400 text-sm mt-1">Status em tempo real do Quantum Security Service</p>
+                </div>
+            </div>
         </div>
 
         <!-- Status Card -->
-        <div id="statusContainer" class="bg-gray-800 rounded-lg p-6 mb-6">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-2xl font-semibold">Status do Serviço</h2>
+        <div id="statusContainer" class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 mb-6 border border-gray-700 shadow-xl">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold flex items-center gap-3">
+                    <i class="fas fa-server text-blue-400"></i>
+                    {{ t('service_status') or 'Service Status' }}
+                </h2>
                 <span id="statusBadge" class="status-badge status-offline">Carregando...</span>
             </div>
             <div id="statusContent">
-                <p class="text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Carregando informações...</p>
+                <div class="flex items-center justify-center py-8">
+                    <i class="fas fa-spinner fa-spin text-blue-400 text-2xl mr-3"></i>
+                    <p class="text-gray-400">Carregando informações...</p>
+                </div>
             </div>
         </div>
 
         <!-- Endpoints -->
-        <div id="endpointsCard" class="bg-gray-800 rounded-lg p-6 mb-6 hidden">
-            <h2 class="text-2xl font-semibold mb-4">
-                <i class="fas fa-plug text-blue-400 mr-2"></i>
+        <div id="endpointsCard" class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 mb-6 border border-gray-700 shadow-xl hidden">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                <i class="fas fa-plug text-blue-400 text-2xl"></i>
                 Endpoints Disponíveis
             </h2>
             <div id="endpointsList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </div>
 
         <!-- Supported Chains -->
-        <div id="chainsCard" class="bg-gray-800 rounded-lg p-6 mb-6 hidden">
-            <h2 class="text-2xl font-semibold mb-4">
-                <i class="fas fa-link text-green-400 mr-2"></i>
+        <div id="chainsCard" class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 mb-6 border border-gray-700 shadow-xl hidden">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                <i class="fas fa-link text-green-400 text-2xl"></i>
                 Blockchains Suportadas
             </h2>
             <div id="chainsList" class="flex flex-wrap gap-2"></div>
         </div>
 
         <!-- Signature Schemes -->
-        <div id="schemesCard" class="bg-gray-800 rounded-lg p-6 mb-6 hidden">
-            <h2 class="text-2xl font-semibold mb-4">
-                <i class="fas fa-shield-alt text-purple-400 mr-2"></i>
+        <div id="schemesCard" class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 mb-6 border border-gray-700 shadow-xl hidden">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                <i class="fas fa-shield-alt text-purple-400 text-2xl"></i>
                 Algoritmos de Assinatura
             </h2>
             <div id="schemesList" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
         </div>
 
-        <!-- Raw JSON (Collapsible) -->
-        <div class="bg-gray-800 rounded-lg p-6">
-            <button onclick="toggleRawJson()" class="w-full text-left flex items-center justify-between mb-4">
-                <h2 class="text-2xl font-semibold">
-                    <i class="fas fa-code text-yellow-400 mr-2"></i>
-                    JSON Completo
-                </h2>
-                <i id="jsonToggleIcon" class="fas fa-chevron-down"></i>
+        <!-- GitHub Link -->
+        <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 mb-6 border border-gray-700 shadow-xl">
+            <h2 class="text-2xl font-bold mb-4 flex items-center gap-3">
+                <i class="fab fa-github text-white text-2xl"></i>
+                Código Fonte
+            </h2>
+            <div class="bg-gray-700/50 rounded-lg p-5 border border-gray-600">
+                <p class="text-gray-300 mb-4 leading-relaxed">Acesse o repositório público no GitHub para ver exemplos, SDK e documentação completa:</p>
+                <a href="https://github.com/dieisonmaach-lang/allianzablockchainpublic" target="_blank" class="inline-flex items-center gap-3 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-500 hover:to-gray-600 text-white px-6 py-3 rounded-lg transition-all shadow-lg hover:shadow-xl font-semibold">
+                    <i class="fab fa-github text-xl"></i>
+                    <span>Ver no GitHub</span>
+                    <i class="fas fa-external-link-alt text-sm"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Raw JSON (Collapsible) - Melhorado -->
+        <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-gray-700 shadow-xl">
+            <button onclick="toggleRawJson()" class="w-full text-left flex items-center justify-between mb-4 p-4 bg-gray-700/50 hover:bg-gray-700 rounded-lg transition-all group border border-gray-600">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-code text-yellow-400 text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">
+                            Dados Técnicos (JSON)
+                        </h2>
+                        <p class="text-sm text-gray-400 mt-1">Dados completos da API em formato JSON para desenvolvedores</p>
+                    </div>
+                </div>
+                <i id="jsonToggleIcon" class="fas fa-chevron-down text-gray-400 group-hover:text-yellow-400 transition text-xl"></i>
             </button>
             <div id="rawJsonContainer" class="hidden">
-                <pre id="rawJson" class="bg-gray-900 p-4 rounded text-sm overflow-x-auto"></pre>
-                <div class="mt-4 flex gap-2">
-                    <button onclick="copyRawJson()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm font-semibold transition">
-                        <i class="fas fa-copy mr-2"></i>Copiar JSON
+                <div class="bg-gray-900/80 rounded-lg p-5 border border-gray-700 max-h-96 overflow-y-auto">
+                    <pre id="rawJson" class="text-sm text-gray-300 overflow-x-auto whitespace-pre-wrap break-words font-mono"></pre>
+                </div>
+                <div class="mt-4 flex gap-3 justify-end">
+                    <button onclick="copyRawJson()" class="btn-test btn-test-primary">
+                        <i class="fas fa-copy"></i>
+                        <span>Copiar JSON</span>
                     </button>
-                    <button onclick="downloadRawJson()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm font-semibold transition">
-                        <i class="fas fa-download mr-2"></i>Baixar JSON
+                    <button onclick="downloadRawJson()" class="btn-test btn-test-secondary">
+                        <i class="fas fa-download"></i>
+                        <span>Baixar JSON</span>
                     </button>
                 </div>
             </div>
@@ -120,14 +294,46 @@ Voltar
 
         async function loadStatus() {
             try {
-                const response = await fetch('/api/qss/status');
+                const response = await fetch('/api/qss/status', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 statusData = await response.json();
                 displayStatus(statusData);
             } catch (error) {
                 console.error('Erro ao carregar status:', error);
-                document.getElementById('statusBadge').className = 'status-badge status-offline';
-                document.getElementById('statusBadge').textContent = 'Erro';
-                document.getElementById('statusContent').innerHTML = '<p class="text-red-400">Erro ao carregar status da API</p>';
+                
+                const statusBadge = document.getElementById('statusBadge');
+                const statusContent = document.getElementById('statusContent');
+                
+                if (statusBadge) {
+                    statusBadge.className = 'status-badge status-offline';
+                    statusBadge.textContent = '❌ Erro';
+                }
+                
+                if (statusContent) {
+                    let errorMessage = 'Erro ao carregar status da API';
+                    if (error.message.includes('Failed to fetch')) {
+                        errorMessage = 'Erro de conexão: Verifique sua conexão com a internet';
+                    }
+                    
+                    statusContent.innerHTML = `
+                        <div class="bg-red-900/30 border border-red-600 rounded-lg p-4">
+                            <p class="text-red-400 font-semibold mb-2">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>${errorMessage}
+                            </p>
+                            <p class="text-gray-400 text-sm">Tentando novamente em alguns segundos...</p>
+                        </div>
+                    `;
+                }
             }
         }
 
@@ -136,32 +342,35 @@ Voltar
             const statusBadge = document.getElementById('statusBadge');
             if (data.success && data.status === 'operational') {
                 statusBadge.className = 'status-badge status-online';
-                statusBadge.textContent = '✅ Operacional';
+                statusBadge.innerHTML = '<i class="fas fa-check-circle"></i> Operacional';
             } else {
                 statusBadge.className = 'status-badge status-offline';
-                statusBadge.textContent = '❌ Indisponível';
+                statusBadge.innerHTML = '<i class="fas fa-times-circle"></i> Indisponível';
             }
 
             // Status Content
             const statusContent = document.getElementById('statusContent');
             statusContent.innerHTML = `
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-gray-700 rounded-lg p-4">
-                        <p class="text-gray-400 text-sm mb-2">Quantum Security</p>
-                        <p class="text-xl font-semibold ${data.quantum_security_available ? 'text-green-400' : 'text-red-400'}">
-                            ${data.quantum_security_available ? '✅ Disponível' : '❌ Indisponível'}
+                    <div class="service-card">
+                        <p class="text-gray-400 text-sm mb-2 font-medium">Quantum Security</p>
+                        <p class="text-2xl font-bold ${data.quantum_security_available ? 'text-green-400' : 'text-red-400'} flex items-center gap-2">
+                            ${data.quantum_security_available ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-times-circle"></i>'}
+                            <span>${data.quantum_security_available ? 'Disponível' : 'Indisponível'}</span>
                         </p>
                     </div>
-                    <div class="bg-gray-700 rounded-lg p-4">
-                        <p class="text-gray-400 text-sm mb-2">ALZ-NIEV</p>
-                        <p class="text-xl font-semibold ${data.alz_niev_available ? 'text-green-400' : 'text-red-400'}">
-                            ${data.alz_niev_available ? '✅ Disponível' : '❌ Indisponível'}
+                    <div class="service-card">
+                        <p class="text-gray-400 text-sm mb-2 font-medium">ALZ-NIEV</p>
+                        <p class="text-2xl font-bold ${data.alz_niev_available ? 'text-green-400' : 'text-red-400'} flex items-center gap-2">
+                            ${data.alz_niev_available ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-times-circle"></i>'}
+                            <span>${data.alz_niev_available ? 'Disponível' : 'Indisponível'}</span>
                         </p>
                     </div>
-                    <div class="bg-gray-700 rounded-lg p-4">
-                        <p class="text-gray-400 text-sm mb-2">liboqs-python</p>
-                        <p class="text-xl font-semibold ${data.liboqs_available ? 'text-green-400' : 'text-yellow-400'}">
-                            ${data.liboqs_available ? '✅ Disponível' : '⚠️ Simulado'}
+                    <div class="service-card">
+                        <p class="text-gray-400 text-sm mb-2 font-medium">liboqs-python</p>
+                        <p class="text-2xl font-bold ${data.liboqs_available ? 'text-green-400' : 'text-yellow-400'} flex items-center gap-2">
+                            ${data.liboqs_available ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-exclamation-triangle"></i>'}
+                            <span>${data.liboqs_available ? 'Disponível' : 'Simulado'}</span>
                         </p>
                     </div>
                 </div>
@@ -173,13 +382,30 @@ Voltar
                 endpointsList.innerHTML = '';
                 for (const [name, path] of Object.entries(data.endpoints)) {
                     const endpointCard = document.createElement('div');
-                    endpointCard.className = 'bg-gray-700 rounded-lg p-4';
+                    endpointCard.className = 'endpoint-card';
+                    const fullUrl = path.startsWith('http') ? path : `https://testnet.allianza.tech${path}`;
+                    const endpointInfo = getEndpointInfo(name, path);
+                    
                     endpointCard.innerHTML = `
-                        <p class="text-gray-400 text-sm mb-1">${name.replace('_', ' ').toUpperCase()}</p>
-                        <code class="text-blue-400 text-sm">${path}</code>
-                        <a href="${path}" target="_blank" class="text-xs text-gray-400 hover:text-blue-400 mt-2 block">
-                            <i class="fas fa-external-link-alt mr-1"></i>Abrir endpoint
-                        </a>
+                        <div class="mb-3">
+                            <p class="text-gray-300 text-sm font-bold mb-2 uppercase tracking-wide">${name.replace('_', ' ')}</p>
+                            <code class="text-blue-400 text-xs break-all bg-gray-900/50 px-2 py-1 rounded border border-gray-700">${path}</code>
+                        </div>
+                        ${endpointInfo.description ? `<p class="text-gray-400 text-xs mb-4 leading-relaxed">${endpointInfo.description}</p>` : ''}
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="testEndpoint('${name}', '${path}')" class="btn-test btn-test-primary flex-1 min-w-[100px]">
+                                <i class="fas fa-play"></i>
+                                <span>Testar</span>
+                            </button>
+                            <a href="${fullUrl}" target="_blank" class="btn-test btn-test-secondary flex-1 min-w-[100px] text-center">
+                                <i class="fas fa-external-link-alt"></i>
+                                <span>Abrir</span>
+                            </a>
+                            <a href="https://github.com/dieisonmaach-lang/allianzablockchainpublic" target="_blank" class="btn-test btn-test-secondary flex-1 min-w-[100px] text-center">
+                                <i class="fab fa-github"></i>
+                                <span>GitHub</span>
+                            </a>
+                        </div>
                     `;
                     endpointsList.appendChild(endpointCard);
                 }
@@ -205,13 +431,17 @@ Voltar
                 schemesList.innerHTML = '';
                 data.signature_schemes.forEach(scheme => {
                     const schemeCard = document.createElement('div');
-                    schemeCard.className = 'bg-gray-700 rounded-lg p-4';
+                    schemeCard.className = 'service-card';
                     schemeCard.innerHTML = `
-                        <div class="flex items-center gap-2">
-                            <i class="fas fa-shield-alt text-purple-400"></i>
-                            <p class="font-semibold">${scheme}</p>
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-shield-alt text-purple-400"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-white">${scheme}</p>
+                                <p class="text-xs text-gray-400 mt-1">Algoritmo PQC</p>
+                            </div>
                         </div>
-                        <p class="text-xs text-gray-400 mt-2">Algoritmo PQC</p>
                     `;
                     schemesList.appendChild(schemeCard);
                 });
@@ -229,6 +459,9 @@ Voltar
                 container.classList.remove('hidden');
                 icon.classList.remove('fa-chevron-down');
                 icon.classList.add('fa-chevron-up');
+                setTimeout(() => {
+                    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
             } else {
                 container.classList.add('hidden');
                 icon.classList.remove('fa-chevron-up');
@@ -239,7 +472,9 @@ Voltar
         function copyRawJson() {
             const json = document.getElementById('rawJson').textContent;
             navigator.clipboard.writeText(json).then(() => {
-                alert('JSON copiado para a área de transferência!');
+                alert('✅ JSON copiado para a área de transferência!');
+            }).catch(() => {
+                alert('❌ Erro ao copiar JSON');
             });
         }
 
@@ -254,12 +489,192 @@ Voltar
             URL.revokeObjectURL(url);
         }
 
-        // Carregar status ao carregar a página
+        // Informações dos endpoints
+        function getEndpointInfo(name, path) {
+            const info = {
+                'generate_proof': {
+                    description: 'Gera prova quântica para uma transação blockchain'
+                },
+                'verify_proof': {
+                    description: 'Verifica a validade de uma prova quântica'
+                },
+                'anchor_proof': {
+                    description: 'Gera instruções para ancorar prova quântica em blockchain destino'
+                },
+                'status': {
+                    description: 'Retorna o status do serviço QSS'
+                }
+            };
+            return info[name] || {};
+        }
+
+        // Testar endpoint
+        async function testEndpoint(name, path) {
+            const fullUrl = `https://testnet.allianza.tech${path}`;
+            
+            // Mostrar loading
+            const loadingModal = document.createElement('div');
+            loadingModal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
+            loadingModal.innerHTML = `
+                <div class="bg-gray-800 rounded-xl p-8 shadow-2xl border border-gray-700">
+                    <div class="flex items-center gap-4">
+                        <i class="fas fa-spinner fa-spin text-blue-400 text-3xl"></i>
+                        <div>
+                            <p class="text-white text-lg font-semibold">Testando ${name.replace('_', ' ').toUpperCase()}...</p>
+                            <p class="text-gray-400 text-sm mt-1">Aguarde um momento</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(loadingModal);
+            
+            try {
+                if (name === 'status') {
+                    const response = await fetch(fullUrl);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    const data = await response.json();
+                    loadingModal.remove();
+                    showTestResult(name, data, data.success !== false);
+                } else if (name === 'generate_proof') {
+                    const testData = {
+                        chain: 'bitcoin',
+                        tx_hash: '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('')
+                    };
+                    const response = await fetch(fullUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(testData)
+                    });
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`HTTP ${response.status}: ${errorText}`);
+                    }
+                    const data = await response.json();
+                    loadingModal.remove();
+                    showTestResult(name, data, data.success !== false);
+                } else if (name === 'verify_proof') {
+                    const testTxHash = '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('');
+                    // Função helper para codificar Unicode em base64 de forma segura
+                    const safeBase64Encode = (str) => {
+                        try {
+                            return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+                                return String.fromCharCode(parseInt(p1, 16));
+                            }));
+                        } catch (e) {
+                            return btoa(unescape(encodeURIComponent(str)));
+                        }
+                    };
+                    const testSignature = safeBase64Encode('test_signature_' + Date.now());
+                    const testProofHash = '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('');
+                    
+                    const testProof = {
+                        asset_chain: 'bitcoin',
+                        asset_tx: testTxHash,
+                        quantum_signature: testSignature,
+                        quantum_signature_scheme: 'ML-DSA',
+                        proof_hash: testProofHash,
+                        timestamp: Math.floor(Date.now() / 1000),
+                        merkle_root: '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('')
+                    };
+                    
+                    const response = await fetch(fullUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ quantum_proof: testProof })
+                    });
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`HTTP ${response.status}: ${errorText}`);
+                    }
+                    const data = await response.json();
+                    loadingModal.remove();
+                    // Para verify_proof, considerar sucesso se a requisição foi processada (success: true)
+                    // mesmo que valid seja false (isso é uma validação, não um erro)
+                    showTestResult(name, data, data.success !== false);
+                } else if (name === 'anchor_proof') {
+                    const testProof = {
+                        asset_chain: 'bitcoin',
+                        asset_tx: '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join(''),
+                        proof_hash: '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join(''),
+                        timestamp: Math.floor(Date.now() / 1000)
+                    };
+                    
+                    const response = await fetch(fullUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            quantum_proof: testProof,
+                            target_chain: 'bitcoin',
+                            target_address: 'tb1qtest123456789'
+                        })
+                    });
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`HTTP ${response.status}: ${errorText}`);
+                    }
+                    const data = await response.json();
+                    loadingModal.remove();
+                    showTestResult(name, data, data.success !== false);
+                } else {
+                    loadingModal.remove();
+                    showTestResult(name, { error: 'Endpoint não suportado para teste automático' }, false);
+                }
+            } catch (error) {
+                loadingModal.remove();
+                showTestResult(name, { 
+                    error: error.message,
+                    details: error.stack || 'Erro ao testar endpoint'
+                }, false);
+            }
+        }
+
+        // Mostrar resultado do teste (usando sistema moderno)
+        function showTestResult(endpointName, data, success) {
+            // Determinar tipo de resultado
+            const resultType = determineResultType(data);
+            const description = createResultDescription(data, resultType);
+            
+            // Criar título
+            const title = `Teste: ${endpointName.replace('_', ' ').toUpperCase()}`;
+            
+            // Criar modal moderno
+            createModernModal(title, data, resultType, {
+                statusTitle: description.statusTitle,
+                description: description.description
+            });
+        }
+
+        // Carregar status ao carregar a página (com debounce)
+        let loadTimeout;
+        function debouncedLoadStatus() {
+            clearTimeout(loadTimeout);
+            loadTimeout = setTimeout(loadStatus, 100);
+        }
+        
+        // Carregar imediatamente
         loadStatus();
 
-        // Auto-refresh a cada 30 segundos
-        setInterval(loadStatus, 30000);
+        // Auto-refresh a cada 30 segundos (otimizado)
+        let refreshInterval = setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                loadStatus();
+            }
+        }, 30000);
+        
+        // Pausar refresh quando a aba está oculta
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                clearInterval(refreshInterval);
+            } else {
+                refreshInterval = setInterval(() => {
+                    if (document.visibilityState === 'visible') {
+                        loadStatus();
+                    }
+                }, 30000);
+            }
+        });
     </script>
 </body>
 </html>
-

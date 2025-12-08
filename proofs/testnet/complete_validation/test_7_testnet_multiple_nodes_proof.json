@@ -1,0 +1,127 @@
+{
+  "test_id": "test_7_testnet_multiple_nodes",
+  "name": "Testnet com Múltiplos Nós",
+  "start_time": "2025-11-26T00:45:31.521614",
+  "num_nodes": 3,
+  "nodes": {
+    "node_0": {
+      "node_id": "node_0",
+      "address": "node_node_0",
+      "status": "online",
+      "block_height": 1,
+      "peers_count": 2,
+      "synced": false,
+      "last_sync_time": 1764128731.5256,
+      "validator": false,
+      "stake": 0.0
+    },
+    "node_1": {
+      "node_id": "node_1",
+      "address": "node_node_1",
+      "status": "online",
+      "block_height": 1,
+      "peers_count": 2,
+      "synced": false,
+      "last_sync_time": 1764128731.5256014,
+      "validator": false,
+      "stake": 0.0
+    },
+    "node_2": {
+      "node_id": "node_2",
+      "address": "node_node_2",
+      "status": "online",
+      "block_height": 1,
+      "peers_count": 2,
+      "synced": false,
+      "last_sync_time": 1764128731.5256019,
+      "validator": false,
+      "stake": 0.0
+    }
+  },
+  "sync_result": {
+    "success": true,
+    "all_synced": true,
+    "sync_results": [
+      {
+        "node_id": "node_0",
+        "result": {
+          "success": true,
+          "synced": true,
+          "height": 0,
+          "already_synced": true
+        }
+      },
+      {
+        "node_id": "node_1",
+        "result": {
+          "success": true,
+          "synced": true,
+          "height": 0,
+          "already_synced": true
+        }
+      },
+      {
+        "node_id": "node_2",
+        "result": {
+          "success": true,
+          "synced": true,
+          "height": 0,
+          "already_synced": true
+        }
+      }
+    ],
+    "latest_block_height": 0
+  },
+  "consensus_result": {
+    "success": true,
+    "consensus_data": {
+      "round_id": "consensus_1764128731",
+      "block_data": {
+        "block_number": 1,
+        "transactions": [
+          "tx1",
+          "tx2",
+          "tx3"
+        ],
+        "timestamp": 1764128731.5253854
+      },
+      "votes": {
+        "node_0": {
+          "node_id": "node_0",
+          "vote": "approve",
+          "block_hash": "f0342e3083ea3f14f9b9b43a57ca5794d172b567595145386be5750326d214d1",
+          "timestamp": 1764128731.5255165
+        },
+        "node_1": {
+          "node_id": "node_1",
+          "vote": "approve",
+          "block_hash": "f0342e3083ea3f14f9b9b43a57ca5794d172b567595145386be5750326d214d1",
+          "timestamp": 1764128731.5255425
+        },
+        "node_2": {
+          "node_id": "node_2",
+          "vote": "approve",
+          "block_hash": "f0342e3083ea3f14f9b9b43a57ca5794d172b567595145386be5750326d214d1",
+          "timestamp": 1764128731.5255582
+        }
+      },
+      "approve_count": 3,
+      "total_nodes": 3,
+      "threshold": 3,
+      "consensus_reached": true,
+      "timestamp": "2025-11-26T00:45:31.525573"
+    },
+    "blockchain_state": {
+      "latest_block_height": 1,
+      "latest_block_hash": "f0342e3083ea3f14f9b9b43a57ca5794d172b567595145386be5750326d214d1",
+      "consensus_reached": true
+    }
+  },
+  "blockchain_state": {
+    "latest_block_height": 1,
+    "latest_block_hash": "f0342e3083ea3f14f9b9b43a57ca5794d172b567595145386be5750326d214d1",
+    "consensus_reached": true
+  },
+  "success": true,
+  "duration": 0.004264116287231445
+}
