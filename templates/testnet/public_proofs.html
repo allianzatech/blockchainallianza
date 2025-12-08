@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="{{ lang or 'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Public Cross-Chain Proofs - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .proof-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.2s;
+        }
+        .proof-card:hover {
+            border-color: #4b5563;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="/" class="text-blue-400 hover:text-blue-300 mb-4 inline-flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <h1 class="text-4xl font-bold mb-2">
+                <i class="fas fa-list text-blue-400"></i> Public Cross-Chain Proofs
+            </h1>
+            <p class="text-gray-400">All cross-chain transfers with UChainID and ZK Proofs</p>
+            <div class="mt-4 bg-blue-900/20 border border-blue-500 rounded-lg p-4">
+                <p class="text-sm">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>Total:</strong> {{ total }} proofs | 
+                    <strong>Showing:</strong> {{ proofs|length }} proofs
+                </p>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        {% if error %}
+        <div class="bg-red-900/20 border border-red-500 rounded-lg p-4 mb-6">
+            <p class="text-red-400"><i class="fas fa-exclamation-triangle"></i> {{ error }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Proofs List -->
+        {% if proofs %}
+        <div class="space-y-4">
+            {% for proof in proofs %}
+            <div class="proof-card">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-3">
+                            <h3 class="text-lg font-semibold text-blue-400">
+                                <a href="/decode/{{ proof.uchain_id }}" class="hover:underline">
+                                    {{ proof.uchain_id }}
+                                </a>
+                            </h3>
+                            {% if proof.has_zk_proof %}
+                            <span class="bg-green-900/50 text-green-400 px-2 py-1 rounded text-xs">
+                                <i class="fas fa-shield-alt"></i> ZK Proof
+                            </span>
+                            {% endif %}
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div>
+                                <label class="text-gray-400">Source</label>
+                                <p class="font-semibold capitalize">{{ proof.source_chain }}</p>
+                            </div>
+                            <div>
+                                <label class="text-gray-400">Target</label>
+                                <p class="font-semibold capitalize">{{ proof.target_chain }}</p>
+                            </div>
+                            <div>
+                                <label class="text-gray-400">Amount</label>
+                                <p class="font-semibold">{{ proof.amount }}</p>
+                            </div>
+                            <div>
+                                <label class="text-gray-400">Timestamp</label>
+                                <p class="text-xs text-gray-400">
+                                    {{ proof.timestamp | int | timestamp_to_date if proof.timestamp else 'N/A' }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <a href="/decode/{{ proof.uchain_id }}" 
+                           class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition text-sm">
+                            <i class="fas fa-code"></i> Decode
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-gray-800 rounded-lg p-8 text-center">
+            <i class="fas fa-inbox text-gray-600 text-6xl mb-4"></i>
+            <p class="text-gray-400">No proofs found yet.</p>
+            <a href="/interoperability" class="mt-4 inline-block bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg transition">
+                <i class="fas fa-rocket"></i> Create First Transfer
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="mt-8 flex gap-4">
+            <a href="/zk-verifier" class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg transition">
+                <i class="fas fa-shield-alt"></i> Verify ZK Proof
+            </a>
+            <a href="/interoperability" class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg transition">
+                <i class="fas fa-project-diagram"></i> Interoperability
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Auto-refresh every 30 seconds
+        setTimeout(() => {
+            window.location.reload();
+        }, 30000);
+    </script>
+</body>
+</html>

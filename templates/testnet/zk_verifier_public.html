@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="{{ lang or 'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZK Proof Verifier - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .input-field {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            font-family: monospace;
+            font-size: 12px;
+            width: 100%;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #10b981;
+        }
+        .result-box {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .result-valid {
+            border-color: #10b981;
+            background: #10b981/10;
+        }
+        .result-invalid {
+            border-color: #f87171;
+            background: #f87171/10;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="/" class="text-blue-400 hover:text-blue-300 mb-4 inline-flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <h1 class="text-4xl font-bold mb-2">
+                <i class="fas fa-shield-alt text-green-400"></i> ZK Proof Verifier
+            </h1>
+            <p class="text-gray-400">Verify Zero-Knowledge proofs from cross-chain transfers</p>
+        </div>
+
+        <!-- Form -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Enter Proof Data</h2>
+            <form id="verifyForm" onsubmit="verifyProof(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Proof (hex string)</label>
+                    <textarea id="proof" class="input-field" rows="3" 
+                              placeholder="Paste the ZK proof hex string here..."></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Verification Key (hex string)</label>
+                    <textarea id="verificationKey" class="input-field" rows="3" 
+                              placeholder="Paste the verification key hex string here..."></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Public Inputs / State Hash (optional)</label>
+                    <input type="text" id="publicInputs" class="input-field" 
+                           placeholder="State transition hash (optional, for system lookup)">
+                </div>
+                <button type="submit" class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg transition w-full">
+                    <i class="fas fa-check-circle"></i> Verify Proof
+                </button>
+            </form>
+        </div>
+
+        <!-- Quick Load from System -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Quick Load from System</h2>
+            <p class="text-sm text-gray-400 mb-4">Enter a UChainID to load its ZK Proof automatically:</p>
+            <div class="flex gap-2">
+                <input type="text" id="quickUChainID" class="input-field flex-1" 
+                       placeholder="UCHAIN-...">
+                <button onclick="loadFromUChainID()" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg transition">
+                    <i class="fas fa-search"></i> Load
+                </button>
+            </div>
+        </div>
+
+        <!-- Result -->
+        <div id="result" class="hidden"></div>
+
+        <!-- Info -->
+        <div class="bg-blue-900/20 border border-blue-500 rounded-lg p-4">
+            <p class="text-sm">
+                <i class="fas fa-info-circle"></i>
+                <strong>How to use:</strong> Paste the proof, verification key, and optionally the state hash from a cross-chain transfer. 
+                The verifier will check if the proof is valid. You can also load proof data automatically by entering a UChainID.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        async function verifyProof(event) {
+            event.preventDefault();
+            
+            const proof = document.getElementById('proof').value.trim();
+            const verificationKey = document.getElementById('verificationKey').value.trim();
+            const publicInputs = document.getElementById('publicInputs').value.trim();
+            
+            if (!proof || !verificationKey) {
+                alert('Please enter both proof and verification key');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<div class="result-box"><p class="text-blue-400"><i class="fas fa-spinner fa-spin"></i> Verifying...</p></div>';
+            
+            try {
+                const response = await fetch('/zk-verifier', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({proof, verification_key: verificationKey, public_inputs: publicInputs})
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.valid) {
+                    resultDiv.innerHTML = `
+                        <div class="result-box result-valid">
+                            <h3 class="text-xl font-semibold text-green-400 mb-4">
+                                <i class="fas fa-check-circle"></i> ${data.message || 'Proof is VALID'}
+                            </h3>
+                            ${data.details ? `
+                                <div class="grid grid-cols-2 gap-4 text-sm">
+                                    <div><label class="text-gray-400">Source Chain:</label> <p>${data.details.source_chain}</p></div>
+                                    <div><label class="text-gray-400">Target Chain:</label> <p>${data.details.target_chain}</p></div>
+                                    <div><label class="text-gray-400">Created At:</label> <p>${data.details.created_at}</p></div>
+                                    <div><label class="text-gray-400">State Hash:</label> <p class="font-mono text-xs break-all">${data.details.state_transition_hash}</p></div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result-box result-invalid">
+                            <h3 class="text-xl font-semibold text-red-400 mb-4">
+                                <i class="fas fa-times-circle"></i> ${data.message || 'Proof is INVALID'}
+                            </h3>
+                            ${data.error ? `<p class="text-red-300">${data.error}</p>` : ''}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result-box result-invalid">
+                        <h3 class="text-xl font-semibold text-red-400 mb-4">
+                            <i class="fas fa-exclamation-triangle"></i> Error
+                        </h3>
+                        <p class="text-red-300">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function loadFromUChainID() {
+            const uchainId = document.getElementById('quickUChainID').value.trim();
+            if (!uchainId) {
+                alert('Please enter a UChainID');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/cross-chain/proof/${uchainId}`);
+                const data = await response.json();
+                
+                if (data.success && data.zk_proof) {
+                    document.getElementById('proof').value = data.zk_proof.proof || '';
+                    document.getElementById('verificationKey').value = data.zk_proof.verification_key || '';
+                    document.getElementById('publicInputs').value = data.zk_proof.state_transition_hash || '';
+                    alert('Proof data loaded successfully! Click "Verify Proof" to verify.');
+                } else {
+                    alert('UChainID not found or no ZK Proof available');
+                }
+            } catch (error) {
+                alert('Error loading proof: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

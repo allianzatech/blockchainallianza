@@ -28,6 +28,31 @@
             }
         }
     </style>
+    <script>
+        // Load interoperability stats
+        async function loadInteropStats() {
+            try {
+                const response = await fetch('/api/cross-chain/status');
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('state-commitments').textContent = data.state_commitments || 0;
+                    document.getElementById('zk-proofs').textContent = data.zk_proofs || 0;
+                    document.getElementById('applied-states').textContent = data.applied_states || 0;
+                    document.getElementById('uchain-ids').textContent = data.uchain_ids || 0;
+                }
+            } catch (error) {
+                console.error('Error loading interop stats:', error);
+            }
+        }
+        // Load on page load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadInteropStats);
+        } else {
+            loadInteropStats();
+        }
+        // Refresh every 30 seconds
+        setInterval(loadInteropStats, 30000);
+    </script>
 </head>
 <body class="bg-gray-900 text-white">
     <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
@@ -75,6 +100,190 @@
             <div class="bg-yellow-900 p-6 rounded-lg">
                 <h3 class="text-sm text-gray-400 mb-1">{{ t('avg_latency') or 'Average Latency' }}</h3>
                 <p class="text-3xl font-bold">{{ stats.latency_avg_ms }}ms</p>
+            </div>
+        </div>
+
+        <!-- Bridge-Free Interoperability Live Dashboard -->
+        <div class="bg-gradient-to-br from-cyan-900 to-blue-900 p-6 rounded-lg mb-6 sm:mb-8 border border-cyan-500">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-semibold">
+                    <i class="fas fa-project-diagram text-cyan-400"></i> 
+                    {{ t('bridge_free_interoperability') or 'Bridge-Free Interoperability' }}
+                </h2>
+                <a href="/interoperability" class="text-sm text-cyan-300 hover:text-cyan-200">
+                    {{ t('view_details') or 'View Details' }} <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            <div id="interopStats" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-black/20 rounded-lg p-4">
+                    <h3 class="text-xs text-gray-400 mb-1">{{ t('state_commitments') or 'State Commitments' }}</h3>
+                    <p class="text-2xl font-bold" id="statCommitments">-</p>
+                </div>
+                <div class="bg-black/20 rounded-lg p-4">
+                    <h3 class="text-xs text-gray-400 mb-1">{{ t('zk_proofs') or 'ZK Proofs' }}</h3>
+                    <p class="text-2xl font-bold" id="statZKProofs">-</p>
+                </div>
+                <div class="bg-black/20 rounded-lg p-4">
+                    <h3 class="text-xs text-gray-400 mb-1">{{ t('applied_states') or 'Applied States' }}</h3>
+                    <p class="text-2xl font-bold" id="statAppliedStates">-</p>
+                </div>
+                <div class="bg-black/20 rounded-lg p-4">
+                    <h3 class="text-xs text-gray-400 mb-1">{{ t('uchain_ids') or 'UChainIDs' }}</h3>
+                    <p class="text-2xl font-bold" id="statUChainIDs">-</p>
+                </div>
+            </div>
+            <div class="mt-4 flex gap-2 text-xs">
+                <a href="/cross-chain-proofs" class="text-cyan-300 hover:text-cyan-200">
+                    <i class="fas fa-list"></i> {{ t('view_all_proofs') or 'View All Proofs' }}
+                </a>
+                <span class="text-gray-500">|</span>
+                <a href="/zk-verifier" class="text-cyan-300 hover:text-cyan-200">
+                    <i class="fas fa-shield-alt"></i> {{ t('verify_zk_proof') or 'Verify ZK Proof' }}
+                </a>
+            </div>
+        </div>
+
+        <!-- Bridge-Free Interoperability Live Dashboard -->
+        <div class="bg-gradient-to-br from-cyan-900/30 to-blue-900/30 border border-cyan-500 rounded-lg p-6 mb-6 sm:mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-2xl font-bold mb-1">🌉 Bridge-Free Interoperability</h2>
+                    <p class="text-sm text-gray-400">Live system status - World's first bridge-free cross-chain</p>
+                </div>
+                <div class="text-xs text-gray-400" id="interopLastUpdate">Loading...</div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="interopStats">
+                <div class="bg-gray-800/50 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-cyan-400" id="statCommitments">-</div>
+                    <div class="text-xs text-gray-400 mt-1">State Commitments</div>
+                </div>
+                <div class="bg-gray-800/50 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-purple-400" id="statProofs">-</div>
+                    <div class="text-xs text-gray-400 mt-1">ZK Proofs</div>
+                </div>
+                <div class="bg-gray-800/50 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-green-400" id="statApplied">-</div>
+                    <div class="text-xs text-gray-400 mt-1">Applied States</div>
+                </div>
+                <div class="bg-gray-800/50 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-yellow-400" id="statUChainIDs">-</div>
+                    <div class="text-xs text-gray-400 mt-1">UChainIDs</div>
+                </div>
+            </div>
+            <div class="mt-4 flex gap-2">
+                <a href="/interoperability" class="bg-cyan-600 hover:bg-cyan-700 px-4 py-2 rounded text-sm">
+                    <i class="fas fa-exchange-alt"></i> Interoperability
+                </a>
+                <a href="/cross-chain-proofs" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded text-sm">
+                    <i class="fas fa-list"></i> View All Proofs
+                </a>
+            </div>
+        </div>
+
+        <script>
+            // Bridge-Free Interoperability Live Dashboard
+            async function updateInteropStats() {
+                try {
+                    const response = await fetch('/api/cross-chain/status');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        document.getElementById('statCommitments').textContent = data.state_commitments || 0;
+                        document.getElementById('statProofs').textContent = data.zk_proofs || 0;
+                        document.getElementById('statApplied').textContent = data.applied_states || 0;
+                        document.getElementById('statUChainIDs').textContent = data.uchain_ids || 0;
+                        
+                        const now = new Date();
+                        document.getElementById('interopLastUpdate').textContent = 
+                            `Updated: ${now.toLocaleTimeString()}`;
+                    }
+                } catch (error) {
+                    console.error('Error updating interop stats:', error);
+                }
+            }
+            
+            // Update immediately and every 10 seconds
+            updateInteropStats();
+            setInterval(updateInteropStats, 10000);
+        </script>
+
+        <!-- Interoperability Live Dashboard -->
+        <div class="bg-gradient-to-br from-cyan-900 to-blue-900 p-6 rounded-lg mb-6 sm:mb-8 border border-cyan-500">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-project-diagram text-3xl text-cyan-400"></i>
+                    <div>
+                        <h2 class="text-2xl font-semibold">🌉 Bridge-Free Interoperability</h2>
+                        <p class="text-sm text-gray-300">Live system status</p>
+                    </div>
+                </div>
+                <a href="/interoperability" class="bg-cyan-600 hover:bg-cyan-700 px-4 py-2 rounded-lg text-sm">
+                    <i class="fas fa-exchange-alt"></i> Open
+                </a>
+            </div>
+            <div id="interopStatus" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-black/20 rounded-lg p-4">
+                    <p class="text-xs text-gray-400 mb-1">State Commitments</p>
+                    <p class="text-2xl font-bold" id="stateCommitments">-</p>
+                </div>
+                <div class="bg-black/20 rounded-lg p-4">
+                    <p class="text-xs text-gray-400 mb-1">ZK Proofs</p>
+                    <p class="text-2xl font-bold" id="zkProofs">-</p>
+                </div>
+                <div class="bg-black/20 rounded-lg p-4">
+                    <p class="text-xs text-gray-400 mb-1">Applied States</p>
+                    <p class="text-2xl font-bold" id="appliedStates">-</p>
+                </div>
+                <div class="bg-black/20 rounded-lg p-4">
+                    <p class="text-xs text-gray-400 mb-1">UChainIDs</p>
+                    <p class="text-2xl font-bold" id="uchainIds">-</p>
+                </div>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-2 text-xs">
+                <a href="/cross-chain-proofs" class="text-cyan-300 hover:text-cyan-200">📊 All Proofs</a>
+                <span class="text-gray-500">•</span>
+                <a href="/zk-verifier" class="text-cyan-300 hover:text-cyan-200">🔐 ZK Verifier</a>
+                <span class="text-gray-500">•</span>
+                <a href="/api/cross-chain/status" class="text-cyan-300 hover:text-cyan-200">📡 API Status</a>
+            </div>
+        </div>
+
+        <!-- Bridge-Free Interoperability Live Dashboard -->
+        <div class="bg-gradient-to-br from-cyan-900 to-blue-900 rounded-lg p-6 mb-6 sm:mb-8 border border-cyan-500">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-2xl font-bold mb-1">🌉 Bridge-Free Interoperability</h2>
+                    <p class="text-sm text-gray-300">Live system status - World's first bridge-free cross-chain</p>
+                </div>
+                <a href="/interoperability" class="bg-cyan-600 hover:bg-cyan-700 px-4 py-2 rounded-lg text-sm">
+                    <i class="fas fa-exchange-alt"></i> View Details
+                </a>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="interop-stats">
+                <div class="bg-black/20 rounded-lg p-4">
+                    <h3 class="text-xs text-gray-400 mb-1">State Commitments</h3>
+                    <p class="text-2xl font-bold" id="state-commitments">-</p>
+                </div>
+                <div class="bg-black/20 rounded-lg p-4">
+                    <h3 class="text-xs text-gray-400 mb-1">ZK Proofs</h3>
+                    <p class="text-2xl font-bold" id="zk-proofs">-</p>
+                </div>
+                <div class="bg-black/20 rounded-lg p-4">
+                    <h3 class="text-xs text-gray-400 mb-1">Applied States</h3>
+                    <p class="text-2xl font-bold" id="applied-states">-</p>
+                </div>
+                <div class="bg-black/20 rounded-lg p-4">
+                    <h3 class="text-xs text-gray-400 mb-1">UChainIDs</h3>
+                    <p class="text-2xl font-bold" id="uchain-ids">-</p>
+                </div>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-2">
+                <a href="/cross-chain-proofs" class="text-xs bg-cyan-600/20 hover:bg-cyan-600/30 px-3 py-1 rounded">
+                    <i class="fas fa-list"></i> View All Proofs
+                </a>
+                <a href="/zk-verifier" class="text-xs bg-purple-600/20 hover:bg-purple-600/30 px-3 py-1 rounded">
+                    <i class="fas fa-shield-alt"></i> Verify ZK Proof
+                </a>
             </div>
         </div>
 
@@ -198,13 +407,8 @@
                 </a>
                 <a href="/interoperability" class="bg-gray-800 hover:bg-gray-700 p-3 sm:p-4 rounded-lg border border-blue-500 transition">
                     <i class="fas fa-project-diagram text-2xl sm:text-3xl mb-1 text-blue-400"></i>
-                    <h3 class="text-sm sm:text-base font-semibold">{{ t('interop') or 'Interop' }}</h3>
-                    <p class="text-xs text-gray-300 hidden sm:block">{{ t('cross_chain') or 'Cross-chain' }}</p>
-                </a>
-                <a href="/cross-chain-test" class="bg-gray-800 hover:bg-gray-700 p-3 sm:p-4 rounded-lg border border-cyan-500 transition">
-                    <i class="fas fa-vial text-2xl sm:text-3xl mb-1 text-cyan-400"></i>
-                    <h3 class="text-sm sm:text-base font-semibold">{{ t('cross_chain_test') or 'Cross-Chain Test' }}</h3>
-                    <p class="text-xs text-gray-300 hidden sm:block">{{ t('test_uchainid_zk') or 'Test UChainID & ZK' }}</p>
+                    <h3 class="text-sm sm:text-base font-semibold">{{ t('interop') or 'Interoperability' }}</h3>
+                    <p class="text-xs text-gray-300 hidden sm:block">{{ t('cross_chain_complete') or 'Cross-chain + Tests' }}</p>
                 </a>
                 <a href="/alz-niev" class="bg-gray-800 hover:bg-gray-700 p-3 sm:p-4 rounded-lg border border-purple-500 transition">
                     <i class="fas fa-atom text-2xl sm:text-3xl mb-1 text-purple-400"></i>
@@ -238,6 +442,33 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Bridge-Free Interoperability Live Dashboard
+        async function updateInteropStats() {
+            try {
+                const response = await fetch('/api/cross-chain/status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('statCommitments').textContent = data.state_commitments || 0;
+                    document.getElementById('statProofs').textContent = data.zk_proofs || 0;
+                    document.getElementById('statApplied').textContent = data.applied_states || 0;
+                    document.getElementById('statUChainIDs').textContent = data.uchain_ids || 0;
+                    
+                    const now = new Date();
+                    document.getElementById('interopLastUpdate').textContent = 
+                        `Updated: ${now.toLocaleTimeString()}`;
+                }
+            } catch (error) {
+                console.error('Error updating interop stats:', error);
+            }
+        }
+        
+        // Update immediately and every 10 seconds
+        updateInteropStats();
+        setInterval(updateInteropStats, 10000);
+    </script>
 </body>
 </html>
 
