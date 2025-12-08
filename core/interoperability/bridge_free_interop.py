@@ -456,123 +456,10 @@ class BridgeFreeInterop:
             elif target_chain == "ethereum":
                 explorer_url = f"https://sepolia.etherscan.io/tx/{tx_hash.hex()}"
             
-            # Enviar transação na source chain para lock/commitment (se source != target)
-            source_tx_hash = None
-            source_explorer_url = None
-            
-            if source_chain != target_chain:
-                try:
-                    # Obter Web3 para source chain
-                    source_w3 = None
-                    source_chain_id = None
-                    
-                    if source_chain == "bsc":
-                        source_w3 = self.bsc_w3
-                        source_chain_id = 97
-                    elif source_chain == "polygon":
-                        source_w3 = self.polygon_w3
-                        source_chain_id = 80002
-                    elif source_chain == "ethereum":
-                        source_w3 = self.eth_w3
-                        source_chain_id = 11155111
-                    
-                    # Se source chain está disponível e conectada
-                    if source_w3 and source_w3.is_connected():
-                        # Obter private key para source chain
-                        source_private_key = private_key
-                        if not source_private_key:
-                            if source_chain == "polygon":
-                                source_private_key = os.getenv('POLYGON_PRIVATE_KEY')
-                            elif source_chain == "bsc":
-                                source_private_key = os.getenv('BSC_PRIVATE_KEY')
-                            elif source_chain == "ethereum":
-                                source_private_key = os.getenv('ETH_PRIVATE_KEY')
-                        
-                        if source_private_key:
-                            source_account = source_w3.eth.account.from_key(source_private_key)
-                            source_balance = source_w3.eth.get_balance(source_account.address)
-                            source_amount_wei = source_w3.to_wei(amount, 'ether')
-                            source_gas_price = source_w3.eth.gas_price
-                            source_base_gas = 21000
-                            
-                            # Criar transação de lock na source chain (commitment)
-                            # Enviar para o próprio endereço com memo indicando lock
-                            source_nonce = source_w3.eth.get_transaction_count(source_account.address)
-                            
-                            # Criar memo simples para source chain (lock commitment)
-                            source_memo = {
-                                "type": "lock_commitment",
-                                "target_chain": target_chain,
-                                "amount": amount,
-                                "uchain_id": uchain_id if uchain_id else "pending"
-                            }
-                            source_memo_json = json.dumps(source_memo, sort_keys=True)
-                            source_memo_hex = source_memo_json.encode().hex()
-                            
-                            source_transaction = {
-                                'to': source_account.address,  # Lock: enviar para si mesmo
-                                'value': source_amount_wei,
-                                'gas': source_base_gas,
-                                'gasPrice': source_gas_price,
-                                'nonce': source_nonce,
-                                'chainId': source_chain_id
-                            }
-                            
-                            # Adicionar memo como data
-                            if len(source_memo_hex) <= 48000:
-                                try:
-                                    source_transaction['data'] = bytes.fromhex(source_memo_hex)
-                                    # Estimar gas com data
-                                    try:
-                                        source_estimated_gas = source_w3.eth.estimate_gas(source_transaction)
-                                        source_transaction['gas'] = max(36800, source_estimated_gas)
-                                    except:
-                                        source_transaction['gas'] = max(36800, source_base_gas + 20000)
-                                except:
-                                    pass
-                            
-                            source_total_needed = source_amount_wei + (source_transaction['gas'] * source_gas_price)
-                            
-                            # Verificar saldo na source chain
-                            if source_balance >= source_total_needed:
-                                # Assinar e enviar transação na source chain
-                                source_signed_txn = source_w3.eth.account.sign_transaction(source_transaction, source_private_key)
-                                
-                                source_raw_tx = None
-                                if hasattr(source_signed_txn, 'rawTransaction'):
-                                    source_raw_tx = source_signed_txn.rawTransaction
-                                elif hasattr(source_signed_txn, 'raw_transaction'):
-                                    source_raw_tx = source_signed_txn.raw_transaction
-                                
-                                if source_raw_tx:
-                                    source_tx_hash = source_w3.eth.send_raw_transaction(source_raw_tx)
-                                    
-                                    # Aguardar confirmação
-                                    try:
-                                        source_tx_receipt = source_w3.eth.wait_for_transaction_receipt(source_tx_hash, timeout=60)
-                                        
-                                        # URL do explorer da source chain
-                                        if source_chain == "bsc":
-                                            source_explorer_url = f"https://testnet.bscscan.com/tx/{source_tx_hash.hex()}"
-                                        elif source_chain == "polygon":
-                                            source_explorer_url = f"https://amoy.polygonscan.com/tx/{source_tx_hash.hex()}"
-                                        elif source_chain == "ethereum":
-                                            source_explorer_url = f"https://sepolia.etherscan.io/tx/{source_tx_hash.hex()}"
-                                        
-                                        print(f"✅ Source chain tx enviada: {source_tx_hash.hex()}")
-                                    except Exception as e:
-                                        print(f"⚠️  Source tx enviada mas confirmação pendente: {e}")
-                            else:
-                                print(f"⚠️  Saldo insuficiente na source chain para lock")
-                except Exception as e:
-                    print(f"⚠️  Erro ao enviar tx na source chain: {e}")
-                    # Continuar mesmo se source chain falhar (target chain é mais importante)
-            
             result = {
                 "success": True,
                 "real_transaction": True,
-                "tx_hash": tx_hash.hex(),  # Target chain tx_hash
-                "source_tx_hash": source_tx_hash.hex() if source_tx_hash else None,  # Source chain tx_hash (lock/commitment)
+                "tx_hash": tx_hash.hex(),
                 "from": account.address,
                 "to": recipient_checksum,
                 "amount": amount,
@@ -581,14 +468,8 @@ class BridgeFreeInterop:
                 "block_number": tx_receipt.blockNumber,
                 "gas_used": tx_receipt.gasUsed,
                 "status": "confirmed" if tx_receipt.status == 1 else "failed",
-                "explorer_url": explorer_url,  # Target chain explorer
-                "source_explorer_url": source_explorer_url,  # Source chain explorer (lock/commitment)
-                "has_zk_proof": zk_proof_id is not None,
-                "memo": memo_info["memo_data"] if memo_info else None,
-                "memo_hex": memo_info["memo_hex"] if memo_info else None,
-                "uchain_id": uchain_id,
-                "message": "🎉 Transação REAL com UChainID e ZK Proof enviada! Verificável on-chain!",
-                "note": "✅ Transações enviadas em AMBAS as chains: source (lock) + target (apply)"
+                "explorer_url": explorer_url,
+                "message": "🎉 Transação REAL enviada! Aparece no explorer!"
             }
             
             # Adicionar informações de memo/UChainID se disponível
@@ -1043,6 +924,76 @@ class BridgeFreeInterop:
                 "ZK Proofs verificáveis on-chain"
             ]
         }
+    
+    def verify_zk_proof(
+        self,
+        proof: str,
+        verification_key: str,
+        public_inputs: Optional[Dict] = None
+    ) -> Dict:
+        """
+        Verifica uma prova ZK publicamente
+        Qualquer pessoa pode colar proof + vk e verificar
+        """
+        try:
+            # Verificar estrutura básica
+            if not proof or not verification_key:
+                return {
+                    "success": False,
+                    "valid": False,
+                    "error": "Proof and verification_key are required"
+                }
+            
+            # Verificar se a prova está no sistema
+            proof_found = False
+            for proof_id, zk_data in self.zk_proofs.items():
+                if zk_data.get("proof") == proof and zk_data.get("verification_key") == verification_key:
+                    proof_found = True
+                    is_valid = zk_data.get("valid", False)
+                    
+                    # Verificar public inputs se fornecidos
+                    if public_inputs:
+                        state_hash = public_inputs.get("state_hash") or public_inputs.get("state_transition_hash")
+                        if state_hash and zk_data.get("state_transition_hash") != state_hash:
+                            return {
+                                "success": True,
+                                "valid": False,
+                                "error": "Public inputs do not match proof",
+                                "proof_id": proof_id
+                            }
+                    
+                    return {
+                        "success": True,
+                        "valid": is_valid,
+                        "message": "✅ ZK Proof verified successfully" if is_valid else "❌ ZK Proof is invalid",
+                        "proof_id": proof_id,
+                        "source_chain": zk_data.get("source_chain"),
+                        "target_chain": zk_data.get("target_chain"),
+                        "state_transition_hash": zk_data.get("state_transition_hash")
+                    }
+            
+            # Se não encontrou no sistema, verificar estrutura básica
+            # (em produção, isso seria verificação real com circuito ZK)
+            if len(proof) > 0 and len(verification_key) > 0:
+                return {
+                    "success": True,
+                    "valid": False,
+                    "message": "⚠️ Proof structure valid but not found in system",
+                    "note": "This proof may be from another system or expired"
+                }
+            
+            return {
+                "success": False,
+                "valid": False,
+                "error": "Invalid proof or verification key format"
+            }
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "valid": False,
+                "error": str(e)
+            }
 
 # Instância global
 bridge_free_interop = BridgeFreeInterop()

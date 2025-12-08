@@ -1,188 +1,90 @@
 <!DOCTYPE html>
-<html lang="{{ lang or 'en' }}">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Decoder - UChainID {{ uchain_id }} - Allianza Testnet</title>
+    <title>Decode Memo - Allianza Testnet</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .json-viewer {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 20px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            max-height: 600px;
-            overflow-y: auto;
-        }
-        .copy-btn {
-            background: #374151;
-            border: 1px solid #4b5563;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .copy-btn:hover {
-            background: #4b5563;
-        }
-        .copy-btn.copied {
-            background: #10b981;
-            border-color: #059669;
-        }
-    </style>
 </head>
 <body class="bg-gray-900 text-white">
-    <div class="container mx-auto px-4 py-8 max-w-6xl">
-        <!-- Header -->
-        <div class="mb-8">
-            <a href="/" class="text-blue-400 hover:text-blue-300 mb-4 inline-flex items-center gap-2">
-                <i class="fas fa-arrow-left"></i> Back to Dashboard
-            </a>
-            <h1 class="text-4xl font-bold mb-2">
-                <i class="fas fa-code text-blue-400"></i> Memo Decoder
-            </h1>
-            <p class="text-gray-400">Decode UChainID memo from on-chain transaction</p>
-        </div>
-
-        <!-- UChainID -->
-        <div class="bg-gray-800 rounded-lg p-6 mb-6">
-            <h2 class="text-xl font-semibold mb-4">UChainID</h2>
-            <div class="flex items-center gap-4">
-                <code class="text-lg font-mono text-blue-400">{{ uchain_id }}</code>
-                <button onclick="copyText('{{ uchain_id }}')" class="copy-btn">
-                    <i class="fas fa-copy"></i> Copy
-                </button>
-            </div>
-        </div>
-
-        <!-- Memo JSON -->
-        <div class="bg-gray-800 rounded-lg p-6 mb-6">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-semibold">Memo (Decoded)</h2>
-                <button onclick="copyJSON()" class="copy-btn">
-                    <i class="fas fa-copy"></i> Copy JSON
-                </button>
-            </div>
-            <div class="json-viewer" id="jsonViewer">
-                <pre id="jsonContent">{{ memo | tojson(indent=2) }}</pre>
-            </div>
-        </div>
-
-        <!-- ZK Proof Info -->
-        {% if zk_proof %}
-        <div class="bg-gray-800 rounded-lg p-6 mb-6">
-            <h2 class="text-xl font-semibold mb-4">
-                <i class="fas fa-shield-alt text-green-400"></i> ZK Proof
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="text-sm text-gray-400">Proof ID</label>
-                    <p class="font-mono text-sm">{{ zk_proof.proof_id }}</p>
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-3xl font-bold mb-6">🔍 Decode Cross-Chain Memo</h1>
+            
+            <div class="bg-gray-800 p-6 rounded-lg mb-6">
+                <h2 class="text-xl font-semibold mb-4">UChainID: <span class="font-mono text-cyan-400">{{ uchain_id }}</span></h2>
+                
+                {% if error %}
+                <div class="bg-red-900 p-4 rounded mb-4">
+                    <p class="text-red-200">❌ {{ error }}</p>
                 </div>
-                <div>
-                    <label class="text-sm text-gray-400">Status</label>
-                    <p class="text-green-400">
-                        {% if zk_proof.valid %}
-                        <i class="fas fa-check-circle"></i> Valid
-                        {% else %}
-                        <i class="fas fa-times-circle"></i> Invalid
-                        {% endif %}
-                    </p>
-                </div>
-                <div>
-                    <label class="text-sm text-gray-400">Source Chain</label>
-                    <p class="text-sm">{{ zk_proof.source_chain }}</p>
-                </div>
-                <div>
-                    <label class="text-sm text-gray-400">Target Chain</label>
-                    <p class="text-sm">{{ zk_proof.target_chain }}</p>
-                </div>
-                <div class="md:col-span-2">
-                    <label class="text-sm text-gray-400">State Transition Hash</label>
-                    <p class="font-mono text-xs break-all">{{ zk_proof.state_transition_hash }}</p>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- Transfer Info -->
-        {% if result %}
-        <div class="bg-gray-800 rounded-lg p-6 mb-6">
-            <h2 class="text-xl font-semibold mb-4">Transfer Information</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="text-sm text-gray-400">Amount</label>
-                    <p class="text-lg font-semibold">{{ result.amount }} {{ result.token or 'ETH' }}</p>
-                </div>
-                <div>
-                    <label class="text-sm text-gray-400">Recipient</label>
-                    <p class="font-mono text-sm break-all">{{ result.recipient }}</p>
-                </div>
-                <div>
-                    <label class="text-sm text-gray-400">Source Chain</label>
-                    <p class="text-sm capitalize">{{ result.source_chain }}</p>
-                </div>
-                <div>
-                    <label class="text-sm text-gray-400">Target Chain</label>
-                    <p class="text-sm capitalize">{{ result.target_chain }}</p>
-                </div>
-                {% if result.tx_hash %}
-                <div class="md:col-span-2">
-                    <label class="text-sm text-gray-400">Transaction Hash</label>
-                    <div class="flex items-center gap-2">
-                        <code class="font-mono text-sm break-all">{{ result.tx_hash }}</code>
-                        <a href="{{ result.explorer_url }}" target="_blank" class="text-blue-400 hover:text-blue-300">
-                            <i class="fas fa-external-link-alt"></i> View on Explorer
+                {% else %}
+                
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2">📋 Memo Data</h3>
+                        <pre class="bg-gray-900 p-4 rounded overflow-x-auto text-sm">{{ memo_json | safe }}</pre>
+                    </div>
+                    
+                    {% if tx_hash %}
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2">🔗 Transaction Hash</h3>
+                        <p class="font-mono text-cyan-400 break-all">{{ tx_hash }}</p>
+                        <a href="{{ explorer_url }}" target="_blank" class="text-blue-400 hover:underline mt-2 inline-block">
+                            View on Explorer <i class="fas fa-external-link-alt"></i>
                         </a>
+                    </div>
+                    {% endif %}
+                    
+                    {% if zk_proof %}
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2">🔐 ZK Proof</h3>
+                        <div class="bg-gray-900 p-4 rounded">
+                            <p><strong>Proof ID:</strong> <span class="font-mono text-sm">{{ zk_proof.proof_id }}</span></p>
+                            <p><strong>State Hash:</strong> <span class="font-mono text-sm">{{ zk_proof.state_hash }}</span></p>
+                            <p><strong>Verified:</strong> 
+                                {% if zk_proof.verified %}
+                                <span class="text-green-400">✅ Yes</span>
+                                {% else %}
+                                <span class="text-red-400">❌ No</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2">📊 Transfer Details</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-gray-400">Source Chain</p>
+                                <p class="font-semibold">{{ source_chain | title }}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-400">Target Chain</p>
+                                <p class="font-semibold">{{ target_chain | title }}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-400">Amount</p>
+                                <p class="font-semibold">{{ amount }} {{ token }}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-400">Recipient</p>
+                                <p class="font-mono text-sm break-all">{{ recipient }}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 {% endif %}
             </div>
-        </div>
-        {% endif %}
-
-        <!-- Actions -->
-        <div class="flex gap-4">
-            <a href="/cross-chain-proofs" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg transition">
-                <i class="fas fa-list"></i> View All Proofs
-            </a>
-            <a href="/zk-verifier" class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg transition">
-                <i class="fas fa-shield-alt"></i> Verify ZK Proof
-            </a>
-            <a href="/interoperability" class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg transition">
-                <i class="fas fa-project-diagram"></i> Interoperability
-            </a>
+            
+            <div class="text-center">
+                <a href="/cross-chain-test" class="text-blue-400 hover:underline">
+                    ← Back to Cross-Chain Test
+                </a>
+            </div>
         </div>
     </div>
-
-    <script>
-        function copyText(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                event.target.classList.add('copied');
-                event.target.innerHTML = '<i class="fas fa-check"></i> Copied!';
-                setTimeout(() => {
-                    event.target.classList.remove('copied');
-                    event.target.innerHTML = '<i class="fas fa-copy"></i> Copy';
-                }, 2000);
-            });
-        }
-
-        function copyJSON() {
-            const json = document.getElementById('jsonContent').textContent;
-            navigator.clipboard.writeText(json).then(() => {
-                const btn = event.target.closest('.copy-btn');
-                btn.classList.add('copied');
-                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-                setTimeout(() => {
-                    btn.classList.remove('copied');
-                    btn.innerHTML = '<i class="fas fa-copy"></i> Copy JSON';
-                }, 2000);
-            });
-        }
-    </script>
 </body>
 </html>

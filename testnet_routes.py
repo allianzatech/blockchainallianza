@@ -2779,6 +2779,84 @@ def api_cross_chain_status():
 @testnet_bp.route('/cross-chain-test', methods=['GET'])
 def cross_chain_test_page():
     """
-    Página para testar cross-chain transfers com UChainID e ZK Proofs
+    Redireciona para /interoperability (unificado)
     """
-    return render_template('testnet/cross_chain_test.html')
+    from flask import redirect
+    return redirect('/interoperability')
+
+@testnet_bp.route('/decode/<uchain_id>', methods=['GET'])
+def decode_memo_page(uchain_id):
+    """
+    Decoder público do memo - mostra JSON decodificado do UChainID
+    GET /decode/UCHAIN-<hash>
+    """
+    try:
+        from core.interoperability.bridge_free_interop import bridge_free_interop
+        
+        result = bridge_free_interop.get_cross_chain_proof(uchain_id=uchain_id)
+        
+        if not result.get("success"):
+            return render_template('testnet/decode_memo.html',
+                                 uchain_id=uchain_id,
+                                 error=result.get("error", "UChainID not found"))
+        
+        memo = result.get("memo", {})
+        zk_proof = result.get("zk_proof", {})
+        
+        import json
+        memo_json = json.dumps(memo, indent=2)
+        
+        return render_template('testnet/decode_memo.html',
+                             uchain_id=uchain_id,
+                             memo_json=memo_json,
+                             tx_hash=result.get("tx_hash"),
+                             explorer_url=result.get("explorer_url"),
+                             zk_proof=zk_proof,
+                             source_chain=result.get("source_chain"),
+                             target_chain=result.get("target_chain"),
+                             amount=result.get("amount"),
+                             token=result.get("token", "ETH"),
+                             recipient=result.get("recipient"))
+    except Exception as e:
+        return render_template('testnet/decode_memo.html',
+                             uchain_id=uchain_id,
+                             error=str(e))
+
+@testnet_bp.route('/api/cross-chain/verify-zk', methods=['POST'])
+def api_verify_zk_proof():
+    """
+    Verificador ZK público
+    POST /api/cross-chain/verify-zk
+    Body: {
+        "proof": "...",
+        "verification_key": "...",
+        "public_inputs": {...}
+    }
+    """
+    try:
+        from core.interoperability.bridge_free_interop import bridge_free_interop
+        
+        data = request.get_json() or {}
+        proof = data.get('proof', '').strip()
+        verification_key = data.get('verification_key', '').strip()
+        public_inputs = data.get('public_inputs', {})
+        
+        if not proof or not verification_key:
+            return jsonify({
+                "success": False,
+                "error": "Proof and verification_key are required"
+            }), 400
+        
+        # Verificar ZK proof
+        result = bridge_free_interop.verify_zk_proof(
+            proof=proof,
+            verification_key=verification_key,
+            public_inputs=public_inputs
+        )
+        
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500

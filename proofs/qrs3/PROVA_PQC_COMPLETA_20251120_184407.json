@@ -1,0 +1,46 @@
+{
+  "timestamp": "2025-11-20T18:44:07.775862",
+  "project": "Allianza Blockchain",
+  "test": "Prova Completa de Segurança Quântica",
+  "results": {
+    "ml_dsa": {
+      "success": true,
+      "keypair_id": "ml_dsa_1763675047_514bc5438662f915",
+      "public_key_length": 88,
+      "signature_length": 88,
+      "nist_standard": true,
+      "security_level": 3
+    },
+    "ml_kem": {
+      "success": false,
+      "error": "'QuantumSecuritySystem' object has no attribute 'decrypt_with_ml_kem'"
+    },
+    "sphincs": {
+      "success": true,
+      "keypair_id": "sphincs_real_1763675048_c191a0064602cb27",
+      "public_key_length": 64,
+      "signature_length": 47552,
+      "implementation": "real",
+      "nist_standard": true,
+      "variant": "sha256-192f"
+    },
+    "qrs": {
+      "success": true,
+      "qrs_id": "qrs3_1763675048_a38fdce51e62d567",
+      "algorithm": "QRS-3 (Tripla Redundância Quântica)",
+      "redundancy_level": 3,
+      "sphincs_available": true,
+      "classic_signature": true,
+      "ml_dsa_signature": true,
+      "sphincs_signature": true,
+      "world_first": true
+    }
+  },
+  "summary": {
+    "total_tests": 4,
+    "passed_tests": 3,
+    "failed_tests": 1,
+    "success_rate": "75.0%",
+    "all_passed": false
+  }
+}

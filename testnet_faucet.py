@@ -118,7 +118,7 @@ class TestnetFaucet:
             "total_rejected": 0,
             "reasons": defaultdict(int)
         }
-        
+    
         # NÃO inicializar carteira aqui - será criada quando necessário
         # A inicialização no __init__ pode falhar se o blockchain ainda não estiver pronto
         self._faucet_wallet_initialized = False
