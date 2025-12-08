@@ -107,6 +107,33 @@ allianzablockchain/
 - 🤝 [Contributing](CONTRIBUTING.md)
 - 📋 [Code of Conduct](CODE_OF_CONDUCT.md)
 
+## 💡 Code Examples
+
+### Quick Examples
+
+```python
+# Create wallet
+from allianza_blockchain import AllianzaBlockchain
+blockchain = AllianzaBlockchain()
+address, private_key = blockchain.create_wallet()
+
+# Create transaction
+transaction = blockchain.create_transaction(
+    sender=address,
+    receiver="ALZ1Receiver...",
+    amount=1000.0,
+    private_key=private_key
+)
+
+# QRS-3 signature
+from core.crypto.pqc_crypto import MLDSAKeyPair
+mldsa = MLDSAKeyPair()
+signature = mldsa.sign(b"Hello, Allianza!")
+is_valid = mldsa.verify(b"Hello, Allianza!", signature)
+```
+
+📖 **More Examples**: See [examples/](examples/) directory for complete code examples.
+
 ## 🧪 Tests and Verification
 
 ### Run Public Tests
@@ -195,6 +222,29 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) for deta
 - **ALZ-NIEV Protocol**: Adaptive consensus mechanism
 - **High Throughput**: Optimized for performance
 - **Scalable**: Automatic scaling based on network conditions
+
+## 👥 Team & Contributors
+
+### Core Team
+- **Allianza Team** - Development and maintenance
+
+### Contributors
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
+### Acknowledgments
+- Open Quantum Safe (OQS) for PQC algorithms
+- Community contributors and testers
+
+## 📸 Screenshots & Demo
+
+> **Note**: Screenshots and demo GIF will be added here.
+> 
+> To add:
+> - Dashboard screenshot
+> - Explorer screenshot  
+> - Faucet in action
+> - QRS-3 Verifier
+> - Demo GIF (15 seconds)
 
 ## ⚠️ Disclaimer
 
