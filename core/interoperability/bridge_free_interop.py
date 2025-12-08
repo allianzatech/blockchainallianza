@@ -7,11 +7,16 @@ import json
 import time
 import secrets
 import os
+import sys
 from datetime import datetime
 from typing import Dict, Optional, Tuple
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
 from dotenv import load_dotenv
+
+# Adicionar diretório raiz ao path para importar db_manager
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from db_manager import DBManager
 
 load_dotenv()
 
