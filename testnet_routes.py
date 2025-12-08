@@ -2490,3 +2490,170 @@ def api_alz_niev_status():
         "supported_chains": ["bitcoin", "ethereum", "polygon", "bsc", "solana", "cosmos", "base"],
         "supported_consensus": ["PoW", "PoS", "Parallel", "Tendermint", "BFT"]
     }), 200
+
+# =============================================================================
+# ROTA PARA PROVAS INDIVIDUAIS - ACESSO PÚBLICO
+# =============================================================================
+
+@testnet_bp.route('/proof/<proof_id>', methods=['GET'])
+def get_individual_proof(proof_id):
+    """
+    Retorna prova técnica individual por ID
+    Suporta formatos: JSON (padrão) ou HTML
+    """
+    try:
+        import json
+        from pathlib import Path
+        
+        # Carregar arquivo de provas completas
+        proofs_file = Path("COMPLETE_TECHNICAL_PROOFS_FINAL.json")
+        if not proofs_file.exists():
+            # Tentar versão em inglês
+            proofs_file = Path("COMPLETE_TECHNICAL_PROOFS_FINAL_EN.json")
+        
+        if not proofs_file.exists():
+            return jsonify({
+                "success": False,
+                "error": "Arquivo de provas não encontrado",
+                "proof_id": proof_id
+            }), 404
+        
+        with open(proofs_file, 'r', encoding='utf-8') as f:
+            all_proofs = json.load(f)
+        
+        # Normalizar proof_id (remover espaços, converter para maiúsculas)
+        proof_id_normalized = proof_id.upper().replace('-', '_').replace(' ', '_')
+        
+        # Buscar em main_proofs primeiro
+        proof_data = None
+        if "main_proofs" in all_proofs:
+            for key, value in all_proofs["main_proofs"].items():
+                if key.upper() == proof_id_normalized or \
+                   value.get("proof_name", "").upper() == proof_id_normalized:
+                    proof_data = value
+                    proof_data["proof_id"] = key
+                    proof_data["source"] = "main_proofs"
+                    break
+        
+        # Se não encontrou, buscar em detailed_test_suites
+        if not proof_data and "detailed_test_suites" in all_proofs:
+            for suite_name, suite_data in all_proofs["detailed_test_suites"].items():
+                if "tests" in suite_data:
+                    for test in suite_data["tests"]:
+                        test_id = test.get("test_id", "").upper().replace('-', '_')
+                        if test_id == proof_id_normalized or \
+                           test.get("name", "").upper().replace(' ', '_') == proof_id_normalized:
+                            proof_data = test.copy()
+                            proof_data["suite"] = suite_name
+                            proof_data["suite_name"] = suite_data.get("suite_name", suite_name)
+                            proof_data["source"] = "detailed_test_suites"
+                            break
+                if proof_data:
+                    break
+        
+        # Verificar formato solicitado
+        format_type = request.args.get('format', 'json').lower()
+        
+        if not proof_data:
+            # Listar provas disponíveis para ajudar
+            available_proofs = []
+            if "main_proofs" in all_proofs:
+                available_proofs.extend([k for k in all_proofs["main_proofs"].keys()])
+            if "detailed_test_suites" in all_proofs:
+                for suite_data in all_proofs["detailed_test_suites"].values():
+                    if "tests" in suite_data:
+                        available_proofs.extend([t.get("test_id", "") for t in suite_data["tests"]])
+            
+            return jsonify({
+                "success": False,
+                "error": f"Prova não encontrada: {proof_id}",
+                "proof_id_requested": proof_id,
+                "available_proofs": available_proofs[:20],  # Primeiras 20 para não sobrecarregar
+                "total_available": len(available_proofs),
+                "tip": "Use o formato: /proof/<proof_id>?format=json ou /proof/<proof_id>?format=html"
+            }), 404
+        
+        # Adicionar metadados
+        proof_data["metadata"] = {
+            "proof_id": proof_id,
+            "retrieved_at": datetime.now().isoformat(),
+            "source_file": str(proofs_file),
+            "format": format_type
+        }
+        
+        # Retornar em formato solicitado
+        if format_type == 'html':
+            # Renderizar HTML amigável
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Prova Técnica: {proof_id}</title>
+                <meta charset="UTF-8">
+                <style>
+                    body {{ font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }}
+                    .container {{ max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
+                    h1 {{ color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }}
+                    .status {{ display: inline-block; padding: 5px 15px; border-radius: 20px; font-weight: bold; }}
+                    .success {{ background: #2ecc71; color: white; }}
+                    .info {{ background: #3498db; color: white; }}
+                    .section {{ margin: 20px 0; padding: 15px; background: #f8f9fa; border-left: 4px solid #3498db; }}
+                    .key {{ font-weight: bold; color: #2c3e50; }}
+                    pre {{ background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 4px; overflow-x: auto; }}
+                    a {{ color: #3498db; text-decoration: none; }}
+                    a:hover {{ text-decoration: underline; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>🔐 Prova Técnica: {proof_id}</h1>
+                    <div class="section">
+                        <span class="status {'success' if proof_data.get('status') == 'SUCESSO' else 'info'}">
+                            {proof_data.get('status', 'N/A')}
+                        </span>
+                    </div>
+                    <div class="section">
+                        <h2>📋 Informações</h2>
+                        <p><span class="key">Categoria:</span> {proof_data.get('category', 'N/A')}</p>
+                        <p><span class="key">Descrição:</span> {proof_data.get('description', 'N/A')}</p>
+                        {f'<p><span class="key">Suite:</span> {proof_data.get("suite_name", proof_data.get("suite", "N/A"))}</p>' if proof_data.get('suite') else ''}
+                    </div>
+                    <div class="section">
+                        <h2>📊 Dados Completos (JSON)</h2>
+                        <pre>{json.dumps(proof_data, indent=2, ensure_ascii=False)}</pre>
+                    </div>
+                    <div class="section">
+                        <p><a href="/proof/{proof_id}?format=json">📥 Download JSON</a> | <a href="/">🏠 Voltar ao Dashboard</a></p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            return html_content, 200, {'Content-Type': 'text/html; charset=utf-8'}
+        else:
+            # Retornar JSON
+            return jsonify({
+                "success": True,
+                "proof": proof_data
+            }), 200
+    
+    except FileNotFoundError:
+        return jsonify({
+            "success": False,
+            "error": "Arquivo de provas não encontrado",
+            "proof_id": proof_id
+        }), 404
+    except json.JSONDecodeError as e:
+        return jsonify({
+            "success": False,
+            "error": f"Erro ao ler arquivo de provas: {str(e)}",
+            "proof_id": proof_id
+        }), 500
+    except Exception as e:
+        import traceback
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "proof_id": proof_id,
+            "traceback": traceback.format_exc()
+        }), 500

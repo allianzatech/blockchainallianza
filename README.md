@@ -49,18 +49,26 @@
 
 ### ✅ Source Code is Publicly Available
 
-**All core implementations are published and auditable:**
+**⚠️ IMPORTANT: All core implementations are PUBLIC and auditable in this repository:**
 
 - **QRS-3 (PQC)**: [`core/crypto/pqc_crypto.py`](core/crypto/pqc_crypto.py) - ML-DSA and SPHINCS+ implementations
 - **Quantum Security**: [`core/crypto/quantum_security.py`](core/crypto/quantum_security.py) - Quantum security service
 - **ALZ-NIEV Consensus**: [`core/consensus/adaptive_consensus.py`](core/consensus/adaptive_consensus.py) - Adaptive consensus mechanism
-- **ALZ-NIEV Protocol**: [`core/consensus/alz_niev_interoperability.py`](core/consensus/alz_niev_interoperability.py) - Interoperability protocol
+- **ALZ-NIEV Protocol**: [`core/consensus/alz_niev_interoperability.py`](core/consensus/alz_niev_interoperability.py) - **FULL PROTOCOL IMPLEMENTATION - PUBLIC**
 - **Bridge-Free Interop**: [`core/interoperability/bridge_free_interop.py`](core/interoperability/bridge_free_interop.py) - Bridge-free interoperability
 - **Proof-of-Lock**: [`core/interoperability/proof_of_lock.py`](core/interoperability/proof_of_lock.py) - Proof-of-Lock implementation
 
+**🔍 Direct Links to Core Code:**
+- [QRS-3 Implementation](https://github.com/dieisonmaach-lang/allianzablockchain/tree/main/core/crypto)
+- [ALZ-NIEV Protocol](https://github.com/dieisonmaach-lang/allianzablockchain/tree/main/core/consensus)
+- [Interoperability](https://github.com/dieisonmaach-lang/allianzablockchain/tree/main/core/interoperability)
+
+**✅ All source code is in this public repository - no private repositories for core functionality.**
+
 ### Published Technical Proofs
 
-- ✅ **Complete Proofs**: [`COMPLETE_TECHNICAL_PROOFS_FINAL.json`](COMPLETE_TECHNICAL_PROOFS_FINAL.json)
+- ✅ **Complete Proofs**: [`COMPLETE_TECHNICAL_PROOFS_FINAL.json`](COMPLETE_TECHNICAL_PROOFS_FINAL.json) - All 41 technical proofs
+- ✅ **Individual Proof Access**: https://testnet.allianza.tech/proof/<PROOF_ID> - Access individual proofs (e.g., `/proof/QRS3-01`, `/proof/PILAR_1_INTEROPERABILIDADE`)
 - ✅ **Verifiable On-Chain Proofs**: [`VERIFIABLE_ON_CHAIN_PROOFS.md`](VERIFIABLE_ON_CHAIN_PROOFS.md) - Real transaction hashes from Bitcoin, Ethereum, Polygon (verifiable on public explorers)
 - ✅ **Test Scripts**: [`tests/public/`](tests/public/) - All scripts that generated the proofs
 - ✅ **Active Testnet**: https://testnet.allianza.tech - Test in real-time
