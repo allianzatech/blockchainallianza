@@ -2551,8 +2551,13 @@ def get_individual_proof(proof_id):
                 if proof_data:
                     break
         
-        # Verificar formato solicitado
-        format_type = request.args.get('format', 'json').lower()
+        # Verificar formato solicitado (HTML é padrão para visualização web, JSON para API)
+        format_type = request.args.get('format', 'html').lower()
+        
+        # Se o Accept header pedir JSON explicitamente, usar JSON
+        accept_header = request.headers.get('Accept', '')
+        if 'application/json' in accept_header and 'text/html' not in accept_header:
+            format_type = 'json'
         
         if not proof_data:
             # Listar provas disponíveis para ajudar
