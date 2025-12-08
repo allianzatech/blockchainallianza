@@ -275,30 +275,70 @@ CASHBACK_RATE = 0.05
 
 # ENCRYPTION_KEY: Carregar de variável de ambiente ou arquivo, ou gerar e persistir
 ENCRYPTION_KEY_FILE = "secrets/encryption_key.key"
-if os.getenv("ENCRYPTION_KEY"):
-    # Carregar de variável de ambiente
-    ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY").encode()
-elif os.path.exists(ENCRYPTION_KEY_FILE):
-    # Carregar de arquivo
-    try:
-        with open(ENCRYPTION_KEY_FILE, "rb") as f:
-            ENCRYPTION_KEY = f.read()
-    except Exception as e:
-        logger.warning(f"Erro ao carregar ENCRYPTION_KEY do arquivo: {e}. Gerando nova chave...")
-        ENCRYPTION_KEY = Fernet.generate_key()
-        # Salvar para uso futuro
-        os.makedirs(os.path.dirname(ENCRYPTION_KEY_FILE), exist_ok=True)
-        with open(ENCRYPTION_KEY_FILE, "wb") as f:
-            f.write(ENCRYPTION_KEY)
-else:
+
+def get_encryption_key():
+    """Obtém ou gera ENCRYPTION_KEY válida"""
+    if os.getenv("ENCRYPTION_KEY"):
+        # Carregar de variável de ambiente
+        env_key = os.getenv("ENCRYPTION_KEY")
+        try:
+            # Tentar decodificar se for base64 string
+            if isinstance(env_key, str):
+                # Se for string, tentar decodificar base64
+                import base64
+                try:
+                    key_bytes = base64.urlsafe_b64decode(env_key + '==')  # Adicionar padding se necessário
+                    if len(key_bytes) == 32:
+                        return key_bytes
+                except:
+                    pass
+                # Se não for base64, tentar usar como bytes direto
+                key_bytes = env_key.encode() if len(env_key) == 32 else None
+                if key_bytes and len(key_bytes) == 32:
+                    return key_bytes
+            # Se já for bytes
+            if isinstance(env_key, bytes) and len(env_key) == 32:
+                return env_key
+        except Exception as e:
+            logger.warning(f"Erro ao processar ENCRYPTION_KEY do ambiente: {e}")
+    
+    # Tentar carregar de arquivo
+    if os.path.exists(ENCRYPTION_KEY_FILE):
+        try:
+            with open(ENCRYPTION_KEY_FILE, "rb") as f:
+                key = f.read()
+                if len(key) == 32:
+                    return key
+        except Exception as e:
+            logger.warning(f"Erro ao carregar ENCRYPTION_KEY do arquivo: {e}")
+    
     # Gerar nova chave e persistir
+    new_key = Fernet.generate_key()
+    os.makedirs(os.path.dirname(ENCRYPTION_KEY_FILE), exist_ok=True)
+    try:
+        with open(ENCRYPTION_KEY_FILE, "wb") as f:
+            f.write(new_key)
+        logger.info(f"✅ Nova ENCRYPTION_KEY gerada e salva em {ENCRYPTION_KEY_FILE}")
+    except Exception as e:
+        logger.warning(f"Erro ao salvar ENCRYPTION_KEY: {e}")
+    
+    return new_key
+
+ENCRYPTION_KEY = get_encryption_key()
+
+try:
+    cipher = Fernet(ENCRYPTION_KEY)
+except Exception as e:
+    logger.error(f"Erro ao criar cipher Fernet: {e}")
+    # Gerar nova chave válida
     ENCRYPTION_KEY = Fernet.generate_key()
     os.makedirs(os.path.dirname(ENCRYPTION_KEY_FILE), exist_ok=True)
-    with open(ENCRYPTION_KEY_FILE, "wb") as f:
-        f.write(ENCRYPTION_KEY)
-    logger.info(f"✅ Nova ENCRYPTION_KEY gerada e salva em {ENCRYPTION_KEY_FILE}")
-
-cipher = Fernet(ENCRYPTION_KEY)
+    try:
+        with open(ENCRYPTION_KEY_FILE, "wb") as f:
+            f.write(ENCRYPTION_KEY)
+    except:
+        pass
+    cipher = Fernet(ENCRYPTION_KEY)
 
 # Conexão com o Banco de Dados
 db_manager = DBManager(check_same_thread=False)

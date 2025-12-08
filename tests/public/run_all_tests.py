@@ -46,8 +46,15 @@ class PublicTestRunner:
         print("=" * 70)
         
         try:
-            from tests.public.run_verification_tests import main as verification_main
-            result = verification_main()
+            # Importar diretamente do arquivo
+            import importlib.util
+            spec = importlib.util.spec_from_file_location(
+                "run_verification_tests",
+                ROOT_DIR / "tests" / "public" / "run_verification_tests.py"
+            )
+            verification_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(verification_module)
+            result = verification_module.main()
             
             self.results["tests"]["verification"] = {
                 "status": "PASSED" if result == 0 else "FAILED",
