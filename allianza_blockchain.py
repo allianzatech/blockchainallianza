@@ -4348,8 +4348,33 @@ try:
         pass
     
     init_testnet_routes(app, allianza_blockchain, quantum_sys, bridge_instance)
+    
+    # Registrar rotas públicas de provas (decoder, lista, verificador ZK)
+    try:
+        from testnet_public_proofs_routes import public_proofs_bp
+        app.register_blueprint(public_proofs_bp)
+        logger.info("✅ Rotas públicas de provas registradas!")
+        print("✅ Rotas públicas de provas registradas!")
+        print("   • GET  /decode/<uchain_id> - Decoder público")
+        print("   • GET  /cross-chain-proofs - Lista pública de provas")
+        print("   • GET  /zk-verifier - Verificador ZK público")
+    except Exception as e:
+        logger.warning(f"⚠️  Rotas públicas de provas não disponíveis: {e}")
+        print(f"⚠️  Rotas públicas de provas não disponíveis: {e}")
+    
     logger.info("🌐 ALLIANZA TESTNET: Rotas inicializadas!")
     print("🌐 ALLIANZA TESTNET: Testnet profissional carregada!")
+    
+    # Registrar blueprint de provas públicas (decoder, lista, verificador ZK)
+    try:
+        from testnet_public_proofs_routes import public_proofs_bp
+        app.register_blueprint(public_proofs_bp)
+        print("✅ Public Proofs Routes registradas!")
+        print("   • GET  /decode/<uchain_id> - Decoder público")
+        print("   • GET  /cross-chain-proofs - Lista pública de provas")
+        print("   • GET  /zk-verifier - Verificador ZK público")
+    except ImportError as e:
+        print(f"⚠️  Public Proofs Routes não disponível: {e}")
     
     # Registrar rota health check DEPOIS do blueprint para garantir prioridade
     # NOTA: A rota do blueprint testnet_bp já trata HEAD corretamente
