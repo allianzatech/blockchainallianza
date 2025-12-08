@@ -2788,14 +2788,39 @@ def cross_chain_test_page():
     from flask import redirect
     return redirect('/interoperability')
 
-@testnet_bp.route('/decode/<uchain_id>', methods=['GET'])
-def decode_memo_page(uchain_id):
+@testnet_bp.route('/decode/<identifier>', methods=['GET'])
+def decode_memo_page(identifier):
     """
-    Decoder público do memo - mostra JSON decodificado do UChainID
-    GET /decode/UCHAIN-<hash>
+    Decoder público do memo - aceita UChainID ou tx_hash
+    GET /decode/UCHAIN-<hash> ou /decode/0x<tx_hash>
     """
     try:
         from core.interoperability.bridge_free_interop import bridge_free_interop
+        import json
+        
+        # Detectar se é UChainID ou tx_hash
+        is_uchain_id = identifier.startswith('UCHAIN-')
+        is_tx_hash = identifier.startswith('0x') and len(identifier) == 66
+        
+        if is_uchain_id:
+            uchain_id = identifier
+        elif is_tx_hash:
+            # Buscar UChainID pelo tx_hash usando get_cross_chain_proof
+            result = bridge_free_interop.get_cross_chain_proof(tx_hash=identifier)
+            if not result.get("success"):
+                return render_template('testnet/decode_error.html', 
+                                     error=result.get("error", f"Transaction hash {identifier} not found"),
+                                     identifier=identifier), 404
+            # Se encontrou, usar o UChainID para continuar
+            uchain_id = result.get("uchain_id")
+            if not uchain_id:
+                return render_template('testnet/decode_error.html',
+                                     error="UChainID not found for this transaction hash",
+                                     identifier=identifier), 404
+        else:
+            return render_template('testnet/decode_error.html',
+                                 error="Invalid identifier. Use UCHAIN-<hash> or 0x<tx_hash>",
+                                 identifier=identifier), 400
         
         result = bridge_free_interop.get_cross_chain_proof(uchain_id=uchain_id)
         
