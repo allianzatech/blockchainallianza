@@ -123,3 +123,10 @@ api_keys.json
 bitcoin_keys*.txt
 ethereum_keys*.txt
 
+# ⚠️ CRITICAL: Private Keys and Secrets - NEVER COMMIT
+pqc_keys/
+VARIAVEIS_RENDER_COPIAR_COLAR.txt
+*_RENDER*.txt
+*_COPIAR*.txt
+*_COLAR*.txt
+
