@@ -3482,14 +3482,61 @@ class RealCrossChainBridge:
                                         # Assinar
                                         tx.sign(key)
                                         
-                                        # Obter raw transaction
+                                        # Obter raw transaction - múltiplos métodos
                                         raw_tx_hex = None
+                                        
+                                        # Método 1: raw_hex como atributo
                                         if hasattr(tx, 'raw_hex'):
                                             raw_hex_attr = tx.raw_hex
                                             raw_tx_hex = raw_hex_attr() if callable(raw_hex_attr) else str(raw_hex_attr)
-                                        elif hasattr(tx, 'raw'):
-                                            raw_obj = tx.raw()
-                                            raw_tx_hex = raw_obj.hex() if isinstance(raw_obj, bytes) else str(raw_obj)
+                                        
+                                        # Método 2: raw() como método
+                                        if not raw_tx_hex and hasattr(tx, 'raw'):
+                                            try:
+                                                raw_obj = tx.raw()
+                                                raw_tx_hex = raw_obj.hex() if isinstance(raw_obj, bytes) else str(raw_obj)
+                                            except:
+                                                pass
+                                        
+                                        # Método 3: serialize()
+                                        if not raw_tx_hex and hasattr(tx, 'serialize'):
+                                            try:
+                                                serialized = tx.serialize()
+                                                raw_tx_hex = serialized.hex() if isinstance(serialized, bytes) else str(serialized)
+                                            except:
+                                                pass
+                                        
+                                        # Método 4: as_dict() e extrair hex
+                                        if not raw_tx_hex and hasattr(tx, 'as_dict'):
+                                            try:
+                                                tx_dict = tx.as_dict()
+                                                # Tentar múltiplas chaves possíveis
+                                                for key in ['raw', 'hex', 'raw_hex', 'rawhex', 'transaction_hex']:
+                                                    if key in tx_dict:
+                                                        value = tx_dict[key]
+                                                        if isinstance(value, bytes):
+                                                            raw_tx_hex = value.hex()
+                                                            break
+                                                        elif isinstance(value, str):
+                                                            raw_tx_hex = value
+                                                            break
+                                            except:
+                                                pass
+                                        
+                                        # Método 5: Tentar acessar diretamente atributos privados
+                                        if not raw_tx_hex:
+                                            for attr_name in ['_raw', '_hex', '_raw_hex', '_transaction_hex']:
+                                                if hasattr(tx, attr_name):
+                                                    try:
+                                                        attr_value = getattr(tx, attr_name)
+                                                        if isinstance(attr_value, bytes):
+                                                            raw_tx_hex = attr_value.hex()
+                                                            break
+                                                        elif isinstance(attr_value, str):
+                                                            raw_tx_hex = attr_value
+                                                            break
+                                                    except:
+                                                        pass
                                         
                                         # Verificar se OP_RETURN está na transação raw
                                         if source_tx_hash and op_return_added:
