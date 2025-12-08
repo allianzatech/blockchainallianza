@@ -33,6 +33,21 @@ class DBManager:
                     id TEXT PRIMARY KEY, sender TEXT, receiver TEXT, amount REAL,
                     condition_timestamp INTEGER, executed BOOLEAN, created_at REAL
                 );
+                CREATE TABLE IF NOT EXISTS cross_chain_uchainids (
+                    uchain_id TEXT PRIMARY KEY, source_chain TEXT, target_chain TEXT,
+                    recipient TEXT, amount REAL, timestamp REAL, memo TEXT,
+                    commitment_id TEXT, proof_id TEXT, state_id TEXT,
+                    tx_hash TEXT, explorer_url TEXT
+                );
+                CREATE TABLE IF NOT EXISTS cross_chain_zk_proofs (
+                    proof_id TEXT PRIMARY KEY, source_chain TEXT, target_chain TEXT,
+                    source_commitment_id TEXT, state_transition_hash TEXT,
+                    proof TEXT, verification_key TEXT, created_at REAL, valid INTEGER
+                );
+                CREATE TABLE IF NOT EXISTS cross_chain_state_commitments (
+                    commitment_id TEXT PRIMARY KEY, chain TEXT, state_data TEXT,
+                    contract_address TEXT, timestamp REAL
+                );
             ''')
             self.conn.commit()
             logger.info("Tabelas do banco de dados inicializadas com sucesso.")

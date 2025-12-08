@@ -23,10 +23,14 @@ class BridgeFreeInterop:
     """
     
     def __init__(self):
-        self.state_commitments = {}  # Armazena commitments de estado
-        self.zk_proofs = {}  # Armazena provas ZK
-        self.cross_chain_states = {}  # Estados cross-chain
-        self.uchain_ids = {}  # Armazena UChainIDs e suas transações
+        self.db = DBManager()
+        self.state_commitments = {}  # Armazena commitments de estado (cache)
+        self.zk_proofs = {}  # Armazena provas ZK (cache)
+        self.cross_chain_states = {}  # Estados cross-chain (cache)
+        self.uchain_ids = {}  # Armazena UChainIDs e suas transações (cache)
+        
+        # Carregar dados do banco
+        self._load_from_db()
         
         # Configurar conexões Web3 para transações REAIS
         self.setup_real_connections()
@@ -36,6 +40,138 @@ class BridgeFreeInterop:
         print("🔐 Usa ZK Proofs + State Commitments")
         print("⚡ Modo REAL: Transações aparecem nos explorers!")
         print("🔗 UChainID + ZK Proofs em memos on-chain!")
+        print(f"💾 {len(self.uchain_ids)} UChainIDs carregados do banco")
+    
+    def _load_from_db(self):
+        """Carrega UChainIDs, ZK Proofs e State Commitments do banco de dados"""
+        try:
+            # Carregar UChainIDs
+            rows = self.db.execute_query("SELECT * FROM cross_chain_uchainids")
+            for row in rows:
+                uchain_id, source_chain, target_chain, recipient, amount, timestamp, memo, commitment_id, proof_id, state_id, tx_hash, explorer_url = row
+                self.uchain_ids[uchain_id] = {
+                    "source_chain": source_chain,
+                    "target_chain": target_chain,
+                    "recipient": recipient,
+                    "amount": amount,
+                    "timestamp": timestamp,
+                    "memo": json.loads(memo) if memo else {},
+                    "commitment_id": commitment_id,
+                    "proof_id": proof_id,
+                    "state_id": state_id,
+                    "tx_hash": tx_hash,
+                    "explorer_url": explorer_url
+                }
+            
+            # Carregar ZK Proofs
+            rows = self.db.execute_query("SELECT * FROM cross_chain_zk_proofs")
+            for row in rows:
+                proof_id, source_chain, target_chain, source_commitment_id, state_transition_hash, proof, verification_key, created_at, valid = row
+                self.zk_proofs[proof_id] = {
+                    "source_chain": source_chain,
+                    "target_chain": target_chain,
+                    "source_commitment_id": source_commitment_id,
+                    "state_transition_hash": state_transition_hash,
+                    "proof": proof,
+                    "verification_key": verification_key,
+                    "created_at": created_at,
+                    "valid": bool(valid)
+                }
+            
+            # Carregar State Commitments
+            rows = self.db.execute_query("SELECT * FROM cross_chain_state_commitments")
+            for row in rows:
+                commitment_id, chain, state_data, contract_address, timestamp = row
+                self.state_commitments[commitment_id] = {
+                    "chain": chain,
+                    "state_data": json.loads(state_data) if state_data else {},
+                    "contract_address": contract_address,
+                    "timestamp": timestamp
+                }
+        except Exception as e:
+            print(f"⚠️  Erro ao carregar do banco: {e}")
+    
+    def _save_uchain_id(self, uchain_id: str, data: Dict):
+        """Salva UChainID no banco de dados"""
+        try:
+            self.db.execute_query(
+                """INSERT OR REPLACE INTO cross_chain_uchainids 
+                   (uchain_id, source_chain, target_chain, recipient, amount, timestamp, memo, 
+                    commitment_id, proof_id, state_id, tx_hash, explorer_url)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    uchain_id, data.get("source_chain"), data.get("target_chain"),
+                    data.get("recipient"), data.get("amount"), data.get("timestamp"),
+                    json.dumps(data.get("memo", {})), data.get("commitment_id"),
+                    data.get("proof_id"), data.get("state_id"), data.get("tx_hash"),
+                    data.get("explorer_url")
+                )
+            )
+            self.db.conn.commit()
+        except Exception as e:
+            print(f"⚠️  Erro ao salvar UChainID: {e}")
+    
+    def _save_zk_proof(self, proof_id: str, data: Dict):
+        """Salva ZK Proof no banco de dados"""
+        try:
+            self.db.execute_query(
+                """INSERT OR REPLACE INTO cross_chain_zk_proofs 
+                   (proof_id, source_chain, target_chain, source_commitment_id, 
+                    state_transition_hash, proof, verification_key, created_at, valid)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    proof_id, data.get("source_chain"), data.get("target_chain"),
+                    data.get("source_commitment_id"), data.get("state_transition_hash"),
+                    data.get("proof"), data.get("verification_key"),
+                    data.get("created_at"), 1 if data.get("valid") else 0
+                )
+            )
+            self.db.conn.commit()
+        except Exception as e:
+            print(f"⚠️  Erro ao salvar ZK Proof: {e}")
+    
+    def _save_state_commitment(self, commitment_id: str, data: Dict):
+        """Salva State Commitment no banco de dados"""
+        try:
+            self.db.execute_query(
+                """INSERT OR REPLACE INTO cross_chain_state_commitments 
+                   (commitment_id, chain, state_data, contract_address, timestamp)
+                   VALUES (?, ?, ?, ?, ?)""",
+                (
+                    commitment_id, data.get("chain"),
+                    json.dumps(data.get("state_data", {})),
+                    data.get("contract_address"), data.get("timestamp")
+                )
+            )
+            self.db.conn.commit()
+        except Exception as e:
+            print(f"⚠️  Erro ao salvar State Commitment: {e}")
+    
+    def _load_uchain_id_from_db(self, uchain_id: str):
+        """Carrega um UChainID específico do banco de dados"""
+        try:
+            rows = self.db.execute_query(
+                "SELECT * FROM cross_chain_uchainids WHERE uchain_id = ?",
+                (uchain_id,)
+            )
+            if rows:
+                row = rows[0]
+                uchain_id_db, source_chain, target_chain, recipient, amount, timestamp, memo, commitment_id, proof_id, state_id, tx_hash, explorer_url = row
+                self.uchain_ids[uchain_id] = {
+                    "source_chain": source_chain,
+                    "target_chain": target_chain,
+                    "recipient": recipient,
+                    "amount": amount,
+                    "timestamp": timestamp,
+                    "memo": json.loads(memo) if memo else {},
+                    "commitment_id": commitment_id,
+                    "proof_id": proof_id,
+                    "state_id": state_id,
+                    "tx_hash": tx_hash,
+                    "explorer_url": explorer_url
+                }
+        except Exception as e:
+            print(f"⚠️  Erro ao carregar UChainID do banco: {e}")
     
     def setup_real_connections(self):
         """Configurar conexões Web3 para transações REAIS"""
@@ -372,6 +508,7 @@ class BridgeFreeInterop:
             }
             
             self.state_commitments[commitment_id] = commitment
+            self._save_state_commitment(commitment_id, commitment)  # Persistir no banco
             
             return {
                 "success": True,
@@ -432,6 +569,7 @@ class BridgeFreeInterop:
             }
             
             self.zk_proofs[proof_id] = zk_proof
+            self._save_zk_proof(proof_id, zk_proof)  # Persistir no banco
             
             return {
                 "success": True,
@@ -592,8 +730,8 @@ class BridgeFreeInterop:
                 amount=amount
             )
             
-            # Armazenar UChainID para rastreio
-            self.uchain_ids[uchain_id] = {
+            # Armazenar UChainID para rastreio (memória + banco)
+            uchain_data = {
                 "source_chain": source_chain,
                 "target_chain": target_chain,
                 "recipient": recipient,
@@ -604,6 +742,8 @@ class BridgeFreeInterop:
                 "proof_id": proof_id,
                 "state_id": apply_result["state_id"]
             }
+            self.uchain_ids[uchain_id] = uchain_data
+            self._save_uchain_id(uchain_id, uchain_data)  # Persistir no banco
             
             # 5. Se send_real=True, enviar transação REAL para blockchain
             real_tx_result = None
@@ -650,10 +790,11 @@ class BridgeFreeInterop:
                     result["message"] = "🎉 Transferência REAL enviada! Aparece no explorer!"
                     result["explorer_url"] = real_tx_result.get("explorer_url")
                     result["tx_hash"] = real_tx_result.get("tx_hash")
-                    # Atualizar UChainID com tx_hash
+                    # Atualizar UChainID com tx_hash (memória + banco)
                     if uchain_id in self.uchain_ids:
                         self.uchain_ids[uchain_id]["tx_hash"] = real_tx_result.get("tx_hash")
                         self.uchain_ids[uchain_id]["explorer_url"] = real_tx_result.get("explorer_url")
+                        self._save_uchain_id(uchain_id, self.uchain_ids[uchain_id])  # Atualizar no banco
                 else:
                     result["real_transaction_error"] = real_tx_result.get("error")
                     result["message"] = "⚠️  Commitment criado, mas transação real falhou (verifique saldo e private key)"
