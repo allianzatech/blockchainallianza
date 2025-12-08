@@ -4,205 +4,122 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>💰 {{ t('real_cross_chain_transfer') or 'Real Cross-Chain Transfer - Allianza Testnet' }}</title>
+    <title>🌉 {{ t('interoperability') or 'Interoperability - Allianza Testnet' }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/static/css/testnet-modern.css">
-    <script src="/static/js/testnet-modals.js"></script>
     <style>
-        .btn-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s;
+        .tab-button {
+            background: #374151;
             border: 1px solid #4b5563;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-        .btn-back:hover {
-            background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        }
-        .main-card {
-            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-            border: 1px solid #374151;
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
-            padding: 14px 28px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 16px;
-            transition: all 0.2s;
-            border: none;
+            padding: 12px 24px;
+            border-radius: 8px 8px 0 0;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
-            width: 100%;
-        }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4);
-        }
-        .input-modern {
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            padding: 12px;
-            color: white;
             transition: all 0.2s;
         }
-        .input-modern:focus {
-            outline: none;
-            border-color: #10b981;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        .tab-button.active {
+            background: #1f2937;
+            border-bottom-color: #1f2937;
+            color: #60a5fa;
         }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .result-box {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .result-box:hover {
+            border-color: #4b5563;
+            background: #1f1f1f;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #374151;
+            border: 1px solid #4b5563;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            z-index: 10;
+        }
+        .copy-btn:hover {
+            background: #4b5563;
+        }
+        .copy-btn-small {
+            background: #374151;
+            border: 1px solid #4b5563;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .info { color: #60a5fa; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 text-white min-h-screen">
-    <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-4xl">
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
         <!-- Header -->
         <div class="mb-8">
-            <a href="javascript:history.back()" class="btn-back mb-4 inline-flex">
-                <i class="fas fa-arrow-left"></i>
-                <span>{{ t('back') or 'Back' }}</span>
+            <a href="/" class="text-blue-400 hover:text-blue-300 mb-4 inline-flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i> {{ t('back_to_dashboard') or 'Back to Dashboard' }}
             </a>
-            <div class="flex items-center gap-3 mb-2">
-                <div class="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center text-2xl">
-                    💰
-                </div>
-                <div>
-                    <h1 class="text-4xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">{{ t('real_cross_chain_transfer') or 'Real Cross-Chain Transfer' }}</h1>
-                    <p class="text-gray-400 text-sm mt-1">{{ t('send_real_tokens') or 'Send REAL tokens between different blockchains' }}</p>
-                    <p class="text-sm text-yellow-400 mt-2 flex items-center gap-2">
-                        <i class="fas fa-check-circle"></i>
-                        {{ t('transfers_appear_explorers') or 'Transfers appear on explorers and are 100% real!' }}
-                    </p>
-                </div>
-            </div>
+            <h1 class="text-4xl font-bold mb-2">
+                <i class="fas fa-project-diagram text-blue-400"></i> 
+                {{ t('interoperability') or 'Interoperability' }}
+            </h1>
+            <p class="text-gray-400">{{ t('bridge_free_interoperability_complete') or 'Bridge-free cross-chain interoperability with UChainID and ZK Proofs' }}</p>
         </div>
 
-        <!-- Status -->
-        <div id="status" class="main-card mb-6">
-            <p class="text-yellow-400 flex items-center gap-2">
-                <i class="fas fa-spinner fa-spin"></i>
-                ⏳ {{ t('checking_status') or 'Checking status...' }}
-            </p>
-        </div>
-
-        <!-- Real Transfer -->
-        <div class="main-card mb-6">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-exchange-alt text-green-400 text-xl"></i>
-                </div>
-                <h2 class="text-2xl font-bold">📝 {{ t('fill_transfer_data') or 'Fill in the Transfer Data' }}</h2>
-            </div>
-            <p class="text-sm text-gray-400 mb-6">{{ t('simple_instructions') or 'Simple: choose origin, destination, quantity, and address. That\'s it!' }}</p>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-sm font-medium mb-2 text-gray-300">{{ t('origin_blockchain') or 'Origin Blockchain' }}</label>
-                    <select id="sourceChain" class="input-modern w-full">
-                        <option value="polygon">Polygon (Amoy)</option>
-                        <option value="ethereum">Ethereum (Sepolia)</option>
-                        <option value="bsc">BSC (Testnet)</option>
-                        <option value="base">Base (Sepolia)</option>
-                        <option value="bitcoin">Bitcoin (Testnet)</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-2 text-gray-300">{{ t('destination_blockchain') or 'Destination Blockchain' }}</label>
-                    <select id="targetChain" class="input-modern w-full">
-                        <option value="bitcoin">Bitcoin (Testnet)</option>
-                        <option value="polygon">Polygon (Amoy)</option>
-                        <option value="ethereum">Ethereum (Sepolia)</option>
-                        <option value="bsc">BSC (Testnet)</option>
-                        <option value="base">Base (Sepolia)</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-sm font-medium mb-2 text-gray-300">{{ t('quantity') or 'Quantity' }}</label>
-                    <input type="number" id="amount" step="0.0001" value="0.1" class="input-modern w-full">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-2 text-gray-300">{{ t('token') or 'Token' }}</label>
-                    <select id="tokenSymbol" class="input-modern w-full">
-                        <option value="MATIC">MATIC</option>
-                        <option value="ETH">ETH</option>
-                        <option value="BNB">BNB</option>
-                        <option value="BTC">BTC</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="mb-6">
-                <label class="block text-sm font-medium mb-2 text-gray-300">{{ t('recipient_address') or 'Recipient Address' }}</label>
-                <input type="text" id="recipient" placeholder="0x... ou tb1q..." class="input-modern w-full">
-            </div>
-
-            <div class="mb-6 p-4 bg-blue-500/20 border border-blue-500 rounded-lg">
-                <p class="text-sm font-bold mb-2 text-blue-300 flex items-center gap-2">
-                    <i class="fas fa-lightbulb"></i>
-                    💡 {{ t('how_it_works') or 'How it works:' }}
-                </p>
-                <ol class="text-xs text-gray-300 list-decimal list-inside space-y-1">
-                    <li>{{ t('choose_origin_blockchain') or 'Choose the origin blockchain (e.g. Polygon)' }}</li>
-                    <li>{{ t('choose_destination_blockchain') or 'Choose the destination blockchain (e.g. Bitcoin)' }}</li>
-                    <li>{{ t('enter_quantity_token') or 'Enter the quantity and token' }}</li>
-                    <li>{{ t('paste_recipient_address') or 'Paste the recipient address' }}</li>
-                    <li>{{ t('click_execute_real_transfer') or 'Click "Execute REAL Transfer"' }}</li>
-                    <li>{{ t('transfer_will_appear_explorers') or 'The transfer will appear on explorers!' }}</li>
-                </ol>
-            </div>
-
-            <div class="mb-6 p-4 bg-yellow-500/20 border border-yellow-500 rounded-lg">
-                <p class="text-sm font-bold mb-2 text-yellow-300 flex items-center gap-2">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    ⚠️ {{ t('important') or 'Important:' }}
-                </p>
-                <ul class="text-xs text-gray-300 list-disc list-inside space-y-1">
-                    <li>{{ t('real_transfer_appear_explorers') or 'This is a REAL transfer that will appear on explorers' }}</li>
-                    <li>{{ t('need_sufficient_balance') or 'You need sufficient balance on the origin blockchain' }}</li>
-                    <li>{{ t('no_balance_use_faucet') or 'No balance? Use the Faucet to get test tokens' }}</li>
-                </ul>
-            </div>
-
-            <button onclick="executeRealTransfer()" class="btn-primary">
-                <i class="fas fa-rocket mr-2"></i>🚀 Execute REAL Transfer
+        <!-- Tabs -->
+        <div class="mb-6 flex gap-2 overflow-x-auto">
+            <button class="tab-button active" onclick="showTab('about')">
+                <i class="fas fa-book"></i> {{ t('about') or 'About' }}
             </button>
-
-            <div id="transferResult" class="mt-4 hidden"></div>
+            <button class="tab-button" onclick="showTab('test')">
+                <i class="fas fa-vial"></i> {{ t('test') or 'Test' }}
+            </button>
+            <button class="tab-button" onclick="showTab('transfer')">
+                <i class="fas fa-exchange-alt"></i> {{ t('real_transfer') or 'Real Transfer' }}
+            </button>
+            <button class="tab-button" onclick="showTab('decoder')">
+                <i class="fas fa-code"></i> {{ t('decoder') or 'Decoder' }}
+            </button>
+            <button class="tab-button" onclick="showTab('proofs')">
+                <i class="fas fa-list"></i> {{ t('proofs') or 'Proofs' }}
+            </button>
+            <button class="tab-button" onclick="showTab('verifier')">
+                <i class="fas fa-shield-alt"></i> {{ t('zk_verifier') or 'ZK Verifier' }}
+            </button>
         </div>
 
-        <!-- Informação sobre ALZ-NIEV -->
-        <div class="main-card">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-atom text-purple-400 text-xl"></i>
-                </div>
-                <h2 class="text-2xl font-bold">🧬 {{ t('alz_niev_technology') or 'ALZ-NIEV Technology' }}</h2>
-            </div>
-            <p class="text-sm text-gray-300 mb-4">
-                {{ t('alz_niev_behind_interface') or 'Behind this simple interface is the ALZ-NIEV system with 5 layers of security and cryptographic proofs. You don\'t need to understand this - just make your transfer and everything works automatically!' }}
-            </p>
-            <details class="text-sm">
-                <summary class="cursor-pointer text-blue-400 hover:text-blue-300 font-semibold mb-4">{{ t('view_technical_details') or 'View technical details (optional)' }}</summary>
-                <div class="mt-4 grid grid-cols-1 md:grid-cols-5 gap-4">
+        <!-- Tab: About -->
+        <div id="tab-about" class="tab-content active">
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4">🧬 ALZ-NIEV Protocol</h2>
+                <p class="text-gray-300 mb-4">
+                    {{ t('alz_niev_description') or 'The ALZ-NIEV system provides bridge-free cross-chain interoperability with 5 layers of security and cryptographic proofs.' }}
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
                     <div class="bg-blue-500/20 border border-blue-500 rounded-lg p-4">
                         <h3 class="font-bold mb-1 text-blue-300">🔵 ELNI</h3>
                         <p class="text-xs text-gray-300">Execution-Level Native Interop</p>
@@ -224,52 +141,368 @@
                         <p class="text-xs text-gray-300">Atomic Execution Sync</p>
                     </div>
                 </div>
-            </details>
+                <div class="bg-green-900/20 border border-green-500 rounded-lg p-4">
+                    <h3 class="font-bold mb-2 text-green-300">✅ Benefits</h3>
+                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                        <li>{{ t('no_custody') or 'No custody: no need to hold reserve funds' }}</li>
+                        <li>{{ t('no_hackable_bridge') or 'No hackable bridge: no bridge to hack' }}</li>
+                        <li>{{ t('no_wrapped_tokens') or 'No wrapped tokens: no need to create synthetic tokens' }}</li>
+                        <li>{{ t('mathematical_security') or 'Mathematical security: ZK proof guarantees validity' }}</li>
+                        <li>{{ t('privacy') or 'Privacy: does not reveal sensitive data' }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Test -->
+        <div id="tab-test" class="tab-content">
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4">{{ t('create_cross_chain_transfer') or 'Create Cross-Chain Transfer' }}</h2>
+                <form id="transferForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">{{ t('source_chain') or 'Source Chain' }}</label>
+                            <select id="sourceChain" name="source_chain" class="w-full bg-gray-700 text-white p-2 rounded" required>
+                                <option value="polygon">Polygon</option>
+                                <option value="ethereum">Ethereum</option>
+                                <option value="bsc">BSC</option>
+                                <option value="bitcoin">Bitcoin</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">{{ t('target_chain') or 'Target Chain' }}</label>
+                            <select id="targetChain" name="target_chain" class="w-full bg-gray-700 text-white p-2 rounded" required>
+                                <option value="ethereum">Ethereum</option>
+                                <option value="polygon">Polygon</option>
+                                <option value="bsc">BSC</option>
+                                <option value="bitcoin">Bitcoin</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">{{ t('amount') or 'Amount' }}</label>
+                        <input type="number" id="amount" name="amount" step="0.001" value="0.1" 
+                               class="w-full bg-gray-700 text-white p-2 rounded" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">{{ t('recipient_address') or 'Recipient Address' }}</label>
+                        <input type="text" id="recipient" name="recipient" 
+                               value="0x86AE40869EB6ACb9477b42BfC9150c0A2Cc21f5E"
+                               class="w-full bg-gray-700 text-white p-2 rounded font-mono" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">{{ t('token_symbol') or 'Token Symbol' }}</label>
+                        <input type="text" id="tokenSymbol" name="token_symbol" value="ETH" 
+                               class="w-full bg-gray-700 text-white p-2 rounded">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="sendReal" name="send_real">
+                        <label for="sendReal" class="text-sm">{{ t('send_real_transaction') or 'Send REAL transaction' }}</label>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                        <i class="fas fa-paper-plane mr-2"></i> {{ t('create_transfer') or 'Create Transfer' }}
+                    </button>
+                </form>
+            </div>
+            <div id="testResults" class="hidden">
+                <div class="bg-gray-800 p-6 rounded-lg mb-6">
+                    <h2 class="text-2xl font-bold mb-4">{{ t('result') or 'Result' }}</h2>
+                    <div id="testResultContent" class="result-box" onclick="copyToClipboard('testResultContent')">
+                        <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('testResultContent')">
+                            <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg mb-6">
+                <h2 class="text-2xl font-bold mb-4">{{ t('search_proof_by_uchainid') or 'Search Proof by UChainID' }}</h2>
+                <form id="searchForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">UChainID</label>
+                        <input type="text" id="uchainId" placeholder="UCHAIN-..." 
+                               class="w-full bg-gray-700 text-white p-2 rounded font-mono" required>
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                        <i class="fas fa-search mr-2"></i> {{ t('search_proof') or 'Search Proof' }}
+                    </button>
+                </form>
+                <div id="searchResults" class="hidden mt-4">
+                    <div id="searchContent" class="result-box" onclick="copyToClipboard('searchContent')">
+                        <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('searchContent')">
+                            <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Real Transfer -->
+        <div id="tab-transfer" class="tab-content">
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4">{{ t('real_cross_chain_transfer') or 'Real Cross-Chain Transfer' }}</h2>
+                <p class="text-sm text-gray-400 mb-6">{{ t('send_real_tokens') or 'Send REAL tokens between different blockchains' }}</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">{{ t('origin_blockchain') or 'Origin Blockchain' }}</label>
+                        <select id="realSourceChain" class="w-full bg-gray-700 text-white p-2 rounded">
+                            <option value="polygon">Polygon (Amoy)</option>
+                            <option value="ethereum">Ethereum (Sepolia)</option>
+                            <option value="bsc">BSC (Testnet)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">{{ t('destination_blockchain') or 'Destination Blockchain' }}</label>
+                        <select id="realTargetChain" class="w-full bg-gray-700 text-white p-2 rounded">
+                            <option value="ethereum">Ethereum (Sepolia)</option>
+                            <option value="polygon">Polygon (Amoy)</option>
+                            <option value="bsc">BSC (Testnet)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">{{ t('quantity') or 'Quantity' }}</label>
+                        <input type="number" id="realAmount" step="0.0001" value="0.1" class="w-full bg-gray-700 text-white p-2 rounded">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">{{ t('token') or 'Token' }}</label>
+                        <select id="realTokenSymbol" class="w-full bg-gray-700 text-white p-2 rounded">
+                            <option value="ETH">ETH</option>
+                            <option value="MATIC">MATIC</option>
+                            <option value="BNB">BNB</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium mb-2">{{ t('recipient_address') or 'Recipient Address' }}</label>
+                    <input type="text" id="realRecipient" placeholder="0x..." class="w-full bg-gray-700 text-white p-2 rounded font-mono">
+                </div>
+                <button onclick="executeRealTransfer()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                    <i class="fas fa-rocket mr-2"></i> 🚀 {{ t('execute_real_transfer') or 'Execute REAL Transfer' }}
+                </button>
+                <div id="realTransferResult" class="hidden mt-4">
+                    <div id="realTransferContent" class="result-box" onclick="copyToClipboard('realTransferContent')">
+                        <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('realTransferContent')">
+                            <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Decoder -->
+        <div id="tab-decoder" class="tab-content">
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4">
+                    <i class="fas fa-code text-blue-400"></i> {{ t('memo_decoder') or 'Memo Decoder' }}
+                </h2>
+                <p class="text-sm text-gray-400 mb-4">{{ t('decode_uchainid_memo') or 'Decode UChainID memo from on-chain transaction' }}</p>
+                <form id="decoderForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">UChainID</label>
+                        <input type="text" id="decoderUChainID" placeholder="UCHAIN-..." 
+                               class="w-full bg-gray-700 text-white p-2 rounded font-mono" required>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                        <i class="fas fa-search mr-2"></i> {{ t('decode') or 'Decode' }}
+                    </button>
+                </form>
+                <div id="decoderResults" class="hidden mt-4">
+                    <div id="decoderContent" class="result-box" onclick="copyToClipboard('decoderContent')">
+                        <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('decoderContent')">
+                            <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Proofs -->
+        <div id="tab-proofs" class="tab-content">
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4">
+                    <i class="fas fa-list text-purple-400"></i> {{ t('public_proofs') or 'Public Proofs' }}
+                </h2>
+                <p class="text-sm text-gray-400 mb-4">{{ t('all_cross_chain_transfers') or 'All cross-chain transfers with UChainID and ZK Proofs' }}</p>
+                <button onclick="loadAllProofs()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                    <i class="fas fa-list mr-2"></i> {{ t('load_all_proofs') or 'Load All Proofs (last 50)' }}
+                </button>
+                <div id="proofsResults" class="hidden mt-4">
+                    <div id="proofsContent" class="result-box" onclick="copyToClipboard('proofsContent')">
+                        <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('proofsContent')">
+                            <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: ZK Verifier -->
+        <div id="tab-verifier" class="tab-content">
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4">
+                    <i class="fas fa-shield-alt text-green-400"></i> {{ t('zk_proof_verifier') or 'ZK Proof Verifier' }}
+                </h2>
+                <p class="text-sm text-gray-400 mb-4">{{ t('verify_zk_proofs') or 'Verify Zero-Knowledge proofs from cross-chain transfers' }}</p>
+                <form id="verifierForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Proof (hex string)</label>
+                        <textarea id="verifierProof" rows="3" 
+                                  placeholder="{{ t('paste_zk_proof') or 'Paste the ZK proof hex string here...' }}"
+                                  class="w-full bg-gray-700 text-white p-2 rounded font-mono"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Verification Key (hex string)</label>
+                        <textarea id="verifierKey" rows="3" 
+                                  placeholder="{{ t('paste_verification_key') or 'Paste the verification key hex string here...' }}"
+                                  class="w-full bg-gray-700 text-white p-2 rounded font-mono"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Public Inputs / State Hash (optional)</label>
+                        <input type="text" id="verifierInputs" 
+                               placeholder="{{ t('state_transition_hash') or 'State transition hash (optional)' }}"
+                               class="w-full bg-gray-700 text-white p-2 rounded font-mono">
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                        <i class="fas fa-check-circle mr-2"></i> {{ t('verify_proof') or 'Verify Proof' }}
+                    </button>
+                </form>
+                <div class="mt-4">
+                    <p class="text-sm text-gray-400 mb-2">{{ t('quick_load') or 'Quick Load from System:' }}</p>
+                    <div class="flex gap-2">
+                        <input type="text" id="quickUChainID" placeholder="UCHAIN-..." 
+                               class="flex-1 bg-gray-700 text-white p-2 rounded font-mono">
+                        <button onclick="loadFromUChainID()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded transition">
+                            <i class="fas fa-search"></i> {{ t('load') or 'Load' }}
+                        </button>
+                    </div>
+                </div>
+                <div id="verifierResults" class="hidden mt-4">
+                    <div id="verifierContent" class="result-box" onclick="copyToClipboard('verifierContent')">
+                        <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('verifierContent')">
+                            <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Verificar status
-        async function checkStatus() {
-            try {
-                const response = await fetch('/api/interoperability/status');
-                const data = await response.json();
-                
-                const statusDiv = document.getElementById('status');
-                if (data.available) {
-                    const availableText = typeof t !== 'undefined' && t ? t('interoperability_available') : 'Interoperability system available and ready for REAL transfers!';
-                    statusDiv.innerHTML = '<p class="text-green-400 flex items-center gap-2"><i class="fas fa-check-circle"></i>✅ ' + availableText + '</p>';
-                } else {
-                    const limitedText = typeof t !== 'undefined' && t ? t('system_limited_mode') : 'System in limited mode:';
-                    const notAvailText = typeof t !== 'undefined' && t ? t('not_available') : 'Not available';
-                    statusDiv.innerHTML = '<p class="text-yellow-400 flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i>⚠️ ' + limitedText + ' ' + (data.error || notAvailText) + '</p>';
-                }
-            } catch (error) {
-                document.getElementById('status').innerHTML = '<p class="text-yellow-400 flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i>⚠️ Verificando status...</p>';
-            }
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            event.target.classList.add('active');
         }
 
-        // Execute real transfer
+        // Copy to clipboard
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.innerText || element.textContent;
+            const textWithoutButton = text.replace(/Copy.*?Copy/g, '').trim();
+            
+            navigator.clipboard.writeText(textWithoutButton).then(() => {
+                const btn = element.querySelector('.copy-btn');
+                if (btn) {
+                    const originalHTML = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check"></i> {{ t("copied") or "Copied!" }}';
+                    setTimeout(() => {
+                        btn.innerHTML = originalHTML;
+                    }, 2000);
+                }
+            });
+        }
+
+        // Create Transfer (Test Tab)
+        document.getElementById('transferForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = {
+                source_chain: formData.get('source_chain'),
+                target_chain: formData.get('target_chain'),
+                amount: parseFloat(formData.get('amount')),
+                recipient: formData.get('recipient'),
+                token_symbol: formData.get('token_symbol'),
+                send_real: document.getElementById('sendReal').checked
+            };
+
+            const resultsDiv = document.getElementById('testResults');
+            const resultContent = document.getElementById('testResultContent');
+            resultsDiv.classList.remove('hidden');
+            resultContent.innerHTML = '<p class="info">⏳ {{ t("sending_request") or "Sending request..." }}</p>';
+
+            try {
+                const response = await fetch('/api/cross-chain/transfer', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                resultContent.innerHTML = `
+                    <p class="${result.success ? 'success' : 'error'}">${result.success ? '✅' : '❌'} ${result.success ? '{{ t("transfer_created_success") or "Transfer created successfully!" }}' : result.error}</p>
+                    <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultContent.innerHTML = `<p class="error">❌ {{ t("error") or "Error" }}: ${error.message}</p>`;
+            }
+        });
+
+        // Search Proof (Test Tab)
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const uchainId = document.getElementById('uchainId').value;
+
+            const searchResults = document.getElementById('searchResults');
+            const searchContent = document.getElementById('searchContent');
+            searchResults.classList.remove('hidden');
+            searchContent.innerHTML = '<p class="info">⏳ {{ t("searching_proof") or "Searching proof..." }}</p>';
+
+            try {
+                const response = await fetch(`/api/cross-chain/proof/${encodeURIComponent(uchainId)}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    searchContent.innerHTML = `
+                        <p class="success">✅ {{ t('proof_found') or 'Proof found!' }}</p>
+                        <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    searchContent.innerHTML = `
+                        <p class="error">❌ ${result.error || '{{ t("proof_not_found") or "Proof not found" }}'}</p>
+                    `;
+                }
+            } catch (error) {
+                searchContent.innerHTML = `<p class="error">❌ {{ t('error') or 'Error' }}: ${error.message}</p>`;
+            }
+        });
+
+        // Execute Real Transfer
         async function executeRealTransfer() {
-            const sourceChain = document.getElementById('sourceChain').value;
-            const targetChain = document.getElementById('targetChain').value;
-            const amount = parseFloat(document.getElementById('amount').value);
-            const tokenSymbol = document.getElementById('tokenSymbol').value;
-            const recipient = document.getElementById('recipient').value.trim();
+            const sourceChain = document.getElementById('realSourceChain').value;
+            const targetChain = document.getElementById('realTargetChain').value;
+            const amount = parseFloat(document.getElementById('realAmount').value);
+            const tokenSymbol = document.getElementById('realTokenSymbol').value;
+            const recipient = document.getElementById('realRecipient').value.trim();
 
             if (!recipient) {
-                alert('Please enter a recipient address');
+                alert('{{ t("please_enter_recipient") or "Please enter a recipient address" }}');
                 return;
             }
 
-            if (amount <= 0) {
-                alert('Amount must be greater than zero');
-                return;
-            }
-
-            const resultDiv = document.getElementById('transferResult');
+            const resultDiv = document.getElementById('realTransferResult');
+            const resultContent = document.getElementById('realTransferContent');
             resultDiv.classList.remove('hidden');
-            resultDiv.innerHTML = '<p class="text-blue-400 flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i>⏳ Executing REAL transfer...<br><span class="text-sm text-gray-400">This may take a few seconds...</span></p>';
+            resultContent.innerHTML = '<p class="info">⏳ {{ t("executing_real_transfer") or "Executing REAL transfer..." }}</p>';
 
             try {
                 const response = await fetch('/api/interoperability/transfer-real', {
@@ -284,56 +517,110 @@
                     })
                 });
 
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    const text = await response.text();
-                    throw new Error(`Response is not JSON. Status: ${response.status}. Response: ${text.substring(0, 200)}`);
-                }
-
                 const data = await response.json();
-                
-                // Usar modal moderno para mostrar resultado
-                if (data.success) {
-                    const resultType = 'success';
-                    const transferTitle = typeof t !== 'undefined' && t ? t('real_cross_chain_transfer') : 'Real Cross-Chain Transfer';
-                    const successTitle = typeof t !== 'undefined' && t ? t('real_transfer_executed') : 'Real Transfer Executed';
-                    const successDesc = typeof t !== 'undefined' && t ? t('transfer_success_explorers') : 'Transfer executed successfully and will appear on explorers!';
-                    const description = {
-                        statusTitle: successTitle,
-                        description: successDesc
-                    };
-                    createModernModal(transferTitle, data, resultType, description);
-                } else {
-                    const resultType = 'error';
-                    const transferTitle = typeof t !== 'undefined' && t ? t('real_cross_chain_transfer') : 'Real Cross-Chain Transfer';
-                    const errorTitle = typeof t !== 'undefined' && t ? t('transfer_error') : 'Transfer Error';
-                    const errorDesc = data.error || (typeof t !== 'undefined' && t ? t('error_executing_transfer') : 'Error executing transfer');
-                    const description = {
-                        statusTitle: errorTitle,
-                        description: errorDesc
-                    };
-                    createModernModal(transferTitle, data, resultType, description);
-                }
-                resultDiv.innerHTML = '';
+                resultContent.innerHTML = `
+                    <p class="${data.success ? 'success' : 'error'}">${data.success ? '✅' : '❌'} ${data.success ? '{{ t("transfer_executed") or "Transfer executed!" }}' : data.error}</p>
+                    <pre class="mt-4 text-xs">${JSON.stringify(data, null, 2)}</pre>
+                `;
             } catch (error) {
-                const errorData = {
-                    success: false,
-                    error: error.message
-                };
-                const resultType = 'error';
-                const transferTitle = typeof t !== 'undefined' && t ? t('real_cross_chain_transfer') : 'Real Cross-Chain Transfer';
-                const errorTitle = typeof t !== 'undefined' && t ? t('error_executing') : 'Error Executing';
-                const description = {
-                    statusTitle: errorTitle,
-                    description: error.message
-                };
-                createModernModal(transferTitle, errorData, resultType, description);
-                resultDiv.innerHTML = '';
+                resultContent.innerHTML = `<p class="error">❌ {{ t('error') or 'Error' }}: ${error.message}</p>`;
             }
         }
 
-        // Verificar status ao carregar
-        checkStatus();
+        // Decoder
+        document.getElementById('decoderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const uchainId = document.getElementById('decoderUChainID').value;
+            
+            // Redirect to decoder page
+            window.location.href = `/decode/${encodeURIComponent(uchainId)}`;
+        });
+
+        // Load All Proofs
+        async function loadAllProofs() {
+            const resultsDiv = document.getElementById('proofsResults');
+            const resultContent = document.getElementById('proofsContent');
+            resultsDiv.classList.remove('hidden');
+            resultContent.innerHTML = '<p class="info">⏳ {{ t("loading_proofs") or "Loading proofs..." }}</p>';
+
+            try {
+                const response = await fetch('/api/cross-chain/proofs?limit=50');
+                const result = await response.json();
+
+                if (result.success) {
+                    resultContent.innerHTML = `
+                        <p class="success">✅ ${result.total} {{ t('proofs_found_showing') or 'proofs found (showing' }} ${result.returned})</p>
+                        <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    resultContent.innerHTML = `<p class="error">❌ ${result.error || '{{ t("error_listing_proofs") or "Error listing proofs" }}'}</p>`;
+                }
+            } catch (error) {
+                resultContent.innerHTML = `<p class="error">❌ {{ t('error') or 'Error' }}: ${error.message}</p>`;
+            }
+        }
+
+        // ZK Verifier
+        document.getElementById('verifierForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const proof = document.getElementById('verifierProof').value.trim();
+            const verificationKey = document.getElementById('verifierKey').value.trim();
+            const publicInputs = document.getElementById('verifierInputs').value.trim();
+
+            if (!proof || !verificationKey) {
+                alert('{{ t("please_enter_proof_and_key") or "Please enter both proof and verification key" }}');
+                return;
+            }
+
+            const resultsDiv = document.getElementById('verifierResults');
+            const resultContent = document.getElementById('verifierContent');
+            resultsDiv.classList.remove('hidden');
+            resultContent.innerHTML = '<p class="info">⏳ {{ t("verifying_proof") or "Verifying..." }}</p>';
+
+            try {
+                const response = await fetch('/zk-verifier', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({proof, verification_key: verificationKey, public_inputs: publicInputs})
+                });
+
+                const data = await response.json();
+                resultContent.innerHTML = `
+                    <p class="${data.success && data.valid ? 'success' : 'error'}">
+                        ${data.success && data.valid ? '✅' : '❌'} ${data.message || data.error}
+                    </p>
+                    <pre class="mt-4 text-xs">${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultContent.innerHTML = `<p class="error">❌ {{ t('error') or 'Error' }}: ${error.message}</p>`;
+            }
+        });
+
+        // Load from UChainID (ZK Verifier)
+        async function loadFromUChainID() {
+            const uchainId = document.getElementById('quickUChainID').value.trim();
+            if (!uchainId) {
+                alert('{{ t("please_enter_uchainid") or "Please enter a UChainID" }}');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/cross-chain/proof/${uchainId}`);
+                const data = await response.json();
+
+                if (data.success && data.zk_proof) {
+                    document.getElementById('verifierProof').value = data.zk_proof.proof || '';
+                    document.getElementById('verifierKey').value = data.zk_proof.verification_key || '';
+                    document.getElementById('verifierInputs').value = data.zk_proof.state_transition_hash || '';
+                    alert('{{ t("proof_data_loaded") or "Proof data loaded successfully!" }}');
+                } else {
+                    alert('{{ t("uchainid_not_found") or "UChainID not found or no ZK Proof available" }}');
+                }
+            } catch (error) {
+                alert('{{ t("error_loading_proof") or "Error loading proof" }}: ' + error.message);
+            }
+        }
     </script>
 </body>
 </html>
+
