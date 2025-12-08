@@ -1,59 +1,82 @@
-# Docker Compose para Ambiente de Testes e Auditoria - Allianza Blockchain
-# Versão: 1.0
-# Data: 03 de Dezembro de 2025
-
 version: '3.8'
 
 services:
-  allianza-tests:
+  allianza-blockchain:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: allianza-blockchain-tests
-    volumes:
-      - ./proofs:/app/proofs
-      - ./logs:/app/logs
-      - ./test_results:/app/test_results
+    container_name: allianza-blockchain
+    ports:
+      - "5000:5000"
     environment:
-      - PYTHONUNBUFFERED=1
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
       - BLOCKCHAIN_MODE=testnet
-      - REDIS_URL=redis://redis:6379
-    depends_on:
-      - redis
+    volumes:
+      - ./:/app
+      - ./data:/app/data
     networks:
       - allianza-network
-    command: /app/scripts/run_all_tests.sh
+    depends_on:
+      - redis
+      - postgres
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
     container_name: allianza-redis
     ports:
       - "6379:6379"
-    networks:
-      - allianza-network
     volumes:
       - redis-data:/data
-
-  # Opcional: Serviço de API para testes manuais
-  allianza-api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: allianza-blockchain-api
-    ports:
-      - "5008:5008"
-    volumes:
-      - ./proofs:/app/proofs
-      - ./logs:/app/logs
-    environment:
-      - PYTHONUNBUFFERED=1
-      - BLOCKCHAIN_MODE=testnet
-      - REDIS_URL=redis://redis:6379
-    depends_on:
-      - redis
     networks:
       - allianza-network
-    command: python allianza_blockchain.py
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: allianza-postgres
+    environment:
+      - POSTGRES_DB=allianza_blockchain
+      - POSTGRES_USER=allianza
+      - POSTGRES_PASSWORD=allianza_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - allianza-network
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: allianza-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    networks:
+      - allianza-network
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: allianza-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - allianza-network
+    depends_on:
+      - prometheus
+    restart: unless-stopped
 
 networks:
   allianza-network:
@@ -61,6 +84,6 @@ networks:
 
 volumes:
   redis-data:
-
-
-
+  postgres-data:
+  prometheus-data:
+  grafana-data:

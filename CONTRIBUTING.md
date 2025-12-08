@@ -4,6 +4,31 @@ Obrigado por seu interesse em contribuir para o Allianza Blockchain! 🚀
 
 Este documento fornece diretrizes para contribuir com o projeto. Seguir essas diretrizes ajuda a garantir que o processo seja suave para todos.
 
+## 🌟 Por Que Contribuir?
+
+### 🚀 Impacto Mundial
+- **Primeira blockchain pós-quântica real** - Você estará trabalhando em tecnologia de ponta
+- **Segurança quântica** - Protegendo o futuro da criptografia
+- **Interoperabilidade universal** - Conectando blockchains sem bridges custodiadas
+
+### 💡 Aprendizado
+- **Criptografia pós-quântica** - Aprenda ML-DSA, SPHINCS+, ML-KEM
+- **Blockchain avançada** - Consenso adaptativo, sharding, interoperabilidade
+- **Arquitetura escalável** - Padrões de código profissional
+
+### 🏆 Reconhecimento
+- **Créditos no projeto** - Seu nome nos contribuidores
+- **Bounties** - Recompensas por contribuições significativas
+- **Networking** - Conecte-se com desenvolvedores de blockchain
+
+### 🎯 Áreas de Contribuição
+- 🔐 **Segurança Quântica** - Melhorias em QRS-3, PQC
+- 🌐 **Interoperabilidade** - Suporte a novas blockchains
+- ⚡ **Performance** - Otimizações de consenso e sharding
+- 📚 **Documentação** - Guias, tutoriais, exemplos
+- 🧪 **Testes** - Novos testes, melhorias de coverage
+- 🐛 **Bug Fixes** - Correções e melhorias
+
 ## 📋 Índice
 
 - [Código de Conduta](#código-de-conduta)

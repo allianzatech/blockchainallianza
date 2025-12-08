@@ -1,4 +1,4 @@
-name: CI - Tests and Security
+name: CI - Tests, Security, and Quality
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
   schedule:
     # Run weekly on Mondays
     - cron: '0 0 * * 1'
+  workflow_dispatch:  # Allow manual trigger
 
 jobs:
   test:
@@ -34,6 +35,21 @@ jobs:
     - name: Run verification tests
       run: |
         python tests/public/run_verification_tests.py
+      continue-on-error: true
+    
+    - name: Run tests with coverage
+      run: |
+        pip install pytest pytest-cov
+        pytest tests/public/ --cov=core --cov=allianza_blockchain --cov-report=xml --cov-report=term-missing || true
+      continue-on-error: true
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
       continue-on-error: true
     
     - name: Check for secrets
@@ -92,7 +108,26 @@ jobs:
       run: |
         pip install flake8 pylint
     
+    - name: Install linting tools
+      run: |
+        pip install black flake8 mypy isort
+    
+    - name: Run black (check)
+      run: |
+        black --check --line-length=120 core/ allianza_blockchain.py || true
+      continue-on-error: true
+    
+    - name: Run isort (check)
+      run: |
+        isort --check-only --profile=black core/ allianza_blockchain.py || true
+      continue-on-error: true
+    
     - name: Run flake8
       run: |
-        flake8 core/ tests/public/ --max-line-length=120 --ignore=E501,W503 || true
+        flake8 core/ tests/public/ --max-line-length=120 --ignore=E501,W503,E203 || true
+      continue-on-error: true
+    
+    - name: Run mypy
+      run: |
+        mypy core/ --ignore-missing-imports --no-strict-optional || true
       continue-on-error: true
