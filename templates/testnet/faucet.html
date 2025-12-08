@@ -115,7 +115,8 @@
         document.getElementById('generateWalletBtn').addEventListener('click', async () => {
             const walletResultDiv = document.getElementById('walletResult');
             walletResultDiv.classList.remove('hidden');
-            walletResultDiv.innerHTML = '<p class="text-blue-400">Gerando wallet...</p>';
+            const t = typeof window.t !== 'undefined' ? window.t : null;
+            walletResultDiv.innerHTML = `<p class="text-blue-400">${t && t('generating_wallet') ? t('generating_wallet') : 'Generating wallet...'}</p>`;
             
             try {
                 const response = await fetch('/api/wallet/generate', {
@@ -135,14 +136,14 @@
                                     <p class="text-gray-300 font-medium">${t && t('address') ? t('address') : 'Address'}:</p>
                                     <p class="font-mono bg-gray-800 p-2 rounded break-all">${data.address}</p>
                                     <button onclick="copyToClipboard('${data.address}')" class="mt-1 text-blue-400 hover:text-blue-300 text-xs">
-                                        <i class="fas fa-copy"></i> Copiar
+                                        <i class="fas fa-copy"></i> ${t && t('copy') ? t('copy') : 'Copy'}
                                     </button>
                                 </div>
                                 <div class="mt-3">
                                     <p class="text-yellow-300 font-medium">⚠️ ${t && t('private_key_testnet_only') ? t('private_key_testnet_only') : 'Private Key (TESTNET ONLY)'}:</p>
                                     <p class="font-mono bg-gray-800 p-2 rounded break-all text-xs">${data.private_key}</p>
                                     <button onclick="copyToClipboard('${data.private_key}')" class="mt-1 text-blue-400 hover:text-blue-300 text-xs">
-                                        <i class="fas fa-copy"></i> Copiar
+                                        <i class="fas fa-copy"></i> ${t && t('copy') ? t('copy') : 'Copy'}
                                     </button>
                                     <p class="text-red-300 text-xs mt-2">${data.message}</p>
                                 </div>
@@ -160,6 +161,7 @@
                     // Copiar para clipboard
                     navigator.clipboard.writeText(data.address);
                 } else {
+                    const t = typeof window.t !== 'undefined' ? window.t : null;
                     walletResultDiv.innerHTML = `
                         <div class="bg-red-900 p-4 rounded">
                             <p class="text-red-300">❌ ${data.error}</p>
@@ -167,9 +169,10 @@
                     `;
                 }
             } catch (error) {
+                const t = typeof window.t !== 'undefined' ? window.t : null;
                 walletResultDiv.innerHTML = `
                     <div class="bg-red-900 p-4 rounded">
-                        <p class="text-red-300">❌ Erro: ${error.message}</p>
+                        <p class="text-red-300">❌ ${t && t('error_colon') ? t('error_colon') : 'Error:'} ${error.message}</p>
                     </div>
                 `;
             }
@@ -177,7 +180,8 @@
 
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text);
-            alert('Copiado para a área de transferência!');
+            const t = typeof window.t !== 'undefined' ? window.t : null;
+            alert(t && t('copied_to_clipboard') ? t('copied_to_clipboard') : 'Copied to clipboard!');
         }
 
         // Faucet Request
@@ -187,7 +191,8 @@
             const resultDiv = document.getElementById('result');
             
             resultDiv.classList.remove('hidden');
-            resultDiv.innerHTML = '<p class="text-blue-400">Processando...</p>';
+            const t = typeof window.t !== 'undefined' ? window.t : null;
+            resultDiv.innerHTML = `<p class="text-blue-400">${t && t('processing') ? t('processing') : 'Processing...'}</p>`;
             
             try {
                 const response = await fetch('/api/faucet/request', {
@@ -232,9 +237,10 @@
                     `;
                 }
             } catch (error) {
+                const t = typeof window.t !== 'undefined' ? window.t : null;
                 resultDiv.innerHTML = `
                     <div class="bg-red-900 p-4 rounded">
-                        <p class="text-red-300">❌ Erro: ${error.message}</p>
+                        <p class="text-red-300">❌ ${t && t('error_colon') ? t('error_colon') : 'Error:'} ${error.message}</p>
                     </div>
                 `;
             }
