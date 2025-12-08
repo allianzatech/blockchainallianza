@@ -25,16 +25,24 @@ class TestnetWalletGenerator:
                     encryption_algorithm=serialization.NoEncryption()
                 ).decode('utf-8')
                 
+                # Mensagens traduzidas serão aplicadas no frontend via i18n
                 return {
                     "success": True,
                     "address": address,
                     "private_key": private_key_pem,  # ⚠️ Apenas para testnet!
                     "message": "⚠️ ATENÇÃO: Esta é uma testnet. NUNCA use esta chave privada na mainnet!",
+                    "message_key": "attention_testnet_never_use_mainnet",  # Chave para tradução
                     "instructions": [
                         "1. Copie o endereço acima",
                         "2. Use no faucet para obter tokens",
                         "3. Guarde a chave privada com segurança (apenas para testes)",
                         "4. NUNCA compartilhe sua chave privada"
+                    ],
+                    "instructions_keys": [  # Chaves para tradução
+                        "copy_address_above",
+                        "use_faucet_get_tokens",
+                        "keep_private_key_safe",
+                        "never_share_private_key"
                     ]
                 }
             else:

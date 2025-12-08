@@ -234,6 +234,11 @@ TRANSLATIONS = {
         'copied_to_clipboard': 'Copiado para a área de transferência!',
         'error_colon': 'Erro:',
         'copy': 'Copiar',
+        'attention_testnet_never_use_mainnet': '⚠️ ATENÇÃO: Esta é uma testnet. NUNCA use esta chave privada na mainnet!',
+        'copy_address_above': '1. Copie o endereço acima',
+        'use_faucet_get_tokens': '2. Use no faucet para obter tokens',
+        'keep_private_key_safe': '3. Guarde a chave privada com segurança (apenas para testes)',
+        'never_share_private_key': '4. NUNCA compartilhe sua chave privada',
     },
     'en': {
         # Dashboard
@@ -620,6 +625,11 @@ TRANSLATIONS = {
         'view_explorer': 'View on Explorer',
         'download_proof': 'Download Proof',
         'real_transaction_testnet': 'This is a REAL transaction on the testnet! You can verify it on the explorer.',
+        'attention_testnet_never_use_mainnet': '⚠️ ATTENTION: This is a testnet. NEVER use this private key on mainnet!',
+        'copy_address_above': '1. Copy the address above',
+        'use_faucet_get_tokens': '2. Use the faucet to get tokens',
+        'keep_private_key_safe': '3. Keep the private key safe (test only)',
+        'never_share_private_key': '4. NEVER share your private key',
         # Explorer
         'explore_blocks_transactions_stats': 'Explore blocks, transactions and detailed network statistics',
         'pending': 'pending',

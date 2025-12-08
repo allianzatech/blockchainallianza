@@ -557,9 +557,24 @@ class TestnetFaucet:
         return logs[:limit]
     
     def get_stats(self) -> Dict:
-        """Retorna estatísticas do faucet"""
+        """Retorna estatísticas do faucet (calculadas a partir dos logs salvos)"""
+        # Calcular estatísticas reais a partir dos logs salvos
+        logs = self.get_logs(limit=10000)  # Buscar muitos logs para contar
+        
+        # Contar transações bem-sucedidas (com status "success")
+        total_sent_from_logs = sum(1 for log in logs if log.get("status") == "success")
+        
+        # Usar o valor dos logs se for maior que o da memória (logs persistem, memória não)
+        total_sent = max(self.stats.get("total_sent", 0), total_sent_from_logs)
+        
+        # Contar rejeitadas (logs sem status "success" ou com erro)
+        total_rejected_from_logs = sum(1 for log in logs if log.get("status") != "success")
+        total_rejected = max(self.stats.get("total_rejected", 0), total_rejected_from_logs)
+        
         return {
-            **self.stats,
+            "total_requests": total_sent + total_rejected,
+            "total_sent": total_sent,
+            "total_rejected": total_rejected,
             "faucet_address": FAUCET_ADDRESS,
             "amount_per_request": FAUCET_AMOUNT,
             "limits": {
