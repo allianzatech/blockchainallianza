@@ -65,6 +65,8 @@
 
 **✅ All source code is in this public repository - no private repositories for core functionality.**
 
+**⚠️ IMPORTANT:** If you cannot access the repository, it may be private. Please see [TORNAR_REPOSITORIO_PUBLICO.md](TORNAR_REPOSITORIO_PUBLICO.md) for instructions on making it public.
+
 ### Published Technical Proofs
 
 - ✅ **Complete Proofs**: [`COMPLETE_TECHNICAL_PROOFS_FINAL.json`](COMPLETE_TECHNICAL_PROOFS_FINAL.json) - All 41 technical proofs
