@@ -32,6 +32,21 @@ ENV/
 .env.production
 .env.*.local
 
+# Secrets and Private Keys
+secrets/
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+encryption_key.key
+private_keys/
+wallets/
+*.wif
+*_private_key*
+*_secret*
+*_seed*
+
 # IDE
 .vscode/
 .idea/
@@ -94,4 +109,17 @@ yarn-error.log*
 
 # CSS compilado - COMENTADO: precisa estar no repositório para funcionar no Render
 # static/css/output.css
+
+# Credentials and API Keys
+credentials.json
+api_keys.json
+*.credentials
+*_token*
+*_password*
+*_secret_key*
+
+# Bitcoin/Ethereum Private Keys
+*.wallet
+bitcoin_keys*.txt
+ethereum_keys*.txt
 
