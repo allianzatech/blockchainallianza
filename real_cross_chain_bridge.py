@@ -2955,6 +2955,60 @@ class RealCrossChainBridge:
                                             "fees": estimated_fee_satoshis
                                         }
                                     
+                                    # Garantir que tx_data e blockcypher_outputs estão definidos
+                                    if 'tx_data' not in locals() or tx_data is None:
+                                        # Se tx_data não foi definido, criar agora
+                                        blockcypher_inputs = []
+                                        for utxo in utxos:
+                                            txid = utxo.get('txid') or utxo.get('tx_hash')
+                                            output_n = utxo.get('output_n') or utxo.get('vout') or utxo.get('output_index') or utxo.get('output') or utxo.get('tx_output_n', 0)
+                                            blockcypher_inputs.append({
+                                                "prev_hash": txid,
+                                                "output_index": int(output_n)
+                                            })
+                                        
+                                        blockcypher_outputs = [
+                                            {
+                                                "addresses": [to_address],
+                                                "value": int(output_value)
+                                            }
+                                        ]
+                                        
+                                        # Adicionar OP_RETURN se source_tx_hash estiver disponível
+                                        if source_tx_hash:
+                                            try:
+                                                polygon_hash_clean = source_tx_hash.replace('0x', '')
+                                                op_return_data = f"ALZ:{polygon_hash_clean}"
+                                                op_return_bytes = op_return_data.encode('utf-8')
+                                                if len(op_return_bytes) <= 75:
+                                                    op_return_script_hex = "6a" + format(len(op_return_bytes), '02x') + op_return_bytes.hex()
+                                                else:
+                                                    op_return_script_hex = "6a4c" + format(len(op_return_bytes), '02x') + op_return_bytes.hex()
+                                                
+                                                blockcypher_outputs.append({
+                                                    "script_type": "null-data",
+                                                    "script": op_return_script_hex,
+                                                    "value": 0
+                                                })
+                                                print(f"   🔗 OP_RETURN incluído: ALZ:{polygon_hash_clean[:20]}...")
+                                            except Exception as op_err:
+                                                print(f"   ⚠️  Erro ao adicionar OP_RETURN: {op_err}")
+                                        
+                                        if change_value > 546:
+                                            blockcypher_outputs.append({
+                                                "addresses": [from_address],
+                                                "value": int(change_value)
+                                            })
+                                        
+                                        tx_data = {
+                                            "inputs": blockcypher_inputs,
+                                            "outputs": blockcypher_outputs,
+                                            "fees": estimated_fee_satoshis
+                                        }
+                                    elif 'blockcypher_outputs' not in locals():
+                                        # Se tx_data existe mas blockcypher_outputs não, extrair de tx_data
+                                        blockcypher_outputs = tx_data.get('outputs', [])
+                                    
                                     create_url = f"{self.btc_api_base}/txs/new"
                                     print(f"   📤 Enviando requisição para BlockCypher com {len(blockcypher_outputs)} outputs...")
                                     print(f"   📋 Outputs: {json.dumps([{'type': o.get('script_type', 'address'), 'value': o.get('value', 0)} for o in blockcypher_outputs], indent=2)}")
