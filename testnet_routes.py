@@ -2775,3 +2775,10 @@ def api_cross_chain_status():
             "success": False,
             "error": str(e)
         }), 500
+
+@testnet_bp.route('/cross-chain-test', methods=['GET'])
+def cross_chain_test_page():
+    """
+    Página para testar cross-chain transfers com UChainID e ZK Proofs
+    """
+    return render_template('testnet/cross_chain_test.html')

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross-Chain Transfer Test - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .result-box {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .info { color: #60a5fa; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold mb-2">🌉 Cross-Chain Transfer Test</h1>
+            <p class="text-gray-400">Teste transferências cross-chain com UChainID e ZK Proofs</p>
+            <div class="mt-4">
+                <a href="/" class="text-blue-400 hover:text-blue-300">← Voltar ao Dashboard</a>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-bold mb-4">Criar Transferência Cross-Chain</h2>
+            
+            <form id="transferForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Source Chain</label>
+                        <select id="sourceChain" name="source_chain" class="w-full bg-gray-700 text-white p-2 rounded" required>
+                            <option value="polygon">Polygon</option>
+                            <option value="ethereum">Ethereum</option>
+                            <option value="bsc">BSC</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Target Chain</label>
+                        <select id="targetChain" name="target_chain" class="w-full bg-gray-700 text-white p-2 rounded" required>
+                            <option value="ethereum">Ethereum</option>
+                            <option value="polygon">Polygon</option>
+                            <option value="bsc">BSC</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Amount</label>
+                    <input type="number" id="amount" name="amount" step="0.001" value="0.1" 
+                           class="w-full bg-gray-700 text-white p-2 rounded" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Recipient Address</label>
+                    <input type="text" id="recipient" name="recipient" 
+                           value="0x86AE40869EB6ACb9477b42BfC9150c0A2Cc21f5E"
+                           class="w-full bg-gray-700 text-white p-2 rounded font-mono" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Token Symbol</label>
+                    <input type="text" id="tokenSymbol" name="token_symbol" value="ETH" 
+                           class="w-full bg-gray-700 text-white p-2 rounded">
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="sendReal" name="send_real" checked>
+                    <label for="sendReal" class="text-sm">Enviar transação REAL (requer private key configurada)</label>
+                </div>
+
+                <button type="submit" 
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                    <i class="fas fa-paper-plane mr-2"></i>
+                    Criar Transferência Cross-Chain
+                </button>
+            </form>
+        </div>
+
+        <!-- Results -->
+        <div id="results" class="hidden">
+            <div class="bg-gray-800 p-6 rounded-lg mb-6">
+                <h2 class="text-2xl font-bold mb-4">Resultado</h2>
+                <div id="resultContent" class="result-box"></div>
+            </div>
+        </div>
+
+        <!-- Search Proof -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-bold mb-4">Buscar Prova por UChainID</h2>
+            <form id="searchForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">UChainID</label>
+                    <input type="text" id="uchainId" name="uchain_id" 
+                           placeholder="UCHAIN-abc123..."
+                           class="w-full bg-gray-700 text-white p-2 rounded font-mono" required>
+                </div>
+                <button type="submit" 
+                        class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                    <i class="fas fa-search mr-2"></i>
+                    Buscar Prova
+                </button>
+            </form>
+        </div>
+
+        <!-- List All Proofs -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-bold mb-4">Listar Todas as Provas</h2>
+            <button id="listProofsBtn" 
+                    class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                <i class="fas fa-list mr-2"></i>
+                Listar Provas (últimas 50)
+            </button>
+            <div id="listResults" class="hidden mt-4">
+                <div id="listContent" class="result-box"></div>
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div class="bg-gray-800 p-6 rounded-lg">
+            <h2 class="text-2xl font-bold mb-4">Status do Sistema</h2>
+            <button id="statusBtn" 
+                    class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                <i class="fas fa-info-circle mr-2"></i>
+                Ver Status
+            </button>
+            <div id="statusResults" class="hidden mt-4">
+                <div id="statusContent" class="result-box"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Criar Transferência
+        document.getElementById('transferForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = {
+                source_chain: formData.get('source_chain'),
+                target_chain: formData.get('target_chain'),
+                amount: parseFloat(formData.get('amount')),
+                recipient: formData.get('recipient'),
+                token_symbol: formData.get('token_symbol'),
+                send_real: document.getElementById('sendReal').checked
+            };
+
+            const resultsDiv = document.getElementById('results');
+            const resultContent = document.getElementById('resultContent');
+            resultsDiv.classList.remove('hidden');
+            resultContent.innerHTML = '<p class="info">⏳ Enviando requisição...</p>';
+
+            try {
+                const response = await fetch('/api/cross-chain/transfer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultContent.innerHTML = `
+                        <p class="success">✅ Transferência criada com sucesso!</p>
+                        <p class="info"><strong>UChainID:</strong> ${result.uchain_id || 'N/A'}</p>
+                        <p class="info"><strong>Transfer ID:</strong> ${result.transfer_id || 'N/A'}</p>
+                        ${result.tx_hash ? `<p class="info"><strong>TX Hash:</strong> ${result.tx_hash}</p>` : ''}
+                        ${result.explorer_url ? `<p class="info"><strong>Explorer:</strong> <a href="${result.explorer_url}" target="_blank" class="text-blue-400">${result.explorer_url}</a></p>` : ''}
+                        <p class="info"><strong>Has ZK Proof:</strong> ${result.has_zk_proof ? '✅ Sim' : '❌ Não'}</p>
+                        <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    resultContent.innerHTML = `
+                        <p class="error">❌ Erro: ${result.error || 'Erro desconhecido'}</p>
+                        <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultContent.innerHTML = `<p class="error">❌ Erro na requisição: ${error.message}</p>`;
+            }
+        });
+
+        // Buscar Prova
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const uchainId = document.getElementById('uchainId').value;
+
+            const resultsDiv = document.getElementById('results');
+            const resultContent = document.getElementById('resultContent');
+            resultsDiv.classList.remove('hidden');
+            resultContent.innerHTML = '<p class="info">⏳ Buscando prova...</p>';
+
+            try {
+                const response = await fetch(`/api/cross-chain/proof/${encodeURIComponent(uchainId)}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    resultContent.innerHTML = `
+                        <p class="success">✅ Prova encontrada!</p>
+                        <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    resultContent.innerHTML = `
+                        <p class="error">❌ ${result.error || 'Prova não encontrada'}</p>
+                        <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultContent.innerHTML = `<p class="error">❌ Erro: ${error.message}</p>`;
+            }
+        });
+
+        // Listar Provas
+        document.getElementById('listProofsBtn').addEventListener('click', async () => {
+            const listResults = document.getElementById('listResults');
+            const listContent = document.getElementById('listContent');
+            listResults.classList.remove('hidden');
+            listContent.innerHTML = '<p class="info">⏳ Carregando provas...</p>';
+
+            try {
+                const response = await fetch('/api/cross-chain/proofs?limit=50');
+                const result = await response.json();
+
+                if (result.success) {
+                    listContent.innerHTML = `
+                        <p class="success">✅ ${result.total} provas encontradas (mostrando ${result.returned})</p>
+                        <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    listContent.innerHTML = `<p class="error">❌ ${result.error || 'Erro ao listar provas'}</p>`;
+                }
+            } catch (error) {
+                listContent.innerHTML = `<p class="error">❌ Erro: ${error.message}</p>`;
+            }
+        });
+
+        // Status
+        document.getElementById('statusBtn').addEventListener('click', async () => {
+            const statusResults = document.getElementById('statusResults');
+            const statusContent = document.getElementById('statusContent');
+            statusResults.classList.remove('hidden');
+            statusContent.innerHTML = '<p class="info">⏳ Carregando status...</p>';
+
+            try {
+                const response = await fetch('/api/cross-chain/status');
+                const result = await response.json();
+
+                if (result.success) {
+                    statusContent.innerHTML = `
+                        <p class="success">✅ Status do Sistema</p>
+                        <p class="info"><strong>State Commitments:</strong> ${result.state_commitments || 0}</p>
+                        <p class="info"><strong>ZK Proofs:</strong> ${result.zk_proofs || 0}</p>
+                        <p class="info"><strong>Applied States:</strong> ${result.applied_states || 0}</p>
+                        <p class="info"><strong>UChainIDs:</strong> ${result.uchain_ids || 0}</p>
+                        <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    statusContent.innerHTML = `<p class="error">❌ ${result.error || 'Erro ao obter status'}</p>`;
+                }
+            } catch (error) {
+                statusContent.innerHTML = `<p class="error">❌ Erro: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
+
