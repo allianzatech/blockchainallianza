@@ -190,21 +190,10 @@ class BridgeFreeInterop:
             balance = w3.eth.get_balance(account.address)
             amount_wei = w3.to_wei(amount, 'ether')
             
-            # Verificar se tem saldo suficiente (incluindo gas)
-            estimated_gas = 21000
-            gas_price = w3.eth.gas_price
-            total_needed = amount_wei + (estimated_gas * gas_price)
-            
-            if balance < total_needed:
-                return {
-                    "success": False,
-                    "error": f"Saldo insuficiente. Disponível: {w3.from_wei(balance, 'ether')}, Necessário: {w3.from_wei(total_needed, 'ether')}",
-                    "balance": float(w3.from_wei(balance, 'ether')),
-                    "needed": float(w3.from_wei(total_needed, 'ether'))
-                }
-            
             # Converter endereço para checksum
             recipient_checksum = w3.to_checksum_address(recipient)
+            gas_price = w3.eth.gas_price
+            base_gas = 21000
             
             # Gerar UChainID e criar memo se solicitado
             uchain_id = None
@@ -229,19 +218,18 @@ class BridgeFreeInterop:
                     "memo": memo_info["memo_data"]
                 }
             
-            # Criar transação
+            # Criar transação base
             nonce = w3.eth.get_transaction_count(account.address)
-            
             transaction = {
                 'to': recipient_checksum,
                 'value': amount_wei,
-                'gas': estimated_gas,
+                'gas': base_gas,
                 'gasPrice': gas_price,
                 'nonce': nonce,
                 'chainId': chain_id
             }
             
-            # Adicionar data (memo) se disponível
+            # Adicionar data (memo) se disponível ANTES de estimar gas
             # Nota: Em EVM chains, podemos incluir dados na transação
             if include_memo and memo_info:
                 # Limitar tamanho do memo (EVM tem limite de ~24KB)
@@ -255,13 +243,31 @@ class BridgeFreeInterop:
                 except:
                     # Se falhar, usar apenas hash do memo
                     memo_hash = hashlib.sha256(memo_info["memo_json"].encode()).hexdigest()
-                    transaction['data'] = bytes.fromhex(f"0x{memo_hash[:64]}")
+                    transaction['data'] = bytes.fromhex(memo_hash[:64])
             
-            # Estimar gas
+            # Estimar gas DEPOIS de adicionar data (importante!)
             try:
-                transaction['gas'] = w3.eth.estimate_gas(transaction)
-            except:
+                estimated_gas = w3.eth.estimate_gas(transaction)
                 transaction['gas'] = estimated_gas
+            except Exception as e:
+                # Se falhar, usar gas base aumentado para data
+                if include_memo and memo_info:
+                    estimated_gas = base_gas + 10000  # Extra para data
+                else:
+                    estimated_gas = base_gas
+                transaction['gas'] = estimated_gas
+            
+            # Verificar saldo com gas correto
+            total_needed = amount_wei + (transaction['gas'] * gas_price)
+            
+            if balance < total_needed:
+                return {
+                    "success": False,
+                    "error": f"Saldo insuficiente. Disponível: {w3.from_wei(balance, 'ether')}, Necessário: {w3.from_wei(total_needed, 'ether')}",
+                    "balance": float(w3.from_wei(balance, 'ether')),
+                    "needed": float(w3.from_wei(total_needed, 'ether')),
+                    "gas_estimated": transaction['gas']
+                }
             
             # Assinar e enviar
             signed_txn = w3.eth.account.sign_transaction(transaction, private_key)
@@ -574,7 +580,30 @@ class BridgeFreeInterop:
             if not apply_result["success"]:
                 return apply_result
             
-            # 4. Se send_real=True, enviar transação REAL para blockchain
+            # 4. Gerar UChainID e memo (sempre, mesmo em simulação)
+            uchain_id = self.generate_uchain_id(source_chain, target_chain, recipient)
+            memo_info = self.create_cross_chain_memo(
+                uchain_id=uchain_id,
+                zk_proof_id=proof_id,
+                source_chain=source_chain,
+                target_chain=target_chain,
+                amount=amount
+            )
+            
+            # Armazenar UChainID para rastreio
+            self.uchain_ids[uchain_id] = {
+                "source_chain": source_chain,
+                "target_chain": target_chain,
+                "recipient": recipient,
+                "amount": amount,
+                "timestamp": time.time(),
+                "memo": memo_info["memo_data"],
+                "commitment_id": commitment_id,
+                "proof_id": proof_id,
+                "state_id": apply_result["state_id"]
+            }
+            
+            # 5. Se send_real=True, enviar transação REAL para blockchain
             real_tx_result = None
             if send_real:
                 real_tx_result = self.send_real_transaction(
@@ -590,6 +619,7 @@ class BridgeFreeInterop:
             result = {
                 "success": True,
                 "transfer_id": f"bridge_free_{int(time.time())}_{secrets.token_hex(8)}",
+                "uchain_id": uchain_id,  # Sempre incluir UChainID
                 "source_chain": source_chain,
                 "target_chain": target_chain,
                 "amount": amount,
@@ -598,6 +628,8 @@ class BridgeFreeInterop:
                 "commitment_id": commitment_id,
                 "proof_id": proof_id,
                 "state_id": apply_result["state_id"],
+                "memo": memo_info["memo_data"],  # Incluir memo
+                "has_zk_proof": proof_id is not None,
                 "message": "🎉 Transferência bridge-free concluída!",
                 "world_first": "🌍 PRIMEIRO NO MUNDO: Transferência cross-chain sem bridge, sem custódia!",
                 "benefits": [
@@ -616,6 +648,10 @@ class BridgeFreeInterop:
                     result["message"] = "🎉 Transferência REAL enviada! Aparece no explorer!"
                     result["explorer_url"] = real_tx_result.get("explorer_url")
                     result["tx_hash"] = real_tx_result.get("tx_hash")
+                    # Atualizar UChainID com tx_hash
+                    if uchain_id in self.uchain_ids:
+                        self.uchain_ids[uchain_id]["tx_hash"] = real_tx_result.get("tx_hash")
+                        self.uchain_ids[uchain_id]["explorer_url"] = real_tx_result.get("explorer_url")
                 else:
                     result["real_transaction_error"] = real_tx_result.get("error")
                     result["message"] = "⚠️  Commitment criado, mas transação real falhou (verifique saldo e private key)"

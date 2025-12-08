@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="{{ lang or 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cross-Chain Transfer Test - Allianza Testnet</title>
+    <title>{{ t('cross_chain_test_title') or 'Cross-Chain Transfer Test' }} - Allianza Testnet</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -17,20 +17,60 @@
             font-size: 12px;
             max-height: 400px;
             overflow-y: auto;
+            position: relative;
         }
         .success { color: #4ade80; }
         .error { color: #f87171; }
         .info { color: #60a5fa; }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #374151;
+            border: 1px solid #4b5563;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover {
+            background: #4b5563;
+        }
+        .copy-btn.copied {
+            background: #10b981;
+            border-color: #059669;
+        }
+        .copy-btn-small {
+            background: #374151;
+            border: 1px solid #4b5563;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 10px;
+            transition: all 0.2s;
+        }
+        .copy-btn-small:hover {
+            background: #4b5563;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white">
     <div class="container mx-auto px-4 py-8 max-w-4xl">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-4xl font-bold mb-2">🌉 Cross-Chain Transfer Test</h1>
-            <p class="text-gray-400">Teste transferências cross-chain com UChainID e ZK Proofs</p>
-            <div class="mt-4">
-                <a href="/" class="text-blue-400 hover:text-blue-300">← Voltar ao Dashboard</a>
+            <h1 class="text-4xl font-bold mb-2">🌉 {{ t('cross_chain_test_title') or 'Cross-Chain Transfer Test' }}</h1>
+            <p class="text-gray-400">{{ t('cross_chain_test_subtitle') or 'Test cross-chain transfers with UChainID and ZK Proofs' }}</p>
+            <div class="mt-4 flex gap-4">
+                <a href="/" class="text-blue-400 hover:text-blue-300">← {{ t('back_to_dashboard') or 'Back to Dashboard' }}</a>
+                <span class="text-gray-500">|</span>
+                <a href="/interoperability" class="text-blue-400 hover:text-blue-300">{{ t('interoperability_guide') or 'Interoperability Guide' }}</a>
+            </div>
+            <div class="mt-2 text-sm text-yellow-400">
+                <i class="fas fa-info-circle mr-1"></i>
+                {{ t('cross_chain_test_note') or 'This is a test interface for cross-chain transfers. For the full interoperability guide, see Interoperability.' }}
             </div>
         </div>
 
@@ -41,7 +81,7 @@
             <form id="transferForm" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium mb-2">Source Chain</label>
+                        <label class="block text-sm font-medium mb-2">{{ t('source_chain') or 'Source Chain' }}</label>
                         <select id="sourceChain" name="source_chain" class="w-full bg-gray-700 text-white p-2 rounded" required>
                             <option value="polygon">Polygon</option>
                             <option value="ethereum">Ethereum</option>
@@ -50,7 +90,7 @@
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium mb-2">Target Chain</label>
+                        <label class="block text-sm font-medium mb-2">{{ t('target_chain') or 'Target Chain' }}</label>
                         <select id="targetChain" name="target_chain" class="w-full bg-gray-700 text-white p-2 rounded" required>
                             <option value="ethereum">Ethereum</option>
                             <option value="polygon">Polygon</option>
@@ -60,33 +100,33 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium mb-2">Amount</label>
+                    <label class="block text-sm font-medium mb-2">{{ t('amount') or 'Amount' }}</label>
                     <input type="number" id="amount" name="amount" step="0.001" value="0.1" 
                            class="w-full bg-gray-700 text-white p-2 rounded" required>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium mb-2">Recipient Address</label>
+                    <label class="block text-sm font-medium mb-2">{{ t('recipient_address') or 'Recipient Address' }}</label>
                     <input type="text" id="recipient" name="recipient" 
                            value="0x86AE40869EB6ACb9477b42BfC9150c0A2Cc21f5E"
                            class="w-full bg-gray-700 text-white p-2 rounded font-mono" required>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium mb-2">Token Symbol</label>
+                    <label class="block text-sm font-medium mb-2">{{ t('token_symbol') or 'Token Symbol' }}</label>
                     <input type="text" id="tokenSymbol" name="token_symbol" value="ETH" 
                            class="w-full bg-gray-700 text-white p-2 rounded">
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <input type="checkbox" id="sendReal" name="send_real" checked>
-                    <label for="sendReal" class="text-sm">Enviar transação REAL (requer private key configurada)</label>
+                    <input type="checkbox" id="sendReal" name="send_real">
+                    <label for="sendReal" class="text-sm">{{ t('send_real_transaction') or 'Send REAL transaction (requires private key configured)' }}</label>
                 </div>
 
                 <button type="submit" 
                         class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition">
                     <i class="fas fa-paper-plane mr-2"></i>
-                    Criar Transferência Cross-Chain
+                    {{ t('create_transfer') or 'Create Cross-Chain Transfer' }}
                 </button>
             </form>
         </div>
@@ -94,14 +134,18 @@
         <!-- Results -->
         <div id="results" class="hidden">
             <div class="bg-gray-800 p-6 rounded-lg mb-6">
-                <h2 class="text-2xl font-bold mb-4">Resultado</h2>
-                <div id="resultContent" class="result-box"></div>
+                <h2 class="text-2xl font-bold mb-4">{{ t('result') or 'Result' }}</h2>
+                <div id="resultContent" class="result-box">
+                    <button class="copy-btn" onclick="copyToClipboard('resultContent')" title="{{ t('copy') or 'Copy' }}">
+                        <i class="fas fa-copy mr-1"></i>{{ t('copy') or 'Copy' }}
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- Search Proof -->
         <div class="bg-gray-800 p-6 rounded-lg mb-6">
-            <h2 class="text-2xl font-bold mb-4">Buscar Prova por UChainID</h2>
+            <h2 class="text-2xl font-bold mb-4">{{ t('search_proof_by_uchainid') or 'Search Proof by UChainID' }}</h2>
             <form id="searchForm" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-2">UChainID</label>
@@ -112,39 +156,88 @@
                 <button type="submit" 
                         class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition">
                     <i class="fas fa-search mr-2"></i>
-                    Buscar Prova
+                    {{ t('search_proof') or 'Search Proof' }}
                 </button>
             </form>
         </div>
 
         <!-- List All Proofs -->
         <div class="bg-gray-800 p-6 rounded-lg mb-6">
-            <h2 class="text-2xl font-bold mb-4">Listar Todas as Provas</h2>
+            <h2 class="text-2xl font-bold mb-4">{{ t('list_all_proofs') or 'List All Proofs' }}</h2>
             <button id="listProofsBtn" 
                     class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition">
                 <i class="fas fa-list mr-2"></i>
-                Listar Provas (últimas 50)
+                {{ t('list_proofs_last_50') or 'List Proofs (last 50)' }}
             </button>
             <div id="listResults" class="hidden mt-4">
-                <div id="listContent" class="result-box"></div>
+                <div id="listContent" class="result-box">
+                    <button class="copy-btn" onclick="copyToClipboard('listContent')" title="{{ t('copy') or 'Copy' }}">
+                        <i class="fas fa-copy mr-1"></i>{{ t('copy') or 'Copy' }}
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- Status -->
         <div class="bg-gray-800 p-6 rounded-lg">
-            <h2 class="text-2xl font-bold mb-4">Status do Sistema</h2>
+            <h2 class="text-2xl font-bold mb-4">{{ t('system_status') or 'System Status' }}</h2>
             <button id="statusBtn" 
                     class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition">
                 <i class="fas fa-info-circle mr-2"></i>
-                Ver Status
+                {{ t('view_status') or 'View Status' }}
             </button>
             <div id="statusResults" class="hidden mt-4">
-                <div id="statusContent" class="result-box"></div>
+                <div id="statusContent" class="result-box">
+                    <button class="copy-btn" onclick="copyToClipboard('statusContent')" title="{{ t('copy') or 'Copy' }}">
+                        <i class="fas fa-copy mr-1"></i>{{ t('copy') or 'Copy' }}
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Função para copiar texto específico
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Mostrar feedback visual
+                const event = new CustomEvent('copied', { detail: text });
+                document.dispatchEvent(event);
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+            });
+        }
+        
+        // Função para copiar para clipboard (resultado completo)
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.innerText || element.textContent;
+            
+            // Remover botão de copiar do texto
+            const textWithoutButton = text.replace(/Copy.*?Copy/g, '').trim();
+            
+            navigator.clipboard.writeText(textWithoutButton).then(() => {
+                const btn = element.querySelector('.copy-btn');
+                if (btn) {
+                    const originalHTML = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check mr-1"></i>{{ t("copied") or "Copied!" }}';
+                    btn.classList.add('copied');
+                    setTimeout(() => {
+                        btn.innerHTML = originalHTML;
+                        btn.classList.remove('copied');
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+            });
+        }
+        
+        // Listener para feedback de cópia
+        document.addEventListener('copied', (e) => {
+            // Feedback visual pode ser adicionado aqui
+            console.log('Copiado:', e.detail);
+        });
+        
         // Criar Transferência
         document.getElementById('transferForm').addEventListener('submit', async (e) => {
             e.preventDefault();
