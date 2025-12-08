@@ -313,6 +313,7 @@ If you find issues during verification:
 
 - [TESTING.md](TESTING.md) - Testing guide
 - [SECURITY.md](SECURITY.md) - Security policy
+- [VERIFIABLE_ON_CHAIN_PROOFS.md](VERIFIABLE_ON_CHAIN_PROOFS.md) - Real transaction hashes from public blockchains
 - [docs/API_REFERENCE.md](docs/API_REFERENCE.md) - API reference
 - [COMPLETE_TECHNICAL_PROOFS_FINAL.json](COMPLETE_TECHNICAL_PROOFS_FINAL.json) - Technical proofs
 
