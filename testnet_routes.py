@@ -2662,3 +2662,116 @@ def get_individual_proof(proof_id):
             "proof_id": proof_id,
             "traceback": traceback.format_exc()
         }), 500
+
+# =============================================================================
+# API ENDPOINTS - CROSS-CHAIN PROOFS (UChainID + ZK Proofs)
+# =============================================================================
+
+@testnet_bp.route('/api/cross-chain/proofs', methods=['GET'])
+def api_list_cross_chain_proofs():
+    """
+    Lista todas as provas cross-chain (últimas N)
+    GET /api/cross-chain/proofs?limit=50
+    """
+    try:
+        from core.interoperability.bridge_free_interop import bridge_free_interop
+        
+        limit = request.args.get('limit', 50, type=int)
+        result = bridge_free_interop.list_cross_chain_proofs(limit=limit)
+        
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+@testnet_bp.route('/api/cross-chain/proof/<uchain_id>', methods=['GET'])
+def api_get_cross_chain_proof(uchain_id):
+    """
+    Busca prova cross-chain por UChainID
+    GET /api/cross-chain/proof/UCHAIN-<hash>
+    """
+    try:
+        from core.interoperability.bridge_free_interop import bridge_free_interop
+        
+        result = bridge_free_interop.get_cross_chain_proof(uchain_id=uchain_id)
+        
+        if result.get("success"):
+            return jsonify(result), 200
+        else:
+            return jsonify(result), 404
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+@testnet_bp.route('/api/cross-chain/transfer', methods=['POST'])
+def api_cross_chain_transfer_with_proof():
+    """
+    Cria transferência cross-chain com UChainID e ZK Proof no memo
+    POST /api/cross-chain/transfer
+    Body: {
+        "source_chain": "polygon",
+        "target_chain": "ethereum",
+        "amount": 0.1,
+        "recipient": "0x...",
+        "send_real": true,
+        "private_key": "0x..." (opcional)
+    }
+    """
+    try:
+        from core.interoperability.bridge_free_interop import bridge_free_interop
+        
+        data = request.get_json() or {}
+        source_chain = data.get('source_chain', 'polygon')
+        target_chain = data.get('target_chain', 'ethereum')
+        amount = float(data.get('amount', 0.1))
+        recipient = data.get('recipient', '')
+        send_real = data.get('send_real', False)
+        private_key = data.get('private_key', None)
+        token_symbol = data.get('token_symbol', 'ETH')
+        
+        if not recipient:
+            return jsonify({
+                "success": False,
+                "error": "recipient é obrigatório"
+            }), 400
+        
+        result = bridge_free_interop.bridge_free_transfer(
+            source_chain=source_chain,
+            target_chain=target_chain,
+            amount=amount,
+            token_symbol=token_symbol,
+            recipient=recipient,
+            send_real=send_real,
+            private_key=private_key
+        )
+        
+        if result.get("success"):
+            return jsonify(result), 200
+        else:
+            return jsonify(result), 400
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+@testnet_bp.route('/api/cross-chain/status', methods=['GET'])
+def api_cross_chain_status():
+    """
+    Status do sistema bridge-free
+    GET /api/cross-chain/status
+    """
+    try:
+        from core.interoperability.bridge_free_interop import bridge_free_interop
+        
+        result = bridge_free_interop.get_system_status()
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
