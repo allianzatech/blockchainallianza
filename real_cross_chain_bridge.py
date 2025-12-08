@@ -3539,7 +3539,7 @@ class RealCrossChainBridge:
                                                         pass
                                         
                                         # Verificar se OP_RETURN está na transação raw
-                                        if source_tx_hash and op_return_added:
+                                        if raw_tx_hex and source_tx_hash and op_return_added:
                                             polygon_hash_clean = source_tx_hash.replace('0x', '')
                                             op_return_check = f"ALZ:{polygon_hash_clean}"
                                             if op_return_check.encode('utf-8').hex() in raw_tx_hex.lower() or op_return_check.lower() in raw_tx_hex.lower():
@@ -3555,7 +3555,18 @@ class RealCrossChainBridge:
                                             
                                             if broadcast_response.status_code == 200:
                                                 tx_hash = broadcast_response.text.strip()
-                                                print(f"   ✅ Transação broadcastada! Hash: {tx_hash}")
+                                                print(f"   ✅✅✅ Transação broadcastada! Hash: {tx_hash}")
+                                                
+                                                add_log("transaction_broadcasted_manual", {"tx_hash": tx_hash, "method": "bitcoinlib_blockstream"}, "info")
+                                                proof_data["success"] = True
+                                                proof_data["tx_hash"] = tx_hash
+                                                proof_data["final_result"] = {
+                                                    "success": True,
+                                                    "tx_hash": tx_hash,
+                                                    "method": "bitcoinlib_manual_blockstream",
+                                                    "op_return_included": op_return_added
+                                                }
+                                                proof_file = self._save_transaction_proof(proof_data)
                                                 
                                                 return {
                                                     "success": True,
@@ -3566,12 +3577,48 @@ class RealCrossChainBridge:
                                                     "chain": "bitcoin",
                                                     "status": "broadcasted",
                                                     "explorer_url": f"https://live.blockcypher.com/btc-testnet/tx/{tx_hash}/",
-                                                    "note": "✅ Transação REAL criada manualmente e broadcastada via Blockstream",
+                                                    "note": "✅ Transação REAL criada manualmente e broadcastada via Blockstream" + (" (com OP_RETURN)" if op_return_added else ""),
                                                     "real_broadcast": True,
-                                                    "method": "manual_raw_blockstream"
+                                                    "method": "bitcoinlib_manual_blockstream",
+                                                    "op_return_included": op_return_added,
+                                                    "proof_file": proof_file
                                                 }
+                                            else:
+                                                error_text = broadcast_response.text[:500] if broadcast_response.text else "Sem resposta"
+                                                print(f"   ⚠️  Erro ao broadcastar: {broadcast_response.status_code} - {error_text}")
+                                                raise Exception(f"Blockstream broadcast falhou: {error_text}")
+                                        else:
+                                            # Se não conseguiu raw_tx_hex, tentar método alternativo: usar wallet.send_to() sem OP_RETURN
+                                            print(f"   ⚠️  Não foi possível obter raw transaction, tentando wallet.send_to() sem OP_RETURN...")
+                                            try:
+                                                from bitcoinlib.wallets import Wallet
+                                                wallet = Wallet(from_address, network='testnet')
+                                                amount_satoshis = int(output_value)
+                                                tx_result = wallet.send_to(to_address, amount_satoshis, fee=5)
+                                                
+                                                if tx_result:
+                                                    tx_hash = tx_result.txid if hasattr(tx_result, 'txid') else str(tx_result)
+                                                    print(f"   ✅ Transação criada via wallet.send_to() (sem OP_RETURN): {tx_hash}")
+                                                    
+                                                    return {
+                                                        "success": True,
+                                                        "tx_hash": tx_hash,
+                                                        "from": from_address,
+                                                        "to": to_address,
+                                                        "amount": amount_btc,
+                                                        "chain": "bitcoin",
+                                                        "status": "broadcasted",
+                                                        "explorer_url": f"https://live.blockcypher.com/btc-testnet/tx/{tx_hash}/",
+                                                        "note": "✅ Transação REAL criada via wallet.send_to() (OP_RETURN não incluído - limitação da biblioteca)",
+                                                        "real_broadcast": True,
+                                                        "method": "wallet_send_to_fallback",
+                                                        "op_return_included": False,
+                                                        "op_return_note": "OP_RETURN não incluído devido a limitação do wallet.send_to()"
+                                                    }
+                                            except Exception as wallet_fallback_err:
+                                                print(f"   ⚠️  wallet.send_to() também falhou: {wallet_fallback_err}")
                                         
-                                        raise Exception("Não foi possível obter raw transaction")
+                                        raise Exception("Não foi possível obter raw transaction de nenhum método")
                                         
                                     except Exception as manual_error:
                                         print(f"   ❌ Criação manual também falhou: {manual_error}")
