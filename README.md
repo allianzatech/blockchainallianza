@@ -9,6 +9,8 @@
 [![Documentation](https://img.shields.io/badge/docs-available-blue)](docs/)
 [![Code Quality](https://img.shields.io/badge/code%20quality-professional-brightgreen)](.pre-commit-config.yaml)
 [![Docker](https://img.shields.io/badge/docker-ready-blue)](docker-compose.yml)
+[![Proofs](https://img.shields.io/badge/proofs-41%20verified-success)](PROVAS_E_HASHES.md)
+[![On-Chain Proofs](https://img.shields.io/badge/on--chain-verified-blue)](VERIFIABLE_ON_CHAIN_PROOFS.md)
 
 > **Post-quantum and interoperable blockchain** with quantum security (QRS-3), bridge-free interoperability, and adaptive consensus (ALZ-NIEV Protocol).
 
@@ -50,6 +52,8 @@ python tests/public/run_verification_tests.py
 ### For Auditors and Verifiers
 
 ⚡ **Quick Start**: [QUICK_VERIFICATION_GUIDE.md](QUICK_VERIFICATION_GUIDE.md) - Quick reference for finding source code and proofs
+
+📋 **Provas e Hashes**: [PROVAS_E_HASHES.md](PROVAS_E_HASHES.md) - **GUIA RÁPIDO** - Acesso direto a todas as provas e hashes
 
 📋 **Read first**: [VERIFICATION.md](VERIFICATION.md) - Complete independent verification guide
 
