@@ -1,35 +1,34 @@
 # QRS-3 - Post-Quantum Cryptography
 
-## 📋 Descrição
+## 📋 Description
 
-Implementação QRS-3 (Quantum-Resistant Signature v3) usando algoritmos PQC (Post-Quantum Cryptography) padrão.
+QRS-3 (Quantum-Resistant Signature v3) implementation using standard PQC (Post-Quantum Cryptography) algorithms.
 
-## 🔧 Arquivos Principais
+## 🔧 Main Files
 
-- `pqc_crypto.py` - Implementação de criptografia pós-quântica
-- `quantum_security.py` - Serviço de segurança quântica
-- `qrs3_complete_verification.py` - Verificação completa QRS-3
+- `pqc_crypto.py` - Post-quantum cryptography implementation
+- `quantum_security.py` - Quantum security service
+- `qrs3_complete_verification.py` - Complete QRS-3 verification
 
-## 🔐 Algoritmos Suportados
+## 🔐 Supported Algorithms
 
 - **ML-DSA** (Module-Lattice-based Digital Signature Algorithm)
 - **SPHINCS+** (Stateless Hash-Based Signatures)
 
-## 🚀 Características
+## 🚀 Features
 
-- ✅ Assinaturas pós-quânticas
+- ✅ Post-quantum signatures
 - ✅ Batch verification
-- ✅ Integração com liboqs-python
-- ✅ Compatibilidade com algoritmos clássicos
+- ✅ Integration with liboqs-python
+- ✅ Compatibility with classical algorithms
 
-## 📖 Documentação
+## 📖 Documentation
 
-Veja [docs/QRS3_IMPLEMENTATION.md](../../docs/QRS3_IMPLEMENTATION.md) para documentação completa.
+See [docs/QRS3_IMPLEMENTATION.md](../../docs/QRS3_IMPLEMENTATION.md) for complete documentation.
 
-## 🧪 Testes
+## 🧪 Tests
 
-Execute os testes:
+Run tests:
 ```bash
 python tests/public/test_qrs3_verification.py
 ```
-

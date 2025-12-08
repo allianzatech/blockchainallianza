@@ -1,15 +1,14 @@
 # Core - Allianza Blockchain
 
-Este diretório contém o código-fonte principal da Allianza Blockchain.
+This directory contains the main source code of Allianza Blockchain.
 
-## 📁 Estrutura
+## 📁 Structure
 
-- **`consensus/`** - Implementação do ALZ-NIEV Protocol (consenso adaptativo)
-- **`crypto/`** - Implementação QRS-3 (PQC - Post-Quantum Cryptography)
-- **`interoperability/`** - Interoperabilidade bridge-free
+- **`consensus/`** - ALZ-NIEV Protocol implementation (adaptive consensus)
+- **`crypto/`** - QRS-3 implementation (PQC - Post-Quantum Cryptography)
+- **`interoperability/`** - Bridge-free interoperability
 
 ## 🔗 Links
 
-- [Documentação Completa](../../docs/)
-- [Testnet Pública](https://testnet.allianza.tech)
-
+- [Complete Documentation](../../docs/)
+- [Public Testnet](https://testnet.allianza.tech)

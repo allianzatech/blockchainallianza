@@ -1,22 +1,21 @@
-# ALZ-NIEV Protocol - Consenso Adaptativo
+# ALZ-NIEV Protocol - Adaptive Consensus
 
-## 📋 Descrição
+## 📋 Description
 
-O ALZ-NIEV (Non-Intermediate Execution Validation) é o protocolo de consenso adaptativo da Allianza Blockchain.
+ALZ-NIEV (Non-Intermediate Execution Validation) is the adaptive consensus protocol of Allianza Blockchain.
 
-## 🔧 Arquivos Principais
+## 🔧 Main Files
 
-- `adaptive_consensus.py` - Implementação do consenso adaptativo
-- `alz_niev_interoperability.py` - Protocolo ALZ-NIEV completo
+- `adaptive_consensus.py` - Adaptive consensus implementation
+- `alz_niev_interoperability.py` - Complete ALZ-NIEV protocol
 
-## 🚀 Características
+## 🚀 Features
 
-- ✅ Consenso adaptativo (PoS, PoA, PoH, Hybrid)
-- ✅ Adaptação automática baseada em condições da rede
-- ✅ Otimização de performance e segurança
-- ✅ Escalabilidade automática
+- ✅ Adaptive consensus (PoS, PoA, PoH, Hybrid)
+- ✅ Automatic adaptation based on network conditions
+- ✅ Performance and security optimization
+- ✅ Automatic scalability
 
-## 📖 Documentação
+## 📖 Documentation
 
-Veja [docs/ALZ_NIEV_PROTOCOL.md](../../docs/ALZ_NIEV_PROTOCOL.md) para documentação completa.
-
+See [docs/ALZ_NIEV_PROTOCOL.md](../../docs/ALZ_NIEV_PROTOCOL.md) for complete documentation.

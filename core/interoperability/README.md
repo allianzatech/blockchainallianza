@@ -1,31 +1,30 @@
 # Bridge-Free Interoperability
 
-## 📋 Descrição
+## 📋 Description
 
-Sistema de interoperabilidade bridge-free (sem pontes, sem custódia) usando ZK Proofs e State Commitments.
+Bridge-free interoperability system (no bridges, no custody) using ZK Proofs and State Commitments.
 
-## 🔧 Arquivos Principais
+## 🔧 Main Files
 
-- `bridge_free_interop.py` - Interoperabilidade bridge-free
-- `proof_of_lock.py` - Proof-of-Lock criptográfico
-- `alz_niev_interoperability.py` - Protocolo ALZ-NIEV
+- `bridge_free_interop.py` - Bridge-free interoperability
+- `proof_of_lock.py` - Cryptographic Proof-of-Lock
+- `alz_niev_interoperability.py` - ALZ-NIEV protocol
 
-## 🚀 Características
+## 🚀 Features
 
-- ✅ Sem custódia
-- ✅ Sem bridges tradicionais
-- ✅ Sem wrapped tokens
-- ✅ ZK Proofs para validação
-- ✅ State Commitments para garantia de estado
+- ✅ No custody
+- ✅ No traditional bridges
+- ✅ No wrapped tokens
+- ✅ ZK Proofs for validation
+- ✅ State Commitments for state guarantee
 
-## 📖 Documentação
+## 📖 Documentation
 
-Veja [docs/INTEROPERABILITY.md](../../docs/INTEROPERABILITY.md) para documentação completa.
+See [docs/INTEROPERABILITY.md](../../docs/INTEROPERABILITY.md) for complete documentation.
 
-## 🧪 Testes
+## 🧪 Tests
 
-Execute os testes:
+Run tests:
 ```bash
 python tests/public/test_interoperability.py
 ```
-
