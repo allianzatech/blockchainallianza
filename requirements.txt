@@ -16,3 +16,5 @@ python-bitcointx>=1.1.5
 bit>=0.8.0
 requests>=2.31.0
 schedule>=1.2.0
+qiskit>=2.0.0
+qiskit-aer>=0.17.0

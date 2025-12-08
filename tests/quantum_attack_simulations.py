@@ -12,12 +12,19 @@ from typing import Dict, List, Any, Optional
 from datetime import datetime
 
 try:
-    from qiskit import QuantumCircuit, Aer, execute
-    from qiskit.algorithms import Shor
+    from qiskit import QuantumCircuit, transpile
+    # Qiskit 2.x - usar AerSimulator
+    from qiskit_aer import AerSimulator
+    try:
+        from qiskit.algorithms import Shor
+    except ImportError:
+        # Shor pode não estar disponível em versões mais recentes
+        Shor = None
     QISKIT_AVAILABLE = True
-except ImportError:
+except ImportError as e:
     QISKIT_AVAILABLE = False
-    print("⚠️  Qiskit não disponível. Instale com: pip install qiskit")
+    print(f"⚠️  Qiskit não disponível: {e}")
+    print("   💡 Instale com: pip install qiskit qiskit-aer")
 
 try:
     # Tentar múltiplos caminhos possíveis
@@ -72,18 +79,25 @@ class QuantumAttackSimulator:
             circuit.cx(0, 1)
             circuit.measure_all()
             
-            simulator = Aer.get_backend('qasm_simulator')
-            job = execute(circuit, simulator, shots=1024)
-            counts = job.result().get_counts()
+            # Qiskit 2.x API - usar AerSimulator
+            simulator = AerSimulator()
+            circuit_compiled = transpile(circuit, simulator)
+            job = simulator.run(circuit_compiled, shots=1024)
+            result_obj = job.result()
+            counts = result_obj.get_counts()
             
             result["simulation_success"] = True
             result["quantum_circuit_depth"] = circuit.depth()
             result["shots"] = 1024
+            result["counts"] = dict(counts) if counts else {}
             result["estimated_time_real"] = "Exponencial (milhões de qubits necessários)"
             result["conclusion"] = "ECDSA vulnerável a computadores quânticos suficientemente grandes"
+            result["qiskit_version"] = "2.x"
+            result["note"] = "Simulação teórica - Shor real requer milhões de qubits"
             
         except Exception as e:
             result["error"] = str(e)
+            result["error_details"] = repr(e)
         
         return result
     
