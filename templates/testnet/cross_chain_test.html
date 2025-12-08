@@ -18,6 +18,28 @@
             max-height: 400px;
             overflow-y: auto;
             position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .result-box:hover {
+            border-color: #4b5563;
+            background: #1f1f1f;
+        }
+        .result-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(59, 130, 246, 0.05);
+            opacity: 0;
+            transition: opacity 0.2s;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+        .result-box:hover::before {
+            opacity: 1;
         }
         .success { color: #4ade80; }
         .error { color: #f87171; }
@@ -29,18 +51,36 @@
             background: #374151;
             border: 1px solid #4b5563;
             color: white;
-            padding: 5px 10px;
+            padding: 8px 12px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 11px;
             transition: all 0.2s;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         .copy-btn:hover {
             background: #4b5563;
+            transform: scale(1.05);
         }
         .copy-btn.copied {
             background: #10b981;
             border-color: #059669;
+        }
+        .result-box-copy-hint {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 10px;
+            color: #6b7280;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+        .result-box:hover .result-box-copy-hint {
+            opacity: 1;
         }
         .copy-btn-small {
             background: #374151;
@@ -135,10 +175,13 @@
         <div id="results" class="hidden">
             <div class="bg-gray-800 p-6 rounded-lg mb-6">
                 <h2 class="text-2xl font-bold mb-4">{{ t('result') or 'Result' }}</h2>
-                <div id="resultContent" class="result-box">
-                    <button class="copy-btn" onclick="copyToClipboard('resultContent')" title="{{ t('copy') or 'Copy' }}">
-                        <i class="fas fa-copy mr-1"></i>{{ t('copy') or 'Copy' }}
+                <div id="resultContent" class="result-box" onclick="copyToClipboard('resultContent')" title="{{ t('click_to_copy') or 'Click to copy entire result' }}">
+                    <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('resultContent')" title="{{ t('copy') or 'Copy' }}">
+                        <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
                     </button>
+                    <div class="result-box-copy-hint">
+                        <i class="fas fa-hand-pointer mr-1"></i>{{ t('click_to_copy') or 'Click to copy' }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -163,10 +206,13 @@
             <div id="searchResults" class="hidden mt-4">
                 <div class="bg-gray-800 p-6 rounded-lg">
                     <h3 class="text-xl font-bold mb-4">{{ t('search_result') or 'Search Result' }}</h3>
-                    <div id="searchContent" class="result-box">
-                        <button class="copy-btn" onclick="copyToClipboard('searchContent')" title="{{ t('copy') or 'Copy' }}">
-                            <i class="fas fa-copy mr-1"></i>{{ t('copy') or 'Copy' }}
+                    <div id="searchContent" class="result-box" onclick="copyToClipboard('searchContent')" title="{{ t('click_to_copy') or 'Click to copy entire result' }}">
+                        <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('searchContent')" title="{{ t('copy') or 'Copy' }}">
+                            <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
                         </button>
+                        <div class="result-box-copy-hint">
+                            <i class="fas fa-hand-pointer mr-1"></i>{{ t('click_to_copy') or 'Click to copy' }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -181,10 +227,13 @@
                 {{ t('list_proofs_last_50') or 'List Proofs (last 50)' }}
             </button>
             <div id="listResults" class="hidden mt-4">
-                <div id="listContent" class="result-box">
-                    <button class="copy-btn" onclick="copyToClipboard('listContent')" title="{{ t('copy') or 'Copy' }}">
-                        <i class="fas fa-copy mr-1"></i>{{ t('copy') or 'Copy' }}
+                <div id="listContent" class="result-box" onclick="copyToClipboard('listContent')" title="{{ t('click_to_copy') or 'Click to copy entire result' }}">
+                    <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('listContent')" title="{{ t('copy') or 'Copy' }}">
+                        <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
                     </button>
+                    <div class="result-box-copy-hint">
+                        <i class="fas fa-hand-pointer mr-1"></i>{{ t('click_to_copy') or 'Click to copy' }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -198,10 +247,13 @@
                 {{ t('view_status') or 'View Status' }}
             </button>
             <div id="statusResults" class="hidden mt-4">
-                <div id="statusContent" class="result-box">
-                    <button class="copy-btn" onclick="copyToClipboard('statusContent')" title="{{ t('copy') or 'Copy' }}">
-                        <i class="fas fa-copy mr-1"></i>{{ t('copy') or 'Copy' }}
+                <div id="statusContent" class="result-box" onclick="copyToClipboard('statusContent')" title="{{ t('click_to_copy') or 'Click to copy entire result' }}">
+                    <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('statusContent')" title="{{ t('copy') or 'Copy' }}">
+                        <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
                     </button>
+                    <div class="result-box-copy-hint">
+                        <i class="fas fa-hand-pointer mr-1"></i>{{ t('click_to_copy') or 'Click to copy' }}
+                    </div>
                 </div>
             </div>
         </div>
