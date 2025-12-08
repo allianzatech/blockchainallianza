@@ -95,11 +95,8 @@
             <button class="tab-button active" onclick="showTab('about')">
                 <i class="fas fa-book"></i> {{ t('about') or 'About' }}
             </button>
-            <button class="tab-button" onclick="showTab('test')">
-                <i class="fas fa-vial"></i> {{ t('test') or 'Test' }}
-            </button>
             <button class="tab-button" onclick="showTab('transfer')">
-                <i class="fas fa-exchange-alt"></i> {{ t('real_transfer') or 'Real Transfer' }}
+                <i class="fas fa-exchange-alt"></i> {{ t('cross_chain_transfer') or 'Cross-Chain Transfer' }}
             </button>
             <button class="tab-button" onclick="showTab('decoder')">
                 <i class="fas fa-code"></i> {{ t('decoder') or 'Decoder' }}
@@ -154,61 +151,69 @@
             </div>
         </div>
 
-        <!-- Tab: Test -->
-        <div id="tab-test" class="tab-content">
+        <!-- Tab: Cross-Chain Transfer (Unified - Always Real) -->
+        <div id="tab-transfer" class="tab-content">
             <div class="bg-gray-800 rounded-lg p-6 mb-6">
-                <h2 class="text-2xl font-bold mb-4">{{ t('create_cross_chain_transfer') or 'Create Cross-Chain Transfer' }}</h2>
+                <h2 class="text-2xl font-bold mb-4">
+                    <i class="fas fa-exchange-alt text-blue-400"></i> {{ t('cross_chain_transfer') or 'Cross-Chain Transfer' }}
+                </h2>
+                <p class="text-sm text-gray-400 mb-6">
+                    {{ t('real_transfer_description') or 'Send REAL tokens between different blockchains (EVM and Bitcoin). All transfers include UChainID and ZK Proofs on-chain.' }}
+                </p>
                 <form id="transferForm" class="space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium mb-2">{{ t('source_chain') or 'Source Chain' }}</label>
-                            <select id="sourceChain" name="source_chain" class="w-full bg-gray-700 text-white p-2 rounded" required>
-                                <option value="polygon">Polygon</option>
-                                <option value="ethereum">Ethereum</option>
-                                <option value="bsc">BSC</option>
-                                <option value="bitcoin">Bitcoin</option>
+                            <select name="source_chain" id="sourceChain" class="w-full bg-gray-700 text-white p-2 rounded" required>
+                                <option value="polygon">Polygon (Amoy Testnet)</option>
+                                <option value="ethereum">Ethereum (Sepolia Testnet)</option>
+                                <option value="bsc">BSC (Testnet)</option>
+                                <option value="bitcoin">Bitcoin (Testnet)</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-2">{{ t('target_chain') or 'Target Chain' }}</label>
-                            <select id="targetChain" name="target_chain" class="w-full bg-gray-700 text-white p-2 rounded" required>
-                                <option value="ethereum">Ethereum</option>
-                                <option value="polygon">Polygon</option>
-                                <option value="bsc">BSC</option>
-                                <option value="bitcoin">Bitcoin</option>
+                            <select name="target_chain" id="targetChain" class="w-full bg-gray-700 text-white p-2 rounded" required>
+                                <option value="ethereum">Ethereum (Sepolia Testnet)</option>
+                                <option value="polygon">Polygon (Amoy Testnet)</option>
+                                <option value="bsc">BSC (Testnet)</option>
+                                <option value="bitcoin">Bitcoin (Testnet)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">{{ t('amount') or 'Amount' }}</label>
+                            <input type="number" name="amount" id="amount" step="0.0001" value="0.1" class="w-full bg-gray-700 text-white p-2 rounded" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">{{ t('token_symbol') or 'Token Symbol' }}</label>
+                            <select name="token_symbol" id="tokenSymbol" class="w-full bg-gray-700 text-white p-2 rounded" required>
+                                <option value="ETH">ETH</option>
+                                <option value="MATIC">MATIC</option>
+                                <option value="BNB">BNB</option>
+                                <option value="BTC">BTC</option>
                             </select>
                         </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-2">{{ t('amount') or 'Amount' }}</label>
-                        <input type="number" id="amount" name="amount" step="0.001" value="0.1" 
-                               class="w-full bg-gray-700 text-white p-2 rounded" required>
-                    </div>
-                    <div>
                         <label class="block text-sm font-medium mb-2">{{ t('recipient_address') or 'Recipient Address' }}</label>
-                        <input type="text" id="recipient" name="recipient" 
-                               value="0x86AE40869EB6ACb9477b42BfC9150c0A2Cc21f5E"
-                               class="w-full bg-gray-700 text-white p-2 rounded font-mono" required>
+                        <input type="text" name="recipient" id="recipient" placeholder="0x... ou mjQMvYHE5Bpqze4ifq6NLP9BthNJgxWRud" class="w-full bg-gray-700 text-white p-2 rounded font-mono" required>
+                        <p class="text-xs text-gray-400 mt-1">{{ t('recipient_hint') or 'EVM address (0x...) or Bitcoin address' }}</p>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">{{ t('token_symbol') or 'Token Symbol' }}</label>
-                        <input type="text" id="tokenSymbol" name="token_symbol" value="ETH" 
-                               class="w-full bg-gray-700 text-white p-2 rounded">
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <input type="checkbox" id="sendReal" name="send_real">
-                        <label for="sendReal" class="text-sm">{{ t('send_real_transaction') or 'Send REAL transaction' }}</label>
-                    </div>
-                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition">
-                        <i class="fas fa-paper-plane mr-2"></i> {{ t('create_transfer') or 'Create Transfer' }}
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                        <i class="fas fa-rocket mr-2"></i> 🚀 {{ t('execute_real_transfer') or 'Execute REAL Transfer' }}
                     </button>
+                    <p class="text-xs text-gray-400 text-center mt-2">
+                        {{ t('all_transfers_real') or '⚠️ All transfers are REAL and will appear on-chain with UChainID and ZK Proofs' }}
+                    </p>
                 </form>
             </div>
-            <div id="testResults" class="hidden">
+            <div id="transferResults" class="hidden">
                 <div class="bg-gray-800 p-6 rounded-lg mb-6">
                     <h2 class="text-2xl font-bold mb-4">{{ t('result') or 'Result' }}</h2>
-                    <div id="testResultContent" class="result-box" onclick="copyToClipboard('testResultContent')">
-                        <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('testResultContent')">
+                    <div id="transferResultContent" class="result-box" onclick="copyToClipboard('transferResultContent')">
+                        <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('transferResultContent')">
                             <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
                         </button>
                     </div>
@@ -229,60 +234,6 @@
                 <div id="searchResults" class="hidden mt-4">
                     <div id="searchContent" class="result-box" onclick="copyToClipboard('searchContent')">
                         <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('searchContent')">
-                            <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tab: Real Transfer -->
-        <div id="tab-transfer" class="tab-content">
-            <div class="bg-gray-800 rounded-lg p-6 mb-6">
-                <h2 class="text-2xl font-bold mb-4">{{ t('real_cross_chain_transfer') or 'Real Cross-Chain Transfer' }}</h2>
-                <p class="text-sm text-gray-400 mb-6">{{ t('send_real_tokens') or 'Send REAL tokens between different blockchains' }}</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">{{ t('origin_blockchain') or 'Origin Blockchain' }}</label>
-                        <select id="realSourceChain" class="w-full bg-gray-700 text-white p-2 rounded">
-                            <option value="polygon">Polygon (Amoy)</option>
-                            <option value="ethereum">Ethereum (Sepolia)</option>
-                            <option value="bsc">BSC (Testnet)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">{{ t('destination_blockchain') or 'Destination Blockchain' }}</label>
-                        <select id="realTargetChain" class="w-full bg-gray-700 text-white p-2 rounded">
-                            <option value="ethereum">Ethereum (Sepolia)</option>
-                            <option value="polygon">Polygon (Amoy)</option>
-                            <option value="bsc">BSC (Testnet)</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">{{ t('quantity') or 'Quantity' }}</label>
-                        <input type="number" id="realAmount" step="0.0001" value="0.1" class="w-full bg-gray-700 text-white p-2 rounded">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">{{ t('token') or 'Token' }}</label>
-                        <select id="realTokenSymbol" class="w-full bg-gray-700 text-white p-2 rounded">
-                            <option value="ETH">ETH</option>
-                            <option value="MATIC">MATIC</option>
-                            <option value="BNB">BNB</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="mb-6">
-                    <label class="block text-sm font-medium mb-2">{{ t('recipient_address') or 'Recipient Address' }}</label>
-                    <input type="text" id="realRecipient" placeholder="0x..." class="w-full bg-gray-700 text-white p-2 rounded font-mono">
-                </div>
-                <button onclick="executeRealTransfer()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition">
-                    <i class="fas fa-rocket mr-2"></i> 🚀 {{ t('execute_real_transfer') or 'Execute REAL Transfer' }}
-                </button>
-                <div id="realTransferResult" class="hidden mt-4">
-                    <div id="realTransferContent" class="result-box" onclick="copyToClipboard('realTransferContent')">
-                        <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('realTransferContent')">
                             <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
                         </button>
                     </div>
@@ -421,8 +372,15 @@
                 }
             });
         }
+        
+        // Copy specific text
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Visual feedback pode ser adicionado aqui se necessário
+            });
+        }
 
-        // Create Transfer (Test Tab)
+        // Create Transfer (Unified - Always Real)
         document.getElementById('transferForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
@@ -432,13 +390,13 @@
                 amount: parseFloat(formData.get('amount')),
                 recipient: formData.get('recipient'),
                 token_symbol: formData.get('token_symbol'),
-                send_real: document.getElementById('sendReal').checked
+                send_real: true  // Sempre real
             };
 
-            const resultsDiv = document.getElementById('testResults');
-            const resultContent = document.getElementById('testResultContent');
+            const resultsDiv = document.getElementById('transferResults');
+            const resultContent = document.getElementById('transferResultContent');
             resultsDiv.classList.remove('hidden');
-            resultContent.innerHTML = '<p class="info">⏳ {{ t("sending_request") or "Sending request..." }}</p>';
+            resultContent.innerHTML = '<p class="info">⏳ {{ t("executing_real_transfer") or "Executing REAL transfer..." }}</p>';
 
             try {
                 const response = await fetch('/api/cross-chain/transfer', {
@@ -448,10 +406,20 @@
                 });
 
                 const result = await response.json();
-                resultContent.innerHTML = `
-                    <p class="${result.success ? 'success' : 'error'}">${result.success ? '✅' : '❌'} ${result.success ? '{{ t("transfer_created_success") or "Transfer created successfully!" }}' : result.error}</p>
-                    <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
-                `;
+                if (result.success) {
+                    resultContent.innerHTML = `
+                        <p class="success">✅ {{ t("transfer_created_success") or "Transfer created successfully!" }}</p>
+                        ${result.uchain_id ? `<p class="info mt-2"><strong>UChainID:</strong> <span class="font-mono text-cyan-400">${result.uchain_id}</span></p>` : ''}
+                        ${result.tx_hash ? `<p class="info mt-2"><strong>TX Hash:</strong> <a href="${result.explorer_url || '#'}" target="_blank" class="font-mono text-blue-400 hover:underline">${result.tx_hash}</a></p>` : ''}
+                        ${result.has_zk_proof ? `<p class="success mt-2">✅ ZK Proof: ${result.has_zk_proof ? 'Yes' : 'No'}</p>` : ''}
+                        <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    resultContent.innerHTML = `
+                        <p class="error">❌ ${result.error || '{{ t("transfer_error") or "Transfer error" }}'}</p>
+                        <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                }
             } catch (error) {
                 resultContent.innerHTML = `<p class="error">❌ {{ t("error") or "Error" }}: ${error.message}</p>`;
             }

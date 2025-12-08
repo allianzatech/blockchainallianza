@@ -2739,6 +2739,10 @@ def api_cross_chain_transfer_with_proof():
                 "error": "recipient é obrigatório"
             }), 400
         
+        # Se send_real não foi fornecido, assumir True (sempre real)
+        if send_real is None:
+            send_real = True
+        
         result = bridge_free_interop.bridge_free_transfer(
             source_chain=source_chain,
             target_chain=target_chain,
