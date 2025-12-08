@@ -251,8 +251,10 @@ class BridgeFreeInterop:
                 transaction['gas'] = estimated_gas
             except Exception as e:
                 # Se falhar, usar gas base aumentado para data
+                # Nota: "floor data gas cost" requer mínimo de ~36800 quando há data
                 if include_memo and memo_info:
-                    estimated_gas = base_gas + 10000  # Extra para data
+                    # Aumentar significativamente para considerar "floor data gas cost"
+                    estimated_gas = max(36800, base_gas + 20000)  # Mínimo 36800 para data
                 else:
                     estimated_gas = base_gas
                 transaction['gas'] = estimated_gas

@@ -76,7 +76,7 @@
 
         <!-- Form -->
         <div class="bg-gray-800 p-6 rounded-lg mb-6">
-            <h2 class="text-2xl font-bold mb-4">Criar Transferência Cross-Chain</h2>
+            <h2 class="text-2xl font-bold mb-4">{{ t('create_cross_chain_transfer') or 'Create Cross-Chain Transfer' }}</h2>
             
             <form id="transferForm" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -159,6 +159,17 @@
                     {{ t('search_proof') or 'Search Proof' }}
                 </button>
             </form>
+            <!-- Search Results (separada) -->
+            <div id="searchResults" class="hidden mt-4">
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-xl font-bold mb-4">{{ t('search_result') or 'Search Result' }}</h3>
+                    <div id="searchContent" class="result-box">
+                        <button class="copy-btn" onclick="copyToClipboard('searchContent')" title="{{ t('copy') or 'Copy' }}">
+                            <i class="fas fa-copy mr-1"></i>{{ t('copy') or 'Copy' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- List All Proofs -->
@@ -254,7 +265,7 @@
             const resultsDiv = document.getElementById('results');
             const resultContent = document.getElementById('resultContent');
             resultsDiv.classList.remove('hidden');
-            resultContent.innerHTML = '<p class="info">⏳ Enviando requisição...</p>';
+            resultContent.innerHTML = '<p class="info">⏳ {{ t("sending_request") or "Sending request..." }}</p>';
 
             try {
                 const response = await fetch('/api/cross-chain/transfer', {
@@ -268,18 +279,20 @@
                 const result = await response.json();
                 
                 if (result.success) {
+                    const uchainId = result.uchain_id || 'N/A';
+                    const transferId = result.transfer_id || 'N/A';
                     resultContent.innerHTML = `
-                        <p class="success">✅ Transferência criada com sucesso!</p>
-                        <p class="info"><strong>UChainID:</strong> ${result.uchain_id || 'N/A'}</p>
-                        <p class="info"><strong>Transfer ID:</strong> ${result.transfer_id || 'N/A'}</p>
-                        ${result.tx_hash ? `<p class="info"><strong>TX Hash:</strong> ${result.tx_hash}</p>` : ''}
-                        ${result.explorer_url ? `<p class="info"><strong>Explorer:</strong> <a href="${result.explorer_url}" target="_blank" class="text-blue-400">${result.explorer_url}</a></p>` : ''}
-                        <p class="info"><strong>Has ZK Proof:</strong> ${result.has_zk_proof ? '✅ Sim' : '❌ Não'}</p>
+                        <p class="success">✅ {{ t('transfer_created_success') or 'Transfer created successfully!' }}</p>
+                        <p class="info"><strong>{{ t('uchain_id') or 'UChainID' }}:</strong> <span id="transferUchainId">${uchainId}</span> <button onclick="copyText('${uchainId}')" class="copy-btn-small ml-2" title="{{ t('copy') or 'Copy' }}"><i class="fas fa-copy"></i></button></p>
+                        <p class="info"><strong>{{ t('transfer_id') or 'Transfer ID' }}:</strong> <span id="transferId">${transferId}</span> <button onclick="copyText('${transferId}')" class="copy-btn-small ml-2" title="{{ t('copy') or 'Copy' }}"><i class="fas fa-copy"></i></button></p>
+                        ${result.tx_hash ? `<p class="info"><strong>{{ t('tx_hash') or 'TX Hash' }}:</strong> <span id="txHash">${result.tx_hash}</span> <button onclick="copyText('${result.tx_hash}')" class="copy-btn-small ml-2" title="{{ t('copy') or 'Copy' }}"><i class="fas fa-copy"></i></button></p>` : ''}
+                        ${result.explorer_url ? `<p class="info"><strong>{{ t('explorer') or 'Explorer' }}:</strong> <a href="${result.explorer_url}" target="_blank" class="text-blue-400">${result.explorer_url}</a></p>` : ''}
+                        <p class="info"><strong>{{ t('has_zk_proof') or 'Has ZK Proof' }}:</strong> ${result.has_zk_proof ? '✅ {{ t("yes") or "Yes" }}' : '❌ {{ t("no") or "No" }}'}</p>
                         <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
                     `;
                 } else {
                     resultContent.innerHTML = `
-                        <p class="error">❌ Erro: ${result.error || 'Erro desconhecido'}</p>
+                        <p class="error">❌ {{ t('error') or 'Error' }}: ${result.error || '{{ t("unknown_error") or "Unknown error" }}'}</p>
                         <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
                     `;
                 }
@@ -288,33 +301,36 @@
             }
         });
 
-        // Buscar Prova
+        // Buscar Prova (caixa separada)
         document.getElementById('searchForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const uchainId = document.getElementById('uchainId').value;
 
-            const resultsDiv = document.getElementById('results');
-            const resultContent = document.getElementById('resultContent');
-            resultsDiv.classList.remove('hidden');
-            resultContent.innerHTML = '<p class="info">⏳ Buscando prova...</p>';
+            const searchResults = document.getElementById('searchResults');
+            const searchContent = document.getElementById('searchContent');
+            searchResults.classList.remove('hidden');
+            searchContent.innerHTML = '<p class="info">⏳ {{ t("searching_proof") or "Searching proof..." }}</p>';
 
             try {
                 const response = await fetch(`/api/cross-chain/proof/${encodeURIComponent(uchainId)}`);
                 const result = await response.json();
 
                 if (result.success) {
-                    resultContent.innerHTML = `
-                        <p class="success">✅ Prova encontrada!</p>
+                    const foundUchainId = result.uchain_id || uchainId;
+                    searchContent.innerHTML = `
+                        <p class="success">✅ {{ t('proof_found') or 'Proof found!' }}</p>
+                        <p class="info"><strong>{{ t('uchain_id') or 'UChainID' }}:</strong> <span id="searchUchainId">${foundUchainId}</span> <button onclick="copyText('${foundUchainId}')" class="copy-btn-small ml-2" title="{{ t('copy') or 'Copy' }}"><i class="fas fa-copy"></i></button></p>
+                        ${result.proof_id ? `<p class="info"><strong>{{ t('proof_id') or 'Proof ID' }}:</strong> <span id="proofId">${result.proof_id}</span> <button onclick="copyText('${result.proof_id}')" class="copy-btn-small ml-2" title="{{ t('copy') or 'Copy' }}"><i class="fas fa-copy"></i></button></p>` : ''}
                         <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
                     `;
                 } else {
-                    resultContent.innerHTML = `
-                        <p class="error">❌ ${result.error || 'Prova não encontrada'}</p>
+                    searchContent.innerHTML = `
+                        <p class="error">❌ ${result.error || '{{ t("proof_not_found") or "Proof not found" }}'}</p>
                         <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
                     `;
                 }
             } catch (error) {
-                resultContent.innerHTML = `<p class="error">❌ Erro: ${error.message}</p>`;
+                searchContent.innerHTML = `<p class="error">❌ {{ t('error') or 'Error' }}: ${error.message}</p>`;
             }
         });
 
@@ -323,7 +339,7 @@
             const listResults = document.getElementById('listResults');
             const listContent = document.getElementById('listContent');
             listResults.classList.remove('hidden');
-            listContent.innerHTML = '<p class="info">⏳ Carregando provas...</p>';
+            listContent.innerHTML = '<p class="info">⏳ {{ t("loading_proofs") or "Loading proofs..." }}</p>';
 
             try {
                 const response = await fetch('/api/cross-chain/proofs?limit=50');
@@ -331,11 +347,11 @@
 
                 if (result.success) {
                     listContent.innerHTML = `
-                        <p class="success">✅ ${result.total} provas encontradas (mostrando ${result.returned})</p>
+                        <p class="success">✅ ${result.total} {{ t('proofs_found_showing') or 'proofs found (showing' }} ${result.returned})</p>
                         <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
                     `;
                 } else {
-                    listContent.innerHTML = `<p class="error">❌ ${result.error || 'Erro ao listar provas'}</p>`;
+                    listContent.innerHTML = `<p class="error">❌ ${result.error || '{{ t("error_listing_proofs") or "Error listing proofs" }}'}</p>`;
                 }
             } catch (error) {
                 listContent.innerHTML = `<p class="error">❌ Erro: ${error.message}</p>`;
@@ -347,7 +363,7 @@
             const statusResults = document.getElementById('statusResults');
             const statusContent = document.getElementById('statusContent');
             statusResults.classList.remove('hidden');
-            statusContent.innerHTML = '<p class="info">⏳ Carregando status...</p>';
+            statusContent.innerHTML = '<p class="info">⏳ {{ t("loading_status") or "Loading status..." }}</p>';
 
             try {
                 const response = await fetch('/api/cross-chain/status');
@@ -355,15 +371,15 @@
 
                 if (result.success) {
                     statusContent.innerHTML = `
-                        <p class="success">✅ Status do Sistema</p>
-                        <p class="info"><strong>State Commitments:</strong> ${result.state_commitments || 0}</p>
-                        <p class="info"><strong>ZK Proofs:</strong> ${result.zk_proofs || 0}</p>
-                        <p class="info"><strong>Applied States:</strong> ${result.applied_states || 0}</p>
-                        <p class="info"><strong>UChainIDs:</strong> ${result.uchain_ids || 0}</p>
+                        <p class="success">✅ {{ t('system_status') or 'System Status' }}</p>
+                        <p class="info"><strong>{{ t('state_commitments') or 'State Commitments' }}:</strong> ${result.state_commitments || 0}</p>
+                        <p class="info"><strong>{{ t('zk_proofs') or 'ZK Proofs' }}:</strong> ${result.zk_proofs || 0}</p>
+                        <p class="info"><strong>{{ t('applied_states') or 'Applied States' }}:</strong> ${result.applied_states || 0}</p>
+                        <p class="info"><strong>{{ t('uchain_ids') or 'UChainIDs' }}:</strong> ${result.uchain_ids || 0}</p>
                         <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
                     `;
                 } else {
-                    statusContent.innerHTML = `<p class="error">❌ ${result.error || 'Erro ao obter status'}</p>`;
+                    statusContent.innerHTML = `<p class="error">❌ ${result.error || '{{ t("error_getting_status") or "Error getting status" }}'}</p>`;
                 }
             } catch (error) {
                 statusContent.innerHTML = `<p class="error">❌ Erro: ${error.message}</p>`;
