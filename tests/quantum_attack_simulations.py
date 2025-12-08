@@ -20,11 +20,23 @@ except ImportError:
     print("⚠️  Qiskit não disponível. Instale com: pip install qiskit")
 
 try:
-    from core.crypto.quantum_security import QuantumSecuritySystem
+    # Tentar múltiplos caminhos possíveis
+    try:
+        from core.crypto.quantum_security import QuantumSecuritySystem
+    except ImportError:
+        try:
+            from quantum_security import QuantumSecuritySystem
+        except ImportError:
+            import sys
+            import os
+            # Adicionar diretório raiz ao path
+            sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            from quantum_security import QuantumSecuritySystem
     QSS_AVAILABLE = True
-except ImportError:
+except ImportError as e:
     QSS_AVAILABLE = False
-    print("⚠️  QuantumSecuritySystem não disponível")
+    print(f"⚠️  QuantumSecuritySystem não disponível: {e}")
+    print("   💡 O teste continuará com simulações básicas")
 
 
 class QuantumAttackSimulator:
@@ -91,15 +103,43 @@ class QuantumAttackSimulator:
         
         try:
             # Gerar keypair QRS-3
-            keypair_id = self.qss.generate_qrs3_keypair()
+            keypair_result = self.qss.generate_qrs3_keypair()
+            if isinstance(keypair_result, dict):
+                keypair_id = keypair_result.get("keypair_id", keypair_result.get("success") and "unknown")
+            else:
+                keypair_id = keypair_result
             result["keypair_id"] = keypair_id
+            result["keypair_result"] = keypair_result if isinstance(keypair_result, dict) else {"keypair_id": keypair_id}
             
-            # Assinar mensagem
-            signature = self.qss.sign_qrs3(keypair_id, message)
-            result["signature_components"] = len(signature.get("signatures", {}))
-            result["has_ecdsa"] = "ecdsa" in signature.get("signatures", {})
-            result["has_ml_dsa"] = "ml_dsa" in signature.get("signatures", {})
-            result["has_sphincs"] = "sphincs" in signature.get("signatures", {})
+            # Assinar mensagem (converter string para bytes se necessário)
+            if isinstance(message, str):
+                message_bytes = message.encode('utf-8')
+            else:
+                message_bytes = message
+            
+            signature = self.qss.sign_qrs3(keypair_id, message_bytes)
+            
+            # Verificar estrutura da assinatura
+            # O retorno tem: classic_signature, ml_dsa_signature, sphincs_signature (se disponível)
+            if signature.get("success"):
+                # Verificar diretamente no nível superior (formato do quantum_security.py)
+                result["has_ecdsa"] = "classic_signature" in signature
+                result["has_ml_dsa"] = "ml_dsa_signature" in signature
+                result["has_sphincs"] = "sphincs_signature" in signature
+                
+                result["signature_components"] = sum([
+                    result["has_ecdsa"],
+                    result["has_ml_dsa"],
+                    result["has_sphincs"]
+                ])
+                result["signature_structure"] = list(signature.keys())
+                result["redundancy_level"] = signature.get("redundancy_level", result["signature_components"])
+            else:
+                result["error"] = signature.get("error", "Unknown error")
+                result["signature_components"] = 0
+                result["has_ecdsa"] = False
+                result["has_ml_dsa"] = False
+                result["has_sphincs"] = False
             
             # Verificar redundância (2/3)
             valid_signatures = sum([
