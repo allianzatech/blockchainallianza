@@ -874,7 +874,8 @@ class BridgeFreeInterop:
                     recipient=recipient,
                     private_key=private_key,
                     include_memo=True,  # Incluir memo com UChainID e ZK Proof
-                    zk_proof_id=proof_id  # Incluir ZK Proof no memo
+                    zk_proof_id=proof_id,  # Incluir ZK Proof no memo
+                    token_symbol=token_symbol
                 )
             
             result = {
