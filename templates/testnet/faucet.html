@@ -145,15 +145,15 @@
                                     <button onclick="copyToClipboard('${data.private_key}')" class="mt-1 text-blue-400 hover:text-blue-300 text-xs">
                                         <i class="fas fa-copy"></i> ${t && t('copy') ? t('copy') : 'Copy'}
                                     </button>
-                                    <p class="text-red-300 text-xs mt-2">${t && t('attention_testnet_never_use_mainnet') ? t('attention_testnet_never_use_mainnet') : (data.message || '⚠️ ATTENTION: This is a testnet. NEVER use this private key on mainnet!')}</p>
+                                    <p class="text-red-300 text-xs mt-2">${t && t('attention_testnet_never_use_mainnet') ? t('attention_testnet_never_use_mainnet') : '⚠️ ATTENTION: This is a testnet. NEVER use this private key on mainnet!'}</p>
                                 </div>
                                 <div class="mt-3 bg-blue-900 p-3 rounded">
                                     <p class="text-blue-200 font-medium mb-1">${t && t('instructions') ? t('instructions') : 'Instructions'}:</p>
                                     <ul class="text-xs text-blue-100 space-y-1">
-                                        ${data.instructions_keys ? data.instructions_keys.map((key, idx) => {
-                                            const translated = t && t(key) ? t(key) : data.instructions[idx];
+                                        ${data.instructions_keys ? data.instructions_keys.map(key => {
+                                            const translated = t && t(key) ? t(key) : key;
                                             return `<li>${translated}</li>`;
-                                        }).join('') : data.instructions.map(i => `<li>${i}</li>`).join('')}
+                                        }).join('') : (data.instructions ? data.instructions.map(i => `<li>${i}</li>`).join('') : '')}
                                     </ul>
                                 </div>
                             </div>

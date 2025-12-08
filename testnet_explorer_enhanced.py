@@ -430,10 +430,30 @@ class EnhancedTestnetExplorer:
                 if validator and validator != "unknown":
                     validators.add(validator)
             
+            # Contar total real de transações do banco de dados
+            total_transactions_real = 0
+            try:
+                from db_manager import DBManager
+                db_manager = DBManager()
+                result = db_manager.execute_query("SELECT COUNT(*) FROM transactions_history", ())
+                if result:
+                    total_transactions_real = result[0][0] if isinstance(result[0], tuple) else result[0]
+            except Exception as db_err:
+                # Se falhar, usar contagem das transações recentes
+                total_transactions_real = len(transactions) if transactions else 0
+            
+            # Contar transações pendentes de todos os shards
+            pending_count = 0
+            if hasattr(self.blockchain, 'pending_transactions'):
+                if isinstance(self.blockchain.pending_transactions, dict):
+                    pending_count = sum(len(shard_pending) for shard_pending in self.blockchain.pending_transactions.values() if isinstance(shard_pending, list))
+                elif isinstance(self.blockchain.pending_transactions, list):
+                    pending_count = len(self.blockchain.pending_transactions)
+            
             stats = {
                 "total_blocks": len(blocks) if blocks else 0,
-                "total_transactions": len(transactions) if transactions else 0,
-                "pending_transactions": len(self.blockchain.pending_transactions) if hasattr(self.blockchain, 'pending_transactions') else 0,
+                "total_transactions": total_transactions_real,  # Total real do banco de dados
+                "pending_transactions": pending_count,
                 "tps_current": round(tps_current, 2),
                 "tps_24h_avg": round(tps_24h, 2),
                 "latency_avg_ms": round(avg_latency * 1000, 2) if avg_latency else 0,
