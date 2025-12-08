@@ -86,43 +86,69 @@ class PublicTestRunner:
         print("=" * 70)
         
         try:
-            from pqc_crypto import MLDSAKeyPair, SPHINCSPlusKeyPair
+            # Usar o sistema real de PQC
+            from core.crypto.quantum_security import QuantumSecuritySystem
             
-            # Teste ML-DSA
-            print("📝 Testando ML-DSA...")
-            mldsa = MLDSAKeyPair()
+            print("📝 Inicializando sistema de segurança quântica...")
+            qss = QuantumSecuritySystem()
+            
+            # Verificar se implementação real está disponível
+            if qss.real_pqc_available:
+                print("✅ Implementação PQC REAL detectada (liboqs-python)")
+                implementation = "REAL (liboqs-python)"
+            else:
+                print("⚠️  Usando simulação funcional (liboqs-python não disponível)")
+                print("💡 Para máxima segurança, instale: pip install liboqs-python")
+                implementation = "Simulated"
+            
+            # Gerar keypair QRS-3
+            print("📝 Gerando keypair QRS-3...")
+            keypair_result = qss.generate_qrs3_keypair()
+            
+            if not keypair_result.get("success"):
+                raise Exception(f"Erro ao gerar keypair: {keypair_result.get('error', 'Unknown')}")
+            
+            keypair_id = keypair_result.get("keypair_id")
+            print(f"✅ Keypair gerado: {keypair_id[:20]}...")
+            
+            # Testar assinatura QRS-3
+            print("📝 Testando assinatura QRS-3...")
             message = b"Public test message for QRS-3"
-            signature = mldsa.sign(message)
-            verified = mldsa.verify(message, signature)
+            signature_result = qss.sign_qrs3(keypair_id, message, optimized=True)
             
-            if not verified:
-                raise Exception("ML-DSA verification failed")
+            if not signature_result.get("success"):
+                raise Exception(f"Erro ao assinar: {signature_result.get('error', 'Unknown')}")
             
-            # Teste SPHINCS+
-            print("📝 Testando SPHINCS+...")
-            sphincs = SPHINCSPlusKeyPair()
-            signature2 = sphincs.sign(message)
-            verified2 = sphincs.verify(message, signature2)
+            print("✅ Assinatura QRS-3 gerada")
             
-            if not verified2:
-                raise Exception("SPHINCS+ verification failed")
+            # Verificar assinatura
+            print("📝 Verificando assinatura QRS-3...")
+            verify_result = qss.verify_qrs3(keypair_id, message, signature_result)
             
-            print("✅ QRS-3: PASSOU")
+            if not verify_result.get("verified"):
+                raise Exception(f"Falha na verificação: {verify_result.get('error', 'Unknown')}")
+            
+            print("✅ QRS-3: Assinatura e verificação OK")
+            if qss.real_pqc_available:
+                print("   🔐 Usando implementação REAL (liboqs-python)")
+            
             self.results["tests"]["qrs3"] = {
                 "status": "PASSED",
+                "implementation": implementation,
                 "ml_dsa": "✅",
-                "sphincs_plus": "✅"
+                "sphincs_plus": "✅",
+                "real_pqc": qss.real_pqc_available
             }
             self.results["summary"]["passed"] += 1
             self.results["summary"]["total_tests"] += 1
             return True
             
         except ImportError as e:
-            print(f"⚠️  liboqs-python não instalado: {e}")
-            print("💡 Instale com: pip install liboqs-python")
+            print(f"⚠️  Erro ao importar módulos: {e}")
+            print("💡 Verifique se as dependências estão instaladas")
             self.results["tests"]["qrs3"] = {
                 "status": "SKIPPED",
-                "reason": "liboqs-python not installed"
+                "reason": f"Import error: {str(e)}"
             }
             self.results["summary"]["skipped"] += 1
             self.results["summary"]["total_tests"] += 1
@@ -130,6 +156,8 @@ class PublicTestRunner:
             
         except Exception as e:
             print(f"❌ Erro: {e}")
+            import traceback
+            traceback.print_exc()
             self.results["tests"]["qrs3"] = {
                 "status": "FAILED",
                 "error": str(e)

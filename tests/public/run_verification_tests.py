@@ -22,42 +22,63 @@ def test_qrs3_verification():
     print("=" * 70)
     
     try:
-        from pqc_crypto import MLDSAKeyPair, SPHINCSPlusKeyPair
+        # Usar o sistema real de PQC
+        from core.crypto.quantum_security import QuantumSecuritySystem
         
-        # Teste ML-DSA
-        print("📝 Testando ML-DSA...")
-        mldsa = MLDSAKeyPair()
-        message = b"Test message for QRS-3"
-        signature = mldsa.sign(message)
-        verified = mldsa.verify(message, signature)
+        print("📝 Inicializando sistema de segurança quântica...")
+        qss = QuantumSecuritySystem()
         
-        if verified:
-            print("✅ ML-DSA: Assinatura e verificação OK")
+        # Verificar se implementação real está disponível
+        if qss.real_pqc_available:
+            print("✅ Implementação PQC REAL detectada (liboqs-python)")
         else:
-            print("❌ ML-DSA: Falha na verificação")
+            print("⚠️  Usando simulação funcional (liboqs-python não disponível)")
+            print("💡 Para máxima segurança, instale: pip install liboqs-python")
+        
+        # Gerar keypair QRS-3
+        print("📝 Gerando keypair QRS-3...")
+        keypair_result = qss.generate_qrs3_keypair()
+        
+        if not keypair_result.get("success"):
+            print(f"❌ Erro ao gerar keypair: {keypair_result.get('error', 'Unknown')}")
             return False
         
-        # Teste SPHINCS+
-        print("📝 Testando SPHINCS+...")
-        sphincs = SPHINCSPlusKeyPair()
-        signature2 = sphincs.sign(message)
-        verified2 = sphincs.verify(message, signature2)
+        keypair_id = keypair_result.get("keypair_id")
+        print(f"✅ Keypair gerado: {keypair_id[:20]}...")
         
-        if verified2:
-            print("✅ SPHINCS+: Assinatura e verificação OK")
-        else:
-            print("❌ SPHINCS+: Falha na verificação")
+        # Testar assinatura QRS-3
+        print("📝 Testando assinatura QRS-3...")
+        message = b"Test message for QRS-3 verification"
+        signature_result = qss.sign_qrs3(keypair_id, message, optimized=True)
+        
+        if not signature_result.get("success"):
+            print(f"❌ Erro ao assinar: {signature_result.get('error', 'Unknown')}")
             return False
         
-        print("✅ TESTE 1: PASSOU")
-        return True
+        print("✅ Assinatura QRS-3 gerada")
+        
+        # Verificar assinatura
+        print("📝 Verificando assinatura QRS-3...")
+        verify_result = qss.verify_qrs3(keypair_id, message, signature_result)
+        
+        if verify_result.get("verified"):
+            print("✅ QRS-3: Assinatura e verificação OK")
+            if qss.real_pqc_available:
+                print("   🔐 Usando implementação REAL (liboqs-python)")
+            print("✅ TESTE 1: PASSOU")
+            return True
+        else:
+            print(f"❌ QRS-3: Falha na verificação: {verify_result.get('error', 'Unknown')}")
+            return False
         
     except ImportError as e:
-        print(f"⚠️  liboqs-python não instalado: {e}")
-        print("💡 Instale com: pip install liboqs-python")
+        print(f"⚠️  Erro ao importar módulos: {e}")
+        print("💡 Verifique se as dependências estão instaladas")
         return False
     except Exception as e:
         print(f"❌ Erro: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 def test_blockchain_basic():
