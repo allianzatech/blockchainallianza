@@ -304,6 +304,8 @@ class BridgeFreeInterop:
                 try:
                     from real_cross_chain_bridge import RealCrossChainBridge
                     bridge = RealCrossChainBridge()
+                    # Garantir que as conexões estão configuradas (inclui btc_api_base)
+                    bridge.setup_connections()
                     
                     # Gerar UChainID e criar memo se solicitado
                     uchain_id = None
