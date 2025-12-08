@@ -407,16 +407,30 @@
 
                 const result = await response.json();
                 if (result.success) {
+                    let txInfo = '';
+                    if (result.real_transaction && result.real_transaction.success) {
+                        txInfo = `
+                            <div class="bg-green-900/20 border border-green-500 rounded p-3 mt-3">
+                                <p class="success font-bold mb-2">🎉 Transação REAL Enviada!</p>
+                                <p class="info"><strong>TX Hash:</strong> <a href="${result.real_transaction.explorer_url || '#'}" target="_blank" class="font-mono text-blue-400 hover:underline">${result.real_transaction.tx_hash}</a></p>
+                                <p class="info"><strong>Chain:</strong> ${result.real_transaction.source_chain} → ${result.real_transaction.target_chain}</p>
+                                <p class="info"><strong>Amount:</strong> ${result.real_transaction.amount} ${result.real_transaction.token || result.token}</p>
+                                ${result.real_transaction.memo_hex ? `<p class="info text-xs mt-1"><strong>Memo (hex):</strong> <span class="font-mono">${result.real_transaction.memo_hex.substring(0, 50)}...</span></p>` : ''}
+                            </div>
+                        `;
+                    }
                     resultContent.innerHTML = `
                         <p class="success">✅ {{ t("transfer_created_success") or "Transfer created successfully!" }}</p>
-                        ${result.uchain_id ? `<p class="info mt-2"><strong>UChainID:</strong> <span class="font-mono text-cyan-400">${result.uchain_id}</span></p>` : ''}
-                        ${result.tx_hash ? `<p class="info mt-2"><strong>TX Hash:</strong> <a href="${result.explorer_url || '#'}" target="_blank" class="font-mono text-blue-400 hover:underline">${result.tx_hash}</a></p>` : ''}
-                        ${result.has_zk_proof ? `<p class="success mt-2">✅ ZK Proof: ${result.has_zk_proof ? 'Yes' : 'No'}</p>` : ''}
+                        ${result.uchain_id ? `<p class="info mt-2"><strong>UChainID:</strong> <span class="font-mono text-cyan-400">${result.uchain_id}</span> <button class="copy-btn-small ml-2" onclick="copyText('${result.uchain_id}')">📋</button></p>` : ''}
+                        ${result.tx_hash ? `<p class="info mt-2"><strong>TX Hash:</strong> <a href="${result.explorer_url || '#'}" target="_blank" class="font-mono text-blue-400 hover:underline">${result.tx_hash}</a> <button class="copy-btn-small ml-2" onclick="copyText('${result.tx_hash}')">📋</button></p>` : ''}
+                        ${result.has_zk_proof ? `<p class="success mt-2">✅ ZK Proof: Yes (Proof ID: ${result.proof_id || 'N/A'})</p>` : ''}
+                        ${txInfo}
                         <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
                     `;
                 } else {
                     resultContent.innerHTML = `
                         <p class="error">❌ ${result.error || '{{ t("transfer_error") or "Transfer error" }}'}</p>
+                        ${result.note ? `<p class="info mt-2">ℹ️ ${result.note}</p>` : ''}
                         <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
                     `;
                 }
@@ -454,46 +468,6 @@
             }
         });
 
-        // Execute Real Transfer
-        async function executeRealTransfer() {
-            const sourceChain = document.getElementById('realSourceChain').value;
-            const targetChain = document.getElementById('realTargetChain').value;
-            const amount = parseFloat(document.getElementById('realAmount').value);
-            const tokenSymbol = document.getElementById('realTokenSymbol').value;
-            const recipient = document.getElementById('realRecipient').value.trim();
-
-            if (!recipient) {
-                alert('{{ t("please_enter_recipient") or "Please enter a recipient address" }}');
-                return;
-            }
-
-            const resultDiv = document.getElementById('realTransferResult');
-            const resultContent = document.getElementById('realTransferContent');
-            resultDiv.classList.remove('hidden');
-            resultContent.innerHTML = '<p class="info">⏳ {{ t("executing_real_transfer") or "Executing REAL transfer..." }}</p>';
-
-            try {
-                const response = await fetch('/api/interoperability/transfer-real', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        source_chain: sourceChain,
-                        target_chain: targetChain,
-                        amount: amount,
-                        token_symbol: tokenSymbol,
-                        recipient: recipient
-                    })
-                });
-
-                const data = await response.json();
-                resultContent.innerHTML = `
-                    <p class="${data.success ? 'success' : 'error'}">${data.success ? '✅' : '❌'} ${data.success ? '{{ t("transfer_executed") or "Transfer executed!" }}' : data.error}</p>
-                    <pre class="mt-4 text-xs">${JSON.stringify(data, null, 2)}</pre>
-                `;
-            } catch (error) {
-                resultContent.innerHTML = `<p class="error">❌ {{ t('error') or 'Error' }}: ${error.message}</p>`;
-            }
-        }
 
         // Decoder
         document.getElementById('decoderForm').addEventListener('submit', async (e) => {
