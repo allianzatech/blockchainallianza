@@ -228,6 +228,12 @@ TRANSLATIONS = {
         'generate_proof': 'Gerar Prova',
         'verify_proof': 'Verificar Prova',
         'anchor_proof': 'Ancorar Prova',
+        # Faucet - Traduções adicionais
+        'generating_wallet': 'Gerando wallet...',
+        'processing': 'Processando...',
+        'copied_to_clipboard': 'Copiado para a área de transferência!',
+        'error_colon': 'Erro:',
+        'copy': 'Copiar',
     },
     'en': {
         # Dashboard
