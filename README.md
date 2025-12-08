@@ -51,8 +51,9 @@
 
 **⚠️ IMPORTANT: All core implementations are PUBLIC and auditable in this repository:**
 
-- **QRS-3 (PQC)**: [`core/crypto/pqc_crypto.py`](core/crypto/pqc_crypto.py) - ML-DSA and SPHINCS+ implementations
-- **Quantum Security**: [`core/crypto/quantum_security.py`](core/crypto/quantum_security.py) - Quantum security service
+- **QRS-3 (PQC) - REAL Implementation**: [`core/crypto/quantum_security.py`](core/crypto/quantum_security.py) - **PRIMARY FILE** - Uses `liboqs-python` for real ML-DSA, ML-KEM, and SPHINCS+ when available
+  - ⚠️ Note: `pqc_crypto.py` is a legacy/emergency implementation (ECDSA only) - use `quantum_security.py` for real PQC
+- **Quantum Security Service**: [`core/crypto/quantum_security.py`](core/crypto/quantum_security.py) - Complete quantum security system with real PQC support
 - **ALZ-NIEV Consensus**: [`core/consensus/adaptive_consensus.py`](core/consensus/adaptive_consensus.py) - Adaptive consensus mechanism
 - **ALZ-NIEV Protocol**: [`core/consensus/alz_niev_interoperability.py`](core/consensus/alz_niev_interoperability.py) - **FULL PROTOCOL IMPLEMENTATION - PUBLIC**
 - **Bridge-Free Interop**: [`core/interoperability/bridge_free_interop.py`](core/interoperability/bridge_free_interop.py) - Bridge-free interoperability
