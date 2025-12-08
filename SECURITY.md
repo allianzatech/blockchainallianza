@@ -1,184 +1,183 @@
-# 🔐 Política de Segurança - Allianza Blockchain
+# 🔐 Security Policy - Allianza Blockchain
 
-## 🛡️ Reportar Vulnerabilidades
+## 🛡️ Reporting Vulnerabilities
 
-Se você descobrir uma vulnerabilidade de segurança, **NÃO** abra uma issue pública. Em vez disso:
+If you discover a security vulnerability, **DO NOT** open a public issue. Instead:
 
-1. **Envie um email** para: security@allianza.tech
-2. **Ou use** o GitHub Security Advisory: https://github.com/dieisonmaach-lang/allianzablockchain/security/advisories/new
+1. **Send an email** to: security@allianza.tech
+2. **Or use** GitHub Security Advisory: https://github.com/dieisonmaach-lang/allianzablockchain/security/advisories/new
 
-### O que incluir no relatório:
+### What to include in the report:
 
-- Descrição detalhada da vulnerabilidade
-- Passos para reproduzir
-- Impacto potencial
-- Sugestões de correção (se houver)
+- Detailed description of the vulnerability
+- Steps to reproduce
+- Potential impact
+- Fix suggestions (if any)
 
-### Processo de Resposta:
+### Response Process:
 
-- **Acknowledgment**: Dentro de 48 horas
-- **Status Update**: Semanal até resolução
-- **Fix Timeline**: Baseado na severidade
+- **Acknowledgment**: Within 48 hours
+- **Status Update**: Weekly until resolution
+- **Fix Timeline**: Based on severity
 
-## 🔒 Proteção de Segredos
+## 🔒 Secret Protection
 
-### ⚠️ NUNCA Commitar:
+### ⚠️ NEVER Commit:
 
-- ❌ Chaves privadas (`.key`, `.pem`, `.wif`)
-- ❌ Seeds de wallets
-- ❌ Tokens de API
-- ❌ Credenciais de banco de dados
-- ❌ Senhas ou secrets
-- ❌ Arquivos `.env` com valores reais
+- ❌ Private keys (`.key`, `.pem`, `.wif`)
+- ❌ Wallet seeds
+- ❌ API tokens
+- ❌ Database credentials
+- ❌ Passwords or secrets
+- ❌ `.env` files with real values
 
-### ✅ O que está protegido:
+### ✅ What is protected:
 
-O arquivo `.gitignore` protege automaticamente:
-- Arquivos `.env`
-- Diretório `secrets/`
-- Chaves privadas (`*.key`, `*.pem`, `*.wif`)
-- Credenciais (`*_token*`, `*_password*`, `*_secret*`)
+The `.gitignore` file automatically protects:
+- `.env` files
+- `secrets/` directory
+- Private keys (`*.key`, `*.pem`, `*.wif`)
+- Credentials (`*_token*`, `*_password*`, `*_secret*`)
 
-### 🔍 Verificar antes de commitar:
+### 🔍 Verify before committing:
 
 ```bash
-# Verificar se há segredos no código
+# Check for secrets in code
 git diff --cached | grep -iE "password|secret|key|token|private"
 
-# Verificar arquivos que serão commitados
+# Check files that will be committed
 git status
 ```
 
-## 🔐 Boas Práticas de Segurança
+## 🔐 Security Best Practices
 
-### 1. Gerenciamento de Chaves
+### 1. Key Management
 
-**✅ FAZER:**
-- Usar variáveis de ambiente para secrets
-- Armazenar chaves privadas em `secrets/` (não versionado)
-- Usar criptografia para chaves em repouso
-- Rotacionar chaves regularmente
+**✅ DO:**
+- Use environment variables for secrets
+- Store private keys in `secrets/` (not versioned)
+- Use encryption for keys at rest
+- Rotate keys regularly
 
-**❌ NÃO FAZER:**
-- Hardcodar secrets no código
-- Commitar arquivos `.env` com valores reais
-- Compartilhar chaves privadas
-- Usar a mesma chave em múltiplos ambientes
+**❌ DON'T:**
+- Hardcode secrets in code
+- Commit `.env` files with real values
+- Share private keys
+- Use the same key in multiple environments
 
-### 2. Desenvolvimento
+### 2. Development
 
-**✅ FAZER:**
-- Usar testnet para testes
-- Validar todas as entradas
-- Usar HTTPS em produção
-- Implementar rate limiting
+**✅ DO:**
+- Use testnet for testing
+- Validate all inputs
+- Use HTTPS in production
+- Implement rate limiting
 
-**❌ NÃO FAZER:**
-- Usar chaves de produção em desenvolvimento
-- Expor APIs sem autenticação
-- Ignorar validação de entrada
-- Logar informações sensíveis
+**❌ DON'T:**
+- Use production keys in development
+- Expose APIs without authentication
+- Ignore input validation
+- Log sensitive information
 
-### 3. Deploy
+### 3. Deployment
 
-**✅ FAZER:**
-- Usar variáveis de ambiente no deploy
-- Habilitar HTTPS/TLS
-- Configurar firewall adequadamente
-- Monitorar logs de segurança
+**✅ DO:**
+- Use environment variables in deployment
+- Enable HTTPS/TLS
+- Configure firewall properly
+- Monitor security logs
 
-**❌ NÃO FAZER:**
-- Expor portas desnecessárias
-- Usar credenciais padrão
-- Ignorar atualizações de segurança
-- Desabilitar logs de segurança
+**❌ DON'T:**
+- Expose unnecessary ports
+- Use default credentials
+- Ignore security updates
+- Disable security logs
 
-## 🔍 Auditoria de Segurança
+## 🔍 Security Audit
 
-### Verificação Regular
+### Regular Verification
 
-Execute regularmente:
+Run regularly:
 
 ```bash
-# Verificar se há segredos no código
+# Check for secrets in code
 grep -r "PRIVATE_KEY\|SECRET\|PASSWORD" --exclude-dir=.git --exclude="*.md"
 
-# Verificar dependências vulneráveis
+# Check for vulnerable dependencies
 pip install safety
 safety check
 
-# Verificar configuração de segurança
+# Check security configuration
 python -m security_audit
 ```
 
-### Checklist de Segurança
+### Security Checklist
 
-Antes de cada release:
+Before each release:
 
-- [ ] Verificar que não há secrets no código
-- [ ] Atualizar dependências vulneráveis
-- [ ] Revisar permissões de arquivos
-- [ ] Testar em ambiente isolado
-- [ ] Validar configurações de segurança
+- [ ] Verify no secrets in code
+- [ ] Update vulnerable dependencies
+- [ ] Review file permissions
+- [ ] Test in isolated environment
+- [ ] Validate security configurations
 
-## 🚨 Incidentes de Segurança
+## 🚨 Security Incidents
 
-### Se uma chave privada foi exposta:
+### If a private key was exposed:
 
-1. **Imediatamente**: Revogue a chave exposta
-2. **Rotacione**: Gere novas chaves
-3. **Notifique**: Usuários afetados (se aplicável)
-4. **Documente**: O incidente e ações tomadas
+1. **Immediately**: Revoke the exposed key
+2. **Rotate**: Generate new keys
+3. **Notify**: Affected users (if applicable)
+4. **Document**: The incident and actions taken
 
-### Se há um comprometimento:
+### If there is a compromise:
 
-1. **Isolar**: Sistema comprometido
-2. **Investigar**: Escopo do comprometimento
-3. **Corrigir**: Vulnerabilidade explorada
-4. **Comunicar**: Stakeholders afetados
+1. **Isolate**: Compromised system
+2. **Investigate**: Scope of compromise
+3. **Fix**: Exploited vulnerability
+4. **Communicate**: Affected stakeholders
 
-## 📋 Classificação de Vulnerabilidades
+## 📋 Vulnerability Classification
 
-### Crítica (P0)
-- Exposição de chaves privadas
-- Bypass de autenticação
-- Execução remota de código
+### Critical (P0)
+- Private key exposure
+- Authentication bypass
+- Remote code execution
 
-**Resposta**: < 24 horas
+**Response**: < 24 hours
 
-### Alta (P1)
-- Acesso não autorizado
-- Manipulação de dados
+### High (P1)
+- Unauthorized access
+- Data manipulation
 - Denial of Service
 
-**Resposta**: < 7 dias
+**Response**: < 7 days
 
-### Média (P2)
-- Exposição de informações
-- Vulnerabilidades de validação
-- Rate limiting inadequado
+### Medium (P2)
+- Information exposure
+- Validation vulnerabilities
+- Inadequate rate limiting
 
-**Resposta**: < 30 dias
+**Response**: < 30 days
 
-### Baixa (P3)
-- Melhorias de segurança
-- Informações de debug
-- Configurações não ideais
+### Low (P3)
+- Security improvements
+- Debug information
+- Non-ideal configurations
 
-**Resposta**: Próximo release
+**Response**: Next release
 
-## 🔗 Recursos Adicionais
+## 🔗 Additional Resources
 
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
 - [CWE Top 25](https://cwe.mitre.org/top25/)
 - [NIST Cybersecurity Framework](https://www.nist.gov/cyberframework)
 
-## 📧 Contato
+## 📧 Contact
 
 - **Security Email**: security@allianza.tech
 - **GitHub Security**: https://github.com/dieisonmaach-lang/allianzablockchain/security
 
 ---
 
-**Última atualização**: 2025-12-07
-
+**Last updated**: 2025-12-07

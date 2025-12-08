@@ -1,76 +1,76 @@
-# 🧪 Guia de Testes - Allianza Blockchain
+# 🧪 Testing Guide - Allianza Blockchain
 
-Este guia explica como executar os testes públicos e reproduzir os resultados das provas técnicas.
+This guide explains how to run public tests and reproduce the results of technical proofs.
 
-## 📋 Pré-requisitos
+## 📋 Prerequisites
 
-### 1. Instalação do Ambiente
+### 1. Environment Setup
 
 ```bash
-# Python 3.8 ou superior
+# Python 3.8 or higher
 python --version
 
-# Instalar dependências
+# Install dependencies
 pip install -r requirements.txt
 
-# Instalar liboqs-python (opcional, mas recomendado)
-# Veja INSTALAR_LIBOQS.md para instruções detalhadas
+# Install liboqs-python (optional, but recommended)
+# See INSTALAR_LIBOQS.md for detailed instructions
 ```
 
-### 2. Configuração
+### 2. Configuration
 
-Crie um arquivo `.env` na raiz do projeto (não será commitado):
+Create a `.env` file in the project root (will not be committed):
 
 ```env
-# Exemplo - NÃO commitar valores reais
+# Example - DO NOT commit real values
 ALLIANZA_ENCRYPTION_KEY=your_encryption_key_here
 DATABASE_URL=sqlite:///allianza_test.db
 ```
 
-**⚠️ IMPORTANTE**: O arquivo `.env` está no `.gitignore` e não será commitado.
+**⚠️ IMPORTANT**: The `.env` file is in `.gitignore` and will not be committed.
 
-## 🚀 Executando Testes
+## 🚀 Running Tests
 
-### Testes Básicos de Verificação
+### Basic Verification Tests
 
 ```bash
-# Executar suite de verificação básica
+# Run basic verification suite
 python tests/public/run_verification_tests.py
 ```
 
-Este script executa:
-- ✅ Verificação de QRS-3 (PQC)
-- ✅ Teste de interoperabilidade
-- ✅ Teste de consenso
-- ✅ Validação de transações
+This script runs:
+- ✅ QRS-3 (PQC) verification
+- ✅ Interoperability test
+- ✅ Consensus test
+- ✅ Transaction validation
 
-### Testes Completos (Reproduzir Provas Técnicas)
+### Complete Tests (Reproduce Technical Proofs)
 
 ```bash
-# Executar todos os testes que geraram PROVAS_TECNICAS_COMPLETAS_FINAL.json
-python EXECUTAR_TODOS_TESTES_INVESTIDORES.py
+# Run all tests that generated PROVAS_TECNICAS_COMPLETAS_FINAL.json
+python tests/public/run_all_tests.py
 ```
 
-Este script:
-- Executa todos os testes técnicos
-- Gera relatório consolidado
-- Salva resultados em `proofs/relatorio_investidores/`
+This script:
+- Executes all technical tests
+- Generates consolidated report
+- Saves results in `proofs/testnet/public_tests/`
 
-### Testes Específicos
+### Specific Tests
 
-#### 1. Teste de QRS-3 (PQC)
+#### 1. QRS-3 (PQC) Test
 
 ```bash
 python tests/public/test_qrs3_verification.py
 ```
 
-**O que testa:**
-- Geração de chaves ML-DSA
-- Assinatura e verificação SPHINCS+
+**What it tests:**
+- ML-DSA key generation
+- SPHINCS+ signature and verification
 - Batch verification
-- Performance PQC
+- PQC performance
 
-**Resultado esperado:**
+**Expected result:**
 ```json
 {
   "test": "QRS-3 Verification",
@@ -81,80 +81,80 @@ python tests/public/test_qrs3_verification.py
 }
 ```
 
-#### 2. Teste de Interoperabilidade
+#### 2. Interoperability Test
 
 ```bash
 python tests/public/test_interoperability.py
 ```
 
-**O que testa:**
-- Transferências cross-chain
+**What it tests:**
+- Cross-chain transfers
 - Proof-of-Lock
 - Bridge-free routing
 - Atomic swaps
 
-**Resultado esperado:**
-- Transações criadas na testnet
-- Hashes de transação retornados
+**Expected result:**
+- Transactions created on testnet
+- Transaction hashes returned
 - Status: "success"
 
-#### 3. Teste de Consenso (ALZ-NIEV)
+#### 3. Consensus (ALZ-NIEV) Test
 
 ```bash
 python tests/public/test_consensus.py
 ```
 
-**O que testa:**
-- Criação de blocos
-- Validação de transações
+**What it tests:**
+- Block creation
+- Transaction validation
 - Sharding
-- Adaptabilidade do consenso
+- Consensus adaptability
 
-#### 4. Teste de Performance
+#### 4. Performance Test
 
 ```bash
 python tests/public/test_performance.py
 ```
 
-**O que testa:**
+**What it tests:**
 - Throughput (TPS)
-- Latência
-- Tempo de batch verification
-- Uso de memória
+- Latency
+- Batch verification time
+- Memory usage
 
-## 📊 Comparando Resultados
+## 📊 Comparing Results
 
-### 1. Verificar Resultados dos Testes
+### 1. Verify Test Results
 
-Após executar os testes, compare com `PROVAS_TECNICAS_COMPLETAS_FINAL.json`:
+After running tests, compare with `PROVAS_TECNICAS_COMPLETAS_FINAL.json`:
 
 ```bash
-# Verificar se os resultados são consistentes
+# Verify if results are consistent
 python tests/public/verify_results.py
 ```
 
-### 2. Verificar na Testnet
+### 2. Verify on Testnet
 
-1. Acesse https://testnet.allianza.tech/explorer
-2. Procure pelos hashes de transação retornados pelos testes
-3. Verifique que as transações aparecem no explorer
+1. Access https://testnet.allianza.tech/explorer
+2. Search for transaction hashes returned by tests
+3. Verify that transactions appear in the explorer
 
-### 3. Verificar Logs
+### 3. Verify Logs
 
-Os logs de execução são salvos em:
+Execution logs are saved in:
 - `logs/test_execution_YYYY-MM-DD.log`
-- `proofs/testnet/` (provas individuais)
+- `proofs/testnet/` (individual proofs)
 
-## 🔍 Interpretando Resultados
+## 🔍 Interpreting Results
 
-### Status de Teste
+### Test Status
 
-- ✅ **PASSED**: Teste passou com sucesso
-- ⚠️ **WARNING**: Teste passou mas com avisos
-- ❌ **FAILED**: Teste falhou
-- ⏭️ **SKIPPED**: Teste pulado (dependência não disponível)
+- ✅ **PASSED**: Test passed successfully
+- ⚠️ **WARNING**: Test passed but with warnings
+- ❌ **FAILED**: Test failed
+- ⏭️ **SKIPPED**: Test skipped (dependency not available)
 
-### Métricas Importantes
+### Important Metrics
 
 #### QRS-3 Performance
 
@@ -166,12 +166,12 @@ Os logs de execução são salvos em:
 }
 ```
 
-**Interpretação:**
-- `keygen_time < 100ms`: ✅ Excelente
-- `sign_time < 50ms`: ✅ Bom
-- `batch_verification < 500ms` (100 txs): ✅ Eficiente
+**Interpretation:**
+- `keygen_time < 100ms`: ✅ Excellent
+- `sign_time < 50ms`: ✅ Good
+- `batch_verification < 500ms` (100 txs): ✅ Efficient
 
-#### Interoperabilidade
+#### Interoperability
 
 ```json
 {
@@ -182,11 +182,11 @@ Os logs de execução são salvos em:
 }
 ```
 
-**Interpretação:**
-- `success_rate = 100%`: ✅ Perfeito
-- `avg_time < 5s`: ✅ Rápido
+**Interpretation:**
+- `success_rate = 100%`: ✅ Perfect
+- `avg_time < 5s`: ✅ Fast
 
-#### Consenso
+#### Consensus
 
 ```json
 {
@@ -196,87 +196,86 @@ Os logs de execução são salvos em:
 }
 ```
 
-**Interpretação:**
-- `tps > 15`: ✅ Bom throughput
-- `block_time < 3s`: ✅ Rápido
+**Interpretation:**
+- `tps > 15`: ✅ Good throughput
+- `block_time < 3s`: ✅ Fast
 
 ## 🐛 Troubleshooting
 
-### Erro: "liboqs not found"
+### Error: "liboqs not found"
 
-**Solução:**
+**Solution:**
 ```bash
-# Instalar liboqs-python
+# Install liboqs-python
 pip install liboqs-python
 
-# Ou seguir INSTALAR_LIBOQS.md
+# Or follow INSTALAR_LIBOQS.md
 ```
 
-### Erro: "Database connection failed"
+### Error: "Database connection failed"
 
-**Solução:**
+**Solution:**
 ```bash
-# Criar arquivo .env com DATABASE_URL
+# Create .env file with DATABASE_URL
 echo "DATABASE_URL=sqlite:///allianza_test.db" > .env
 ```
 
-### Erro: "Testnet connection timeout"
+### Error: "Testnet connection timeout"
 
-**Solução:**
-- Verificar conexão com internet
-- Verificar se testnet está online: https://testnet.allianza.tech
-- Tentar novamente após alguns segundos
+**Solution:**
+- Check internet connection
+- Verify testnet is online: https://testnet.allianza.tech
+- Try again after a few seconds
 
-### Testes falhando aleatoriamente
+### Tests failing randomly
 
-**Possíveis causas:**
-- Testnet temporariamente indisponível
+**Possible causes:**
+- Testnet temporarily unavailable
 - Rate limiting
-- Dependências não instaladas
+- Dependencies not installed
 
-**Solução:**
+**Solution:**
 ```bash
-# Reinstalar dependências
+# Reinstall dependencies
 pip install -r requirements.txt --upgrade
 
-# Executar testes novamente
+# Run tests again
 python tests/public/run_verification_tests.py
 ```
 
-## 📝 Gerando Relatórios
+## 📝 Generating Reports
 
-### Relatório Completo
+### Complete Report
 
 ```bash
-python EXECUTAR_TODOS_TESTES_INVESTIDORES.py
+python tests/public/run_all_tests.py
 ```
 
-Gera relatório em: `proofs/relatorio_investidores/YYYY-MM-DD_HH-MM-SS_report.json`
+Generates report in: `proofs/testnet/public_tests/YYYYMMDD_HHMMSS_report.json`
 
-### Relatório de Performance
+### Performance Report
 
 ```bash
 python tests/public/test_performance.py --report
 ```
 
-Gera relatório em: `proofs/testnet/performance_report_YYYY-MM-DD.json`
+Generates report in: `proofs/testnet/performance_report_YYYY-MM-DD.json`
 
-## 🔗 Próximos Passos
+## 🔗 Next Steps
 
-1. ✅ Execute os testes básicos
-2. ✅ Compare com `PROVAS_TECNICAS_COMPLETAS_FINAL.json`
-3. ✅ Verifique transações na testnet
-4. 📖 Leia [VERIFICATION.md](VERIFICATION.md) para verificação independente
-5. 🐛 Reporte problemas em [SECURITY.md](SECURITY.md)
+1. ✅ Run basic tests
+2. ✅ Compare with `PROVAS_TECNICAS_COMPLETAS_FINAL.json`
+3. ✅ Verify transactions on testnet
+4. 📖 Read [VERIFICATION.md](VERIFICATION.md) for independent verification
+5. 🐛 Report issues in [SECURITY.md](SECURITY.md)
 
-## 📚 Referências
+## 📚 References
 
-- [VERIFICATION.md](VERIFICATION.md) - Guia de verificação independente
-- [SECURITY.md](SECURITY.md) - Política de segurança
-- [docs/API_REFERENCE.md](docs/API_REFERENCE.md) - Referência da API
-- [INSTALAR_LIBOQS.md](INSTALAR_LIBOQS.md) - Instalação do liboqs
+- [VERIFICATION.md](VERIFICATION.md) - Independent verification guide
+- [SECURITY.md](SECURITY.md) - Security policy
+- [docs/API_REFERENCE.md](docs/API_REFERENCE.md) - API reference
+- [INSTALAR_LIBOQS.md](INSTALAR_LIBOQS.md) - liboqs installation
 
 ---
 
-**Última atualização**: 2025-12-07
-
+**Last updated**: 2025-12-07

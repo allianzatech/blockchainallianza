@@ -1,224 +1,223 @@
-# ✅ Guia de Verificação Independente - Allianza Blockchain
+# ✅ Independent Verification Guide - Allianza Blockchain
 
-Este guia permite que auditores, desenvolvedores e pesquisadores verifiquem de forma independente as alegações técnicas da Allianza Blockchain.
+This guide allows auditors, developers, and researchers to independently verify the technical claims of Allianza Blockchain.
 
-## 🎯 Objetivo
+## 🎯 Objective
 
-Este documento fornece instruções para:
-- ✅ Reproduzir os resultados das provas técnicas
-- ✅ Verificar transações reais na testnet
-- ✅ Auditar o código-fonte público
-- ✅ Validar implementações de segurança quântica
+This document provides instructions to:
+- ✅ Reproduce technical proof results
+- ✅ Verify real transactions on testnet
+- ✅ Audit public source code
+- ✅ Validate quantum security implementations
 
-## 📋 Checklist de Verificação
+## 📋 Verification Checklist
 
-### 1. Verificação do Código-Fonte
+### 1. Source Code Verification
 
 #### ✅ QRS-3 (PQC) Implementation
 
-**Arquivos a verificar:**
-- `core/crypto/qrs3.py` - Implementação QRS-3
-- `pqc_crypto.py` - Algoritmos PQC
-- `quantum_security.py` - Serviço de segurança quântica
+**Files to verify:**
+- `core/crypto/pqc_crypto.py` - QRS-3 implementation
+- `core/crypto/quantum_security.py` - Quantum security service
 
-**O que verificar:**
-- [ ] Uso de algoritmos PQC padrão (ML-DSA, SPHINCS+)
-- [ ] Integração com liboqs-python
-- [ ] Validação de assinaturas
-- [ ] Gerenciamento seguro de chaves
+**What to verify:**
+- [ ] Use of standard PQC algorithms (ML-DSA, SPHINCS+)
+- [ ] Integration with liboqs-python
+- [ ] Signature validation
+- [ ] Secure key management
 
-**Como verificar:**
+**How to verify:**
 ```bash
-# Examinar código-fonte
-cat core/crypto/qrs3.py
-cat pqc_crypto.py
+# Examine source code
+cat core/crypto/pqc_crypto.py
+cat core/crypto/quantum_security.py
 
-# Executar testes específicos
+# Run specific tests
 python tests/public/test_qrs3_verification.py
 ```
 
-#### ✅ ALZ-NIEV Protocol (Consenso)
+#### ✅ ALZ-NIEV Protocol (Consensus)
 
-**Arquivos a verificar:**
-- `allianza_blockchain.py` - Implementação principal
-- `adaptive_consensus.py` - Consenso adaptativo
-- `alz_niev_interoperability.py` - Protocolo ALZ-NIEV
+**Files to verify:**
+- `allianza_blockchain.py` - Main implementation
+- `core/consensus/adaptive_consensus.py` - Adaptive consensus
+- `core/consensus/alz_niev_interoperability.py` - ALZ-NIEV protocol
 
-**O que verificar:**
-- [ ] Lógica de consenso
-- [ ] Validação de blocos
+**What to verify:**
+- [ ] Consensus logic
+- [ ] Block validation
 - [ ] Sharding implementation
-- [ ] Adaptabilidade do protocolo
+- [ ] Protocol adaptability
 
-**Como verificar:**
+**How to verify:**
 ```bash
-# Examinar código-fonte
+# Examine source code
 cat allianza_blockchain.py | grep -A 20 "def create_block"
-cat adaptive_consensus.py
+cat core/consensus/adaptive_consensus.py
 
-# Executar testes
+# Run tests
 python tests/public/test_consensus.py
 ```
 
-#### ✅ Interoperabilidade Bridge-Free
+#### ✅ Bridge-Free Interoperability
 
-**Arquivos a verificar:**
-- `bridge_free_interop.py` - Interoperabilidade
-- `proof_of_lock.py` - Proof-of-Lock
+**Files to verify:**
+- `core/interoperability/bridge_free_interop.py` - Interoperability
+- `core/interoperability/proof_of_lock.py` - Proof-of-Lock
 - `contracts/evm/` - Smart contracts
 
-**O que verificar:**
-- [ ] Implementação bridge-free
+**What to verify:**
+- [ ] Bridge-free implementation
 - [ ] Proof-of-Lock mechanism
-- [ ] Smart contracts (se publicados)
+- [ ] Smart contracts (if published)
 - [ ] Atomic swaps
 
-**Como verificar:**
+**How to verify:**
 ```bash
-# Examinar código-fonte
-cat bridge_free_interop.py
-cat proof_of_lock.py
+# Examine source code
+cat core/interoperability/bridge_free_interop.py
+cat core/interoperability/proof_of_lock.py
 
-# Executar testes
+# Run tests
 python tests/public/test_interoperability.py
 ```
 
-### 2. Reprodução de Resultados
+### 2. Reproducing Results
 
-#### ✅ Executar Scripts de Teste
+#### ✅ Run Test Scripts
 
-**Scripts públicos disponíveis:**
-- `tests/public/run_verification_tests.py` - Suite completa
-- `tests/public/test_qrs3_verification.py` - Teste QRS-3
-- `tests/public/test_interoperability.py` - Teste interop
-- `tests/public/test_consensus.py` - Teste consenso
-- `EXECUTAR_TODOS_TESTES_INVESTIDORES.py` - Todos os testes
+**Available public scripts:**
+- `tests/public/run_verification_tests.py` - Complete suite
+- `tests/public/run_all_tests.py` - All public tests
+- `tests/public/test_qrs3_verification.py` - QRS-3 test
+- `tests/public/test_interoperability.py` - Interoperability test
+- `tests/public/test_consensus.py` - Consensus test
 
-**Como executar:**
+**How to run:**
 ```bash
-# 1. Instalar dependências
+# 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. Executar testes
+# 2. Run tests
 python tests/public/run_verification_tests.py
 
-# 3. Comparar resultados com PROVAS_TECNICAS_COMPLETAS_FINAL.json
+# 3. Compare results with PROVAS_TECNICAS_COMPLETAS_FINAL.json
 python tests/public/verify_results.py
 ```
 
-#### ✅ Comparar com Provas Técnicas
+#### ✅ Compare with Technical Proofs
 
-**Arquivo de referência:**
+**Reference file:**
 - `PROVAS_TECNICAS_COMPLETAS_FINAL.json`
 
-**O que comparar:**
-- [ ] Resultados dos testes
-- [ ] Métricas de performance
-- [ ] Hashes de transações
-- [ ] Timestamps e assinaturas
+**What to compare:**
+- [ ] Test results
+- [ ] Performance metrics
+- [ ] Transaction hashes
+- [ ] Timestamps and signatures
 
-**Script de comparação:**
+**Comparison script:**
 ```bash
 python tests/public/verify_results.py
 ```
 
-### 3. Verificação na Testnet
+### 3. Testnet Verification
 
-#### ✅ Verificar Transações Reais
+#### ✅ Verify Real Transactions
 
-**Testnet pública:**
+**Public testnet:**
 - URL: https://testnet.allianza.tech
 - Explorer: https://testnet.allianza.tech/explorer
 
-**Como verificar:**
-1. Execute um teste que cria transações:
+**How to verify:**
+1. Run a test that creates transactions:
    ```bash
    python tests/public/test_interoperability.py
    ```
 
-2. Anote o hash da transação retornado
+2. Note the returned transaction hash
 
-3. Acesse o explorer e procure pelo hash:
+3. Access the explorer and search for the hash:
    - https://testnet.allianza.tech/explorer
-   - Buscar pelo hash da transação
+   - Search by transaction hash
 
-4. Verifique:
-   - [ ] Transação aparece no explorer
-   - [ ] Dados da transação estão corretos
-   - [ ] Status: "confirmed" ou "pending"
+4. Verify:
+   - [ ] Transaction appears in explorer
+   - [ ] Transaction data is correct
+   - [ ] Status: "confirmed" or "pending"
 
-#### ✅ Verificar Blocos e Estatísticas
+#### ✅ Verify Blocks and Statistics
 
-**Dashboard da testnet:**
+**Testnet dashboard:**
 - https://testnet.allianza.tech
 
-**O que verificar:**
-- [ ] Blocos sendo criados
-- [ ] Transações sendo processadas
-- [ ] Estatísticas da rede (TPS, latência)
-- [ ] Shards ativos
+**What to verify:**
+- [ ] Blocks being created
+- [ ] Transactions being processed
+- [ ] Network statistics (TPS, latency)
+- [ ] Active shards
 
-### 4. Auditoria de Segurança
+### 4. Security Audit
 
-#### ✅ Verificar Proteção de Segredos
+#### ✅ Verify Secret Protection
 
-**Arquivos a verificar:**
-- `.gitignore` - Deve excluir arquivos sensíveis
-- `SECURITY.md` - Política de segurança
+**Files to verify:**
+- `.gitignore` - Should exclude sensitive files
+- `SECURITY.md` - Security policy
 
-**O que verificar:**
-- [ ] `.env` não está commitado
-- [ ] Chaves privadas não estão no código
-- [ ] Secrets não estão hardcoded
-- [ ] `.gitignore` está configurado corretamente
+**What to verify:**
+- [ ] `.env` is not committed
+- [ ] Private keys are not in code
+- [ ] Secrets are not hardcoded
+- [ ] `.gitignore` is configured correctly
 
-**Como verificar:**
+**How to verify:**
 ```bash
-# Verificar .gitignore
+# Check .gitignore
 cat .gitignore | grep -E "\.env|secrets|keys|private"
 
-# Verificar se há segredos no código
+# Check for secrets in code
 grep -r "PRIVATE_KEY" --exclude-dir=.git --exclude="*.md"
 grep -r "SECRET" --exclude-dir=.git --exclude="*.md"
 ```
 
-#### ✅ Verificar Implementação de Criptografia
+#### ✅ Verify Cryptography Implementation
 
-**O que verificar:**
-- [ ] Uso de algoritmos PQC padrão
-- [ ] Gerenciamento seguro de chaves
-- [ ] Validação de assinaturas
-- [ ] Proteção contra ataques quânticos
+**What to verify:**
+- [ ] Use of standard PQC algorithms
+- [ ] Secure key management
+- [ ] Signature validation
+- [ ] Protection against quantum attacks
 
-**Como verificar:**
+**How to verify:**
 ```bash
-# Examinar implementação PQC
-python -c "from pqc_crypto import *; help(MLDSAKeyPair)"
+# Examine PQC implementation
+python -c "from core.crypto.pqc_crypto import *; help(MLDSAKeyPair)"
 
-# Executar testes de segurança
+# Run security tests
 python tests/public/test_qrs3_verification.py
 ```
 
-### 5. Verificação de Performance
+### 5. Performance Verification
 
-#### ✅ Reproduzir Métricas
+#### ✅ Reproduce Metrics
 
-**Métricas a verificar:**
+**Metrics to verify:**
 - Throughput (TPS)
-- Latência de transações
-- Tempo de batch verification
-- Uso de recursos
+- Transaction latency
+- Batch verification time
+- Resource usage
 
-**Como verificar:**
+**How to verify:**
 ```bash
-# Executar teste de performance
+# Run performance test
 python tests/public/test_performance.py
 
-# Comparar com PROVAS_TECNICAS_COMPLETAS_FINAL.json
+# Compare with PROVAS_TECNICAS_COMPLETAS_FINAL.json
 python tests/public/verify_performance.py
 ```
 
-## 📊 Resultados Esperados
+## 📊 Expected Results
 
 ### QRS-3 Verification
 
@@ -237,7 +236,7 @@ python tests/public/verify_performance.py
 }
 ```
 
-### Interoperabilidade
+### Interoperability
 
 ```json
 {
@@ -250,7 +249,7 @@ python tests/public/verify_performance.py
 }
 ```
 
-### Consenso
+### Consensus
 
 ```json
 {
@@ -262,64 +261,63 @@ python tests/public/verify_performance.py
 }
 ```
 
-## 🔍 Verificação Avançada
+## 🔍 Advanced Verification
 
-### Verificar Smart Contracts (se publicados)
+### Verify Smart Contracts (if published)
 
 ```bash
-# Examinar contratos Solidity
+# Examine Solidity contracts
 cat contracts/evm/ProofOfLock.sol
 
-# Verificar deployment (se disponível)
-# Verificar em Etherscan/Polygonscan para testnet
+# Verify deployment (if available)
+# Check on Etherscan/Polygonscan for testnet
 ```
 
-### Verificar Integração com Outras Blockchains
+### Verify Integration with Other Blockchains
 
 ```bash
-# Verificar conectores
+# Check connectors
 cat blockchain_connector.py
 cat bitcoin_clm.py
 cat polygon_clm.py
 
-# Executar testes de integração
+# Run integration tests
 python tests/public/test_all_chains.py
 ```
 
-## 📝 Relatório de Verificação
+## 📝 Verification Report
 
-Após completar a verificação, você pode criar um relatório:
+After completing verification, you can create a report:
 
 ```bash
-# Gerar relatório de verificação
+# Generate verification report
 python tests/public/generate_verification_report.py
 ```
 
-O relatório incluirá:
-- ✅ Resultados dos testes
-- ✅ Comparação com provas técnicas
-- ✅ Verificação de transações na testnet
-- ✅ Análise de segurança
-- ✅ Métricas de performance
+The report will include:
+- ✅ Test results
+- ✅ Comparison with technical proofs
+- ✅ Testnet transaction verification
+- ✅ Security analysis
+- ✅ Performance metrics
 
-## 🐛 Reportar Problemas
+## 🐛 Reporting Issues
 
-Se encontrar problemas durante a verificação:
+If you find issues during verification:
 
-1. **Vulnerabilidades de Segurança**: Veja [SECURITY.md](SECURITY.md)
-2. **Bugs**: Abra uma issue no GitHub
-3. **Dúvidas**: Consulte a documentação em `docs/`
+1. **Security Vulnerabilities**: See [SECURITY.md](SECURITY.md)
+2. **Bugs**: Open an issue on GitHub
+3. **Questions**: Consult documentation in `docs/`
 
-## 🔗 Recursos Adicionais
+## 🔗 Additional Resources
 
-- [TESTING.md](TESTING.md) - Guia de testes
-- [SECURITY.md](SECURITY.md) - Política de segurança
-- [docs/API_REFERENCE.md](docs/API_REFERENCE.md) - Referência da API
-- [PROVAS_TECNICAS_COMPLETAS_FINAL.json](PROVAS_TECNICAS_COMPLETAS_FINAL.json) - Provas técnicas
+- [TESTING.md](TESTING.md) - Testing guide
+- [SECURITY.md](SECURITY.md) - Security policy
+- [docs/API_REFERENCE.md](docs/API_REFERENCE.md) - API reference
+- [PROVAS_TECNICAS_COMPLETAS_FINAL.json](PROVAS_TECNICAS_COMPLETAS_FINAL.json) - Technical proofs
 
 ---
 
-**Última atualização**: 2025-12-07
+**Last updated**: 2025-12-07
 
-**Nota**: Este guia é atualizado regularmente. Para a versão mais recente, consulte o repositório GitHub.
-
+**Note**: This guide is updated regularly. For the latest version, check the GitHub repository.

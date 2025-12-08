@@ -4,152 +4,151 @@
 [![Testnet Status](https://img.shields.io/badge/Testnet-Active-success)](https://testnet.allianza.tech)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 
-> **Blockchain pós-quântica e interoperável** com segurança quântica (QRS-3), interoperabilidade bridge-free e consenso adaptativo (ALZ-NIEV Protocol).
+> **Post-quantum and interoperable blockchain** with quantum security (QRS-3), bridge-free interoperability, and adaptive consensus (ALZ-NIEV Protocol).
 
 ## 🚀 Quick Start
 
-### Para Desenvolvedores
+### For Developers
 
-1. **Clone o repositório**
+1. **Clone the repository**
    ```bash
    git clone https://github.com/dieisonmaach-lang/allianzablockchain.git
    cd allianzablockchain
    ```
 
-2. **Instale as dependências**
+2. **Install dependencies**
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Execute os testes de verificação**
+3. **Run verification tests**
    ```bash
    python tests/public/run_verification_tests.py
    ```
 
-4. **Acesse a Testnet Pública**
+4. **Access Public Testnet**
    - 🌐 **Dashboard**: https://testnet.allianza.tech
    - 🔍 **Explorer**: https://testnet.allianza.tech/explorer
    - 🚰 **Faucet**: https://testnet.allianza.tech/faucet
 
-### Para Auditores e Verificadores
+### For Auditors and Verifiers
 
-📋 **Leia primeiro**: [VERIFICATION.md](VERIFICATION.md) - Guia completo de verificação independente
+📋 **Read first**: [VERIFICATION.md](VERIFICATION.md) - Complete independent verification guide
 
-🧪 **Execute testes**: [TESTING.md](TESTING.md) - Como executar e reproduzir os testes
+🧪 **Run tests**: [TESTING.md](TESTING.md) - How to run and reproduce tests
 
-## 📊 Comprovação Técnica
+## 📊 Technical Proof
 
-### Provas Técnicas Publicadas
+### Published Technical Proofs
 
-- ✅ **Provas Completas**: [`PROVAS_TECNICAS_COMPLETAS_FINAL.json`](PROVAS_TECNICAS_COMPLETAS_FINAL.json)
-- ✅ **Scripts de Teste**: [`tests/public/`](tests/public/) - Todos os scripts que geraram as provas
-- ✅ **Testnet Ativa**: https://testnet.allianza.tech - Teste em tempo real
+- ✅ **Complete Proofs**: [`PROVAS_TECNICAS_COMPLETAS_FINAL.json`](PROVAS_TECNICAS_COMPLETAS_FINAL.json)
+- ✅ **Test Scripts**: [`tests/public/`](tests/public/) - All scripts that generated the proofs
+- ✅ **Active Testnet**: https://testnet.allianza.tech - Test in real-time
 
-### Tecnologias Validadas
+### Validated Technologies
 
-| Tecnologia | Status | Prova |
+| Technology | Status | Proof |
 |------------|--------|------|
-| **QRS-3 (PQC)** | ✅ Validado | ML-DSA, SPHINCS+ implementados |
-| **Interoperabilidade Bridge-Free** | ✅ Validado | Transferências reais cross-chain |
-| **ALZ-NIEV Protocol** | ✅ Validado | Consenso adaptativo funcional |
-| **Quantum Security Service** | ✅ Validado | QSS Dashboard ativo |
+| **QRS-3 (PQC)** | ✅ Validated | ML-DSA, SPHINCS+ implemented |
+| **Bridge-Free Interoperability** | ✅ Validated | Real cross-chain transfers |
+| **ALZ-NIEV Protocol** | ✅ Validated | Adaptive consensus functional |
+| **Quantum Security Service** | ✅ Validated | QSS Dashboard active |
 
-## 🏗️ Arquitetura
+## 🏗️ Architecture
 
 ```
 allianzablockchain/
-├── core/                    # Código-fonte principal
+├── core/                    # Main source code
 │   ├── consensus/          # ALZ-NIEV Protocol
 │   ├── crypto/             # QRS-3, PQC algorithms
 │   └── interoperability/   # Bridge-free interop
 ├── contracts/              # Smart contracts
 │   ├── evm/               # Solidity contracts
 │   └── proof-of-lock/     # Proof-of-Lock implementation
-├── sdk/                    # SDKs públicos
+├── sdk/                    # Public SDKs
 │   ├── qss-sdk/          # Quantum Security Service SDK
 │   └── qss-verifier/     # QSS Verifier
-├── tests/                  # Testes públicos
-│   └── public/           # Scripts de verificação
-├── docs/                   # Documentação técnica
-└── proofs/                 # Provas técnicas e relatórios
+├── tests/                  # Public tests
+│   └── public/           # Verification scripts
+├── docs/                   # Technical documentation
+└── proofs/                 # Technical proofs and reports
 ```
 
-## 🔐 Segurança
+## 🔐 Security
 
-- 🔒 **Chaves Privadas**: Nunca commitadas (protegidas por `.gitignore`)
-- 🛡️ **Segredos**: Gerenciados via variáveis de ambiente
-- 📋 **Política de Segurança**: [SECURITY.md](SECURITY.md)
+- 🔒 **Private Keys**: Never committed (protected by `.gitignore`)
+- 🛡️ **Secrets**: Managed via environment variables
+- 📋 **Security Policy**: [SECURITY.md](SECURITY.md)
 
-**⚠️ IMPORTANTE**: Este repositório contém código-fonte público. Nunca exponha:
-- Chaves privadas
-- Seeds de wallets
-- Tokens de API
-- Credenciais de banco de dados
+**⚠️ IMPORTANT**: This repository contains public source code. Never expose:
+- Private keys
+- Wallet seeds
+- API tokens
+- Database credentials
 
-## 📚 Documentação
+## 📚 Documentation
 
-- 📖 [Whitepaper Técnico](docs/WHITEPAPER.md)
+- 📖 [Technical Whitepaper](docs/WHITEPAPER.md)
 - 🔍 [API Reference](docs/API_REFERENCE.md)
 - 🚀 [Quick Start Guide](docs/QUICK_START.md)
 - 🧪 [Testing Guide](TESTING.md)
 - ✅ [Verification Guide](VERIFICATION.md)
 
-## 🧪 Testes e Verificação
+## 🧪 Tests and Verification
 
-### Executar Testes Públicos
+### Run Public Tests
 
 ```bash
-# Testes de verificação básicos
+# Basic verification tests
 python tests/public/run_verification_tests.py
 
-# Testes completos (reproduzir provas técnicas)
-python EXECUTAR_TODOS_TESTES_INVESTIDORES.py
+# Complete tests (reproduce technical proofs)
+python tests/public/run_all_tests.py
 
-# Testes específicos
+# Specific tests
 python tests/public/test_qrs3_verification.py
 python tests/public/test_interoperability.py
 python tests/public/test_consensus.py
 ```
 
-### Verificar Provas Técnicas
+### Verify Technical Proofs
 
-1. Execute os scripts em [`tests/public/`](tests/public/)
-2. Compare os resultados com [`PROVAS_TECNICAS_COMPLETAS_FINAL.json`](PROVAS_TECNICAS_COMPLETAS_FINAL.json)
-3. Verifique transações na testnet: https://testnet.allianza.tech/explorer
+1. Run scripts in [`tests/public/`](tests/public/)
+2. Compare results with [`PROVAS_TECNICAS_COMPLETAS_FINAL.json`](PROVAS_TECNICAS_COMPLETAS_FINAL.json)
+3. Verify transactions on testnet: https://testnet.allianza.tech/explorer
 
-## 🌐 Testnet Pública
+## 🌐 Public Testnet
 
-A testnet pública está **ativa e disponível** para testes:
+The public testnet is **active and available** for testing:
 
 - **URL**: https://testnet.allianza.tech
 - **Status**: ✅ Online
 - **Features**:
-  - Dashboard em tempo real
-  - Explorer de blocos e transações
-  - Faucet automático
+  - Real-time dashboard
+  - Block and transaction explorer
+  - Automatic faucet
   - QSS Dashboard
-  - Verificador de provas
+  - Proof verifier
 
-## 🤝 Contribuindo
+## 🤝 Contributing
 
-Veja [CONTRIBUTING.md](CONTRIBUTING.md) para detalhes sobre como contribuir.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to contribute.
 
-## 📄 Licença
+## 📄 License
 
-Este projeto está licenciado sob a Licença MIT - veja [LICENSE](LICENSE) para detalhes.
+This project is licensed under the MIT License - see [LICENSE](LICENSE) for details.
 
 ## 🔗 Links
 
 - 🌐 **Website**: https://allianza.tech
 - 📖 **Whitepaper**: [docs/WHITEPAPER.md](docs/WHITEPAPER.md)
 - 🧪 **Testnet**: https://testnet.allianza.tech
-- 📧 **Contato**: [Ver SECURITY.md](SECURITY.md) para relatar vulnerabilidades
+- 📧 **Contact**: See [SECURITY.md](SECURITY.md) to report vulnerabilities
 
 ## ⚠️ Disclaimer
 
-Este é um projeto em desenvolvimento. Use apenas em testnet. Não use chaves privadas reais ou fundos reais durante os testes.
+This is a project under development. Use only on testnet. Do not use real private keys or real funds during testing.
 
 ---
 
 **Made with ❤️ by Allianza Team**
-
