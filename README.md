@@ -3,10 +3,12 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Testnet Status](https://img.shields.io/badge/Testnet-Active-success)](https://testnet.allianza.tech)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![CI Status](https://img.shields.io/badge/CI-Passing-success)](https://github.com/dieisonmaach-lang/allianzablockchain/actions)
+[![CI Status](https://github.com/dieisonmaach-lang/allianzablockchain/workflows/CI/badge.svg)](https://github.com/dieisonmaach-lang/allianzablockchain/actions)
 [![Security](https://img.shields.io/badge/Security-Audited-blue)](SECURITY.md)
 [![Contributors Welcome](https://img.shields.io/badge/contributors-welcome-brightgreen)](CONTRIBUTING.md)
 [![Documentation](https://img.shields.io/badge/docs-available-blue)](docs/)
+[![Code Quality](https://img.shields.io/badge/code%20quality-professional-brightgreen)](.pre-commit-config.yaml)
+[![Docker](https://img.shields.io/badge/docker-ready-blue)](docker-compose.yml)
 
 > **Post-quantum and interoperable blockchain** with quantum security (QRS-3), bridge-free interoperability, and adaptive consensus (ALZ-NIEV Protocol).
 
@@ -14,26 +16,36 @@
 
 ### For Developers
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/dieisonmaach-lang/allianzablockchain.git
-   cd allianzablockchain
-   ```
+**⚡ Fastest Way:**
+```bash
+# Clone and setup automatically
+git clone https://github.com/dieisonmaach-lang/allianzablockchain.git
+cd allianzablockchain
 
-2. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+# Run setup script (Linux/Mac)
+bash setup_local.sh
 
-3. **Run verification tests**
-   ```bash
-   python tests/public/run_verification_tests.py
-   ```
+# Or Windows
+setup_local.bat
+```
 
-4. **Access Public Testnet**
-   - 🌐 **Dashboard**: https://testnet.allianza.tech
-   - 🔍 **Explorer**: https://testnet.allianza.tech/explorer
-   - 🚰 **Faucet**: https://testnet.allianza.tech/faucet
+**📖 Detailed Guide:** See [GETTING_STARTED.md](GETTING_STARTED.md) for complete setup instructions.
+
+**🐳 Docker (Full Stack):**
+```bash
+docker-compose up -d
+# Access: http://localhost:5000
+```
+
+**🧪 Run Tests:**
+```bash
+python tests/public/run_verification_tests.py
+```
+
+**🌐 Access Public Testnet:**
+- 🌐 **Dashboard**: https://testnet.allianza.tech
+- 🔍 **Explorer**: https://testnet.allianza.tech/explorer
+- 🚰 **Faucet**: https://testnet.allianza.tech/faucet
 
 ### For Auditors and Verifiers
 
@@ -138,8 +150,10 @@ allianzablockchain/
 ### Core Documentation
 - 📖 [Technical Whitepaper](docs/WHITEPAPER.md)
 - 🏗️ [Architecture](docs/ARCHITECTURE.md)
+- 📊 [Architecture Diagrams](ARCHITECTURE_DIAGRAMS.md) - Visual diagrams (Mermaid)
 - 🔍 [API Reference](docs/API_REFERENCE.md)
-- 🚀 [Quick Start Guide](docs/QUICK_START.md)
+- 🚀 [Getting Started](GETTING_STARTED.md) - Complete setup guide
+- 📖 [Glossary](GLOSSARIO.md) - Technical terms explained
 
 ### Testing & Verification
 - 🧪 [Testing Guide](TESTING.md)
@@ -149,8 +163,9 @@ allianzablockchain/
 
 ### Project Information
 - 🗺️ [Roadmap](ROADMAP.md) - Complete ecosystem roadmap
+- 📊 [Interactive Roadmap](ROADMAP_INTERACTIVE.md) - Track progress and milestones
 - 📝 [Changelog](CHANGELOG.md)
-- 🤝 [Contributing](CONTRIBUTING.md)
+- 🤝 [Contributing](CONTRIBUTING.md) - **Why contribute?** See benefits and impact
 - 📋 [Code of Conduct](CODE_OF_CONDUCT.md)
 - 🏦 [RWA Tokenization](RWA_TOKENIZATION.md) - Real-World Asset tokenization strategy
 
