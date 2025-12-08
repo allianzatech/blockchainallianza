@@ -3,6 +3,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Testnet Status](https://img.shields.io/badge/Testnet-Active-success)](https://testnet.allianza.tech)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![CI Status](https://img.shields.io/badge/CI-Passing-success)](https://github.com/dieisonmaach-lang/allianzablockchain/actions)
+[![Security](https://img.shields.io/badge/Security-Audited-blue)](SECURITY.md)
 
 > **Post-quantum and interoperable blockchain** with quantum security (QRS-3), bridge-free interoperability, and adaptive consensus (ALZ-NIEV Protocol).
 
@@ -88,11 +90,22 @@ allianzablockchain/
 
 ## 📚 Documentation
 
+### Core Documentation
 - 📖 [Technical Whitepaper](docs/WHITEPAPER.md)
+- 🏗️ [Architecture](docs/ARCHITECTURE.md)
 - 🔍 [API Reference](docs/API_REFERENCE.md)
 - 🚀 [Quick Start Guide](docs/QUICK_START.md)
+
+### Testing & Verification
 - 🧪 [Testing Guide](TESTING.md)
 - ✅ [Verification Guide](VERIFICATION.md)
+- 🔐 [Security Policy](SECURITY.md)
+
+### Project Information
+- 🗺️ [Roadmap](ROADMAP.md)
+- 📝 [Changelog](CHANGELOG.md)
+- 🤝 [Contributing](CONTRIBUTING.md)
+- 📋 [Code of Conduct](CODE_OF_CONDUCT.md)
 
 ## 🧪 Tests and Verification
 
@@ -117,18 +130,29 @@ python tests/public/test_consensus.py
 2. Compare results with [`COMPLETE_TECHNICAL_PROOFS_FINAL.json`](COMPLETE_TECHNICAL_PROOFS_FINAL.json)
 3. Verify transactions on testnet: https://testnet.allianza.tech/explorer
 
-## 🌐 Public Testnet
+## 🌐 Live Public Testnet
 
 The public testnet is **active and available** for testing:
 
-- **URL**: https://testnet.allianza.tech
-- **Status**: ✅ Online
-- **Features**:
-  - Real-time dashboard
-  - Block and transaction explorer
-  - Automatic faucet
-  - QSS Dashboard
-  - Proof verifier
+### 🚀 Quick Access
+- 🌐 **Dashboard**: [https://testnet.allianza.tech](https://testnet.allianza.tech)
+- 🔍 **Explorer**: [https://testnet.allianza.tech/explorer](https://testnet.allianza.tech/explorer)
+- 🚰 **Faucet**: [https://testnet.allianza.tech/faucet](https://testnet.allianza.tech/faucet)
+- 🔐 **QRS-3 Verifier**: [https://testnet.allianza.tech/qrs3-verifier](https://testnet.allianza.tech/qrs3-verifier)
+
+### ✨ Features
+- ✅ Real-time dashboard with live statistics
+- ✅ Block and transaction explorer
+- ✅ Automatic faucet (1000 ALZ per request)
+- ✅ QSS Dashboard (Quantum Security Service)
+- ✅ Proof verifier for transaction proofs
+- ✅ Cross-chain interoperability testing
+
+### 📊 Testnet Statistics
+- **Status**: ✅ Online and Operational
+- **Network**: Allianza Testnet
+- **Consensus**: ALZ-NIEV Protocol (Adaptive)
+- **Security**: QRS-3 (Post-Quantum Cryptography)
 
 ## 🤝 Contributing
 
@@ -138,12 +162,39 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to contribute.
 
 This project is licensed under the MIT License - see [LICENSE](LICENSE) for details.
 
-## 🔗 Links
+## 🔗 Quick Links
 
-- 🌐 **Website**: https://allianza.tech
-- 📖 **Whitepaper**: [docs/WHITEPAPER.md](docs/WHITEPAPER.md)
-- 🧪 **Testnet**: https://testnet.allianza.tech
-- 📧 **Contact**: See [SECURITY.md](SECURITY.md) to report vulnerabilities
+### 🌐 Official Resources
+- **Website**: https://allianza.tech
+- **Testnet**: https://testnet.allianza.tech
+- **GitHub**: https://github.com/dieisonmaach-lang/allianzablockchain
+
+### 📖 Documentation
+- **Whitepaper**: [docs/WHITEPAPER.md](docs/WHITEPAPER.md)
+- **Roadmap**: [ROADMAP.md](ROADMAP.md)
+- **Changelog**: [CHANGELOG.md](CHANGELOG.md)
+
+### 📧 Contact
+- **Security Issues**: See [SECURITY.md](SECURITY.md)
+- **General Inquiries**: Contact via GitHub Issues
+- **Partnerships**: Contact via website
+
+## 🎯 Key Features
+
+### 🔐 Quantum Security
+- **QRS-3**: Post-quantum cryptography (ML-DSA, SPHINCS+)
+- **Quantum-Resistant**: Protection against quantum computing attacks
+- **Batch Verification**: Efficient signature verification
+
+### 🌉 Interoperability
+- **Bridge-Free**: No traditional bridges or custody
+- **Cross-Chain**: Seamless transfers between blockchains
+- **ZK Proofs**: Zero-knowledge proofs for validation
+
+### ⚙️ Consensus
+- **ALZ-NIEV Protocol**: Adaptive consensus mechanism
+- **High Throughput**: Optimized for performance
+- **Scalable**: Automatic scaling based on network conditions
 
 ## ⚠️ Disclaimer
 
