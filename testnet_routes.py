@@ -746,7 +746,7 @@ def api_transaction_proof(tx_hash):
         
         # Buscar transação
         tx = explorer.get_transaction_by_hash(tx_hash)
-        if not tx:
+    if not tx:
             # Tentar buscar do banco de dados como fallback
             try:
                 from db_manager import DBManager
@@ -831,8 +831,8 @@ def api_transaction_proof(tx_hash):
                     )
             # Fallback para JSON
             return jsonify(proof), 200
-        else:
-            return jsonify(proof), 200
+    else:
+        return jsonify(proof), 200
     
     except Exception as e:
         import traceback
