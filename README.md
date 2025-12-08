@@ -5,6 +5,8 @@
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![CI Status](https://img.shields.io/badge/CI-Passing-success)](https://github.com/dieisonmaach-lang/allianzablockchain/actions)
 [![Security](https://img.shields.io/badge/Security-Audited-blue)](SECURITY.md)
+[![Contributors Welcome](https://img.shields.io/badge/contributors-welcome-brightgreen)](CONTRIBUTING.md)
+[![Documentation](https://img.shields.io/badge/docs-available-blue)](docs/)
 
 > **Post-quantum and interoperable blockchain** with quantum security (QRS-3), bridge-free interoperability, and adaptive consensus (ALZ-NIEV Protocol).
 
@@ -44,8 +46,10 @@
 ### Published Technical Proofs
 
 - ✅ **Complete Proofs**: [`COMPLETE_TECHNICAL_PROOFS_FINAL.json`](COMPLETE_TECHNICAL_PROOFS_FINAL.json)
+- ✅ **Verifiable On-Chain Proofs**: [`VERIFIABLE_ON_CHAIN_PROOFS.md`](VERIFIABLE_ON_CHAIN_PROOFS.md) - Real transaction hashes from Bitcoin, Ethereum, Polygon
 - ✅ **Test Scripts**: [`tests/public/`](tests/public/) - All scripts that generated the proofs
 - ✅ **Active Testnet**: https://testnet.allianza.tech - Test in real-time
+- ✅ **Source Code Published**: [`core/`](core/) - Complete source code for QRS-3, ALZ-NIEV Protocol, and interoperability
 
 ### Validated Technologies
 
@@ -60,21 +64,36 @@
 
 ```
 allianzablockchain/
-├── core/                    # Main source code
-│   ├── consensus/          # ALZ-NIEV Protocol
-│   ├── crypto/             # QRS-3, PQC algorithms
-│   └── interoperability/   # Bridge-free interop
+├── core/                    # ✅ PUBLISHED - Main source code
+│   ├── consensus/          # ✅ ALZ-NIEV Protocol (adaptive consensus)
+│   ├── crypto/             # ✅ QRS-3, PQC algorithms (ML-DSA, SPHINCS+)
+│   └── interoperability/   # ✅ Bridge-free interop (Proof-of-Lock, ZK Proofs)
 ├── contracts/              # Smart contracts
-│   ├── evm/               # Solidity contracts
+│   ├── evm/               # Solidity contracts (QuantumProofVerifier.sol)
 │   └── proof-of-lock/     # Proof-of-Lock implementation
 ├── sdk/                    # Public SDKs
 │   ├── qss-sdk/          # Quantum Security Service SDK
 │   └── qss-verifier/     # QSS Verifier
 ├── tests/                  # Public tests
-│   └── public/           # Verification scripts
+│   └── public/           # ✅ Verification scripts (reproducible)
+├── examples/               # ✅ Code examples
 ├── docs/                   # Technical documentation
 └── proofs/                 # Technical proofs and reports
 ```
+
+### ✅ Source Code Transparency
+
+**All core implementations are publicly available:**
+
+- **QRS-3 (PQC)**: [`core/crypto/`](core/crypto/) - Complete ML-DSA and SPHINCS+ implementations
+- **ALZ-NIEV Protocol**: [`core/consensus/`](core/consensus/) - Adaptive consensus mechanism
+- **Bridge-Free Interop**: [`core/interoperability/`](core/interoperability/) - Proof-of-Lock and ZK Proofs
+
+**Verification:**
+- ✅ Code is open source and auditable
+- ✅ Test scripts are public and reproducible
+- ✅ Real transaction hashes are verifiable on public explorers
+- ✅ Testnet is live and accessible
 
 ## 🔐 Security
 
@@ -102,10 +121,11 @@ allianzablockchain/
 - 🔐 [Security Policy](SECURITY.md)
 
 ### Project Information
-- 🗺️ [Roadmap](ROADMAP.md)
+- 🗺️ [Roadmap](ROADMAP.md) - Complete ecosystem roadmap
 - 📝 [Changelog](CHANGELOG.md)
 - 🤝 [Contributing](CONTRIBUTING.md)
 - 📋 [Code of Conduct](CODE_OF_CONDUCT.md)
+- 🏦 [RWA Tokenization](RWA_TOKENIZATION.md) - Real-World Asset tokenization strategy
 
 ## 💡 Code Examples
 
@@ -153,9 +173,11 @@ python tests/public/test_consensus.py
 
 ### Verify Technical Proofs
 
-1. Run scripts in [`tests/public/`](tests/public/)
-2. Compare results with [`COMPLETE_TECHNICAL_PROOFS_FINAL.json`](COMPLETE_TECHNICAL_PROOFS_FINAL.json)
-3. Verify transactions on testnet: https://testnet.allianza.tech/explorer
+1. **Run Test Scripts**: Execute scripts in [`tests/public/`](tests/public/)
+2. **Compare Results**: Compare with [`COMPLETE_TECHNICAL_PROOFS_FINAL.json`](COMPLETE_TECHNICAL_PROOFS_FINAL.json)
+3. **Verify On-Chain**: Check real transaction hashes in [`VERIFIABLE_ON_CHAIN_PROOFS.md`](VERIFIABLE_ON_CHAIN_PROOFS.md)
+4. **Testnet Explorer**: Verify transactions on https://testnet.allianza.tech/explorer
+5. **Public Explorers**: Verify Bitcoin/Ethereum/Polygon transactions on their respective explorers
 
 ## 🌐 Live Public Testnet
 
