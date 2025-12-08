@@ -578,10 +578,10 @@
             resultContent.innerHTML = '<p class="info">⏳ {{ t("verifying_proof") or "Verifying..." }}</p>';
 
             try {
-                const response = await fetch('/zk-verifier', {
+                const response = await fetch('/api/cross-chain/verify-zk', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({proof, verification_key: verificationKey, public_inputs: publicInputs})
+                    body: JSON.stringify({proof, verification_key: verificationKey, public_inputs: publicInputs || {}})
                 });
 
                 const data = await response.json();
