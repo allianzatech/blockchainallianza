@@ -1640,6 +1640,27 @@ class RealCrossChainBridge:
                 "traceback": traceback.format_exc()
             }
     
+    def _debug_print_utxos(self, utxos: list, label: str = "UTXOs"):
+        """Função de diagnóstico para logar UTXOs detalhadamente"""
+        print(f"----- {label} DEBUG -----")
+        if not utxos:
+            print(f"⚠️  Nenhum {label} retornado!")
+            return 0
+        
+        total = 0
+        for i, u in enumerate(utxos):
+            txid = u.get('txid') or u.get('tx_hash') or u.get('tx')
+            vout = u.get('vout') or u.get('vout_index') or u.get('output_n') or u.get('tx_output_n') or u.get('n', 0)
+            value = u.get('value') or u.get('amount') or u.get('satoshis', 0)
+            print(f"   [{i+1}] txid={txid[:16]}...{txid[-8:] if txid and len(txid) > 24 else ''}, vout={vout}, value={value} satoshis ({value/100000000:.8f} BTC)")
+            if value:
+                total += int(value)
+        
+        print(f"   💰 Total: {total} satoshis ({total/100000000:.8f} BTC)")
+        print(f"   📊 Quantidade de UTXOs: {len(utxos)}")
+        print(f"----------------------")
+        return total
+    
     def _create_bitcoin_tx_with_op_return_manual(
         self,
         from_private_key: str,
@@ -1653,6 +1674,18 @@ class RealCrossChainBridge:
         SOLUÇÃO ALTERNATIVA: Criar transação Bitcoin manualmente com python-bitcointx
         Usado como fallback se bitcoinlib falhar
         """
+        # ✅ DEBUG: Logar UTXOs recebidos
+        print(f"🔍 DEBUG: _create_bitcoin_tx_with_op_return_manual chamado")
+        print(f"   Parâmetros: from_address={from_address}, to_address={to_address}, amount_satoshis={amount_satoshis}")
+        total_utxo_value = self._debug_print_utxos(utxos, "UTXOs recebidos no método manual")
+        
+        if not utxos:
+            return {
+                "success": False,
+                "error": "Nenhum UTXO fornecido para criar transação",
+                "note": "É necessário ter UTXOs para criar uma transação Bitcoin"
+            }
+        
         try:
             from bitcointx.core import CMutableTransaction, CTxIn, CTxOut, COutPoint
             from bitcointx.wallet import CBitcoinSecret, P2PKHBitcoinAddress, P2WPKHBitcoinAddress
@@ -2747,13 +2780,19 @@ class RealCrossChainBridge:
                                         print(f"⚠️  Erro ao buscar UTXOs da Blockstream: {bs_err}")
                                 
                                 # Se temos UTXOs (da API ou Blockstream), tentar métodos alternativos
-                                if utxos:
+                                if utxos and len(utxos) > 0:
                                     try:
                                         amount_satoshis = int(amount_btc * 100000000)
                                         memo_hex = source_tx_hash if source_tx_hash else None
                                         
+                                        # ✅ DEBUG: Logar antes de tentar métodos alternativos
+                                        print(f"🔍 DEBUG: Preparando para criar transação com métodos alternativos")
+                                        print(f"   - amount_satoshis: {amount_satoshis}")
+                                        print(f"   - memo_hex: {'Sim' if memo_hex else 'Não'} ({len(memo_hex) if memo_hex else 0} chars)")
+                                        print(f"   - UTXOs disponíveis: {len(utxos)}")
+                                        
                                         # ✅ PRIORIDADE 1: Tentar método manual com python-bitcointx (mais confiável)
-                                        print(f"🔄 Tentando método manual (python-bitcointx) com {len(utxos)} UTXOs da API...")
+                                        print(f"🔄 Tentando método manual (python-bitcointx) com {len(utxos)} UTXOs...")
                                         try:
                                             manual_result = self._create_bitcoin_tx_with_op_return_manual(
                                                 from_private_key=from_private_key,
@@ -2765,7 +2804,7 @@ class RealCrossChainBridge:
                                             )
                                             
                                             if manual_result.get("success"):
-                                                print(f"✅✅✅ python-bitcointx funcionou!")
+                                                print(f"✅✅✅ python-bitcointx funcionou! TX Hash: {manual_result.get('tx_hash')}")
                                                 proof_data["success"] = True
                                                 proof_data["tx_hash"] = manual_result.get("tx_hash")
                                                 proof_data["final_result"] = manual_result
@@ -2774,6 +2813,9 @@ class RealCrossChainBridge:
                                                 return manual_result
                                             else:
                                                 print(f"⚠️  python-bitcointx falhou: {manual_result.get('error')}")
+                                                print(f"   Detalhes: {manual_result.get('note', 'N/A')}")
+                                                if manual_result.get('debug'):
+                                                    print(f"   Debug: {manual_result.get('debug')}")
                                                 add_log("manual_method_failed", {"error": manual_result.get('error')}, "error")
                                         except Exception as manual_err:
                                             print(f"⚠️  Erro ao tentar python-bitcointx: {manual_err}")
