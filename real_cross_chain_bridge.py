@@ -3454,6 +3454,30 @@ class RealCrossChainBridge:
                                                         "inputs_count": len(inputs_list),
                                                         "outputs_count": len(outputs_list)
                                                     }, "error")
+                                                    
+                                                    # Se BlockCypher falhou, tentar entender o erro antes de usar métodos alternativos
+                                                    # Se o erro é sobre inputs/outputs inválidos, não tentar métodos alternativos
+                                                    if "input" in error_text.lower() or "output" in error_text.lower() or "invalid" in error_text.lower():
+                                                        print(f"   ❌ Erro parece ser sobre estrutura da transação - não tentando métodos alternativos")
+                                                        proof_data["final_result"] = {
+                                                            "success": False,
+                                                            "error": f"BlockCypher falhou: {error_text}",
+                                                            "note": "Erro na estrutura da transação. Verifique UTXOs e endereços.",
+                                                            "blockcypher_attempted": True,
+                                                            "manual_attempted": False
+                                                        }
+                                                        proof_file = self._save_transaction_proof(proof_data)
+                                                        return {
+                                                            "success": False,
+                                                            "error": f"BlockCypher falhou: {error_text}",
+                                                            "from_address": from_address,
+                                                            "to_address": to_address,
+                                                            "amount": amount_btc,
+                                                            "note": "Erro na estrutura da transação. Verifique UTXOs e endereços.",
+                                                            "blockcypher_attempted": True,
+                                                            "manual_attempted": False,
+                                                            "proof_file": proof_file
+                                                        }
                                         except Exception as blockcypher_err:
                                             print(f"⚠️  Erro ao tentar BlockCypher: {blockcypher_err}")
                                             import traceback
