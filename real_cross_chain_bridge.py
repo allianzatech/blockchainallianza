@@ -2121,14 +2121,61 @@ class RealCrossChainBridge:
                                 print(f"   Hash da transação Polygon: {source_tx_hash}")
                                 add_log("op_return_temporarily_disabled", {"source_tx_hash": source_tx_hash}, "warning")
                             
-                            # SOLUÇÃO ALTERNATIVA: Se wallet não tem UTXOs mas temos da API, usar BlockCypher ANTES de tentar wallet.send_to()
-                            # OP_RETURN não é mais obrigatório
-                            if (not wallet_utxos and utxos):
+                            # TENTAR wallet.send_to() PRIMEIRO (mesmo sem UTXOs, pode buscar automaticamente)
+                            # Só usar BlockCypher se wallet.send_to() falhar
+                            wallet_send_to_tried = False
+                            wallet_send_to_success = False
+                            
+                            # Tentar wallet.send_to() primeiro (mais confiável)
+                            try:
+                                print(f"📤 Tentando wallet.send_to() primeiro (wallet pode buscar UTXOs automaticamente)...")
+                                wallet_send_to_tried = True
+                                tx_result = wallet.send_to(to_address, amount_satoshis, fee=5)
+                                
+                                if tx_result:
+                                    tx_hash = tx_result.txid if hasattr(tx_result, 'txid') else str(tx_result)
+                                    print(f"   ✅✅✅ Transação criada via wallet.send_to()! Hash: {tx_hash}")
+                                    
+                                    add_log("transaction_broadcasted_wallet_send_to", {"tx_hash": tx_hash}, "info")
+                                    proof_data["success"] = True
+                                    proof_data["tx_hash"] = tx_hash
+                                    proof_data["final_result"] = {
+                                        "success": True,
+                                        "tx_hash": tx_hash,
+                                        "method": "wallet_send_to",
+                                        "op_return_included": False
+                                    }
+                                    proof_file = self._save_transaction_proof(proof_data)
+                                    
+                                    return {
+                                        "success": True,
+                                        "tx_hash": tx_hash,
+                                        "from": from_address,
+                                        "to": to_address,
+                                        "amount": amount_btc,
+                                        "chain": "bitcoin",
+                                        "status": "broadcasted",
+                                        "explorer_url": f"https://live.blockcypher.com/btc-testnet/tx/{tx_hash}/",
+                                        "note": "✅ Transação REAL criada via wallet.send_to()",
+                                        "real_broadcast": True,
+                                        "method": "wallet_send_to",
+                                        "op_return_included": False,
+                                        "proof_file": proof_file
+                                    }
+                                wallet_send_to_success = True
+                            except Exception as wallet_send_err:
+                                print(f"   ⚠️  wallet.send_to() falhou: {wallet_send_err}")
+                                import traceback
+                                traceback.print_exc()
+                                add_log("wallet_send_to_failed", {"error": str(wallet_send_err)}, "error")
+                            
+                            # Se wallet.send_to() falhou e temos UTXOs da API, tentar BlockCypher
+                            if not wallet_send_to_success and (not wallet_utxos and utxos):
                                 if source_tx_hash:
-                                    print(f"🔗 OP_RETURN necessário - pulando bitcoinlib e usando BlockCypher API diretamente...")
-                                elif not wallet_utxos:
-                                    print(f"⚠️  Wallet não reconhece UTXOs, usando BlockCypher API ANTES de tentar wallet.send_to()...")
-                                add_log("using_blockcypher_api", {"utxos_count": len(utxos), "op_return_needed": bool(source_tx_hash)}, "info")
+                                    print(f"🔗 OP_RETURN necessário - wallet.send_to() falhou, usando BlockCypher API...")
+                                else:
+                                    print(f"⚠️  wallet.send_to() falhou, usando BlockCypher API como fallback...")
+                                add_log("using_blockcypher_api", {"utxos_count": len(utxos), "op_return_needed": bool(source_tx_hash), "wallet_send_to_failed": True}, "info")
                                 
                                 try:
                                     # Usar BlockCypher API para criar e assinar transação
