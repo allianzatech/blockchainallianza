@@ -3256,13 +3256,63 @@ class RealCrossChainBridge:
                                             else:
                                                 # Preparar inputs
                                                 inputs_list = []
-                                                for utxo in utxos:
+                                                print(f"   🔍 Validando e preparando {len(utxos)} UTXOs para BlockCypher...")
+                                                for i, utxo in enumerate(utxos):
                                                     txid = utxo.get('txid') or utxo.get('tx_hash')
-                                                    output_n = int(utxo.get('vout') or utxo.get('output_n', 0))
+                                                    output_n = utxo.get('vout') or utxo.get('output_n') or utxo.get('output_index', 0)
+                                                    value = utxo.get('value', 0)
+                                                    
+                                                    # ✅ VALIDAÇÃO CRÍTICA: Verificar se UTXO é válido
+                                                    if not txid:
+                                                        print(f"   ⚠️  UTXO [{i+1}] sem txid, pulando...")
+                                                        continue
+                                                    
+                                                    if not isinstance(txid, str) or len(txid) != 64:
+                                                        print(f"   ⚠️  UTXO [{i+1}] txid inválido: {txid} (tipo: {type(txid)}, len: {len(txid) if isinstance(txid, str) else 'N/A'})")
+                                                        continue
+                                                    
+                                                    try:
+                                                        output_n_int = int(output_n)
+                                                        if output_n_int < 0:
+                                                            print(f"   ⚠️  UTXO [{i+1}] output_n negativo: {output_n_int}, pulando...")
+                                                            continue
+                                                    except (ValueError, TypeError):
+                                                        print(f"   ⚠️  UTXO [{i+1}] output_n inválido: {output_n}, pulando...")
+                                                        continue
+                                                    
+                                                    if not value or int(value) <= 0:
+                                                        print(f"   ⚠️  UTXO [{i+1}] valor inválido: {value}, pulando...")
+                                                        continue
+                                                    
                                                     inputs_list.append({
                                                         "prev_hash": txid,
-                                                        "output_index": output_n
+                                                        "output_index": output_n_int
                                                     })
+                                                    print(f"   ✅ Input [{len(inputs_list)}]: {txid[:16]}...:{output_n_int} = {value} satoshis")
+                                                
+                                                if len(inputs_list) == 0:
+                                                    print(f"   ❌ Nenhum input válido após validação!")
+                                                    proof_data["final_result"] = {
+                                                        "success": False,
+                                                        "error": "Nenhum UTXO válido após validação",
+                                                        "note": "Todos os UTXOs foram rejeitados na validação",
+                                                        "utxos_provided": len(utxos),
+                                                        "utxos_validated": 0
+                                                    }
+                                                    proof_file = self._save_transaction_proof(proof_data)
+                                                    return {
+                                                        "success": False,
+                                                        "error": "Nenhum UTXO válido após validação",
+                                                        "from_address": from_address,
+                                                        "to_address": to_address,
+                                                        "amount": amount_btc,
+                                                        "note": "Todos os UTXOs foram rejeitados na validação. Verifique se os UTXOs estão no formato correto.",
+                                                        "utxos_provided": len(utxos),
+                                                        "utxos_validated": 0,
+                                                        "proof_file": proof_file
+                                                    }
+                                                
+                                                print(f"   ✅ {len(inputs_list)} inputs válidos preparados para BlockCypher")
                                                 
                                                 # Preparar outputs
                                                 outputs_list = [{
