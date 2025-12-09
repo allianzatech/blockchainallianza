@@ -1856,13 +1856,33 @@ class RealCrossChainBridge:
                         pubkey = secret.pub
                         
                         # Adicionar assinatura (P2WPKH ou P2PKH)
-                        if from_address.startswith('tb1'):
-                            txin.scriptSig = CScript()
-                            txin.scriptWitness.stack = [sig, pubkey]
-                        else:
-                            txin.scriptSig = CScript([sig, pubkey])
+                        # ✅ CORREÇÃO: Usar o método correto do python-bitcointx
+                        from bitcointx.core.scripteval import VerifyScript
                         
-                        print(f"   ✅ Input {i+1} assinado")
+                        # Determinar tipo de endereço pelo scriptPubKey
+                        script_type = scriptpubkey_hex[:4] if len(scriptpubkey_hex) >= 4 else ""
+                        
+                        if from_address.startswith('tb1') or script_type in ['0014', '0020']:  # P2WPKH ou P2WSH
+                            # P2WPKH: scriptSig vazio, assinatura no witness
+                            txin.scriptSig = CScript()
+                            # Criar witness stack corretamente
+                            from bitcointx.core.script import CScriptWitness
+                            if not hasattr(txin, 'scriptWitness') or txin.scriptWitness is None:
+                                txin.scriptWitness = CScriptWitness()
+                            txin.scriptWitness.stack = [sig, pubkey]
+                            print(f"   ✅ Input {i+1} assinado (P2WPKH - witness)")
+                        else:
+                            # P2PKH: assinatura no scriptSig
+                            txin.scriptSig = CScript([sig, pubkey])
+                            print(f"   ✅ Input {i+1} assinado (P2PKH - scriptSig)")
+                        
+                        # ✅ VALIDAÇÃO: Verificar se a assinatura foi adicionada corretamente
+                        if from_address.startswith('tb1'):
+                            if not hasattr(txin, 'scriptWitness') or not txin.scriptWitness or len(txin.scriptWitness.stack) == 0:
+                                print(f"   ⚠️  AVISO: scriptWitness não foi criado corretamente para input {i+1}")
+                        else:
+                            if not txin.scriptSig or len(txin.scriptSig) == 0:
+                                print(f"   ⚠️  AVISO: scriptSig não foi criado corretamente para input {i+1}")
                     else:
                         return {
                             "success": False,
