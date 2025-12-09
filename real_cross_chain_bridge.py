@@ -3241,7 +3241,7 @@ class RealCrossChainBridge:
                                         print(f"   📊 Status: {utxos_response.status_code}")
                                         
                                         if utxos_response.status_code == 200:
-                                        blockstream_utxos = utxos_response.json()
+                                            blockstream_utxos = utxos_response.json()
                                         print(f"   📦 Resposta JSON: {len(blockstream_utxos) if blockstream_utxos else 0} UTXOs")
                                         
                                         if blockstream_utxos:
