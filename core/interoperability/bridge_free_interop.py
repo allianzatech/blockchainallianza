@@ -352,6 +352,14 @@ class BridgeFreeInterop:
                         # Limitar a 80 bytes (limite do OP_RETURN do Bitcoin)
                         if len(memo_hex_str) > 160:  # 80 bytes = 160 caracteres hex
                             memo_hex_str = memo_hex_str[:160]
+                            print(f"   ⚠️  Memo hex truncado para 160 caracteres (limite do OP_RETURN)")
+                        
+                        # CRÍTICO: Garantir que memo_hex_str está no formato correto para OP_RETURN
+                        # O OP_RETURN do Bitcoin aceita até 80 bytes de dados
+                        if memo_hex_str:
+                            print(f"   📋 Memo hex para OP_RETURN: {len(memo_hex_str)} caracteres ({len(memo_hex_str)//2} bytes)")
+                            print(f"   📋 Primeiros 80 chars: {memo_hex_str[:80]}...")
+                            print(f"   📋 Memo JSON completo: {memo_info.get('memo_json', '')[:200]}...")
                         
                         result = bridge.send_bitcoin_transaction(
                             from_private_key=private_key or os.getenv('BITCOIN_PRIVATE_KEY'),
@@ -359,6 +367,16 @@ class BridgeFreeInterop:
                             amount_btc=amount_btc,
                             source_tx_hash=memo_hex_str  # Passar memo hex como source_tx_hash para OP_RETURN
                         )
+                        
+                        # Verificar se OP_RETURN foi incluído
+                        if result.get("success") and result.get("op_return_included"):
+                            print(f"   ✅✅✅ OP_RETURN incluído na transação Bitcoin!")
+                            print(f"   📋 TX Hash: {result.get('tx_hash')}")
+                        elif result.get("success") and not result.get("op_return_included"):
+                            print(f"   ⚠️  Transação Bitcoin enviada, mas OP_RETURN NÃO foi incluído")
+                            print(f"      Motivo: {result.get('op_return_note', 'Desconhecido')}")
+                            print(f"      TX Hash: {result.get('tx_hash')}")
+                            print(f"      Nota: O memo pode ser recuperado via UChainID: {uchain_id}")
                         
                         if result.get("success") and uchain_id:
                             # Atualizar UChainID com tx_hash Bitcoin
