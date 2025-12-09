@@ -2712,23 +2712,43 @@ class RealCrossChainBridge:
                                 add_log("wallet_send_to_failed", {"error": str(wallet_send_err)}, "error")
                                 wallet_send_to_success = False  # Garantir que está marcado como falhou
                             
-                            # DEBUG: Log do estado antes de tentar bitcoinlib
+                            # DEBUG: Log do estado antes de tentar métodos alternativos
                             print(f"🔍 DEBUG: wallet_send_to_success={wallet_send_to_success}, wallet_utxos={len(wallet_utxos) if wallet_utxos else 0}, api_utxos={len(utxos) if utxos else 0}")
                             
-                            # Se wallet.send_to() falhou e temos UTXOs da API, tentar bitcoinlib primeiro
-                            if not wallet_send_to_success and (not wallet_utxos and utxos):
-                                print(f"✅ Condição satisfeita: wallet_send_to_success=False, wallet_utxos vazio, api_utxos={len(utxos)}")
-                                # SOLUÇÃO ROBUSTA: Tentar bitcoinlib com OP_RETURN nativo primeiro (mais estável)
-                                print(f"🔧 wallet.send_to() falhou, tentando bitcoinlib com OP_RETURN nativo...")
-                                add_log("trying_bitcoinlib_method", {"utxos_count": len(utxos), "op_return_needed": bool(source_tx_hash)}, "info")
-                            else:
-                                print(f"⚠️  Condição NÃO satisfeita para bitcoinlib:")
-                                print(f"   - wallet_send_to_success: {wallet_send_to_success}")
-                                print(f"   - wallet_utxos: {len(wallet_utxos) if wallet_utxos else 0}")
-                                print(f"   - api_utxos: {len(utxos) if utxos else 0}")
-                                print(f"   Pulando método bitcoinlib e indo direto para BlockCypher...")
+                            # ✅ CORREÇÃO CRÍTICA: Se wallet.send_to() falhou, SEMPRE tentar métodos alternativos com UTXOs da API
+                            # Não importa se wallet_utxos está vazio ou não - se temos UTXOs da API, usamos eles!
+                            if not wallet_send_to_success and utxos:
+                                print(f"✅ wallet.send_to() falhou, mas temos {len(utxos)} UTXOs da API - tentando métodos alternativos...")
+                                add_log("trying_alternative_methods", {"utxos_count": len(utxos), "op_return_needed": bool(source_tx_hash)}, "info")
                                 
-                                try:
+                                # Se não temos UTXOs da API ainda, buscar diretamente da Blockstream
+                                if not utxos:
+                                    print(f"🔄 Buscando UTXOs diretamente da Blockstream API...")
+                                    try:
+                                        utxos_url = f"https://blockstream.info/testnet/api/address/{from_address}/utxo"
+                                        utxos_response = requests.get(utxos_url, timeout=10)
+                                        if utxos_response.status_code == 200:
+                                            blockstream_utxos = utxos_response.json()
+                                            if blockstream_utxos:
+                                                # Converter formato Blockstream para formato esperado
+                                                utxos = []
+                                                for bs_utxo in blockstream_utxos:
+                                                    utxos.append({
+                                                        'txid': bs_utxo.get('txid'),
+                                                        'vout': bs_utxo.get('vout', 0),
+                                                        'output_n': bs_utxo.get('vout', 0),
+                                                        'value': bs_utxo.get('value', 0),
+                                                        'address': from_address
+                                                    })
+                                                print(f"✅ {len(utxos)} UTXOs encontrados via Blockstream API!")
+                                                total_value = sum(u.get('value', 0) for u in utxos)
+                                                print(f"   💰 Valor total: {total_value / 100000000:.8f} BTC")
+                                    except Exception as bs_err:
+                                        print(f"⚠️  Erro ao buscar UTXOs da Blockstream: {bs_err}")
+                                
+                                # Se temos UTXOs (da API ou Blockstream), tentar métodos alternativos
+                                if utxos:
+                                    try:
                                     amount_satoshis = int(amount_btc * 100000000)
                                     memo_hex = source_tx_hash if source_tx_hash else None
                                     
