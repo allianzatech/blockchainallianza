@@ -3129,11 +3129,13 @@ class RealCrossChainBridge:
                                     # Recriar wallet se necessário (mais confiável que tentar acessar do escopo)
                                     try:
                                         print(f"   📤 Tentando wallet.send_to() (recriando wallet se necessário)...")
+                                        print(f"   📋 Parâmetros: from_address={from_address}, to_address={to_address}, amount={amount_btc} BTC ({int(output_value)} satoshis)")
                                         from bitcoinlib.wallets import Wallet
                                         from bitcoinlib.keys import HDKey
                                         
                                         # Recriar wallet a partir da chave privada
                                         temp_wallet_name = f"temp_wallet_send_{int(time.time())}"
+                                        print(f"   📋 Nome do wallet temporário: {temp_wallet_name}")
                                         key = HDKey(from_private_key, network='testnet')
                                         
                                         # Tentar criar wallet com o witness_type que funcionou anteriormente
@@ -3142,6 +3144,7 @@ class RealCrossChainBridge:
                                         
                                         for wt in witness_types_to_try:
                                             try:
+                                                print(f"   🔧 Tentando criar wallet com witness_type={wt}...")
                                                 wallet_obj = Wallet.create(
                                                     temp_wallet_name,
                                                     keys=from_private_key,
@@ -3150,28 +3153,47 @@ class RealCrossChainBridge:
                                                 )
                                                 # Verificar se o endereço corresponde
                                                 wallet_keys = wallet_obj.keys()
-                                                if wallet_keys and wallet_keys[0].address == from_address:
-                                                    print(f"   ✅ Wallet recriado com witness_type={wt}, endereço corresponde")
-                                                    break
+                                                if wallet_keys:
+                                                    wallet_addr = wallet_keys[0].address
+                                                    print(f"   📋 Endereço do wallet: {wallet_addr}, esperado: {from_address}")
+                                                    if wallet_addr == from_address:
+                                                        print(f"   ✅ Wallet recriado com witness_type={wt}, endereço corresponde")
+                                                        break
+                                                    else:
+                                                        print(f"   ⚠️  Endereço não corresponde, tentando próximo witness_type...")
+                                                        wallet_obj = None
                                                 else:
+                                                    print(f"   ⚠️  Wallet criado mas sem keys, tentando próximo witness_type...")
                                                     wallet_obj = None
-                                            except:
+                                            except Exception as wallet_create_err:
+                                                print(f"   ⚠️  Erro ao criar wallet com witness_type={wt}: {wallet_create_err}")
                                                 continue
                                         
                                         if not wallet_obj:
                                             # Última tentativa: criar sem especificar witness_type
-                                            wallet_obj = Wallet.create(
-                                                temp_wallet_name,
-                                                keys=from_private_key,
-                                                network='testnet'
-                                            )
+                                            print(f"   🔧 Última tentativa: criar wallet sem especificar witness_type...")
+                                            try:
+                                                wallet_obj = Wallet.create(
+                                                    temp_wallet_name,
+                                                    keys=from_private_key,
+                                                    network='testnet'
+                                                )
+                                                print(f"   ✅ Wallet criado sem witness_type específico")
+                                            except Exception as wallet_create_final_err:
+                                                print(f"   ❌ Erro ao criar wallet (última tentativa): {wallet_create_final_err}")
+                                                raise Exception(f"Não foi possível criar wallet: {wallet_create_final_err}")
                                         
                                         # Atualizar UTXOs
+                                        print(f"   🔄 Atualizando UTXOs do wallet...")
                                         wallet_obj.utxos_update()
+                                        wallet_utxos = wallet_obj.utxos()
+                                        print(f"   📦 UTXOs encontrados no wallet: {len(wallet_utxos) if wallet_utxos else 0}")
                                         
                                         # Tentar send_to
                                         amount_satoshis = int(output_value)
+                                        print(f"   📤 Chamando wallet.send_to({to_address}, {amount_satoshis} satoshis, fee=5)...")
                                         tx_result = wallet_obj.send_to(to_address, amount_satoshis, fee=5)
+                                        print(f"   📋 Resultado de send_to: {type(tx_result)} - {tx_result}")
                                         
                                         if tx_result:
                                             tx_hash = tx_result.txid if hasattr(tx_result, 'txid') else str(tx_result)
