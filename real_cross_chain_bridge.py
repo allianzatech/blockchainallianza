@@ -1479,31 +1479,33 @@ class RealCrossChainBridge:
             tx.add_output(amount_satoshis, address=to_address)
             print(f"   📤 Output: {to_address} = {amount_satoshis} satoshis")
             
-            # Adicionar OP_RETURN (bitcoinlib tem método nativo!)
+            # Adicionar OP_RETURN (bitcoinlib suporta via add_output com script)
             if memo_hex:
                 try:
                     memo_bytes = bytes.fromhex(memo_hex) if len(memo_hex) % 2 == 0 else memo_hex.encode('utf-8')
                     if len(memo_bytes) > 80:
                         memo_bytes = memo_bytes[:80]
                     
-                    # bitcoinlib tem método add_op_return() nativo!
-                    tx.add_op_return(memo_bytes.decode('utf-8', errors='ignore') if isinstance(memo_bytes, bytes) else memo_bytes)
+                    # bitcoinlib não tem add_op_return() direto, mas podemos criar script OP_RETURN
+                    from bitcoinlib.scripts import Script
+                    
+                    # Criar script OP_RETURN: OP_RETURN <data>
+                    op_return_script = Script(['OP_RETURN', memo_bytes])
+                    
+                    # Adicionar output OP_RETURN (value=0, script=OP_RETURN)
+                    tx.outputs.append({
+                        'value': 0,
+                        'script': op_return_script,
+                        'address': None,
+                        'script_type': 'nulldata'
+                    })
                     print(f"   🔗 OP_RETURN adicionado: {len(memo_bytes)} bytes")
                 except Exception as op_err:
                     print(f"   ⚠️  Erro ao adicionar OP_RETURN: {op_err}")
-                    # Tentar método alternativo
-                    try:
-                        # Criar script OP_RETURN manualmente
-                        from bitcoinlib.scripts import Script
-                        op_return_script = Script(['OP_RETURN', memo_bytes])
-                        tx.outputs.append({
-                            'value': 0,
-                            'script': op_return_script,
-                            'address': None
-                        })
-                        print(f"   🔗 OP_RETURN adicionado (método alternativo)")
-                    except Exception as op_err2:
-                        print(f"   ⚠️  OP_RETURN falhou completamente: {op_err2}")
+                    import traceback
+                    traceback.print_exc()
+                    # Continuar sem OP_RETURN se falhar
+                    print(f"   ⚠️  Continuando sem OP_RETURN...")
             
             # Adicionar change (se houver)
             if change_satoshis > 546:  # Dust limit
