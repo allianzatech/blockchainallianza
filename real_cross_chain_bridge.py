@@ -1895,14 +1895,25 @@ class RealCrossChainBridge:
                         "error": f"Erro ao assinar input {i+1}: {str(sign_err)}"
                     }
             
-            # Serializar transação
-            raw_tx_hex = tx.serialize().hex()
-            print(f"📄 Raw TX criada: {len(raw_tx_hex)} bytes ({len(raw_tx_hex)//2} bytes hex)")
+            # ✅ VALIDAÇÃO FINAL: Verificar estrutura da transação antes de serializar
+            print(f"🔍 Validação final da transação:")
+            print(f"   Inputs: {len(tx.vin)}")
+            unsigned_inputs = []
+            for i, txin in enumerate(tx.vin):
+                has_sig = (hasattr(txin, 'scriptSig') and txin.scriptSig and len(txin.scriptSig) > 0) or \
+                         (hasattr(txin, 'scriptWitness') and txin.scriptWitness and hasattr(txin.scriptWitness, 'stack') and txin.scriptWitness.stack and len(txin.scriptWitness.stack) > 0)
+                status = '✅ Assinado' if has_sig else '❌ NÃO ASSINADO'
+                print(f"      Input {i+1}: {status}")
+                if hasattr(txin, 'scriptSig') and txin.scriptSig:
+                    print(f"         scriptSig: {len(txin.scriptSig)} bytes")
+                if hasattr(txin, 'scriptWitness') and txin.scriptWitness and hasattr(txin.scriptWitness, 'stack') and txin.scriptWitness.stack:
+                    print(f"         scriptWitness: {len(txin.scriptWitness.stack)} items")
+                if not has_sig:
+                    unsigned_inputs.append(i)
             
-            # ✅ DEBUG: Logar raw_tx_hex para diagnóstico
-            print(f"🔍 DEBUG: Raw TX Hex (primeiros 100 chars): {raw_tx_hex[:100]}...")
-            print(f"🔍 DEBUG: tx.vin count: {len(tx.vin)}")
-            print(f"🔍 DEBUG: tx.vout count: {len(tx.vout)}")
+            print(f"   Outputs: {len(tx.vout)}")
+            for i, txout in enumerate(tx.vout):
+                print(f"      Output {i+1}: {txout.nValue} satoshis, script: {len(txout.scriptPubKey)} bytes")
             
             # Validar que a transação tem inputs antes de broadcast
             if len(tx.vin) == 0:
@@ -1914,6 +1925,56 @@ class RealCrossChainBridge:
                         "inputs_count": len(tx.vin),
                         "outputs_count": len(tx.vout),
                         "utxos_provided": len(utxos)
+                    }
+                }
+            
+            # Validar que todos os inputs estão assinados
+            if unsigned_inputs:
+                return {
+                    "success": False,
+                    "error": f"Inputs não assinados: {unsigned_inputs}",
+                    "note": "Alguns inputs não foram assinados corretamente",
+                    "debug": {
+                        "unsigned_inputs": unsigned_inputs,
+                        "total_inputs": len(tx.vin)
+                    }
+                }
+            
+            # Serializar transação
+            try:
+                raw_tx_hex = tx.serialize().hex()
+                print(f"📄 Raw TX criada: {len(raw_tx_hex)} bytes ({len(raw_tx_hex)//2} bytes hex)")
+                
+                # ✅ DEBUG: Logar raw_tx_hex para diagnóstico
+                print(f"🔍 DEBUG: Raw TX Hex (primeiros 100 chars): {raw_tx_hex[:100]}...")
+                print(f"🔍 DEBUG: tx.vin count: {len(tx.vin)}")
+                print(f"🔍 DEBUG: tx.vout count: {len(tx.vout)}")
+                
+                # ✅ VALIDAÇÃO: Verificar se a transação serializada tem pelo menos o tamanho mínimo
+                min_tx_size = 55  # Tamanho mínimo de uma transação Bitcoin válida
+                if len(raw_tx_hex) < min_tx_size * 2:  # *2 porque é hex
+                    return {
+                        "success": False,
+                        "error": f"Transação serializada muito pequena: {len(raw_tx_hex)//2} bytes (mínimo: {min_tx_size})",
+                        "note": "A transação pode não ter sido serializada corretamente",
+                        "debug": {
+                            "raw_tx_size": len(raw_tx_hex)//2,
+                            "min_size": min_tx_size,
+                            "raw_tx_preview": raw_tx_hex[:200]
+                        }
+                    }
+            except Exception as serialize_err:
+                print(f"❌ Erro ao serializar transação: {serialize_err}")
+                import traceback
+                traceback.print_exc()
+                return {
+                    "success": False,
+                    "error": f"Erro ao serializar transação: {str(serialize_err)}",
+                    "note": "A transação foi criada mas não pôde ser serializada",
+                    "debug": {
+                        "inputs_count": len(tx.vin),
+                        "outputs_count": len(tx.vout),
+                        "serialize_error": str(serialize_err)
                     }
                 }
             
