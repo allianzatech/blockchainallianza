@@ -3126,52 +3126,85 @@ class RealCrossChainBridge:
                                     print(f"   ⚠️  BlockCypher falhou, tentando wallet.send_to() primeiro (mais confiável)...")
                                     
                                     # TENTATIVA PRIORITÁRIA: wallet.send_to() (mais simples e confiável)
-                                    # Verificar se wallet está disponível no escopo atual
-                                    wallet_available = False
+                                    # Recriar wallet se necessário (mais confiável que tentar acessar do escopo)
                                     try:
-                                        # Tentar acessar wallet do escopo externo
-                                        if 'wallet' in locals() or 'wallet' in globals():
-                                            wallet_obj = locals().get('wallet') or globals().get('wallet')
-                                            if wallet_obj and hasattr(wallet_obj, 'send_to'):
-                                                wallet_available = True
-                                                print(f"   📤 Wallet encontrado no escopo, tentando wallet.send_to()...")
-                                                amount_satoshis = int(output_value)
-                                                tx_result = wallet_obj.send_to(to_address, amount_satoshis, fee=5)
-                                                
-                                                if tx_result:
-                                                    tx_hash = tx_result.txid if hasattr(tx_result, 'txid') else str(tx_result)
-                                                    print(f"   ✅✅✅ Transação criada via wallet.send_to()! Hash: {tx_hash}")
-                                                    
-                                                    add_log("transaction_broadcasted_wallet_send_to_primary", {"tx_hash": tx_hash}, "info")
-                                                    proof_data["success"] = True
-                                                    proof_data["tx_hash"] = tx_hash
-                                                    proof_data["final_result"] = {
-                                                        "success": True,
-                                                        "tx_hash": tx_hash,
-                                                        "method": "wallet_send_to_primary",
-                                                        "op_return_included": False,
-                                                        "note": "OP_RETURN não incluído devido a limitação do wallet.send_to()"
-                                                    }
-                                                    proof_file = self._save_transaction_proof(proof_data)
-                                                    
-                                                    return {
-                                                        "success": True,
-                                                        "tx_hash": tx_hash,
-                                                        "from": from_address,
-                                                        "to": to_address,
-                                                        "amount": amount_btc,
-                                                        "chain": "bitcoin",
-                                                        "status": "broadcasted",
-                                                        "explorer_url": f"https://live.blockcypher.com/btc-testnet/tx/{tx_hash}/",
-                                                        "note": "✅ Transação REAL criada via wallet.send_to() (OP_RETURN não incluído - limitação da biblioteca)",
-                                                        "real_broadcast": True,
-                                                        "method": "wallet_send_to_primary",
-                                                        "op_return_included": False,
-                                                        "op_return_note": "OP_RETURN não incluído devido a limitação do wallet.send_to()",
-                                                        "proof_file": proof_file
-                                                    }
-                                    except NameError:
-                                        print(f"   ⚠️  Wallet não está disponível no escopo atual")
+                                        print(f"   📤 Tentando wallet.send_to() (recriando wallet se necessário)...")
+                                        from bitcoinlib.wallets import Wallet
+                                        from bitcoinlib.keys import HDKey
+                                        
+                                        # Recriar wallet a partir da chave privada
+                                        temp_wallet_name = f"temp_wallet_send_{int(time.time())}"
+                                        key = HDKey(from_private_key, network='testnet')
+                                        
+                                        # Tentar criar wallet com o witness_type que funcionou anteriormente
+                                        witness_types_to_try = ['segwit', 'legacy', 'p2sh-segwit']
+                                        wallet_obj = None
+                                        
+                                        for wt in witness_types_to_try:
+                                            try:
+                                                wallet_obj = Wallet.create(
+                                                    temp_wallet_name,
+                                                    keys=from_private_key,
+                                                    network='testnet',
+                                                    witness_type=wt
+                                                )
+                                                # Verificar se o endereço corresponde
+                                                wallet_keys = wallet_obj.keys()
+                                                if wallet_keys and wallet_keys[0].address == from_address:
+                                                    print(f"   ✅ Wallet recriado com witness_type={wt}, endereço corresponde")
+                                                    break
+                                                else:
+                                                    wallet_obj = None
+                                            except:
+                                                continue
+                                        
+                                        if not wallet_obj:
+                                            # Última tentativa: criar sem especificar witness_type
+                                            wallet_obj = Wallet.create(
+                                                temp_wallet_name,
+                                                keys=from_private_key,
+                                                network='testnet'
+                                            )
+                                        
+                                        # Atualizar UTXOs
+                                        wallet_obj.utxos_update()
+                                        
+                                        # Tentar send_to
+                                        amount_satoshis = int(output_value)
+                                        tx_result = wallet_obj.send_to(to_address, amount_satoshis, fee=5)
+                                        
+                                        if tx_result:
+                                            tx_hash = tx_result.txid if hasattr(tx_result, 'txid') else str(tx_result)
+                                            print(f"   ✅✅✅ Transação criada via wallet.send_to()! Hash: {tx_hash}")
+                                            
+                                            add_log("transaction_broadcasted_wallet_send_to_primary", {"tx_hash": tx_hash}, "info")
+                                            proof_data["success"] = True
+                                            proof_data["tx_hash"] = tx_hash
+                                            proof_data["final_result"] = {
+                                                "success": True,
+                                                "tx_hash": tx_hash,
+                                                "method": "wallet_send_to_primary",
+                                                "op_return_included": False,
+                                                "note": "OP_RETURN não incluído devido a limitação do wallet.send_to()"
+                                            }
+                                            proof_file = self._save_transaction_proof(proof_data)
+                                            
+                                            return {
+                                                "success": True,
+                                                "tx_hash": tx_hash,
+                                                "from": from_address,
+                                                "to": to_address,
+                                                "amount": amount_btc,
+                                                "chain": "bitcoin",
+                                                "status": "broadcasted",
+                                                "explorer_url": f"https://live.blockcypher.com/btc-testnet/tx/{tx_hash}/",
+                                                "note": "✅ Transação REAL criada via wallet.send_to() (OP_RETURN não incluído - limitação da biblioteca)",
+                                                "real_broadcast": True,
+                                                "method": "wallet_send_to_primary",
+                                                "op_return_included": False,
+                                                "op_return_note": "OP_RETURN não incluído devido a limitação do wallet.send_to()",
+                                                "proof_file": proof_file
+                                            }
                                     except Exception as wallet_primary_err:
                                         print(f"   ⚠️  wallet.send_to() falhou: {wallet_primary_err}")
                                         import traceback
