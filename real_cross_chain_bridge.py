@@ -3122,8 +3122,63 @@ class RealCrossChainBridge:
                                             "request_data": tx_data
                                         }, "error")
                                     
-                                    # Se BlockCypher falhar completamente, tentar criar transação raw manualmente como último recurso
-                                    print(f"   ⚠️  BlockCypher falhou, tentando criar transação raw manualmente como último recurso...")
+                                    # Se BlockCypher falhar completamente, tentar wallet.send_to() primeiro (mais confiável)
+                                    print(f"   ⚠️  BlockCypher falhou, tentando wallet.send_to() primeiro (mais confiável)...")
+                                    
+                                    # TENTATIVA PRIORITÁRIA: wallet.send_to() (mais simples e confiável)
+                                    # Verificar se wallet está disponível no escopo atual
+                                    wallet_available = False
+                                    try:
+                                        # Tentar acessar wallet do escopo externo
+                                        if 'wallet' in locals() or 'wallet' in globals():
+                                            wallet_obj = locals().get('wallet') or globals().get('wallet')
+                                            if wallet_obj and hasattr(wallet_obj, 'send_to'):
+                                                wallet_available = True
+                                                print(f"   📤 Wallet encontrado no escopo, tentando wallet.send_to()...")
+                                                amount_satoshis = int(output_value)
+                                                tx_result = wallet_obj.send_to(to_address, amount_satoshis, fee=5)
+                                                
+                                                if tx_result:
+                                                    tx_hash = tx_result.txid if hasattr(tx_result, 'txid') else str(tx_result)
+                                                    print(f"   ✅✅✅ Transação criada via wallet.send_to()! Hash: {tx_hash}")
+                                                    
+                                                    add_log("transaction_broadcasted_wallet_send_to_primary", {"tx_hash": tx_hash}, "info")
+                                                    proof_data["success"] = True
+                                                    proof_data["tx_hash"] = tx_hash
+                                                    proof_data["final_result"] = {
+                                                        "success": True,
+                                                        "tx_hash": tx_hash,
+                                                        "method": "wallet_send_to_primary",
+                                                        "op_return_included": False,
+                                                        "note": "OP_RETURN não incluído devido a limitação do wallet.send_to()"
+                                                    }
+                                                    proof_file = self._save_transaction_proof(proof_data)
+                                                    
+                                                    return {
+                                                        "success": True,
+                                                        "tx_hash": tx_hash,
+                                                        "from": from_address,
+                                                        "to": to_address,
+                                                        "amount": amount_btc,
+                                                        "chain": "bitcoin",
+                                                        "status": "broadcasted",
+                                                        "explorer_url": f"https://live.blockcypher.com/btc-testnet/tx/{tx_hash}/",
+                                                        "note": "✅ Transação REAL criada via wallet.send_to() (OP_RETURN não incluído - limitação da biblioteca)",
+                                                        "real_broadcast": True,
+                                                        "method": "wallet_send_to_primary",
+                                                        "op_return_included": False,
+                                                        "op_return_note": "OP_RETURN não incluído devido a limitação do wallet.send_to()",
+                                                        "proof_file": proof_file
+                                                    }
+                                    except NameError:
+                                        print(f"   ⚠️  Wallet não está disponível no escopo atual")
+                                    except Exception as wallet_primary_err:
+                                        print(f"   ⚠️  wallet.send_to() falhou: {wallet_primary_err}")
+                                        import traceback
+                                        traceback.print_exc()
+                                    
+                                    # Se wallet.send_to() não funcionou, tentar criar transação raw manualmente como último recurso
+                                    print(f"   ⚠️  wallet.send_to() não disponível ou falhou, tentando criar transação raw manualmente como último recurso...")
                                     
                                     try:
                                         # Última tentativa: criar transação raw completamente manual
