@@ -1874,6 +1874,9 @@ class RealCrossChainBridge:
         import json
         wallet_name = f"temp_wallet_{int(time.time())}" # Definição no escopo correto
         
+        # ✅ CORREÇÃO: Inicializar tx_result = None para evitar UnboundLocalError
+        tx_result = None
+        
         # Inicializar dados de prova
         proof_data = {
             "transaction_type": "bitcoin_send",
