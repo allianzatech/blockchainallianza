@@ -182,32 +182,70 @@ class BridgeFreeInterop:
         """Configurar conexões Web3 para transações REAIS"""
         try:
             # BSC Testnet
-            bsc_rpc = os.getenv('BSC_RPC_URL', 'https://data-seed-prebsc-1-s1.binance.org:8545')
-            self.bsc_w3 = Web3(Web3.HTTPProvider(bsc_rpc))
-            if self.bsc_w3.is_connected():
-                print("✅ BSC Testnet: Conectado (transações REAIS)")
-            else:
-                print("⚠️  BSC Testnet: Não conectado")
-                self.bsc_w3 = None
+            # BSC Testnet - Tentar múltiplos RPCs com fallback
+            bsc_rpcs = [
+                os.getenv('BSC_RPC_URL', 'https://data-seed-prebsc-1-s1.binance.org:8545'),
+                'https://data-seed-prebsc-2-s1.binance.org:8545',
+                'https://bsc-testnet-rpc.publicnode.com',
+                'https://bsc-testnet.blockpi.network/v1/rpc/public',
+                'https://bsc-testnet.public.blastapi.io'
+            ]
+            self.bsc_w3 = None
+            for rpc in bsc_rpcs:
+                try:
+                    test_w3 = Web3(Web3.HTTPProvider(rpc, request_kwargs={'timeout': 10}))
+                    if test_w3.is_connected():
+                        self.bsc_w3 = test_w3
+                        print(f"✅ BSC Testnet: Conectado (transações REAIS) - {rpc[:50]}...")
+                        break
+                except Exception as e:
+                    continue
+            if not self.bsc_w3:
+                print("⚠️  BSC Testnet: Não conectado (tentando usar RealCrossChainBridge como fallback)")
             
-            # Polygon Amoy Testnet - Tentar POLYGON_RPC_URL primeiro, depois POLY_RPC_URL como fallback
-            polygon_rpc = os.getenv('POLYGON_RPC_URL') or os.getenv('POLY_RPC_URL', 'https://rpc-amoy.polygon.technology/')
-            self.polygon_w3 = Web3(Web3.HTTPProvider(polygon_rpc))
-            self.polygon_w3.middleware_onion.inject(geth_poa_middleware, layer=0)
-            if self.polygon_w3.is_connected():
-                print("✅ Polygon Amoy: Conectado (transações REAIS)")
-            else:
-                print("⚠️  Polygon Amoy: Não conectado")
-                self.polygon_w3 = None
+            # Polygon Amoy Testnet - Tentar múltiplos RPCs com fallback
+            polygon_rpcs = [
+                os.getenv('POLYGON_RPC_URL') or os.getenv('POLY_RPC_URL', 'https://rpc-amoy.polygon.technology/'),
+                'https://polygon-amoy.drpc.org',
+                'https://rpc.ankr.com/polygon_amoy',
+                'https://polygon-amoy-bor-rpc.publicnode.com',
+                'https://polygon-amoy.g.alchemy.com/v2/demo'
+            ]
+            self.polygon_w3 = None
+            for rpc in polygon_rpcs:
+                try:
+                    test_w3 = Web3(Web3.HTTPProvider(rpc, request_kwargs={'timeout': 10}))
+                    test_w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+                    if test_w3.is_connected():
+                        self.polygon_w3 = test_w3
+                        print(f"✅ Polygon Amoy: Conectado (transações REAIS) - {rpc[:50]}...")
+                        break
+                except Exception as e:
+                    continue
+            if not self.polygon_w3:
+                print("⚠️  Polygon Amoy: Não conectado (tentando usar RealCrossChainBridge como fallback)")
             
-            # Ethereum Sepolia Testnet
-            eth_rpc = os.getenv('ETH_RPC_URL', 'https://sepolia.infura.io/v3/4622f8123b1a4cf7a3e30098d9120d7f')
-            self.eth_w3 = Web3(Web3.HTTPProvider(eth_rpc))
-            if self.eth_w3.is_connected():
-                print("✅ Ethereum Sepolia: Conectado (transações REAIS)")
-            else:
-                print("⚠️  Ethereum Sepolia: Não conectado")
-                self.eth_w3 = None
+            # Ethereum Sepolia Testnet - Tentar múltiplos RPCs com fallback
+            infura_id = os.getenv('INFURA_PROJECT_ID', '4622f8123b1a4cf7a3e30098d9120d7f')
+            eth_rpcs = [
+                os.getenv('ETH_RPC_URL', f'https://sepolia.infura.io/v3/{infura_id}'),
+                f'https://sepolia.infura.io/v3/{infura_id}',
+                'https://rpc.sepolia.org',
+                'https://ethereum-sepolia-rpc.publicnode.com',
+                'https://sepolia.gateway.tenderly.co'
+            ]
+            self.eth_w3 = None
+            for rpc in eth_rpcs:
+                try:
+                    test_w3 = Web3(Web3.HTTPProvider(rpc, request_kwargs={'timeout': 10}))
+                    if test_w3.is_connected():
+                        self.eth_w3 = test_w3
+                        print(f"✅ Ethereum Sepolia: Conectado (transações REAIS) - {rpc[:50]}...")
+                        break
+                except Exception as e:
+                    continue
+            if not self.eth_w3:
+                print("⚠️  Ethereum Sepolia: Não conectado (tentando usar RealCrossChainBridge como fallback)")
                 
         except Exception as e:
             print(f"⚠️  Erro ao configurar conexões: {e}")
@@ -451,12 +489,34 @@ class BridgeFreeInterop:
                 w3 = self.eth_w3
                 chain_id = 11155111  # Sepolia
             
+            # ✅ FALLBACK: Se conexão local falhar, usar RealCrossChainBridge
             if not w3 or not w3.is_connected():
-                return {
-                    "success": False,
-                    "error": f"Não conectado à {target_chain}",
-                    "simulation": True
-                }
+                print(f"⚠️  Conexão local para {target_chain} falhou, tentando RealCrossChainBridge como fallback...")
+                try:
+                    from real_cross_chain_bridge import RealCrossChainBridge
+                    bridge = RealCrossChainBridge()
+                    bridge.setup_connections()
+                    
+                    # Usar método do RealCrossChainBridge
+                    w3_fallback = bridge.get_web3_for_chain(target_chain)
+                    if w3_fallback and w3_fallback.is_connected():
+                        print(f"✅ RealCrossChainBridge conectado à {target_chain}!")
+                        w3 = w3_fallback
+                    else:
+                        return {
+                            "success": False,
+                            "error": f"Não conectado à {target_chain} (tentou conexão local e RealCrossChainBridge)",
+                            "simulation": True,
+                            "note": "Verifique se os RPCs estão configurados corretamente no .env"
+                        }
+                except Exception as fallback_err:
+                    print(f"⚠️  Fallback RealCrossChainBridge também falhou: {fallback_err}")
+                    return {
+                        "success": False,
+                        "error": f"Não conectado à {target_chain}",
+                        "simulation": True,
+                        "fallback_error": str(fallback_err)
+                    }
             
             # Obter conta
             account = w3.eth.account.from_key(private_key)
