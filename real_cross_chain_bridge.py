@@ -3504,8 +3504,19 @@ class RealCrossChainBridge:
                                         if change_value > 546:
                                             tx.add_output(change_value, address=from_address)
                                         
-                                        # Assinar
+                                        # Verificar se há inputs antes de assinar
+                                        if hasattr(tx, 'inputs') and len(tx.inputs) == 0:
+                                            raise Exception("Transação não tem inputs! Impossível assinar.")
+                                        
+                                        print(f"   🔐 Assinando transação com {len(tx.inputs)} inputs...")
                                         tx.sign(key)
+                                        print(f"   ✅ Transação assinada com sucesso")
+                                        
+                                        # Verificar se transação tem inputs após assinatura
+                                        if hasattr(tx, 'inputs') and len(tx.inputs) == 0:
+                                            raise Exception("Transação não tem inputs após assinatura! Impossível serializar.")
+                                        
+                                        print(f"   📋 Transação tem {len(tx.inputs)} inputs e {len(tx.outputs)} outputs")
                                         
                                         # Obter raw transaction - múltiplos métodos
                                         raw_tx_hex = None
