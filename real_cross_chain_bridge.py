@@ -3352,28 +3352,53 @@ class RealCrossChainBridge:
                                         from bitcoinlib.transactions import Transaction
                                         from bitcoinlib.keys import HDKey
                                         
+                                        print(f"   📋 Preparando transação com bitcoinlib...")
+                                        print(f"   📋 UTXOs disponíveis: {len(utxos)}")
+                                        
                                         key = HDKey(from_private_key, network='testnet')
                                         tx = Transaction(network='testnet', witness_type='segwit')
                                         
-                                        # Adicionar inputs
-                                        for utxo in utxos:
+                                        # Adicionar inputs com validação
+                                        inputs_added = 0
+                                        for idx, utxo in enumerate(utxos):
                                             txid = utxo.get('txid') or utxo.get('tx_hash')
-                                            output_n = utxo.get('output_n') or utxo.get('vout') or utxo.get('output_index', 0)
-                                            value = utxo.get('value', 0)
+                                            output_n = utxo.get('output_n') or utxo.get('vout') or utxo.get('output_index') or utxo.get('output') or utxo.get('tx_output_n', 0)
+                                            value = utxo.get('value', 0) or utxo.get('amount', 0)
+                                            
+                                            if not txid:
+                                                print(f"   ⚠️  UTXO {idx} não tem txid, pulando...")
+                                                continue
+                                            
+                                            print(f"   📥 Adicionando input {idx + 1}: txid={txid[:16]}..., output_n={output_n}, value={value} satoshis")
                                             
                                             try:
                                                 tx.add_input(
                                                     prev_txid=txid,
                                                     output_n=int(output_n),
-                                                    value=int(value),
+                                                    value=int(value) if value else None,
                                                     keys=key
                                                 )
-                                            except:
-                                                tx.add_input(
-                                                    prev_txid=txid,
-                                                    output_n=int(output_n),
-                                                    keys=key
-                                                )
+                                                inputs_added += 1
+                                                print(f"      ✅ Input {idx + 1} adicionado com sucesso")
+                                            except Exception as input_err:
+                                                print(f"      ⚠️  Erro ao adicionar input com value: {input_err}")
+                                                try:
+                                                    tx.add_input(
+                                                        prev_txid=txid,
+                                                        output_n=int(output_n),
+                                                        keys=key
+                                                    )
+                                                    inputs_added += 1
+                                                    print(f"      ✅ Input {idx + 1} adicionado sem value (bitcoinlib buscará)")
+                                                except Exception as input_err2:
+                                                    print(f"      ❌ Erro ao adicionar input sem value: {input_err2}")
+                                                    import traceback
+                                                    traceback.print_exc()
+                                        
+                                        if inputs_added == 0:
+                                            raise Exception(f"Nenhum input foi adicionado à transação! UTXOs: {len(utxos)}")
+                                        
+                                        print(f"   ✅ Total de inputs adicionados: {inputs_added}")
                                         
                                         # Adicionar outputs
                                         tx.add_output(output_value, address=to_address)
