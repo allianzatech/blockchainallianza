@@ -3311,6 +3311,8 @@ class RealCrossChainBridge:
                                                 # Preparar inputs
                                                 inputs_list = []
                                                 print(f"   🔍 Validando e preparando {len(utxos)} UTXOs para BlockCypher...")
+                                                print(f"   ⚠️  IMPORTANTE: Verificando cada UTXO individualmente antes de usar...")
+                                                
                                                 for i, utxo in enumerate(utxos):
                                                     txid = utxo.get('txid') or utxo.get('tx_hash')
                                                     output_n = utxo.get('vout') or utxo.get('output_n') or utxo.get('output_index', 0)
@@ -3318,20 +3320,54 @@ class RealCrossChainBridge:
                                                     
                                                     # ✅ VALIDAÇÃO CRÍTICA: Verificar se UTXO é válido
                                                     if not txid:
-                                                        print(f"   ⚠️  UTXO [{i+1}] sem txid, pulando...")
+                                                        print(f"   ❌ UTXO [{i+1}] sem txid, pulando...")
                                                         continue
                                                     
                                                     if not isinstance(txid, str) or len(txid) != 64:
-                                                        print(f"   ⚠️  UTXO [{i+1}] txid inválido: {txid} (tipo: {type(txid)}, len: {len(txid) if isinstance(txid, str) else 'N/A'})")
+                                                        print(f"   ❌ UTXO [{i+1}] txid inválido: {txid} (tipo: {type(txid)}, len: {len(txid) if isinstance(txid, str) else 'N/A'})")
                                                         continue
                                                     
                                                     try:
                                                         output_n_int = int(output_n)
                                                         if output_n_int < 0:
-                                                            print(f"   ⚠️  UTXO [{i+1}] output_n negativo: {output_n_int}, pulando...")
+                                                            print(f"   ❌ UTXO [{i+1}] output_n negativo: {output_n_int}, pulando...")
                                                             continue
                                                     except (ValueError, TypeError):
-                                                        print(f"   ⚠️  UTXO [{i+1}] output_n inválido: {output_n}, pulando...")
+                                                        print(f"   ❌ UTXO [{i+1}] output_n inválido: {output_n}, pulando...")
+                                                        continue
+                                                    
+                                                    # ✅ VERIFICAÇÃO ADICIONAL: Verificar se o UTXO está realmente disponível via BlockCypher
+                                                    # Isso evita usar UTXOs que o BlockCypher não consegue encontrar
+                                                    try:
+                                                        print(f"      🔍 Verificando UTXO {txid[:16]}...:{output_n_int} via BlockCypher...")
+                                                        btc_tx_url = f"{self.btc_api_base}/txs/{txid}"
+                                                        btc_tx_headers = {'token': self.blockcypher_token} if self.blockcypher_token else {}
+                                                        btc_tx_response = requests.get(btc_tx_url, headers=btc_tx_headers, timeout=10)
+                                                        
+                                                        if btc_tx_response.status_code == 200:
+                                                            btc_tx_data = btc_tx_response.json()
+                                                            outputs = btc_tx_data.get('outputs', [])
+                                                            
+                                                            if output_n_int >= len(outputs):
+                                                                print(f"   ❌ Output {output_n_int} não existe na transação {txid[:16]}... (tem apenas {len(outputs)} outputs)")
+                                                                continue
+                                                            
+                                                            output_data = outputs[output_n_int]
+                                                            spent_by = output_data.get('spent_by', None)
+                                                            
+                                                            if spent_by:
+                                                                print(f"   ❌ Output {output_n_int} já foi gasto na transação {txid[:16]}... (gasto em: {spent_by[:16] if spent_by else 'N/A'}...)")
+                                                                continue
+                                                            
+                                                            print(f"      ✅ UTXO {txid[:16]}...:{output_n_int} verificado e disponível via BlockCypher")
+                                                        else:
+                                                            print(f"   ❌ Não foi possível verificar UTXO {txid[:16]}...:{output_n_int} via BlockCypher (status: {btc_tx_response.status_code})")
+                                                            print(f"      Resposta: {btc_tx_response.text[:200]}")
+                                                            # NÃO usar UTXO se não conseguir verificar via BlockCypher
+                                                            continue
+                                                    except Exception as btc_check_err:
+                                                        print(f"   ❌ Erro ao verificar UTXO {txid[:16]}...:{output_n_int} via BlockCypher: {btc_check_err}")
+                                                        # NÃO usar UTXO se houver erro na verificação
                                                         continue
                                                     
                                                     if not value or int(value) <= 0:
