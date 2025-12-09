@@ -1617,19 +1617,27 @@ class RealCrossChainBridge:
                     "error_details": error_text
                 }
                 
-        except ImportError:
-            return {
-                "success": False,
-                "error": "bitcoinlib não instalado",
-                "note": "Instale com: pip install bitcoinlib"
-            }
-        except Exception as e:
-            print(f"❌ Erro ao criar transação com bitcoinlib: {e}")
+        except ImportError as import_err:
+            print(f"❌❌❌ ERRO DE IMPORTAÇÃO: {import_err}")
             import traceback
             traceback.print_exc()
             return {
                 "success": False,
-                "error": f"Erro ao criar transação: {str(e)}"
+                "error": f"bitcoinlib não instalado ou erro de importação: {str(import_err)}",
+                "note": "Instale com: pip install bitcoinlib",
+                "import_error": str(import_err)
+            }
+        except Exception as e:
+            print(f"❌❌❌ ERRO CRÍTICO em _create_bitcoin_tx_with_bitcoinlib_op_return: {e}")
+            print(f"   Tipo do erro: {type(e).__name__}")
+            import traceback
+            print(f"   Traceback completo:")
+            traceback.print_exc()
+            return {
+                "success": False,
+                "error": f"Erro ao criar transação com bitcoinlib: {str(e)}",
+                "error_type": type(e).__name__,
+                "traceback": traceback.format_exc()
             }
     
     def _create_bitcoin_tx_with_op_return_manual(
