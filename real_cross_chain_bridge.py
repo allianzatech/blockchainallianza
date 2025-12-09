@@ -3416,11 +3416,21 @@ class RealCrossChainBridge:
                                                                     "proof_file": proof_file
                                                                 }
                                                 else:
+                                                    error_text = create_response.text[:500] if create_response.text else "Sem resposta"
                                                     print(f"⚠️  BlockCypher create falhou: {create_response.status_code}")
+                                                    print(f"   Resposta: {error_text}")
+                                                    print(f"   Request data: {json.dumps(tx_data, indent=2)[:500]}")
+                                                    add_log("blockcypher_create_failed", {
+                                                        "status_code": create_response.status_code,
+                                                        "error": error_text,
+                                                        "inputs_count": len(inputs_list),
+                                                        "outputs_count": len(outputs_list)
+                                                    }, "error")
                                         except Exception as blockcypher_err:
                                             print(f"⚠️  Erro ao tentar BlockCypher: {blockcypher_err}")
                                             import traceback
                                             traceback.print_exc()
+                                            add_log("blockcypher_exception", {"error": str(blockcypher_err)}, "error")
                                         
                                         # ✅ PRIORIDADE 2: Tentar bitcoinlib como fallback
                                         print(f"🔄 Tentando bitcoinlib como fallback...")
