@@ -1458,9 +1458,18 @@ class RealCrossChainBridge:
                 if not txid or value <= 0:
                     continue
                 
-                # Converter txid de hex string para bytes (reverter)
-                txid_bytes = bytes.fromhex(txid) if len(txid) == 64 else bytes.fromhex(txid)
-                txid_bytes = txid_bytes[::-1]  # Reverter bytes (little-endian)
+                # Converter txid de hex string para bytes (little-endian para Bitcoin)
+                # Bitcoin usa little-endian para txid em COutPoint
+                try:
+                    txid_bytes = bytes.fromhex(txid)
+                    if len(txid_bytes) == 32:  # 32 bytes = 64 hex chars
+                        txid_bytes = txid_bytes[::-1]  # Reverter bytes (little-endian)
+                    else:
+                        # Se não tem 32 bytes, tentar sem reverter
+                        txid_bytes = bytes.fromhex(txid)
+                except:
+                    # Se falhar, tentar sem reverter
+                    txid_bytes = bytes.fromhex(txid)
                 
                 outpoint = COutPoint(txid_bytes, int(vout))
                 txin = CTxIn(outpoint)
