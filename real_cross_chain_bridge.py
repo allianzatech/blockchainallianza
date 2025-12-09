@@ -1442,8 +1442,18 @@ class RealCrossChainBridge:
             # Criar chave privada
             key = HDKey(from_private_key, network='testnet')
             
+            # ✅ CORREÇÃO: Determinar witness_type baseado no endereço
+            # Endereços que começam com 'm' ou 'n' são legacy (P2PKH)
+            # Endereços que começam com 'tb1' são segwit (P2WPKH)
+            if from_address.startswith('tb1'):
+                witness_type = 'segwit'
+                print(f"   🔍 Endereço SegWit detectado (tb1...) - usando witness_type='segwit'")
+            else:
+                witness_type = 'legacy'
+                print(f"   🔍 Endereço Legacy detectado ({from_address[:1]}...) - usando witness_type='legacy'")
+            
             # Criar transação
-            tx = Transaction(network='testnet', witness_type='segwit')
+            tx = Transaction(network='testnet', witness_type=witness_type)
             
             # Adicionar inputs dos UTXOs
             total_input_value = 0
@@ -1452,10 +1462,21 @@ class RealCrossChainBridge:
                 vout = utxo.get('vout') or utxo.get('output_n') or utxo.get('tx_output_n', 0)
                 value = utxo.get('value', 0)
                 
-                if not txid or value <= 0:
+                # ✅ CORREÇÃO CRÍTICA: Garantir que value e vout são inteiros
+                try:
+                    value = int(value)
+                    vout = int(vout)
+                except (ValueError, TypeError) as conv_err:
+                    print(f"   ⚠️  Erro ao converter value/vout para int: {conv_err}")
+                    print(f"      value: {value} (tipo: {type(value)})")
+                    print(f"      vout: {vout} (tipo: {type(vout)})")
                     continue
                 
-                print(f"   📥 Adicionando input: {txid[:16]}...:{vout} = {value} satoshis")
+                if not txid or value <= 0:
+                    print(f"   ⚠️  UTXO inválido: txid={txid}, value={value}")
+                    continue
+                
+                print(f"   📥 Adicionando input: {txid[:16]}...:{vout} = {value} satoshis ({value/100000000:.8f} BTC)")
                 
                 # bitcoinlib: buscar scriptPubKey do UTXO se não estiver disponível
                 script_pubkey = utxo.get('script') or utxo.get('scriptpubkey')
@@ -1467,39 +1488,43 @@ class RealCrossChainBridge:
                         script_response = requests.get(script_url, timeout=10)
                         if script_response.status_code == 200:
                             tx_data = script_response.json()
-                            vout_data = tx_data['vout'][int(vout)]
+                            vout_data = tx_data['vout'][vout]
                             script_pubkey = vout_data.get('scriptpubkey', '')
-                            print(f"      ScriptPubKey obtido via API: {script_pubkey[:50]}...")
+                            print(f"      ✅ ScriptPubKey obtido via API: {script_pubkey[:50]}...")
                     except Exception as script_err:
                         print(f"      ⚠️  Erro ao buscar scriptPubKey: {script_err}")
                 
                 # Adicionar input com todas as informações disponíveis
+                # ✅ CORREÇÃO: Garantir que value é sempre passado como inteiro
                 try:
                     # bitcoinlib aceita txid, output_n, value e keys
-                    # Se tivermos scriptPubKey, podemos passar também
+                    # ✅ CRÍTICO: value DEVE ser um inteiro (satoshis)
                     tx.add_input(
                         prev_txid=txid,
-                        output_n=int(vout),
-                        value=value,
+                        output_n=vout,  # Já convertido para int acima
+                        value=value,    # Já convertido para int acima
                         keys=key,
                         script=script_pubkey if script_pubkey else None
                     )
                     total_input_value += value
-                    print(f"      ✅ Input adicionado com sucesso")
+                    print(f"      ✅ Input adicionado com sucesso (value={value} satoshis, output_n={vout})")
                 except Exception as add_input_err:
                     print(f"      ⚠️  Erro ao adicionar input: {add_input_err}")
+                    print(f"         Tentando sem script...")
                     # Tentar sem script
                     try:
                         tx.add_input(
                             prev_txid=txid,
-                            output_n=int(vout),
-                            value=value,
+                            output_n=vout,  # Já convertido para int
+                            value=value,    # Já convertido para int
                             keys=key
                         )
                         total_input_value += value
-                        print(f"      ✅ Input adicionado sem script")
+                        print(f"      ✅ Input adicionado sem script (value={value} satoshis, output_n={vout})")
                     except Exception as add_input_err2:
                         print(f"      ❌ Falha ao adicionar input: {add_input_err2}")
+                        import traceback
+                        traceback.print_exc()
                         continue
             
             if len(tx.inputs) == 0:
