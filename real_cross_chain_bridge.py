@@ -2939,22 +2939,41 @@ class RealCrossChainBridge:
                                         print(f"   📦 Resposta JSON: {len(blockstream_utxos) if blockstream_utxos else 0} UTXOs")
                                         
                                         if blockstream_utxos:
-                                            # Converter formato Blockstream para formato esperado
+                                            # ✅ CORREÇÃO: Converter formato Blockstream para formato esperado
+                                            # Garantir que value e vout são sempre inteiros
                                             utxos = []
                                             for bs_utxo in blockstream_utxos:
-                                                utxos.append({
-                                                    'txid': bs_utxo.get('txid'),
-                                                    'vout': bs_utxo.get('vout', 0),
-                                                    'output_n': bs_utxo.get('vout', 0),
-                                                    'value': bs_utxo.get('value', 0),
-                                                    'address': from_address
-                                                })
+                                                try:
+                                                    txid = bs_utxo.get('txid')
+                                                    vout = int(bs_utxo.get('vout', 0))
+                                                    value = int(bs_utxo.get('value', 0))
+                                                    
+                                                    if not txid or value <= 0:
+                                                        print(f"   ⚠️  UTXO inválido ignorado: txid={txid}, value={value}")
+                                                        continue
+                                                    
+                                                    utxos.append({
+                                                        'txid': txid,
+                                                        'vout': vout,
+                                                        'output_n': vout,  # Mesmo valor que vout
+                                                        'value': value,    # Garantido como int
+                                                        'address': from_address
+                                                    })
+                                                    print(f"      ✅ UTXO adicionado: {txid[:16]}...:{vout} = {value} satoshis")
+                                                except (ValueError, TypeError) as conv_err:
+                                                    print(f"   ⚠️  Erro ao processar UTXO: {conv_err}")
+                                                    print(f"      UTXO: {bs_utxo}")
+                                                    continue
                                             
-                                            # ✅ DEBUG: Logar UTXOs encontrados
-                                            total_value = self._debug_print_utxos(utxos, "UTXOs da Blockstream API")
-                                            print(f"✅ {len(utxos)} UTXOs encontrados via Blockstream API!")
-                                            print(f"   💰 Valor total: {total_value / 100000000:.8f} BTC")
-                                            add_log("blockstream_utxos_fetched", {"count": len(utxos), "total_sats": total_value}, "info")
+                                            if utxos:
+                                                # ✅ DEBUG: Logar UTXOs encontrados
+                                                total_value = self._debug_print_utxos(utxos, "UTXOs da Blockstream API")
+                                                print(f"✅ {len(utxos)} UTXOs válidos encontrados via Blockstream API!")
+                                                print(f"   💰 Valor total: {total_value / 100000000:.8f} BTC")
+                                                add_log("blockstream_utxos_fetched", {"count": len(utxos), "total_sats": total_value}, "info")
+                                            else:
+                                                print(f"⚠️  Nenhum UTXO válido após processamento")
+                                                add_log("blockstream_no_valid_utxos", {"address": from_address}, "warning")
                                         else:
                                             print(f"⚠️  Blockstream retornou lista vazia de UTXOs")
                                             add_log("blockstream_no_utxos", {"address": from_address}, "warning")
