@@ -3170,15 +3170,77 @@ class RealCrossChainBridge:
                             if not wallet_send_to_success:
                                 print(f"⚠️  wallet.send_to() falhou - buscando UTXOs da Blockstream e tentando métodos alternativos...")
                                 
-                                # ✅ SEMPRE buscar UTXOs da Blockstream quando send_to() falhar (mais confiável)
-                                print(f"🔄 Buscando UTXOs diretamente da Blockstream API para {from_address}...")
-                                try:
-                                    utxos_url = f"https://blockstream.info/testnet/api/address/{from_address}/utxo"
-                                    print(f"   📡 URL: {utxos_url}")
-                                    utxos_response = requests.get(utxos_url, timeout=15)
-                                    print(f"   📊 Status: {utxos_response.status_code}")
-                                    
-                                    if utxos_response.status_code == 200:
+                                # ✅ PRIORIDADE: Buscar UTXOs via BlockCypher API (mais confiável com token)
+                                # Se tiver token, usar BlockCypher primeiro (mais preciso)
+                                utxos = []
+                                if self.blockcypher_token:
+                                    print(f"🔄 Buscando UTXOs via BlockCypher API (com token) para {from_address}...")
+                                    try:
+                                        btc_addr_url = f"{self.btc_api_base}/addrs/{from_address}?token={self.blockcypher_token}&unspentOnly=true"
+                                        print(f"   📡 URL: {btc_addr_url}")
+                                        addr_response = requests.get(btc_addr_url, timeout=15)
+                                        print(f"   📊 Status: {addr_response.status_code}")
+                                        
+                                        if addr_response.status_code == 200:
+                                            addr_data = addr_response.json()
+                                            txrefs = addr_data.get('txrefs', [])
+                                            print(f"   📦 BlockCypher retornou {len(txrefs)} UTXOs")
+                                            
+                                            for txref in txrefs:
+                                                try:
+                                                    txid = txref.get('tx_hash')
+                                                    output_n = txref.get('tx_output_n', 0)
+                                                    value = txref.get('value', 0)
+                                                    spent = txref.get('spent', False)
+                                                    
+                                                    # ✅ BlockCypher já retorna apenas UTXOs não gastos se unspentOnly=true
+                                                    if spent:
+                                                        print(f"      ⚠️  UTXO {txid[:16]}...:{output_n} marcado como gasto, pulando...")
+                                                        continue
+                                                    
+                                                    if not txid or value <= 0:
+                                                        print(f"      ⚠️  UTXO inválido ignorado: txid={txid}, value={value}")
+                                                        continue
+                                                    
+                                                    utxos.append({
+                                                        'txid': txid,
+                                                        'vout': output_n,
+                                                        'output_n': output_n,
+                                                        'value': int(value),
+                                                        'address': from_address,
+                                                        'confirmed': True,
+                                                        'spent': False,
+                                                        'source': 'blockcypher'
+                                                    })
+                                                    print(f"      ✅ UTXO BlockCypher: {txid[:16]}...:{output_n} = {value} satoshis")
+                                                except Exception as txref_err:
+                                                    print(f"      ⚠️  Erro ao processar UTXO BlockCypher: {txref_err}")
+                                                    continue
+                                            
+                                            if utxos:
+                                                total_value = sum(utxo.get('value', 0) for utxo in utxos)
+                                                print(f"✅ {len(utxos)} UTXOs válidos encontrados via BlockCypher API!")
+                                                print(f"   💰 Valor total: {total_value / 100000000:.8f} BTC")
+                                                add_log("blockcypher_utxos_fetched", {"count": len(utxos), "total_sats": total_value}, "info")
+                                        else:
+                                            print(f"⚠️  BlockCypher API retornou status {addr_response.status_code}: {addr_response.text[:200]}")
+                                            add_log("blockcypher_api_error", {"status": addr_response.status_code, "error": addr_response.text[:200]}, "warning")
+                                    except Exception as bc_err:
+                                        print(f"⚠️  Erro ao buscar UTXOs da BlockCypher: {bc_err}")
+                                        import traceback
+                                        traceback.print_exc()
+                                        add_log("blockcypher_fetch_error", {"error": str(bc_err)}, "error")
+                                
+                                # ✅ FALLBACK: Se BlockCypher não retornou UTXOs, tentar Blockstream
+                                if not utxos or len(utxos) == 0:
+                                    print(f"🔄 BlockCypher não retornou UTXOs, tentando Blockstream API para {from_address}...")
+                                    try:
+                                        utxos_url = f"https://blockstream.info/testnet/api/address/{from_address}/utxo"
+                                        print(f"   📡 URL: {utxos_url}")
+                                        utxos_response = requests.get(utxos_url, timeout=15)
+                                        print(f"   📊 Status: {utxos_response.status_code}")
+                                        
+                                        if utxos_response.status_code == 200:
                                         blockstream_utxos = utxos_response.json()
                                         print(f"   📦 Resposta JSON: {len(blockstream_utxos) if blockstream_utxos else 0} UTXOs")
                                         
