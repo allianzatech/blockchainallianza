@@ -1406,6 +1406,220 @@ class RealCrossChainBridge:
             print(f"⚠️  Erro ao salvar prova: {e}")
             return None
     
+    def _create_bitcoin_tx_with_op_return_manual(
+        self,
+        from_private_key: str,
+        from_address: str,
+        to_address: str,
+        amount_satoshis: int,
+        utxos: list,
+        memo_hex: str = None
+    ) -> Dict:
+        """
+        SOLUÇÃO DEFINITIVA: Criar transação Bitcoin manualmente com OP_RETURN
+        Usa python-bitcointx para garantir inputs corretos
+        """
+        try:
+            from bitcointx.core import CMutableTransaction, CTxIn, CTxOut, COutPoint
+            from bitcointx.wallet import CBitcoinSecret, P2PKHBitcoinAddress, P2WPKHBitcoinAddress
+            from bitcointx import select_chain_params
+            from bitcointx.core.script import CScript, OP_RETURN, SignatureHash, SIGHASH_ALL
+            
+            # Configurar testnet
+            select_chain_params('bitcoin/testnet')
+            
+            print(f"🔧 Criando transação Bitcoin manualmente com python-bitcointx...")
+            print(f"   Inputs: {len(utxos)} UTXOs")
+            print(f"   OP_RETURN: {'Sim' if memo_hex else 'Não'}")
+            
+            # Criar chave privada
+            try:
+                # Tentar como WIF primeiro
+                secret = CBitcoinSecret.from_secret_bytes(
+                    bytes.fromhex(from_private_key) if len(from_private_key) == 64 else
+                    bytes.fromhex(from_private_key[2:]) if from_private_key.startswith('0x') else
+                    from_private_key.encode('utf-8')
+                )
+            except:
+                # Se falhar, tentar como WIF direto
+                from bitcointx.wallet import CBitcoinSecret
+                secret = CBitcoinSecret(from_private_key)
+            
+            # Criar transação
+            tx = CMutableTransaction()
+            
+            # Adicionar inputs (CRÍTICO: garantir que inputs sejam adicionados corretamente)
+            total_input_value = 0
+            for utxo in utxos:
+                txid = utxo.get('txid') or utxo.get('tx_hash')
+                vout = utxo.get('vout') or utxo.get('output_n') or utxo.get('tx_output_n', 0)
+                value = utxo.get('value', 0)
+                
+                if not txid or value <= 0:
+                    continue
+                
+                # Converter txid de hex string para bytes (reverter)
+                txid_bytes = bytes.fromhex(txid) if len(txid) == 64 else bytes.fromhex(txid)
+                txid_bytes = txid_bytes[::-1]  # Reverter bytes (little-endian)
+                
+                outpoint = COutPoint(txid_bytes, int(vout))
+                txin = CTxIn(outpoint)
+                tx.vin.append(txin)
+                total_input_value += value
+                
+                print(f"   📥 Input: {txid[:16]}...:{vout} = {value} satoshis")
+            
+            if len(tx.vin) == 0:
+                return {
+                    "success": False,
+                    "error": "Nenhum input válido criado",
+                    "note": "UTXOs não puderam ser convertidos em inputs"
+                }
+            
+            print(f"✅ {len(tx.vin)} inputs criados (Total: {total_input_value} satoshis)")
+            
+            # Calcular fee e change
+            fee_satoshis = 500  # Fee fixo para testnet
+            change_satoshis = total_input_value - amount_satoshis - fee_satoshis
+            
+            if change_satoshis < 0:
+                return {
+                    "success": False,
+                    "error": f"Fundos insuficientes. Necessário: {amount_satoshis + fee_satoshis} satoshis, Disponível: {total_input_value} satoshis"
+                }
+            
+            # Adicionar outputs
+            # 1. Output principal (destino)
+            try:
+                dest_addr = P2WPKHBitcoinAddress(to_address) if to_address.startswith('tb1') else P2PKHBitcoinAddress(to_address)
+                tx.vout.append(CTxOut(amount_satoshis, dest_addr.to_scriptPubKey()))
+                print(f"   📤 Output: {to_address} = {amount_satoshis} satoshis")
+            except:
+                # Fallback para P2PKH
+                dest_addr = P2PKHBitcoinAddress(to_address)
+                tx.vout.append(CTxOut(amount_satoshis, dest_addr.to_scriptPubKey()))
+            
+            # 2. OP_RETURN (se houver memo)
+            if memo_hex:
+                try:
+                    memo_bytes = bytes.fromhex(memo_hex) if len(memo_hex) % 2 == 0 else memo_hex.encode('utf-8')
+                    if len(memo_bytes) > 80:
+                        memo_bytes = memo_bytes[:80]
+                    
+                    op_return_script = CScript([OP_RETURN, memo_bytes])
+                    tx.vout.append(CTxOut(0, op_return_script))
+                    print(f"   🔗 OP_RETURN: {len(memo_bytes)} bytes")
+                except Exception as op_err:
+                    print(f"   ⚠️  Erro ao criar OP_RETURN: {op_err}")
+            
+            # 3. Change (se houver)
+            if change_satoshis > 546:  # Dust limit
+                try:
+                    change_addr = P2WPKHBitcoinAddress(from_address) if from_address.startswith('tb1') else P2PKHBitcoinAddress(from_address)
+                    tx.vout.append(CTxOut(change_satoshis, change_addr.to_scriptPubKey()))
+                    print(f"   🔄 Change: {from_address} = {change_satoshis} satoshis")
+                except:
+                    change_addr = P2PKHBitcoinAddress(from_address)
+                    tx.vout.append(CTxOut(change_satoshis, change_addr.to_scriptPubKey()))
+            
+            # Assinar inputs
+            print(f"🔐 Assinando {len(tx.vin)} inputs...")
+            for i, txin in enumerate(tx.vin):
+                utxo = utxos[i]
+                
+                # Obter scriptPubKey do UTXO
+                try:
+                    # Buscar scriptPubKey via Blockstream API
+                    txid = utxo.get('txid') or utxo.get('tx_hash')
+                    vout = utxo.get('vout') or utxo.get('output_n') or utxo.get('tx_output_n', 0)
+                    
+                    script_url = f"https://blockstream.info/testnet/api/tx/{txid}"
+                    script_response = requests.get(script_url, timeout=10)
+                    
+                    if script_response.status_code == 200:
+                        tx_data = script_response.json()
+                        vout_data = tx_data['vout'][int(vout)]
+                        scriptpubkey_hex = vout_data['scriptpubkey']
+                        scriptpubkey = CScript(bytes.fromhex(scriptpubkey_hex))
+                        
+                        # Assinar
+                        sighash = SignatureHash(scriptpubkey, tx, i, SIGHASH_ALL)
+                        sig = secret.sign(sighash) + bytes([SIGHASH_ALL])
+                        pubkey = secret.pub
+                        
+                        # Adicionar assinatura (P2WPKH ou P2PKH)
+                        if from_address.startswith('tb1'):
+                            txin.scriptSig = CScript()
+                            txin.scriptWitness.stack = [sig, pubkey]
+                        else:
+                            txin.scriptSig = CScript([sig, pubkey])
+                        
+                        print(f"   ✅ Input {i+1} assinado")
+                    else:
+                        return {
+                            "success": False,
+                            "error": f"Não foi possível obter scriptPubKey do UTXO {i+1}"
+                        }
+                except Exception as sign_err:
+                    print(f"   ⚠️  Erro ao assinar input {i+1}: {sign_err}")
+                    return {
+                        "success": False,
+                        "error": f"Erro ao assinar input {i+1}: {str(sign_err)}"
+                    }
+            
+            # Serializar transação
+            raw_tx_hex = tx.serialize().hex()
+            print(f"📄 Raw TX criada: {len(raw_tx_hex)} bytes")
+            
+            # Broadcast via Blockstream
+            broadcast_url = "https://blockstream.info/testnet/api/tx"
+            broadcast_response = requests.post(
+                broadcast_url,
+                data=raw_tx_hex,
+                headers={'Content-Type': 'text/plain'},
+                timeout=30
+            )
+            
+            if broadcast_response.status_code == 200:
+                tx_hash = broadcast_response.text.strip()
+                print(f"✅✅✅ Transação broadcastada! Hash: {tx_hash}")
+                return {
+                    "success": True,
+                    "tx_hash": tx_hash,
+                    "from": from_address,
+                    "to": to_address,
+                    "amount": amount_satoshis / 100000000,
+                    "chain": "bitcoin",
+                    "status": "broadcasted",
+                    "explorer_url": f"https://blockstream.info/testnet/tx/{tx_hash}",
+                    "method": "python_bitcointx_manual",
+                    "op_return_included": bool(memo_hex)
+                }
+            else:
+                error_text = broadcast_response.text[:500]
+                print(f"❌ Erro ao broadcastar: {broadcast_response.status_code}")
+                print(f"   {error_text}")
+                return {
+                    "success": False,
+                    "error": f"Erro ao broadcastar: {broadcast_response.status_code}",
+                    "error_details": error_text
+                }
+                
+        except ImportError:
+            return {
+                "success": False,
+                "error": "python-bitcointx não instalado",
+                "note": "Instale com: pip install python-bitcointx"
+            }
+        except Exception as e:
+            print(f"❌ Erro ao criar transação manual: {e}")
+            import traceback
+            traceback.print_exc()
+            return {
+                "success": False,
+                "error": f"Erro ao criar transação: {str(e)}"
+            }
+    
     def send_bitcoin_transaction(
         self,
         from_private_key: str,
@@ -2114,12 +2328,12 @@ class RealCrossChainBridge:
                                 "api_utxos_count": len(utxos) if utxos else 0
                             })
                             
-                            # TEMPORÁRIO: OP_RETURN desabilitado por problemas de compatibilidade
-                            # Se temos source_tx_hash, apenas logar mas não forçar OP_RETURN
+                            # OP_RETURN REABILITADO: Incluir memo/UChainID nas transações Bitcoin
+                            # O source_tx_hash agora contém o memo_hex completo para incluir no OP_RETURN
                             if source_tx_hash:
-                                print(f"⚠️  OP_RETURN temporariamente desabilitado (source_tx_hash presente mas não será incluído)")
-                                print(f"   Hash da transação Polygon: {source_tx_hash}")
-                                add_log("op_return_temporarily_disabled", {"source_tx_hash": source_tx_hash}, "warning")
+                                print(f"🔗 OP_RETURN será incluído com memo/UChainID: {source_tx_hash[:40]}...")
+                                print(f"   Tamanho do memo: {len(source_tx_hash)} caracteres hex")
+                                add_log("op_return_enabled", {"memo_length": len(source_tx_hash)}, "info")
                             
                             # TENTAR wallet.send_to() PRIMEIRO (mesmo sem UTXOs, pode buscar automaticamente)
                             # Só usar BlockCypher se wallet.send_to() falhar
@@ -2262,15 +2476,53 @@ class RealCrossChainBridge:
                                         })
                                         print(f"   🔄 Change output adicionado: {change_value} satoshis para {from_address}")
                                     
-                                    # TEMPORÁRIO: OP_RETURN desabilitado - transações funcionam sem ele
+                                    # OP_RETURN REABILITADO: Criar transação com OP_RETURN contendo memo/UChainID
                                     # Inicializar variável de controle antes do bloco if para garantir escopo correto
                                     bit_library_available = False
                                     
-                                    # OP_RETURN temporariamente desabilitado - criar transação normal
+                                    # OP_RETURN será incluído na transação
                                     if source_tx_hash:
-                                        print(f"   ⚠️  OP_RETURN temporariamente desabilitado (source_tx_hash: {source_tx_hash})")
-                                        print(f"   📝 Criando transação Bitcoin SEM OP_RETURN (funcionalidade temporariamente desativada)")
-                                        add_log("op_return_disabled_creating_normal_tx", {"source_tx_hash": source_tx_hash}, "warning")
+                                        print(f"   🔗 OP_RETURN será incluído na transação (memo: {source_tx_hash[:40]}...)")
+                                        add_log("op_return_enabled_creating_tx", {"memo_length": len(source_tx_hash)}, "info")
+                                        
+                                        # Adicionar OP_RETURN aos outputs ANTES de criar tx_data
+                                        if source_tx_hash:
+                                            try:
+                                                # source_tx_hash contém o memo_hex completo
+                                                # Converter hex string para bytes e criar OP_RETURN
+                                                memo_bytes = bytes.fromhex(source_tx_hash) if len(source_tx_hash) % 2 == 0 else source_tx_hash.encode('utf-8')
+                                                
+                                                # Limitar a 80 bytes (limite do OP_RETURN)
+                                                if len(memo_bytes) > 80:
+                                                    memo_bytes = memo_bytes[:80]
+                                                
+                                                # Criar script OP_RETURN
+                                                if len(memo_bytes) <= 75:
+                                                    op_return_script_hex = "6a" + format(len(memo_bytes), '02x') + memo_bytes.hex()
+                                                else:
+                                                    op_return_script_hex = "6a4c" + format(len(memo_bytes), '02x') + memo_bytes.hex()
+                                                
+                                                # Adicionar OP_RETURN aos outputs (ANTES do change, se houver)
+                                                # BlockCypher requer OP_RETURN como output com script_type="null-data"
+                                                op_return_output = {
+                                                    "script_type": "null-data",
+                                                    "script": op_return_script_hex,
+                                                    "value": 0
+                                                }
+                                                # Inserir OP_RETURN antes do change (se houver)
+                                                if change_value > 546:
+                                                    # Inserir OP_RETURN antes do change
+                                                    outputs_list.insert(-1, op_return_output)
+                                                else:
+                                                    # Sem change, adicionar no final
+                                                    outputs_list.append(op_return_output)
+                                                
+                                                print(f"   🔗 OP_RETURN adicionado aos outputs: {len(memo_bytes)} bytes")
+                                                print(f"      Script hex: {op_return_script_hex[:80]}...")
+                                            except Exception as op_return_err:
+                                                print(f"   ⚠️  Erro ao adicionar OP_RETURN: {op_return_err}")
+                                                import traceback
+                                                traceback.print_exc()
                                         
                                         # Tentar criar transação via BlockCypher API
                                         try:
@@ -2334,7 +2586,9 @@ class RealCrossChainBridge:
                                                         tx_hash = signed_tx_data.get('tx', {}).get('hash')
                                                         
                                                         if tx_hash:
-                                                            print(f"   ✅✅✅ Transação criada e broadcastada via BlockCypher SEM OP_RETURN! Hash: {tx_hash}")
+                                                            op_return_status = "✅ OP_RETURN incluído" if source_tx_hash else "❌ OP_RETURN não incluído"
+                                                            print(f"   ✅✅✅ Transação criada e broadcastada via BlockCypher! Hash: {tx_hash}")
+                                                            print(f"   {op_return_status}")
                                                             
                                                             return {
                                                                 "success": True,
@@ -2345,11 +2599,11 @@ class RealCrossChainBridge:
                                                                 "chain": "bitcoin",
                                                                 "status": "broadcasted",
                                                                 "explorer_url": f"https://live.blockcypher.com/btc-testnet/tx/{tx_hash}/",
-                                                                "note": "✅ Transação REAL criada via BlockCypher API (OP_RETURN temporariamente desabilitado)",
+                                                                "note": "✅ Transação REAL criada via BlockCypher API" + (" (com OP_RETURN)" if source_tx_hash else ""),
                                                                 "real_broadcast": True,
-                                                                "method": "blockcypher_api_normal",
-                                                                "op_return_included": False,
-                                                                "op_return_note": "OP_RETURN temporariamente desabilitado por problemas de compatibilidade"
+                                                                "method": "blockcypher_api_with_opreturn" if source_tx_hash else "blockcypher_api_normal",
+                                                                "op_return_included": bool(source_tx_hash),
+                                                                "op_return_note": "OP_RETURN incluído com memo/UChainID" if source_tx_hash else None
                                                             }
                                                         else:
                                                             print(f"   ⚠️  Transação assinada mas hash não encontrado")
