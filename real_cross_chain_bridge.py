@@ -1600,46 +1600,186 @@ class RealCrossChainBridge:
                 tx.add_output(change_satoshis, address=from_address)
                 print(f"   🔄 Change: {from_address} = {change_satoshis} satoshis")
             
+            # ✅ VALIDAÇÃO CRÍTICA: Verificar estrutura da transação antes de assinar
+            print(f"🔍 Validação pré-assinatura:")
+            print(f"   Inputs: {len(tx.inputs)}")
+            for i, txin in enumerate(tx.inputs):
+                print(f"      Input {i+1}:")
+                print(f"         prev_txid: {txin.prev_txid.hex() if hasattr(txin, 'prev_txid') and hasattr(txin.prev_txid, 'hex') else str(txin.prev_txid)[:32]}")
+                print(f"         output_n: {txin.output_n if hasattr(txin, 'output_n') else 'N/A'}")
+                print(f"         value: {txin.value if hasattr(txin, 'value') else 'N/A'}")
+                print(f"         script: {len(txin.script) if hasattr(txin, 'script') and txin.script else 0} bytes")
+            
+            print(f"   Outputs: {len(tx.outputs)}")
+            for i, txout in enumerate(tx.outputs):
+                print(f"      Output {i+1}: {txout.value if hasattr(txout, 'value') else 'N/A'} satoshis")
+            
+            if len(tx.inputs) == 0:
+                return {
+                    "success": False,
+                    "error": "Transação não tem inputs antes de assinar",
+                    "note": "A transação foi criada mas não tem inputs válidos",
+                    "debug": {
+                        "inputs_count": len(tx.inputs),
+                        "outputs_count": len(tx.outputs),
+                        "utxos_provided": len(utxos)
+                    }
+                }
+            
             # Assinar transação (bitcoinlib faz isso automaticamente com keys)
-            print(f"🔐 Assinando transação...")
-            tx.sign(key)
+            print(f"🔐 Assinando transação com {len(tx.inputs)} inputs...")
+            try:
+                tx.sign(key)
+                print(f"✅ Transação assinada com sucesso!")
+            except Exception as sign_err:
+                print(f"❌ Erro ao assinar transação: {sign_err}")
+                import traceback
+                traceback.print_exc()
+                return {
+                    "success": False,
+                    "error": f"Erro ao assinar transação: {str(sign_err)}",
+                    "note": "A transação foi criada mas não pôde ser assinada",
+                    "debug": {
+                        "inputs_count": len(tx.inputs),
+                        "outputs_count": len(tx.outputs),
+                        "sign_error": str(sign_err)
+                    }
+                }
+            
+            # ✅ VALIDAÇÃO PÓS-ASSINATURA: Verificar se inputs foram assinados
+            print(f"🔍 Validação pós-assinatura:")
+            unsigned_inputs = []
+            for i, txin in enumerate(tx.inputs):
+                has_signature = (
+                    (hasattr(txin, 'script') and txin.script and len(txin.script) > 0) or
+                    (hasattr(txin, 'signatures') and txin.signatures and len(txin.signatures) > 0) or
+                    (hasattr(txin, 'witness') and txin.witness)
+                )
+                status = '✅ Assinado' if has_signature else '❌ NÃO ASSINADO'
+                print(f"      Input {i+1}: {status}")
+                if not has_signature:
+                    unsigned_inputs.append(i)
+            
+            if unsigned_inputs:
+                return {
+                    "success": False,
+                    "error": f"Inputs não assinados após sign(): {unsigned_inputs}",
+                    "note": "A transação foi criada mas alguns inputs não foram assinados",
+                    "debug": {
+                        "unsigned_inputs": unsigned_inputs,
+                        "total_inputs": len(tx.inputs)
+                    }
+                }
             
             # Obter raw transaction
-            raw_tx_hex = tx.raw_hex()
-            print(f"📄 Raw TX criada: {len(raw_tx_hex)} bytes")
+            print(f"📄 Serializando transação...")
+            try:
+                raw_tx_hex = tx.raw_hex()
+                print(f"✅ Raw TX criada: {len(raw_tx_hex)} bytes ({len(raw_tx_hex)//2} bytes hex)")
+                
+                # ✅ VALIDAÇÃO FINAL: Verificar se a transação serializada tem tamanho mínimo
+                min_tx_size = 100  # Tamanho mínimo para uma transação Bitcoin válida (com inputs e outputs)
+                if len(raw_tx_hex) < min_tx_size:
+                    return {
+                        "success": False,
+                        "error": f"Transação serializada muito pequena: {len(raw_tx_hex)} bytes (mínimo: {min_tx_size})",
+                        "note": "A transação pode não ter sido serializada corretamente",
+                        "debug": {
+                            "raw_tx_size": len(raw_tx_hex),
+                            "min_size": min_tx_size,
+                            "raw_tx_preview": raw_tx_hex[:200]
+                        }
+                    }
+                
+                # ✅ DEBUG: Logar primeiros bytes da transação para diagnóstico
+                print(f"🔍 DEBUG: Primeiros 100 chars da raw TX: {raw_tx_hex[:100]}")
+                print(f"🔍 DEBUG: Últimos 100 chars da raw TX: {raw_tx_hex[-100:]}")
+                
+            except Exception as serialize_err:
+                print(f"❌ Erro ao serializar transação: {serialize_err}")
+                import traceback
+                traceback.print_exc()
+                return {
+                    "success": False,
+                    "error": f"Erro ao serializar transação: {str(serialize_err)}",
+                    "note": "A transação foi criada e assinada mas não pôde ser serializada",
+                    "debug": {
+                        "inputs_count": len(tx.inputs),
+                        "outputs_count": len(tx.outputs),
+                        "serialize_error": str(serialize_err)
+                    }
+                }
             
             # Broadcast via Blockstream
             broadcast_url = "https://blockstream.info/testnet/api/tx"
-            broadcast_response = requests.post(
-                broadcast_url,
-                data=raw_tx_hex,
-                headers={'Content-Type': 'text/plain'},
-                timeout=30
-            )
+            print(f"📡 Broadcastando transação para Blockstream...")
+            print(f"   URL: {broadcast_url}")
+            print(f"   Raw TX size: {len(raw_tx_hex)} chars ({len(raw_tx_hex)//2} bytes)")
             
-            if broadcast_response.status_code == 200:
-                tx_hash = broadcast_response.text.strip()
-                print(f"✅✅✅ Transação broadcastada! Hash: {tx_hash}")
-                return {
-                    "success": True,
-                    "tx_hash": tx_hash,
-                    "from": from_address,
-                    "to": to_address,
-                    "amount": amount_satoshis / 100000000,
-                    "chain": "bitcoin",
-                    "status": "broadcasted",
-                    "explorer_url": f"https://blockstream.info/testnet/tx/{tx_hash}",
-                    "method": "bitcoinlib_with_op_return",
-                    "op_return_included": bool(memo_hex)
-                }
-            else:
-                error_text = broadcast_response.text[:500]
-                print(f"❌ Erro ao broadcastar: {broadcast_response.status_code}")
-                print(f"   {error_text}")
+            try:
+                broadcast_response = requests.post(
+                    broadcast_url,
+                    data=raw_tx_hex,
+                    headers={'Content-Type': 'text/plain'},
+                    timeout=30
+                )
+                
+                print(f"   📊 Status: {broadcast_response.status_code}")
+                print(f"   📋 Response: {broadcast_response.text[:200]}")
+                
+                if broadcast_response.status_code == 200:
+                    tx_hash = broadcast_response.text.strip()
+                    print(f"✅✅✅ Transação broadcastada com sucesso! Hash: {tx_hash}")
+                    return {
+                        "success": True,
+                        "tx_hash": tx_hash,
+                        "from": from_address,
+                        "to": to_address,
+                        "amount": amount_satoshis / 100000000,
+                        "chain": "bitcoin",
+                        "status": "broadcasted",
+                        "explorer_url": f"https://blockstream.info/testnet/tx/{tx_hash}",
+                        "method": "bitcoinlib_with_op_return",
+                        "op_return_included": bool(memo_hex)
+                    }
+                else:
+                    error_text = broadcast_response.text[:500]
+                    print(f"❌ Erro ao broadcastar: {broadcast_response.status_code}")
+                    print(f"   {error_text}")
+                    
+                    # ✅ ANÁLISE DO ERRO: Tentar entender o que está errado
+                    if "TX decode failed" in error_text or "at least one input" in error_text:
+                        print(f"   🔍 DIAGNÓSTICO: Erro indica que a transação não tem inputs válidos")
+                        print(f"      - Inputs na transação: {len(tx.inputs)}")
+                        print(f"      - Raw TX size: {len(raw_tx_hex)} bytes")
+                        print(f"      - Raw TX preview: {raw_tx_hex[:200]}")
+                        return {
+                            "success": False,
+                            "error": f"TX decode failed - transação não tem inputs válidos",
+                            "error_details": error_text,
+                            "note": "A transação foi criada mas o Blockstream não conseguiu decodificá-la",
+                            "debug": {
+                                "inputs_count": len(tx.inputs),
+                                "outputs_count": len(tx.outputs),
+                                "raw_tx_size": len(raw_tx_hex),
+                                "raw_tx_preview": raw_tx_hex[:200],
+                                "broadcast_status": broadcast_response.status_code
+                            }
+                        }
+                    
+                    return {
+                        "success": False,
+                        "error": f"Erro ao broadcastar: {broadcast_response.status_code}",
+                        "error_details": error_text
+                    }
+            except Exception as broadcast_err:
+                print(f"❌ Exceção ao broadcastar: {broadcast_err}")
+                import traceback
+                traceback.print_exc()
                 return {
                     "success": False,
-                    "error": f"Erro ao broadcastar: {broadcast_response.status_code}",
-                    "error_details": error_text
+                    "error": f"Exceção ao broadcastar: {str(broadcast_err)}",
+                    "note": "Erro de rede ou conexão ao tentar broadcastar"
                 }
                 
         except ImportError as import_err:
@@ -3002,8 +3142,138 @@ class RealCrossChainBridge:
                                         print(f"   - memo_hex: {'Sim' if memo_hex else 'Não'} ({len(memo_hex) if memo_hex else 0} chars)")
                                         print(f"   - UTXOs disponíveis: {len(utxos)}")
                                         
-                                        # ✅ PRIORIDADE 1: Tentar bitcoinlib PRIMEIRO (mais confiável e estável)
-                                        print(f"🔄 Tentando bitcoinlib (método mais confiável) com {len(utxos)} UTXOs...")
+                                        # ✅ PRIORIDADE 1: BlockCypher API (MÉTODO QUE FUNCIONAVA ANTES!)
+                                        # Este método já funcionou antes e criou transações reais com sucesso
+                                        print(f"🔄 Tentando BlockCypher API PRIMEIRO (método que funcionava antes)...")
+                                        try:
+                                            # Preparar dados para BlockCypher
+                                            total_input_value = sum(int(utxo.get('value', 0)) for utxo in utxos)
+                                            estimated_fee_satoshis = 500
+                                            output_value = amount_satoshis
+                                            change_value = total_input_value - output_value - estimated_fee_satoshis
+                                            
+                                            if change_value < 0:
+                                                print(f"⚠️  Fundos insuficientes para BlockCypher")
+                                            else:
+                                                # Preparar inputs
+                                                inputs_list = []
+                                                for utxo in utxos:
+                                                    txid = utxo.get('txid') or utxo.get('tx_hash')
+                                                    output_n = int(utxo.get('vout') or utxo.get('output_n', 0))
+                                                    inputs_list.append({
+                                                        "prev_hash": txid,
+                                                        "output_index": output_n
+                                                    })
+                                                
+                                                # Preparar outputs
+                                                outputs_list = [{
+                                                    "addresses": [to_address],
+                                                    "value": int(output_value)
+                                                }]
+                                                
+                                                # Adicionar OP_RETURN se houver memo
+                                                if memo_hex:
+                                                    try:
+                                                        memo_bytes = bytes.fromhex(memo_hex) if len(memo_hex) % 2 == 0 else memo_hex.encode('utf-8')
+                                                        if len(memo_bytes) > 80:
+                                                            memo_bytes = memo_bytes[:80]
+                                                        
+                                                        if len(memo_bytes) <= 75:
+                                                            op_return_script_hex = "6a" + format(len(memo_bytes), '02x') + memo_bytes.hex()
+                                                        else:
+                                                            op_return_script_hex = "6a4c" + format(len(memo_bytes), '02x') + memo_bytes.hex()
+                                                        
+                                                        op_return_output = {
+                                                            "script_type": "null-data",
+                                                            "script": op_return_script_hex,
+                                                            "value": 0
+                                                        }
+                                                        if change_value > 546:
+                                                            outputs_list.insert(-1, op_return_output)
+                                                        else:
+                                                            outputs_list.append(op_return_output)
+                                                        print(f"   🔗 OP_RETURN adicionado: {len(memo_bytes)} bytes")
+                                                    except Exception as op_err:
+                                                        print(f"   ⚠️  Erro ao adicionar OP_RETURN: {op_err}")
+                                                
+                                                # Adicionar change
+                                                if change_value > 546:
+                                                    outputs_list.append({
+                                                        "addresses": [from_address],
+                                                        "value": int(change_value)
+                                                    })
+                                                
+                                                # Criar transação via BlockCypher
+                                                tx_data = {
+                                                    "inputs": inputs_list,
+                                                    "outputs": outputs_list,
+                                                    "fees": estimated_fee_satoshis
+                                                }
+                                                
+                                                create_url = f"{self.btc_api_base}/txs/new"
+                                                create_response = requests.post(create_url, json=tx_data, timeout=30)
+                                                
+                                                if create_response.status_code in [200, 201]:
+                                                    unsigned_tx = create_response.json()
+                                                    tosign = unsigned_tx.get('tosign', [])
+                                                    
+                                                    if tosign:
+                                                        # Converter chave privada se necessário
+                                                        privkey_for_blockcypher = from_private_key
+                                                        try:
+                                                            if from_private_key[0] in ['L', 'K', '5', 'c']:
+                                                                from bitcoinlib.keys import HDKey
+                                                                key_obj = HDKey(from_private_key, network='testnet')
+                                                                privkey_for_blockcypher = key_obj.private_hex
+                                                        except:
+                                                            pass
+                                                        
+                                                        sign_data = {
+                                                            "tx": unsigned_tx,
+                                                            "tosign": tosign,
+                                                            "privkeys": [privkey_for_blockcypher]
+                                                        }
+                                                        
+                                                        sign_url = f"{self.btc_api_base}/txs/send"
+                                                        sign_response = requests.post(sign_url, json=sign_data, timeout=30)
+                                                        
+                                                        if sign_response.status_code in [200, 201]:
+                                                            signed_tx_data = sign_response.json()
+                                                            tx_hash = signed_tx_data.get('tx', {}).get('hash')
+                                                            
+                                                            if tx_hash:
+                                                                print(f"✅✅✅ BlockCypher funcionou! TX Hash: {tx_hash}")
+                                                                proof_data["success"] = True
+                                                                proof_data["tx_hash"] = tx_hash
+                                                                proof_data["final_result"] = {
+                                                                    "success": True,
+                                                                    "tx_hash": tx_hash,
+                                                                    "method": "blockcypher_api",
+                                                                    "op_return_included": bool(memo_hex)
+                                                                }
+                                                                proof_file = self._save_transaction_proof(proof_data)
+                                                                return {
+                                                                    "success": True,
+                                                                    "tx_hash": tx_hash,
+                                                                    "from": from_address,
+                                                                    "to": to_address,
+                                                                    "amount": amount_btc,
+                                                                    "chain": "bitcoin",
+                                                                    "status": "broadcasted",
+                                                                    "explorer_url": f"https://blockstream.info/testnet/tx/{tx_hash}",
+                                                                    "method": "blockcypher_api",
+                                                                    "op_return_included": bool(memo_hex),
+                                                                    "proof_file": proof_file
+                                                                }
+                                                else:
+                                                    print(f"⚠️  BlockCypher create falhou: {create_response.status_code}")
+                                        except Exception as blockcypher_err:
+                                            print(f"⚠️  Erro ao tentar BlockCypher: {blockcypher_err}")
+                                            import traceback
+                                            traceback.print_exc()
+                                        
+                                        # ✅ PRIORIDADE 2: Tentar bitcoinlib como fallback
+                                        print(f"🔄 Tentando bitcoinlib como fallback...")
                                         try:
                                             bitcoinlib_result = self._create_bitcoin_tx_with_bitcoinlib_op_return(
                                                 from_private_key=from_private_key,
@@ -3024,18 +3294,11 @@ class RealCrossChainBridge:
                                                 return bitcoinlib_result
                                             else:
                                                 print(f"⚠️  bitcoinlib falhou: {bitcoinlib_result.get('error')}")
-                                                print(f"   Detalhes: {bitcoinlib_result.get('note', 'N/A')}")
-                                                if bitcoinlib_result.get('debug'):
-                                                    print(f"   Debug: {bitcoinlib_result.get('debug')}")
-                                                add_log("bitcoinlib_method_failed", {"error": bitcoinlib_result.get('error')}, "error")
                                         except Exception as bitcoinlib_err:
                                             print(f"⚠️  Erro ao tentar bitcoinlib: {bitcoinlib_err}")
-                                            import traceback
-                                            traceback.print_exc()
-                                            add_log("bitcoinlib_method_exception", {"error": str(bitcoinlib_err)}, "error")
                                         
-                                        # ✅ PRIORIDADE 2: Tentar método manual com python-bitcointx como fallback
-                                        print(f"🔄 Tentando método manual (python-bitcointx) como fallback...")
+                                        # ✅ PRIORIDADE 3: Tentar método manual com python-bitcointx como último recurso
+                                        print(f"🔄 Tentando método manual (python-bitcointx) como último recurso...")
                                         try:
                                             manual_result = self._create_bitcoin_tx_with_op_return_manual(
                                                 from_private_key=from_private_key,
@@ -3052,14 +3315,10 @@ class RealCrossChainBridge:
                                                 proof_data["tx_hash"] = manual_result.get("tx_hash")
                                                 proof_data["final_result"] = manual_result
                                                 proof_file = self._save_transaction_proof(proof_data)
-                                                bitcoinlib_result["proof_file"] = proof_file
-                                                return bitcoinlib_result
-                                            else:
-                                                print(f"⚠️  bitcoinlib falhou: {bitcoinlib_result.get('error')}")
-                                                add_log("bitcoinlib_method_failed", {"error": bitcoinlib_result.get('error')}, "error")
-                                        except Exception as bitcoinlib_err:
-                                            print(f"⚠️  Erro ao tentar bitcoinlib: {bitcoinlib_err}")
-                                            add_log("bitcoinlib_method_exception", {"error": str(bitcoinlib_err)}, "error")
+                                                manual_result["proof_file"] = proof_file
+                                                return manual_result
+                                        except Exception as manual_err:
+                                            print(f"⚠️  Erro ao tentar python-bitcointx: {manual_err}")
                                         
                                     except Exception as alt_methods_err:
                                         print(f"⚠️  Erro geral ao tentar métodos alternativos: {alt_methods_err}")
