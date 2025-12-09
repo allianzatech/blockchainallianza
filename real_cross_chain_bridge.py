@@ -3251,9 +3251,9 @@ class RealCrossChainBridge:
                                                 utxos = []
                                                 for bs_utxo in blockstream_utxos:
                                                     try:
-                                                    txid = bs_utxo.get('txid')
-                                                    vout = int(bs_utxo.get('vout', 0))
-                                                    value = int(bs_utxo.get('value', 0))
+                                                        txid = bs_utxo.get('txid')
+                                                        vout = int(bs_utxo.get('vout', 0))
+                                                        value = int(bs_utxo.get('value', 0))
                                                     
                                                     if not txid or value <= 0:
                                                         print(f"   ⚠️  UTXO inválido ignorado: txid={txid}, value={value}")
