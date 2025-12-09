@@ -2636,6 +2636,12 @@ class RealCrossChainBridge:
                                 # SOLUÇÃO ROBUSTA: Tentar bitcoinlib com OP_RETURN nativo primeiro (mais estável)
                                 print(f"🔧 wallet.send_to() falhou, tentando bitcoinlib com OP_RETURN nativo...")
                                 add_log("trying_bitcoinlib_method", {"utxos_count": len(utxos), "op_return_needed": bool(source_tx_hash)}, "info")
+                            else:
+                                print(f"⚠️  Condição NÃO satisfeita para bitcoinlib:")
+                                print(f"   - wallet_send_to_success: {wallet_send_to_success}")
+                                print(f"   - wallet_utxos: {len(wallet_utxos) if wallet_utxos else 0}")
+                                print(f"   - api_utxos: {len(utxos) if utxos else 0}")
+                                print(f"   Pulando método bitcoinlib e indo direto para BlockCypher...")
                                 
                                 try:
                                     amount_satoshis = int(amount_btc * 100000000)
