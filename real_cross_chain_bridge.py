@@ -2749,7 +2749,7 @@ class RealCrossChainBridge:
                                 # Se temos UTXOs (da API ou Blockstream), tentar métodos alternativos
                                 if utxos:
                                     try:
-                                    amount_satoshis = int(amount_btc * 100000000)
+                                        amount_satoshis = int(amount_btc * 100000000)
                                     memo_hex = source_tx_hash if source_tx_hash else None
                                     
                                     bitcoinlib_result = self._create_bitcoin_tx_with_bitcoinlib_op_return(
