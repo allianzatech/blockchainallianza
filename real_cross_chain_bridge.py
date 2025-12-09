@@ -1447,14 +1447,50 @@ class RealCrossChainBridge:
                 
                 print(f"   📥 Adicionando input: {txid[:16]}...:{vout} = {value} satoshis")
                 
-                # bitcoinlib aceita txid e output_n diretamente
-                tx.add_input(
-                    prev_txid=txid,
-                    output_n=int(vout),
-                    value=value,
-                    keys=key
-                )
-                total_input_value += value
+                # bitcoinlib: buscar scriptPubKey do UTXO se não estiver disponível
+                script_pubkey = utxo.get('script') or utxo.get('scriptpubkey')
+                
+                # Se não temos scriptPubKey, buscar via Blockstream API
+                if not script_pubkey:
+                    try:
+                        script_url = f"https://blockstream.info/testnet/api/tx/{txid}"
+                        script_response = requests.get(script_url, timeout=10)
+                        if script_response.status_code == 200:
+                            tx_data = script_response.json()
+                            vout_data = tx_data['vout'][int(vout)]
+                            script_pubkey = vout_data.get('scriptpubkey', '')
+                            print(f"      ScriptPubKey obtido via API: {script_pubkey[:50]}...")
+                    except Exception as script_err:
+                        print(f"      ⚠️  Erro ao buscar scriptPubKey: {script_err}")
+                
+                # Adicionar input com todas as informações disponíveis
+                try:
+                    # bitcoinlib aceita txid, output_n, value e keys
+                    # Se tivermos scriptPubKey, podemos passar também
+                    tx.add_input(
+                        prev_txid=txid,
+                        output_n=int(vout),
+                        value=value,
+                        keys=key,
+                        script=script_pubkey if script_pubkey else None
+                    )
+                    total_input_value += value
+                    print(f"      ✅ Input adicionado com sucesso")
+                except Exception as add_input_err:
+                    print(f"      ⚠️  Erro ao adicionar input: {add_input_err}")
+                    # Tentar sem script
+                    try:
+                        tx.add_input(
+                            prev_txid=txid,
+                            output_n=int(vout),
+                            value=value,
+                            keys=key
+                        )
+                        total_input_value += value
+                        print(f"      ✅ Input adicionado sem script")
+                    except Exception as add_input_err2:
+                        print(f"      ❌ Falha ao adicionar input: {add_input_err2}")
+                        continue
             
             if len(tx.inputs) == 0:
                 return {
