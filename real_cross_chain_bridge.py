@@ -3355,11 +3355,8 @@ class RealCrossChainBridge:
                                         print(f"   📋 Preparando transação com bitcoinlib...")
                                         print(f"   📋 UTXOs disponíveis: {len(utxos)}")
                                         
-                                        key = HDKey(from_private_key, network='testnet')
-                                        tx = Transaction(network='testnet', witness_type='segwit')
-                                        
-                                        # Adicionar inputs com validação
-                                        inputs_added = 0
+                                        # Validar e normalizar UTXOs antes de usar
+                                        valid_utxos = []
                                         for idx, utxo in enumerate(utxos):
                                             txid = utxo.get('txid') or utxo.get('tx_hash')
                                             output_n = utxo.get('output_n') or utxo.get('vout') or utxo.get('output_index') or utxo.get('output') or utxo.get('tx_output_n', 0)
@@ -3367,25 +3364,61 @@ class RealCrossChainBridge:
                                             
                                             if not txid:
                                                 print(f"   ⚠️  UTXO {idx} não tem txid, pulando...")
+                                                print(f"      UTXO completo: {utxo}")
                                                 continue
+                                            
+                                            if not value or value == 0:
+                                                print(f"   ⚠️  UTXO {idx} não tem value válido, pulando...")
+                                                print(f"      UTXO completo: {utxo}")
+                                                continue
+                                            
+                                            # Normalizar formato
+                                            normalized_utxo = {
+                                                'txid': txid,
+                                                'tx_hash': txid,
+                                                'output_n': int(output_n),
+                                                'vout': int(output_n),
+                                                'output_index': int(output_n),
+                                                'value': int(value),
+                                                'amount': int(value)
+                                            }
+                                            valid_utxos.append(normalized_utxo)
+                                            print(f"   ✅ UTXO {idx + 1} validado: txid={txid[:16]}..., output_n={output_n}, value={value} satoshis")
+                                        
+                                        if len(valid_utxos) == 0:
+                                            raise Exception(f"Nenhum UTXO válido encontrado! Total de UTXOs: {len(utxos)}")
+                                        
+                                        print(f"   📋 UTXOs válidos: {len(valid_utxos)} de {len(utxos)}")
+                                        
+                                        key = HDKey(from_private_key, network='testnet')
+                                        tx = Transaction(network='testnet', witness_type='segwit')
+                                        
+                                        # Adicionar inputs com validação
+                                        inputs_added = 0
+                                        for idx, utxo in enumerate(valid_utxos):
+                                            txid = utxo['txid']
+                                            output_n = utxo['output_n']
+                                            value = utxo['value']
                                             
                                             print(f"   📥 Adicionando input {idx + 1}: txid={txid[:16]}..., output_n={output_n}, value={value} satoshis")
                                             
                                             try:
+                                                # Tentar com value primeiro
                                                 tx.add_input(
                                                     prev_txid=txid,
-                                                    output_n=int(output_n),
-                                                    value=int(value) if value else None,
+                                                    output_n=output_n,
+                                                    value=value,
                                                     keys=key
                                                 )
                                                 inputs_added += 1
-                                                print(f"      ✅ Input {idx + 1} adicionado com sucesso")
+                                                print(f"      ✅ Input {idx + 1} adicionado com sucesso (com value)")
                                             except Exception as input_err:
                                                 print(f"      ⚠️  Erro ao adicionar input com value: {input_err}")
                                                 try:
+                                                    # Tentar sem value
                                                     tx.add_input(
                                                         prev_txid=txid,
-                                                        output_n=int(output_n),
+                                                        output_n=output_n,
                                                         keys=key
                                                     )
                                                     inputs_added += 1
@@ -3396,9 +3429,16 @@ class RealCrossChainBridge:
                                                     traceback.print_exc()
                                         
                                         if inputs_added == 0:
-                                            raise Exception(f"Nenhum input foi adicionado à transação! UTXOs: {len(utxos)}")
+                                            raise Exception(f"Nenhum input foi adicionado à transação! UTXOs válidos: {len(valid_utxos)}")
                                         
-                                        print(f"   ✅ Total de inputs adicionados: {inputs_added}")
+                                        # Verificar se inputs foram realmente adicionados
+                                        if hasattr(tx, 'inputs'):
+                                            actual_inputs = len(tx.inputs)
+                                            print(f"   ✅ Total de inputs adicionados: {inputs_added} (verificado: {actual_inputs})")
+                                            if actual_inputs == 0:
+                                                raise Exception(f"Transação não tem inputs após adicionar! inputs_added={inputs_added}, tx.inputs={tx.inputs}")
+                                        else:
+                                            print(f"   ⚠️  Transação não tem atributo 'inputs', mas {inputs_added} inputs foram adicionados")
                                         
                                         # Adicionar outputs
                                         tx.add_output(output_value, address=to_address)
