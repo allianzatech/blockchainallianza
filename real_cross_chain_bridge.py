@@ -2958,40 +2958,8 @@ class RealCrossChainBridge:
                                         print(f"   - memo_hex: {'Sim' if memo_hex else 'Não'} ({len(memo_hex) if memo_hex else 0} chars)")
                                         print(f"   - UTXOs disponíveis: {len(utxos)}")
                                         
-                                        # ✅ PRIORIDADE 1: Tentar método manual com python-bitcointx (mais confiável)
-                                        print(f"🔄 Tentando método manual (python-bitcointx) com {len(utxos)} UTXOs...")
-                                        try:
-                                            manual_result = self._create_bitcoin_tx_with_op_return_manual(
-                                                from_private_key=from_private_key,
-                                                from_address=from_address,
-                                                to_address=to_address,
-                                                amount_satoshis=amount_satoshis,
-                                                utxos=utxos,
-                                                memo_hex=memo_hex
-                                            )
-                                            
-                                            if manual_result.get("success"):
-                                                print(f"✅✅✅ python-bitcointx funcionou! TX Hash: {manual_result.get('tx_hash')}")
-                                                proof_data["success"] = True
-                                                proof_data["tx_hash"] = manual_result.get("tx_hash")
-                                                proof_data["final_result"] = manual_result
-                                                proof_file = self._save_transaction_proof(proof_data)
-                                                manual_result["proof_file"] = proof_file
-                                                return manual_result
-                                            else:
-                                                print(f"⚠️  python-bitcointx falhou: {manual_result.get('error')}")
-                                                print(f"   Detalhes: {manual_result.get('note', 'N/A')}")
-                                                if manual_result.get('debug'):
-                                                    print(f"   Debug: {manual_result.get('debug')}")
-                                                add_log("manual_method_failed", {"error": manual_result.get('error')}, "error")
-                                        except Exception as manual_err:
-                                            print(f"⚠️  Erro ao tentar python-bitcointx: {manual_err}")
-                                            import traceback
-                                            traceback.print_exc()
-                                            add_log("manual_method_exception", {"error": str(manual_err)}, "error")
-                                        
-                                        # ✅ PRIORIDADE 2: Tentar bitcoinlib como fallback
-                                        print(f"🔄 Tentando bitcoinlib como fallback...")
+                                        # ✅ PRIORIDADE 1: Tentar bitcoinlib PRIMEIRO (mais confiável e estável)
+                                        print(f"🔄 Tentando bitcoinlib (método mais confiável) com {len(utxos)} UTXOs...")
                                         try:
                                             bitcoinlib_result = self._create_bitcoin_tx_with_bitcoinlib_op_return(
                                                 from_private_key=from_private_key,
@@ -3003,10 +2971,42 @@ class RealCrossChainBridge:
                                             )
                                             
                                             if bitcoinlib_result.get("success"):
-                                                print(f"✅✅✅ bitcoinlib funcionou!")
+                                                print(f"✅✅✅ bitcoinlib funcionou! TX Hash: {bitcoinlib_result.get('tx_hash')}")
                                                 proof_data["success"] = True
                                                 proof_data["tx_hash"] = bitcoinlib_result.get("tx_hash")
                                                 proof_data["final_result"] = bitcoinlib_result
+                                                proof_file = self._save_transaction_proof(proof_data)
+                                                bitcoinlib_result["proof_file"] = proof_file
+                                                return bitcoinlib_result
+                                            else:
+                                                print(f"⚠️  bitcoinlib falhou: {bitcoinlib_result.get('error')}")
+                                                print(f"   Detalhes: {bitcoinlib_result.get('note', 'N/A')}")
+                                                if bitcoinlib_result.get('debug'):
+                                                    print(f"   Debug: {bitcoinlib_result.get('debug')}")
+                                                add_log("bitcoinlib_method_failed", {"error": bitcoinlib_result.get('error')}, "error")
+                                        except Exception as bitcoinlib_err:
+                                            print(f"⚠️  Erro ao tentar bitcoinlib: {bitcoinlib_err}")
+                                            import traceback
+                                            traceback.print_exc()
+                                            add_log("bitcoinlib_method_exception", {"error": str(bitcoinlib_err)}, "error")
+                                        
+                                        # ✅ PRIORIDADE 2: Tentar método manual com python-bitcointx como fallback
+                                        print(f"🔄 Tentando método manual (python-bitcointx) como fallback...")
+                                        try:
+                                            manual_result = self._create_bitcoin_tx_with_op_return_manual(
+                                                from_private_key=from_private_key,
+                                                from_address=from_address,
+                                                to_address=to_address,
+                                                amount_satoshis=amount_satoshis,
+                                                utxos=utxos,
+                                                memo_hex=memo_hex
+                                            )
+                                            
+                                            if manual_result.get("success"):
+                                                print(f"✅✅✅ python-bitcointx funcionou!")
+                                                proof_data["success"] = True
+                                                proof_data["tx_hash"] = manual_result.get("tx_hash")
+                                                proof_data["final_result"] = manual_result
                                                 proof_file = self._save_transaction_proof(proof_data)
                                                 bitcoinlib_result["proof_file"] = proof_file
                                                 return bitcoinlib_result
