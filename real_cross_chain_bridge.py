@@ -2589,8 +2589,14 @@ class RealCrossChainBridge:
                             # Tentar wallet.send_to() primeiro (mais confiável)
                             try:
                                 print(f"📤 Tentando wallet.send_to() primeiro (wallet pode buscar UTXOs automaticamente)...")
+                                print(f"   Parâmetros: to_address={to_address}, amount_satoshis={amount_satoshis}, fee=5")
+                                print(f"   Wallet balance: {wallet.balance() if hasattr(wallet, 'balance') else 'N/A'}")
+                                print(f"   Wallet UTXOs: {len(wallet.utxos()) if hasattr(wallet, 'utxos') else 'N/A'}")
+                                
                                 wallet_send_to_tried = True
                                 tx_result = wallet.send_to(to_address, amount_satoshis, fee=5)
+                                
+                                print(f"   📋 Resultado de send_to: {type(tx_result)} - {tx_result}")
                                 
                                 if tx_result:
                                     tx_hash = tx_result.txid if hasattr(tx_result, 'txid') else str(tx_result)
@@ -2622,7 +2628,21 @@ class RealCrossChainBridge:
                                         "op_return_included": False,
                                         "proof_file": proof_file
                                     }
-                                wallet_send_to_success = True
+                                else:
+                                    # ✅ CORREÇÃO: Tratar explicitamente quando send_to() retorna None
+                                    print(f"   ⚠️  wallet.send_to() retornou None!")
+                                    print(f"   🔍 Possíveis causas:")
+                                    print(f"      - Saldo insuficiente (balance: {wallet.balance() if hasattr(wallet, 'balance') else 'N/A'})")
+                                    print(f"      - UTXOs não encontrados (UTXOs: {len(wallet.utxos()) if hasattr(wallet, 'utxos') else 'N/A'})")
+                                    print(f"      - Endereço de destino inválido")
+                                    print(f"      - Taxa muito alta para o saldo disponível")
+                                    add_log("wallet_send_to_returned_none", {
+                                        "balance": wallet.balance() if hasattr(wallet, 'balance') else None,
+                                        "utxos_count": len(wallet.utxos()) if hasattr(wallet, 'utxos') else None,
+                                        "amount_satoshis": amount_satoshis,
+                                        "to_address": to_address
+                                    }, "error")
+                                    wallet_send_to_success = False  # Marcar como falhou
                             except Exception as wallet_send_err:
                                 print(f"   ⚠️  wallet.send_to() falhou: {wallet_send_err}")
                                 import traceback
