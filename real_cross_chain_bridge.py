@@ -3250,7 +3250,7 @@ class RealCrossChainBridge:
                                                 # ✅ CRÍTICO: Verificar se UTXO não foi gasto e se output existe
                                                 utxos = []
                                                 for bs_utxo in blockstream_utxos:
-                                                try:
+                                                    try:
                                                     txid = bs_utxo.get('txid')
                                                     vout = int(bs_utxo.get('vout', 0))
                                                     value = int(bs_utxo.get('value', 0))
