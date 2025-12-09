@@ -543,7 +543,12 @@ class RealCrossChainBridge:
         self._connections_setup = True
         try:
             # BlockCypher API para Bitcoin
+            # Token BlockCypher - usar variável de ambiente ou token padrão
             self.blockcypher_token = os.getenv('BLOCKCYPHER_API_TOKEN', '17766314e49c439e85cec883969614ac')
+            if self.blockcypher_token:
+                print(f"✅ BlockCypher Token configurado: {self.blockcypher_token[:8]}...")
+            else:
+                print("⚠️  BlockCypher Token não configurado - usando API pública (rate limit reduzido)")
             self.btc_api_base = "https://api.blockcypher.com/v1/btc/test3"
             
             # Web3 para EVM chains
