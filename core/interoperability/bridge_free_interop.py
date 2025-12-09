@@ -488,6 +488,7 @@ class BridgeFreeInterop:
             
             # Adicionar data (memo) se disponível ANTES de estimar gas
             # Nota: Em EVM chains, podemos incluir dados na transação
+            # CRÍTICO: O memo DEVE estar no campo data para ser visível no explorer
             if include_memo and memo_info:
                 # Limitar tamanho do memo (EVM tem limite de ~24KB)
                 memo_hex = memo_info["memo_hex"]
@@ -497,10 +498,19 @@ class BridgeFreeInterop:
                 # Converter hex para bytes
                 try:
                     transaction['data'] = bytes.fromhex(memo_hex)
-                except:
-                    # Se falhar, usar apenas hash do memo
+                    print(f"   ✅ Memo incluído no campo data: {len(memo_hex)} caracteres hex ({len(memo_hex)//2} bytes)")
+                    print(f"   📋 Memo JSON: {memo_info.get('memo_json', '')[:200]}...")
+                except Exception as memo_err:
+                    print(f"   ⚠️  Erro ao converter memo hex: {memo_err}")
+                    # Se falhar, usar apenas hash do memo (pelo menos algo visível)
                     memo_hash = hashlib.sha256(memo_info["memo_json"].encode()).hexdigest()
                     transaction['data'] = bytes.fromhex(memo_hash[:64])
+                    print(f"   ⚠️  Usando hash do memo como fallback: {memo_hash[:64]}")
+            else:
+                if include_memo:
+                    print(f"   ⚠️  include_memo=True mas memo_info não disponível!")
+                else:
+                    print(f"   📝 include_memo=False - memo não será incluído")
             
             # Estimar gas DEPOIS de adicionar data (importante!)
             try:
