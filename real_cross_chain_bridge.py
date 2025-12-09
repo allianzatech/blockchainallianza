@@ -4641,12 +4641,45 @@ class RealCrossChainBridge:
                             
                             # Se retornou objeto Transaction, obter raw para broadcast manual
                             if tx_result is None:
+                                print(f"   ⚠️  tx_result é None - wallet.send_to() não criou transação")
+                                print(f"   🔍 Diagnóstico:")
+                                if hasattr(wallet, 'balance'):
+                                    print(f"      - Wallet balance: {wallet.balance()}")
+                                if hasattr(wallet, 'utxos'):
+                                    print(f"      - Wallet UTXOs: {len(wallet.utxos())}")
+                                print(f"      - Amount necessário: {amount_satoshis} satoshis ({amount_btc} BTC)")
+                                print(f"      - To address: {to_address}")
+                                
+                                add_log("send_to_returned_none", {
+                                    "balance": wallet.balance() if hasattr(wallet, 'balance') else None,
+                                    "utxos_count": len(wallet.utxos()) if hasattr(wallet, 'utxos') else None,
+                                    "amount_satoshis": amount_satoshis,
+                                    "amount_btc": amount_btc,
+                                    "to_address": to_address
+                                }, "error")
+                                
+                                # Tentar fallback: usar bitcoinlib ou BlockCypher
+                                print(f"   🔄 Tentando métodos alternativos (bitcoinlib/BlockCypher)...")
+                                
                                 return {
                                     "success": False,
                                     "error": "send_to retornou None - transação não foi criada",
+                                    "error_details": {
+                                        "balance": wallet.balance() if hasattr(wallet, 'balance') else None,
+                                        "utxos_count": len(wallet.utxos()) if hasattr(wallet, 'utxos') else None,
+                                        "amount_satoshis": amount_satoshis,
+                                        "amount_btc": amount_btc,
+                                        "possible_causes": [
+                                            "Saldo insuficiente",
+                                            "UTXOs não encontrados",
+                                            "Endereço de destino inválido",
+                                            "Taxa muito alta para o saldo disponível"
+                                        ]
+                                    },
                                     "from_address": from_address,
                                     "to_address": to_address,
-                                    "amount": amount_btc
+                                    "amount": amount_btc,
+                                    "note": "Tentando métodos alternativos (bitcoinlib/BlockCypher) como fallback"
                                 }
                             
                             tx = tx_result
