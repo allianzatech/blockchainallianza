@@ -3331,9 +3331,9 @@ class RealCrossChainBridge:
                                                 print(f"✅ {len(utxos)} UTXOs válidos encontrados via Blockstream API!")
                                                 print(f"   💰 Valor total: {total_value / 100000000:.8f} BTC")
                                                 add_log("blockstream_utxos_fetched", {"count": len(utxos), "total_sats": total_value}, "info")
-                                            else:
-                                                print(f"⚠️  Nenhum UTXO válido após processamento")
-                                                add_log("blockstream_no_valid_utxos", {"address": from_address}, "warning")
+                                                else:
+                                                    print(f"⚠️  Nenhum UTXO válido após processamento")
+                                                    add_log("blockstream_no_valid_utxos", {"address": from_address}, "warning")
                                             else:
                                                 print(f"⚠️  Blockstream retornou lista vazia de UTXOs")
                                                 add_log("blockstream_no_utxos", {"address": from_address}, "warning")
