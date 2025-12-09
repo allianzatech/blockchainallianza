@@ -3245,7 +3245,7 @@ class RealCrossChainBridge:
                                             print(f"   📦 Resposta JSON: {len(blockstream_utxos) if blockstream_utxos else 0} UTXOs")
                                             
                                             if blockstream_utxos:
-                                            # ✅ CORREÇÃO: Converter formato Blockstream para formato esperado
+                                                # ✅ CORREÇÃO: Converter formato Blockstream para formato esperado
                                             # Garantir que value e vout são sempre inteiros
                                             # ✅ CRÍTICO: Verificar se UTXO não foi gasto e se output existe
                                             utxos = []
