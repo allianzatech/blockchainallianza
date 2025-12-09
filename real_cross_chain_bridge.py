@@ -2607,9 +2607,14 @@ class RealCrossChainBridge:
                                 import traceback
                                 traceback.print_exc()
                                 add_log("wallet_send_to_failed", {"error": str(wallet_send_err)}, "error")
+                                wallet_send_to_success = False  # Garantir que está marcado como falhou
+                            
+                            # DEBUG: Log do estado antes de tentar bitcoinlib
+                            print(f"🔍 DEBUG: wallet_send_to_success={wallet_send_to_success}, wallet_utxos={len(wallet_utxos) if wallet_utxos else 0}, api_utxos={len(utxos) if utxos else 0}")
                             
                             # Se wallet.send_to() falhou e temos UTXOs da API, tentar bitcoinlib primeiro
                             if not wallet_send_to_success and (not wallet_utxos and utxos):
+                                print(f"✅ Condição satisfeita: wallet_send_to_success=False, wallet_utxos vazio, api_utxos={len(utxos)}")
                                 # SOLUÇÃO ROBUSTA: Tentar bitcoinlib com OP_RETURN nativo primeiro (mais estável)
                                 print(f"🔧 wallet.send_to() falhou, tentando bitcoinlib com OP_RETURN nativo...")
                                 add_log("trying_bitcoinlib_method", {"utxos_count": len(utxos), "op_return_needed": bool(source_tx_hash)}, "info")
