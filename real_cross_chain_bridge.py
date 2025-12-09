@@ -3193,33 +3193,55 @@ class RealCrossChainBridge:
                                                         continue
                                                     
                                                     # ✅ VALIDAÇÃO CRÍTICA: Verificar se o output realmente existe e não foi gasto
+                                                    # Esta verificação é OBRIGATÓRIA para evitar usar UTXOs gastos
                                                     try:
+                                                        print(f"      🔍 Verificando UTXO {txid[:16]}...:{vout}...")
                                                         tx_url = f"https://blockstream.info/testnet/api/tx/{txid}"
                                                         tx_response = requests.get(tx_url, timeout=10)
                                                         if tx_response.status_code == 200:
                                                             tx_data = tx_response.json()
                                                             vouts = tx_data.get('vout', [])
+                                                            
+                                                            # Verificar se o output existe
                                                             if vout >= len(vouts):
-                                                                print(f"   ⚠️  Output {vout} não existe na transação {txid[:16]}... (tem apenas {len(vouts)} outputs)")
+                                                                print(f"   ❌ Output {vout} não existe na transação {txid[:16]}... (tem apenas {len(vouts)} outputs)")
                                                                 continue
+                                                            
                                                             vout_data = vouts[vout]
-                                                            # Verificar se o output foi gasto
-                                                            if vout_data.get('spent', False):
-                                                                print(f"   ⚠️  Output {vout} já foi gasto na transação {txid[:16]}...")
+                                                            
+                                                            # ✅ CRÍTICO: Verificar se o output foi gasto
+                                                            spent = vout_data.get('spent', False)
+                                                            spent_txid = vout_data.get('spent_txid')
+                                                            
+                                                            if spent:
+                                                                print(f"   ❌ Output {vout} já foi gasto na transação {txid[:16]}... (gasto em: {spent_txid[:16] if spent_txid else 'N/A'}...)")
                                                                 continue
+                                                            
                                                             # Verificar se o valor corresponde
                                                             vout_value = vout_data.get('value', 0)
                                                             if vout_value != value:
                                                                 print(f"   ⚠️  Valor do output {vout} não corresponde: esperado {value}, encontrado {vout_value}, usando valor real")
                                                                 # Usar o valor real do output
                                                                 value = vout_value
-                                                            print(f"      ✅ UTXO verificado: {txid[:16]}...:{vout} = {value} satoshis (não gasto, confirmado)")
+                                                            
+                                                            # ✅ VERIFICAÇÃO ADICIONAL: Verificar se o output está realmente disponível
+                                                            # Verificar status da transação
+                                                            tx_status = tx_data.get('status', {})
+                                                            if isinstance(tx_status, dict):
+                                                                confirmed = tx_status.get('confirmed', False)
+                                                                if not confirmed:
+                                                                    print(f"   ⚠️  Transação {txid[:16]}... não está confirmada, pulando...")
+                                                                    continue
+                                                            
+                                                            print(f"      ✅ UTXO verificado e válido: {txid[:16]}...:{vout} = {value} satoshis (não gasto, confirmado)")
                                                         else:
-                                                            print(f"   ⚠️  Não foi possível verificar transação {txid[:16]}... (status: {tx_response.status_code})")
-                                                            # Continuar mesmo assim - pode ser um problema temporário da API
+                                                            print(f"   ❌ Não foi possível verificar transação {txid[:16]}... (status: {tx_response.status_code})")
+                                                            # NÃO continuar se não conseguir verificar - é muito arriscado
+                                                            continue
                                                     except Exception as tx_check_err:
-                                                        print(f"   ⚠️  Erro ao verificar transação {txid[:16]}...: {tx_check_err}")
-                                                        # Continuar mesmo assim - pode ser um problema temporário da API
+                                                        print(f"   ❌ Erro ao verificar transação {txid[:16]}...: {tx_check_err}")
+                                                        # NÃO continuar se houver erro na verificação - é muito arriscado
+                                                        continue
                                                     
                                                     utxos.append({
                                                         'txid': txid,
