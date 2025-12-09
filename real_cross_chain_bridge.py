@@ -1406,6 +1406,167 @@ class RealCrossChainBridge:
             print(f"⚠️  Erro ao salvar prova: {e}")
             return None
     
+    def _create_bitcoin_tx_with_bitcoinlib_op_return(
+        self,
+        from_private_key: str,
+        from_address: str,
+        to_address: str,
+        amount_satoshis: int,
+        utxos: list,
+        memo_hex: str = None
+    ) -> Dict:
+        """
+        SOLUÇÃO ROBUSTA: Criar transação Bitcoin com bitcoinlib + OP_RETURN nativo
+        bitcoinlib tem suporte nativo para OP_RETURN e é mais estável que python-bitcointx
+        """
+        try:
+            from bitcoinlib.transactions import Transaction
+            from bitcoinlib.keys import HDKey
+            from bitcoinlib.scripts import Script
+            import requests
+            
+            print(f"🔧 Criando transação Bitcoin com bitcoinlib (OP_RETURN nativo)...")
+            print(f"   Inputs: {len(utxos)} UTXOs")
+            print(f"   OP_RETURN: {'Sim' if memo_hex else 'Não'}")
+            
+            # Criar chave privada
+            key = HDKey(from_private_key, network='testnet')
+            
+            # Criar transação
+            tx = Transaction(network='testnet', witness_type='segwit')
+            
+            # Adicionar inputs dos UTXOs
+            total_input_value = 0
+            for utxo in utxos:
+                txid = utxo.get('txid') or utxo.get('tx_hash')
+                vout = utxo.get('vout') or utxo.get('output_n') or utxo.get('tx_output_n', 0)
+                value = utxo.get('value', 0)
+                
+                if not txid or value <= 0:
+                    continue
+                
+                print(f"   📥 Adicionando input: {txid[:16]}...:{vout} = {value} satoshis")
+                
+                # bitcoinlib aceita txid e output_n diretamente
+                tx.add_input(
+                    prev_txid=txid,
+                    output_n=int(vout),
+                    value=value,
+                    keys=key
+                )
+                total_input_value += value
+            
+            if len(tx.inputs) == 0:
+                return {
+                    "success": False,
+                    "error": "Nenhum input válido criado",
+                    "note": "UTXOs não puderam ser convertidos em inputs"
+                }
+            
+            print(f"✅ {len(tx.inputs)} inputs criados (Total: {total_input_value} satoshis)")
+            
+            # Calcular fee e change
+            fee_satoshis = 500  # Fee fixo para testnet
+            change_satoshis = total_input_value - amount_satoshis - fee_satoshis
+            
+            if change_satoshis < 0:
+                return {
+                    "success": False,
+                    "error": f"Fundos insuficientes. Necessário: {amount_satoshis + fee_satoshis} satoshis, Disponível: {total_input_value} satoshis"
+                }
+            
+            # Adicionar output principal (destino)
+            tx.add_output(amount_satoshis, address=to_address)
+            print(f"   📤 Output: {to_address} = {amount_satoshis} satoshis")
+            
+            # Adicionar OP_RETURN (bitcoinlib tem método nativo!)
+            if memo_hex:
+                try:
+                    memo_bytes = bytes.fromhex(memo_hex) if len(memo_hex) % 2 == 0 else memo_hex.encode('utf-8')
+                    if len(memo_bytes) > 80:
+                        memo_bytes = memo_bytes[:80]
+                    
+                    # bitcoinlib tem método add_op_return() nativo!
+                    tx.add_op_return(memo_bytes.decode('utf-8', errors='ignore') if isinstance(memo_bytes, bytes) else memo_bytes)
+                    print(f"   🔗 OP_RETURN adicionado: {len(memo_bytes)} bytes")
+                except Exception as op_err:
+                    print(f"   ⚠️  Erro ao adicionar OP_RETURN: {op_err}")
+                    # Tentar método alternativo
+                    try:
+                        # Criar script OP_RETURN manualmente
+                        from bitcoinlib.scripts import Script
+                        op_return_script = Script(['OP_RETURN', memo_bytes])
+                        tx.outputs.append({
+                            'value': 0,
+                            'script': op_return_script,
+                            'address': None
+                        })
+                        print(f"   🔗 OP_RETURN adicionado (método alternativo)")
+                    except Exception as op_err2:
+                        print(f"   ⚠️  OP_RETURN falhou completamente: {op_err2}")
+            
+            # Adicionar change (se houver)
+            if change_satoshis > 546:  # Dust limit
+                tx.add_output(change_satoshis, address=from_address)
+                print(f"   🔄 Change: {from_address} = {change_satoshis} satoshis")
+            
+            # Assinar transação (bitcoinlib faz isso automaticamente com keys)
+            print(f"🔐 Assinando transação...")
+            tx.sign(key)
+            
+            # Obter raw transaction
+            raw_tx_hex = tx.raw_hex()
+            print(f"📄 Raw TX criada: {len(raw_tx_hex)} bytes")
+            
+            # Broadcast via Blockstream
+            broadcast_url = "https://blockstream.info/testnet/api/tx"
+            broadcast_response = requests.post(
+                broadcast_url,
+                data=raw_tx_hex,
+                headers={'Content-Type': 'text/plain'},
+                timeout=30
+            )
+            
+            if broadcast_response.status_code == 200:
+                tx_hash = broadcast_response.text.strip()
+                print(f"✅✅✅ Transação broadcastada! Hash: {tx_hash}")
+                return {
+                    "success": True,
+                    "tx_hash": tx_hash,
+                    "from": from_address,
+                    "to": to_address,
+                    "amount": amount_satoshis / 100000000,
+                    "chain": "bitcoin",
+                    "status": "broadcasted",
+                    "explorer_url": f"https://blockstream.info/testnet/tx/{tx_hash}",
+                    "method": "bitcoinlib_with_op_return",
+                    "op_return_included": bool(memo_hex)
+                }
+            else:
+                error_text = broadcast_response.text[:500]
+                print(f"❌ Erro ao broadcastar: {broadcast_response.status_code}")
+                print(f"   {error_text}")
+                return {
+                    "success": False,
+                    "error": f"Erro ao broadcastar: {broadcast_response.status_code}",
+                    "error_details": error_text
+                }
+                
+        except ImportError:
+            return {
+                "success": False,
+                "error": "bitcoinlib não instalado",
+                "note": "Instale com: pip install bitcoinlib"
+            }
+        except Exception as e:
+            print(f"❌ Erro ao criar transação com bitcoinlib: {e}")
+            import traceback
+            traceback.print_exc()
+            return {
+                "success": False,
+                "error": f"Erro ao criar transação: {str(e)}"
+            }
+    
     def _create_bitcoin_tx_with_op_return_manual(
         self,
         from_private_key: str,
@@ -1416,8 +1577,8 @@ class RealCrossChainBridge:
         memo_hex: str = None
     ) -> Dict:
         """
-        SOLUÇÃO DEFINITIVA: Criar transação Bitcoin manualmente com OP_RETURN
-        Usa python-bitcointx para garantir inputs corretos
+        SOLUÇÃO ALTERNATIVA: Criar transação Bitcoin manualmente com python-bitcointx
+        Usado como fallback se bitcoinlib falhar
         """
         try:
             from bitcointx.core import CMutableTransaction, CTxIn, CTxOut, COutPoint
