@@ -3242,9 +3242,9 @@ class RealCrossChainBridge:
                                         
                                         if utxos_response.status_code == 200:
                                             blockstream_utxos = utxos_response.json()
-                                        print(f"   📦 Resposta JSON: {len(blockstream_utxos) if blockstream_utxos else 0} UTXOs")
-                                        
-                                        if blockstream_utxos:
+                                            print(f"   📦 Resposta JSON: {len(blockstream_utxos) if blockstream_utxos else 0} UTXOs")
+                                            
+                                            if blockstream_utxos:
                                             # ✅ CORREÇÃO: Converter formato Blockstream para formato esperado
                                             # Garantir que value e vout são sempre inteiros
                                             # ✅ CRÍTICO: Verificar se UTXO não foi gasto e se output existe
@@ -3334,9 +3334,9 @@ class RealCrossChainBridge:
                                             else:
                                                 print(f"⚠️  Nenhum UTXO válido após processamento")
                                                 add_log("blockstream_no_valid_utxos", {"address": from_address}, "warning")
-                                        else:
-                                            print(f"⚠️  Blockstream retornou lista vazia de UTXOs")
-                                            add_log("blockstream_no_utxos", {"address": from_address}, "warning")
+                                            else:
+                                                print(f"⚠️  Blockstream retornou lista vazia de UTXOs")
+                                                add_log("blockstream_no_utxos", {"address": from_address}, "warning")
                                         else:
                                             print(f"⚠️  Blockstream API retornou status {utxos_response.status_code}: {utxos_response.text[:200]}")
                                             add_log("blockstream_api_error", {"status": utxos_response.status_code, "error": utxos_response.text[:200]}, "error")
