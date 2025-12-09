@@ -1419,11 +1419,21 @@ class RealCrossChainBridge:
         SOLUÇÃO ROBUSTA: Criar transação Bitcoin com bitcoinlib + OP_RETURN nativo
         bitcoinlib tem suporte nativo para OP_RETURN e é mais estável que python-bitcointx
         """
+        print(f"🚀🚀🚀 INICIANDO _create_bitcoin_tx_with_bitcoinlib_op_return() 🚀🚀🚀")
+        print(f"   Parâmetros recebidos:")
+        print(f"   - from_address: {from_address}")
+        print(f"   - to_address: {to_address}")
+        print(f"   - amount_satoshis: {amount_satoshis}")
+        print(f"   - utxos: {len(utxos)} UTXOs")
+        print(f"   - memo_hex: {'Sim' if memo_hex else 'Não'} ({len(memo_hex) if memo_hex else 0} chars)")
+        
         try:
+            print(f"📦 Tentando importar bitcoinlib...")
             from bitcoinlib.transactions import Transaction
             from bitcoinlib.keys import HDKey
             from bitcoinlib.scripts import Script
             import requests
+            print(f"✅ bitcoinlib importado com sucesso!")
             
             print(f"🔧 Criando transação Bitcoin com bitcoinlib (OP_RETURN nativo)...")
             print(f"   Inputs: {len(utxos)} UTXOs")
