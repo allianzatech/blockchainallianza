@@ -2750,31 +2750,10 @@ class RealCrossChainBridge:
                                 if utxos:
                                     try:
                                         amount_satoshis = int(amount_btc * 100000000)
-                                    memo_hex = source_tx_hash if source_tx_hash else None
-                                    
-                                    bitcoinlib_result = self._create_bitcoin_tx_with_bitcoinlib_op_return(
-                                        from_private_key=from_private_key,
-                                        from_address=from_address,
-                                        to_address=to_address,
-                                        amount_satoshis=amount_satoshis,
-                                        utxos=utxos,
-                                        memo_hex=memo_hex
-                                    )
-                                    
-                                    if bitcoinlib_result.get("success"):
-                                        print(f"✅✅✅ bitcoinlib funcionou!")
-                                        proof_data["success"] = True
-                                        proof_data["tx_hash"] = bitcoinlib_result.get("tx_hash")
-                                        proof_data["final_result"] = bitcoinlib_result
-                                        proof_file = self._save_transaction_proof(proof_data)
-                                        bitcoinlib_result["proof_file"] = proof_file
-                                        return bitcoinlib_result
-                                    else:
-                                        print(f"⚠️  bitcoinlib falhou: {bitcoinlib_result.get('error')}")
-                                        add_log("bitcoinlib_method_failed", {"error": bitcoinlib_result.get('error')}, "error")
+                                        memo_hex = source_tx_hash if source_tx_hash else None
                                         
-                                        # Fallback: tentar python-bitcointx
-                                        print(f"🔄 Tentando python-bitcointx como fallback...")
+                                        # ✅ PRIORIDADE 1: Tentar método manual com python-bitcointx (mais confiável)
+                                        print(f"🔄 Tentando método manual (python-bitcointx) com {len(utxos)} UTXOs da API...")
                                         try:
                                             manual_result = self._create_bitcoin_tx_with_op_return_manual(
                                                 from_private_key=from_private_key,
@@ -2794,24 +2773,60 @@ class RealCrossChainBridge:
                                                 manual_result["proof_file"] = proof_file
                                                 return manual_result
                                             else:
-                                                print(f"⚠️  python-bitcointx também falhou: {manual_result.get('error')}")
+                                                print(f"⚠️  python-bitcointx falhou: {manual_result.get('error')}")
                                                 add_log("manual_method_failed", {"error": manual_result.get('error')}, "error")
                                         except Exception as manual_err:
                                             print(f"⚠️  Erro ao tentar python-bitcointx: {manual_err}")
+                                            import traceback
+                                            traceback.print_exc()
                                             add_log("manual_method_exception", {"error": str(manual_err)}, "error")
                                         
-                                except Exception as bitcoinlib_err:
-                                    print(f"⚠️  Erro ao tentar bitcoinlib: {bitcoinlib_err}")
-                                    add_log("bitcoinlib_method_exception", {"error": str(bitcoinlib_err)}, "error")
-                                
-                                # Se método manual falhou, tentar BlockCypher como fallback
-                                if source_tx_hash:
-                                    print(f"🔗 OP_RETURN necessário - método manual falhou, usando BlockCypher API...")
+                                        # ✅ PRIORIDADE 2: Tentar bitcoinlib como fallback
+                                        print(f"🔄 Tentando bitcoinlib como fallback...")
+                                        try:
+                                            bitcoinlib_result = self._create_bitcoin_tx_with_bitcoinlib_op_return(
+                                                from_private_key=from_private_key,
+                                                from_address=from_address,
+                                                to_address=to_address,
+                                                amount_satoshis=amount_satoshis,
+                                                utxos=utxos,
+                                                memo_hex=memo_hex
+                                            )
+                                            
+                                            if bitcoinlib_result.get("success"):
+                                                print(f"✅✅✅ bitcoinlib funcionou!")
+                                                proof_data["success"] = True
+                                                proof_data["tx_hash"] = bitcoinlib_result.get("tx_hash")
+                                                proof_data["final_result"] = bitcoinlib_result
+                                                proof_file = self._save_transaction_proof(proof_data)
+                                                bitcoinlib_result["proof_file"] = proof_file
+                                                return bitcoinlib_result
+                                            else:
+                                                print(f"⚠️  bitcoinlib falhou: {bitcoinlib_result.get('error')}")
+                                                add_log("bitcoinlib_method_failed", {"error": bitcoinlib_result.get('error')}, "error")
+                                        except Exception as bitcoinlib_err:
+                                            print(f"⚠️  Erro ao tentar bitcoinlib: {bitcoinlib_err}")
+                                            add_log("bitcoinlib_method_exception", {"error": str(bitcoinlib_err)}, "error")
+                                        
+                                    except Exception as alt_methods_err:
+                                        print(f"⚠️  Erro geral ao tentar métodos alternativos: {alt_methods_err}")
+                                        add_log("alternative_methods_exception", {"error": str(alt_methods_err)}, "error")
                                 else:
-                                    print(f"⚠️  Método manual falhou, usando BlockCypher API como fallback...")
-                                add_log("using_blockcypher_api", {"utxos_count": len(utxos), "op_return_needed": bool(source_tx_hash), "manual_method_failed": True}, "info")
+                                    print(f"⚠️  Nenhum UTXO disponível para métodos alternativos")
+                            else:
+                                print(f"⚠️  Condição não satisfeita para métodos alternativos:")
+                                print(f"   - wallet_send_to_success: {wallet_send_to_success}")
+                                print(f"   - api_utxos: {len(utxos) if utxos else 0}")
+                                print(f"   Pulando métodos alternativos e indo direto para BlockCypher...")
                                 
                                 try:
+                                    # Se método manual falhou, tentar BlockCypher como fallback
+                                    if source_tx_hash:
+                                        print(f"🔗 OP_RETURN necessário - método manual falhou, usando BlockCypher API...")
+                                    else:
+                                        print(f"⚠️  Método manual falhou, usando BlockCypher API como fallback...")
+                                    add_log("using_blockcypher_api", {"utxos_count": len(utxos) if utxos else 0, "op_return_needed": bool(source_tx_hash), "manual_method_failed": True}, "info")
+                                    
                                     # Usar BlockCypher API para criar e assinar transação
                                     # Isso contorna o problema do bitcoinlib não reconhecer UTXOs
                                     print(f"🔧 Criando transação via BlockCypher API com {len(utxos)} UTXOs...")
