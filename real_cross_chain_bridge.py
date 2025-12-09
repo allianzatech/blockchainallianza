@@ -1713,13 +1713,21 @@ class RealCrossChainBridge:
                 print(f"   📥 Input: {txid[:16]}...:{vout} = {value} satoshis")
             
             if len(tx.vin) == 0:
+                print(f"❌ ERRO CRÍTICO: Nenhum input válido foi criado!")
+                print(f"   UTXOs fornecidos: {len(utxos)}")
+                print(f"   Inputs criados: {inputs_added}")
                 return {
                     "success": False,
                     "error": "Nenhum input válido criado",
-                    "note": "UTXOs não puderam ser convertidos em inputs"
+                    "note": "UTXOs não puderam ser convertidos em inputs",
+                    "debug": {
+                        "utxos_provided": len(utxos),
+                        "inputs_created": inputs_added,
+                        "utxos_sample": utxos[:3] if utxos else []
+                    }
                 }
             
-            print(f"✅ {len(tx.vin)} inputs criados (Total: {total_input_value} satoshis)")
+            print(f"✅ {len(tx.vin)} inputs criados com sucesso (Total: {total_input_value} satoshis)")
             
             # Calcular fee e change
             fee_satoshis = 500  # Fee fixo para testnet
@@ -2590,6 +2598,36 @@ class RealCrossChainBridge:
                             try:
                                 print(f"📤 Tentando wallet.send_to() primeiro (wallet pode buscar UTXOs automaticamente)...")
                                 print(f"   Parâmetros: to_address={to_address}, amount_satoshis={amount_satoshis}, fee=5")
+                                
+                                # ✅ PATCH 1: Forçar scan de UTXOs ANTES de tentar send_to()
+                                print(f"🔄 Forçando scan completo de UTXOs antes de send_to()...")
+                                try:
+                                    if hasattr(wallet, 'scan'):
+                                        wallet.scan(full=True)  # full=True força scan completo
+                                        print(f"✅ Scan completo executado!")
+                                    else:
+                                        print(f"⚠️  Wallet não tem método scan()")
+                                except Exception as scan_err:
+                                    print(f"⚠️  Erro no scan: {scan_err}")
+                                
+                                # ✅ PATCH 2: Forçar atualização de UTXOs
+                                try:
+                                    wallet.utxos_update()
+                                    wallet_utxos_after_scan = wallet.utxos()
+                                    print(f"   📦 UTXOs após scan: {len(wallet_utxos_after_scan) if wallet_utxos_after_scan else 0}")
+                                    
+                                    # Mostrar UTXOs encontrados
+                                    if wallet_utxos_after_scan:
+                                        print(f"   🔍 UTXOs na carteira bitcoinlib:")
+                                        for i, u in enumerate(wallet_utxos_after_scan[:5]):  # Mostrar até 5
+                                            print(f"      [{i+1}] {u}")
+                                        if len(wallet_utxos_after_scan) > 5:
+                                            print(f"      ... e mais {len(wallet_utxos_after_scan) - 5} UTXOs")
+                                    else:
+                                        print(f"   ⚠️  Nenhum UTXO encontrado na carteira após scan!")
+                                except Exception as utxos_err:
+                                    print(f"⚠️  Erro ao atualizar UTXOs: {utxos_err}")
+                                
                                 print(f"   Wallet balance: {wallet.balance() if hasattr(wallet, 'balance') else 'N/A'}")
                                 print(f"   Wallet UTXOs: {len(wallet.utxos()) if hasattr(wallet, 'utxos') else 'N/A'}")
                                 
