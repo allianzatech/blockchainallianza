@@ -1684,33 +1684,57 @@ class RealCrossChainBridge:
             
             # Adicionar inputs (CRÍTICO: garantir que inputs sejam adicionados corretamente)
             total_input_value = 0
-            for utxo in utxos:
+            inputs_added = 0
+            
+            print(f"   🔍 Processando {len(utxos)} UTXOs para criar inputs...")
+            
+            for i, utxo in enumerate(utxos):
                 txid = utxo.get('txid') or utxo.get('tx_hash')
-                vout = utxo.get('vout') or utxo.get('output_n') or utxo.get('tx_output_n', 0)
-                value = utxo.get('value', 0)
+                vout = utxo.get('vout') or utxo.get('output_n') or utxo.get('tx_output_n') or utxo.get('output_index', 0)
+                value = utxo.get('value', 0) or utxo.get('amount', 0)
                 
-                if not txid or value <= 0:
+                # Validar UTXO
+                if not txid:
+                    print(f"   ⚠️  UTXO [{i+1}] sem txid, pulando...")
+                    continue
+                
+                if value <= 0:
+                    print(f"   ⚠️  UTXO [{i+1}] {txid[:16]}... tem valor inválido ({value}), pulando...")
                     continue
                 
                 # Converter txid de hex string para bytes (little-endian para Bitcoin)
                 # Bitcoin usa little-endian para txid em COutPoint
                 try:
-                    txid_bytes = bytes.fromhex(txid)
-                    if len(txid_bytes) == 32:  # 32 bytes = 64 hex chars
-                        txid_bytes = txid_bytes[::-1]  # Reverter bytes (little-endian)
-                    else:
-                        # Se não tem 32 bytes, tentar sem reverter
-                        txid_bytes = bytes.fromhex(txid)
-                except:
-                    # Se falhar, tentar sem reverter
-                    txid_bytes = bytes.fromhex(txid)
+                    # Remover espaços e garantir que é hex válido
+                    txid_clean = txid.strip().replace(' ', '')
+                    if len(txid_clean) != 64:
+                        print(f"   ⚠️  UTXO [{i+1}] txid inválido (tamanho: {len(txid_clean)}), pulando...")
+                        continue
+                    
+                    txid_bytes = bytes.fromhex(txid_clean)
+                    if len(txid_bytes) != 32:  # 32 bytes = 64 hex chars
+                        print(f"   ⚠️  UTXO [{i+1}] txid não tem 32 bytes ({len(txid_bytes)}), pulando...")
+                        continue
+                    
+                    # Bitcoin usa little-endian para txid em COutPoint
+                    txid_bytes_le = txid_bytes[::-1]  # Reverter bytes (little-endian)
+                    
+                except Exception as txid_err:
+                    print(f"   ⚠️  Erro ao converter txid [{i+1}]: {txid_err}, pulando...")
+                    continue
                 
-                outpoint = COutPoint(txid_bytes, int(vout))
-                txin = CTxIn(outpoint)
-                tx.vin.append(txin)
-                total_input_value += value
-                
-                print(f"   📥 Input: {txid[:16]}...:{vout} = {value} satoshis")
+                # Criar COutPoint e CTxIn
+                try:
+                    outpoint = COutPoint(txid_bytes_le, int(vout))
+                    txin = CTxIn(outpoint)
+                    tx.vin.append(txin)
+                    total_input_value += value
+                    inputs_added += 1
+                    
+                    print(f"   ✅ Input [{inputs_added}]: {txid_clean[:16]}...:{vout} = {value} satoshis")
+                except Exception as input_err:
+                    print(f"   ⚠️  Erro ao criar input [{i+1}]: {input_err}, pulando...")
+                    continue
             
             if len(tx.vin) == 0:
                 print(f"❌ ERRO CRÍTICO: Nenhum input válido foi criado!")
