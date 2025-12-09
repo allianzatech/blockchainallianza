@@ -3378,6 +3378,9 @@ class RealCrossChainBridge:
                                                     if not tosign:
                                                         print(f"   ⚠️  BlockCypher não retornou 'tosign' - resposta: {json.dumps(unsigned_tx, indent=2)[:500]}")
                                                         add_log("blockcypher_no_tosign", {"response": unsigned_tx}, "error")
+                                                        # NÃO tentar métodos alternativos se BlockCypher não retornou tosign
+                                                        # Isso indica um problema com a API ou com os dados enviados
+                                                        raise Exception(f"BlockCypher não retornou 'tosign' necessário para assinar. Resposta: {json.dumps(unsigned_tx, indent=2)[:500]}")
                                                     
                                                     if tosign:
                                                         # Converter chave privada se necessário
