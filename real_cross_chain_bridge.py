@@ -3246,10 +3246,10 @@ class RealCrossChainBridge:
                                             
                                             if blockstream_utxos:
                                                 # ✅ CORREÇÃO: Converter formato Blockstream para formato esperado
-                                            # Garantir que value e vout são sempre inteiros
-                                            # ✅ CRÍTICO: Verificar se UTXO não foi gasto e se output existe
-                                            utxos = []
-                                            for bs_utxo in blockstream_utxos:
+                                                # Garantir que value e vout são sempre inteiros
+                                                # ✅ CRÍTICO: Verificar se UTXO não foi gasto e se output existe
+                                                utxos = []
+                                                for bs_utxo in blockstream_utxos:
                                                 try:
                                                     txid = bs_utxo.get('txid')
                                                     vout = int(bs_utxo.get('vout', 0))
