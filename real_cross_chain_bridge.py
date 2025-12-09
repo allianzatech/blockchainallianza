@@ -3667,32 +3667,74 @@ class RealCrossChainBridge:
                                             # Se não conseguiu raw_tx_hex, tentar método alternativo: usar wallet.send_to() sem OP_RETURN
                                             print(f"   ⚠️  Não foi possível obter raw transaction, tentando wallet.send_to() sem OP_RETURN...")
                                             try:
-                                                from bitcoinlib.wallets import Wallet
-                                                wallet = Wallet(from_address, network='testnet')
-                                                amount_satoshis = int(output_value)
-                                                tx_result = wallet.send_to(to_address, amount_satoshis, fee=5)
-                                                
-                                                if tx_result:
-                                                    tx_hash = tx_result.txid if hasattr(tx_result, 'txid') else str(tx_result)
-                                                    print(f"   ✅ Transação criada via wallet.send_to() (sem OP_RETURN): {tx_hash}")
+                                                # Usar o wallet que já foi criado anteriormente (se disponível)
+                                                if wallet and hasattr(wallet, 'send_to'):
+                                                    print(f"   📤 Usando wallet existente para enviar transação...")
+                                                    amount_satoshis = int(output_value)
+                                                    tx_result = wallet.send_to(to_address, amount_satoshis, fee=5)
                                                     
-                                                    return {
-                                                        "success": True,
-                                                        "tx_hash": tx_hash,
-                                                        "from": from_address,
-                                                        "to": to_address,
-                                                        "amount": amount_btc,
-                                                        "chain": "bitcoin",
-                                                        "status": "broadcasted",
-                                                        "explorer_url": f"https://live.blockcypher.com/btc-testnet/tx/{tx_hash}/",
-                                                        "note": "✅ Transação REAL criada via wallet.send_to() (OP_RETURN não incluído - limitação da biblioteca)",
-                                                        "real_broadcast": True,
-                                                        "method": "wallet_send_to_fallback",
-                                                        "op_return_included": False,
-                                                        "op_return_note": "OP_RETURN não incluído devido a limitação do wallet.send_to()"
-                                                    }
+                                                    if tx_result:
+                                                        tx_hash = tx_result.txid if hasattr(tx_result, 'txid') else str(tx_result)
+                                                        print(f"   ✅✅✅ Transação criada via wallet.send_to() (sem OP_RETURN): {tx_hash}")
+                                                        
+                                                        add_log("transaction_broadcasted_wallet_send_to", {"tx_hash": tx_hash}, "info")
+                                                        proof_data["success"] = True
+                                                        proof_data["tx_hash"] = tx_hash
+                                                        proof_data["final_result"] = {
+                                                            "success": True,
+                                                            "tx_hash": tx_hash,
+                                                            "method": "wallet_send_to_fallback",
+                                                            "op_return_included": False
+                                                        }
+                                                        proof_file = self._save_transaction_proof(proof_data)
+                                                        
+                                                        return {
+                                                            "success": True,
+                                                            "tx_hash": tx_hash,
+                                                            "from": from_address,
+                                                            "to": to_address,
+                                                            "amount": amount_btc,
+                                                            "chain": "bitcoin",
+                                                            "status": "broadcasted",
+                                                            "explorer_url": f"https://live.blockcypher.com/btc-testnet/tx/{tx_hash}/",
+                                                            "note": "✅ Transação REAL criada via wallet.send_to() (OP_RETURN não incluído - limitação da biblioteca)",
+                                                            "real_broadcast": True,
+                                                            "method": "wallet_send_to_fallback",
+                                                            "op_return_included": False,
+                                                            "op_return_note": "OP_RETURN não incluído devido a limitação do wallet.send_to()",
+                                                            "proof_file": proof_file
+                                                        }
+                                                else:
+                                                    # Criar novo wallet se não existir
+                                                    print(f"   📤 Criando novo wallet para enviar transação...")
+                                                    from bitcoinlib.wallets import Wallet
+                                                    new_wallet = Wallet(wallet_name, network='testnet')
+                                                    amount_satoshis = int(output_value)
+                                                    tx_result = new_wallet.send_to(to_address, amount_satoshis, fee=5)
+                                                    
+                                                    if tx_result:
+                                                        tx_hash = tx_result.txid if hasattr(tx_result, 'txid') else str(tx_result)
+                                                        print(f"   ✅✅✅ Transação criada via wallet.send_to() (novo wallet, sem OP_RETURN): {tx_hash}")
+                                                        
+                                                        return {
+                                                            "success": True,
+                                                            "tx_hash": tx_hash,
+                                                            "from": from_address,
+                                                            "to": to_address,
+                                                            "amount": amount_btc,
+                                                            "chain": "bitcoin",
+                                                            "status": "broadcasted",
+                                                            "explorer_url": f"https://live.blockcypher.com/btc-testnet/tx/{tx_hash}/",
+                                                            "note": "✅ Transação REAL criada via wallet.send_to() (OP_RETURN não incluído - limitação da biblioteca)",
+                                                            "real_broadcast": True,
+                                                            "method": "wallet_send_to_fallback_new",
+                                                            "op_return_included": False,
+                                                            "op_return_note": "OP_RETURN não incluído devido a limitação do wallet.send_to()"
+                                                        }
                                             except Exception as wallet_fallback_err:
                                                 print(f"   ⚠️  wallet.send_to() também falhou: {wallet_fallback_err}")
+                                                import traceback
+                                                traceback.print_exc()
                                         
                                         raise Exception("Não foi possível obter raw transaction de nenhum método")
                                         
