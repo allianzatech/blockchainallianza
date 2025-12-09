@@ -3361,11 +3361,23 @@ class RealCrossChainBridge:
                                                 }
                                                 
                                                 create_url = f"{self.btc_api_base}/txs/new"
+                                                print(f"   📡 Enviando para BlockCypher: {create_url}")
+                                                print(f"   📋 Dados: {len(inputs_list)} inputs, {len(outputs_list)} outputs")
+                                                print(f"   💰 Total input: {total_input_value} sats, Output: {output_value} sats, Fee: {estimated_fee_satoshis} sats, Change: {change_value} sats")
+                                                
                                                 create_response = requests.post(create_url, json=tx_data, timeout=30)
+                                                
+                                                print(f"   📊 Resposta BlockCypher: Status {create_response.status_code}")
                                                 
                                                 if create_response.status_code in [200, 201]:
                                                     unsigned_tx = create_response.json()
                                                     tosign = unsigned_tx.get('tosign', [])
+                                                    
+                                                    print(f"   📋 tosign recebido: {len(tosign)} hashes para assinar")
+                                                    
+                                                    if not tosign:
+                                                        print(f"   ⚠️  BlockCypher não retornou 'tosign' - resposta: {json.dumps(unsigned_tx, indent=2)[:500]}")
+                                                        add_log("blockcypher_no_tosign", {"response": unsigned_tx}, "error")
                                                     
                                                     if tosign:
                                                         # Converter chave privada se necessário
@@ -3415,6 +3427,19 @@ class RealCrossChainBridge:
                                                                     "op_return_included": bool(memo_hex),
                                                                     "proof_file": proof_file
                                                                 }
+                                                            else:
+                                                                error_text = sign_response.text[:500] if sign_response.text else "Sem resposta"
+                                                                print(f"   ⚠️  BlockCypher não retornou hash na resposta")
+                                                                print(f"   Resposta: {error_text}")
+                                                                add_log("blockcypher_no_hash", {"response": signed_tx_data}, "error")
+                                                        else:
+                                                            error_text = sign_response.text[:500] if sign_response.text else "Sem resposta"
+                                                            print(f"   ⚠️  BlockCypher sign falhou: {sign_response.status_code}")
+                                                            print(f"   Resposta: {error_text}")
+                                                            add_log("blockcypher_sign_failed", {
+                                                                "status_code": sign_response.status_code,
+                                                                "error": error_text
+                                                            }, "error")
                                                 else:
                                                     error_text = create_response.text[:500] if create_response.text else "Sem resposta"
                                                     print(f"⚠️  BlockCypher create falhou: {create_response.status_code}")
