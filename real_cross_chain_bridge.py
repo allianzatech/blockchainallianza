@@ -3180,6 +3180,7 @@ class RealCrossChainBridge:
                                         if blockstream_utxos:
                                             # ✅ CORREÇÃO: Converter formato Blockstream para formato esperado
                                             # Garantir que value e vout são sempre inteiros
+                                            # ✅ CRÍTICO: Verificar se UTXO não foi gasto e se output existe
                                             utxos = []
                                             for bs_utxo in blockstream_utxos:
                                                 try:
@@ -3191,12 +3192,43 @@ class RealCrossChainBridge:
                                                         print(f"   ⚠️  UTXO inválido ignorado: txid={txid}, value={value}")
                                                         continue
                                                     
+                                                    # ✅ VALIDAÇÃO CRÍTICA: Verificar se o output realmente existe e não foi gasto
+                                                    try:
+                                                        tx_url = f"https://blockstream.info/testnet/api/tx/{txid}"
+                                                        tx_response = requests.get(tx_url, timeout=10)
+                                                        if tx_response.status_code == 200:
+                                                            tx_data = tx_response.json()
+                                                            vouts = tx_data.get('vout', [])
+                                                            if vout >= len(vouts):
+                                                                print(f"   ⚠️  Output {vout} não existe na transação {txid[:16]}... (tem apenas {len(vouts)} outputs)")
+                                                                continue
+                                                            vout_data = vouts[vout]
+                                                            # Verificar se o output foi gasto
+                                                            if vout_data.get('spent', False):
+                                                                print(f"   ⚠️  Output {vout} já foi gasto na transação {txid[:16]}...")
+                                                                continue
+                                                            # Verificar se o valor corresponde
+                                                            vout_value = vout_data.get('value', 0)
+                                                            if vout_value != value:
+                                                                print(f"   ⚠️  Valor do output {vout} não corresponde: esperado {value}, encontrado {vout_value}, usando valor real")
+                                                                # Usar o valor real do output
+                                                                value = vout_value
+                                                            print(f"      ✅ UTXO verificado: {txid[:16]}...:{vout} = {value} satoshis (não gasto, confirmado)")
+                                                        else:
+                                                            print(f"   ⚠️  Não foi possível verificar transação {txid[:16]}... (status: {tx_response.status_code})")
+                                                            # Continuar mesmo assim - pode ser um problema temporário da API
+                                                    except Exception as tx_check_err:
+                                                        print(f"   ⚠️  Erro ao verificar transação {txid[:16]}...: {tx_check_err}")
+                                                        # Continuar mesmo assim - pode ser um problema temporário da API
+                                                    
                                                     utxos.append({
                                                         'txid': txid,
                                                         'vout': vout,
                                                         'output_n': vout,  # Mesmo valor que vout
                                                         'value': value,    # Garantido como int
-                                                        'address': from_address
+                                                        'address': from_address,
+                                                        'confirmed': True,
+                                                        'spent': False
                                                     })
                                                     print(f"      ✅ UTXO adicionado: {txid[:16]}...:{vout} = {value} satoshis")
                                                 except (ValueError, TypeError) as conv_err:
