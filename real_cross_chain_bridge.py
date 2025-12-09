@@ -2823,27 +2823,7 @@ class RealCrossChainBridge:
                                     print(f"✅ Temos {len(utxos)} UTXOs - tentando métodos alternativos...")
                                     add_log("trying_alternative_methods", {"utxos_count": len(utxos), "op_return_needed": bool(source_tx_hash)}, "info")
                                     
-                                # Se não temos UTXOs após buscar da Blockstream, retornar erro
-                                if not utxos or len(utxos) == 0:
-                                    print(f"❌ Nenhum UTXO encontrado após buscar da Blockstream!")
-                                    proof_data["final_result"] = {
-                                        "success": False,
-                                        "error": "Nenhum UTXO encontrado para criar transação",
-                                        "note": "Verifique se o endereço tem saldo na testnet Bitcoin"
-                                    }
-                                    proof_file = self._save_transaction_proof(proof_data)
-                                    return {
-                                        "success": False,
-                                        "error": "Nenhum UTXO encontrado para criar transação",
-                                        "from_address": from_address,
-                                        "to_address": to_address,
-                                        "amount": amount_btc,
-                                        "note": "Verifique se o endereço tem saldo na testnet Bitcoin",
-                                        "proof_file": proof_file
-                                    }
-                                
-                                # Se temos UTXOs (da Blockstream), tentar métodos alternativos
-                                try:
+                                    # Se temos UTXOs (da Blockstream), tentar métodos alternativos
                                     try:
                                         amount_satoshis = int(amount_btc * 100000000)
                                         memo_hex = source_tx_hash if source_tx_hash else None
@@ -2917,7 +2897,23 @@ class RealCrossChainBridge:
                                         print(f"⚠️  Erro geral ao tentar métodos alternativos: {alt_methods_err}")
                                         add_log("alternative_methods_exception", {"error": str(alt_methods_err)}, "error")
                                 else:
-                                    print(f"⚠️  Nenhum UTXO disponível para métodos alternativos")
+                                    # Se não temos UTXOs após buscar da Blockstream, retornar erro
+                                    print(f"❌ Nenhum UTXO encontrado após buscar da Blockstream!")
+                                    proof_data["final_result"] = {
+                                        "success": False,
+                                        "error": "Nenhum UTXO encontrado para criar transação",
+                                        "note": "Verifique se o endereço tem saldo na testnet Bitcoin"
+                                    }
+                                    proof_file = self._save_transaction_proof(proof_data)
+                                    return {
+                                        "success": False,
+                                        "error": "Nenhum UTXO encontrado para criar transação",
+                                        "from_address": from_address,
+                                        "to_address": to_address,
+                                        "amount": amount_btc,
+                                        "note": "Verifique se o endereço tem saldo na testnet Bitcoin",
+                                        "proof_file": proof_file
+                                    }
                             else:
                                 print(f"⚠️  Condição não satisfeita para métodos alternativos:")
                                 print(f"   - wallet_send_to_success: {wallet_send_to_success}")
