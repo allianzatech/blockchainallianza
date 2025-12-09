@@ -2671,6 +2671,49 @@ class RealCrossChainBridge:
                                 print(f"   Tamanho do memo: {len(source_tx_hash)} caracteres hex")
                                 add_log("op_return_enabled", {"memo_length": len(source_tx_hash)}, "info")
                             
+                            # ✅ VERIFICAÇÃO INICIAL: Se não temos UTXOs após todas as tentativas, retornar erro claro
+                            if not utxos or len(utxos) == 0:
+                                print(f"❌❌❌ NENHUM UTXO ENCONTRADO após buscar em todas as fontes!")
+                                print(f"   📍 Endereço: {from_address}")
+                                print(f"   💡 SOLUÇÃO: Solicite BTC no faucet do Bitcoin Testnet:")
+                                print(f"      🔗 https://bitcoinfaucet.uo1.net/")
+                                print(f"      🔗 https://testnet-faucet.mempool.co/")
+                                print(f"      🔗 https://coinfaucet.eu/en/btc-testnet/")
+                                print(f"   📝 Cole o endereço acima no faucet e aguarde alguns minutos")
+                                
+                                return {
+                                    "success": False,
+                                    "error": "Nenhum UTXO encontrado - endereço sem saldo",
+                                    "from_address": from_address,
+                                    "to_address": to_address,
+                                    "amount": amount_btc,
+                                    "note": "O endereço Bitcoin não tem saldo. Solicite BTC no faucet.",
+                                    "solution": "Solicite BTC no faucet do Bitcoin Testnet",
+                                    "faucet_urls": [
+                                        "https://bitcoinfaucet.uo1.net/",
+                                        "https://testnet-faucet.mempool.co/",
+                                        "https://coinfaucet.eu/en/btc-testnet/"
+                                    ],
+                                    "instructions": [
+                                        "1. Acesse um dos faucets acima",
+                                        f"2. Cole o endereço: {from_address}",
+                                        "3. Solicite BTC (geralmente 0.001 BTC)",
+                                        "4. Aguarde alguns minutos para confirmação",
+                                        "5. Tente a transferência novamente"
+                                    ],
+                                    "error_details": {
+                                        "amount_btc": amount_btc,
+                                        "amount_satoshis": int(amount_btc * 100000000),
+                                        "balance": 0,
+                                        "utxos_count": 0,
+                                        "possible_causes": [
+                                            "Endereço não tem saldo na testnet Bitcoin",
+                                            "UTXOs ainda não confirmados",
+                                            "Endereço nunca recebeu BTC"
+                                        ]
+                                    }
+                                }
+                            
                             # TENTAR wallet.send_to() PRIMEIRO (mesmo sem UTXOs, pode buscar automaticamente)
                             # Só usar BlockCypher se wallet.send_to() falhar
                             wallet_send_to_tried = False
@@ -2897,12 +2940,19 @@ class RealCrossChainBridge:
                                         print(f"⚠️  Erro geral ao tentar métodos alternativos: {alt_methods_err}")
                                         add_log("alternative_methods_exception", {"error": str(alt_methods_err)}, "error")
                                 else:
-                                    # Se não temos UTXOs após buscar da Blockstream, retornar erro
+                                    # Se não temos UTXOs após buscar da Blockstream, retornar erro claro
                                     print(f"❌ Nenhum UTXO encontrado após buscar da Blockstream!")
+                                    print(f"   💡 SOLUÇÃO: Solicite BTC no faucet do Bitcoin Testnet:")
+                                    print(f"      - https://bitcoinfaucet.uo1.net/")
+                                    print(f"      - https://testnet-faucet.mempool.co/")
+                                    print(f"      - Endereço: {from_address}")
+                                    
                                     proof_data["final_result"] = {
                                         "success": False,
                                         "error": "Nenhum UTXO encontrado para criar transação",
-                                        "note": "Verifique se o endereço tem saldo na testnet Bitcoin"
+                                        "note": "Verifique se o endereço tem saldo na testnet Bitcoin",
+                                        "solution": "Solicite BTC no faucet: https://bitcoinfaucet.uo1.net/",
+                                        "address": from_address
                                     }
                                     proof_file = self._save_transaction_proof(proof_data)
                                     return {
@@ -2912,14 +2962,65 @@ class RealCrossChainBridge:
                                         "to_address": to_address,
                                         "amount": amount_btc,
                                         "note": "Verifique se o endereço tem saldo na testnet Bitcoin",
+                                        "solution": "Solicite BTC no faucet do Bitcoin Testnet: https://bitcoinfaucet.uo1.net/",
+                                        "faucet_urls": [
+                                            "https://bitcoinfaucet.uo1.net/",
+                                            "https://testnet-faucet.mempool.co/"
+                                        ],
                                         "proof_file": proof_file
                                     }
+                            
+                            # Se wallet.send_to() teve sucesso, não precisa fazer mais nada
+                            # Mas se falhou e não temos UTXOs, já retornamos erro acima
+                            # Se falhou mas temos UTXOs, os métodos alternativos já foram tentados acima
+                            # Este bloco só executa se wallet_send_to_success for True (não deveria chegar aqui)
+                            if wallet_send_to_success:
+                                print(f"✅ wallet.send_to() teve sucesso - transação já foi enviada")
                             else:
-                                print(f"⚠️  Condição não satisfeita para métodos alternativos:")
-                                print(f"   - wallet_send_to_success: {wallet_send_to_success}")
-                                print(f"   - api_utxos: {len(utxos) if utxos else 0}")
-                                print(f"   Pulando métodos alternativos e indo direto para BlockCypher...")
+                                # Se chegou aqui, wallet.send_to() falhou mas não entrou no bloco acima
+                                # Isso pode acontecer se não há UTXOs e os métodos alternativos também falharam
+                                print(f"⚠️  wallet.send_to() falhou e métodos alternativos não conseguiram criar transação")
+                                print(f"   Tentando BlockCypher como último recurso...")
                                 
+                                # Buscar UTXOs novamente se não temos
+                                if not utxos or len(utxos) == 0:
+                                    print(f"🔄 Buscando UTXOs da Blockstream novamente...")
+                                    try:
+                                        utxos_url = f"https://blockstream.info/testnet/api/address/{from_address}/utxo"
+                                        utxos_response = requests.get(utxos_url, timeout=15)
+                                        if utxos_response.status_code == 200:
+                                            blockstream_utxos = utxos_response.json()
+                                            if blockstream_utxos:
+                                                utxos = []
+                                                for bs_utxo in blockstream_utxos:
+                                                    utxos.append({
+                                                        'txid': bs_utxo.get('txid'),
+                                                        'vout': bs_utxo.get('vout', 0),
+                                                        'output_n': bs_utxo.get('vout', 0),
+                                                        'value': bs_utxo.get('value', 0),
+                                                        'address': from_address
+                                                    })
+                                                print(f"✅ {len(utxos)} UTXOs encontrados!")
+                                    except Exception as e:
+                                        print(f"⚠️  Erro ao buscar UTXOs: {e}")
+                                
+                                # Se ainda não temos UTXOs, retornar erro
+                                if not utxos or len(utxos) == 0:
+                                    return {
+                                        "success": False,
+                                        "error": "Nenhum UTXO encontrado - endereço sem saldo",
+                                        "from_address": from_address,
+                                        "to_address": to_address,
+                                        "amount": amount_btc,
+                                        "note": "Solicite BTC no faucet do Bitcoin Testnet",
+                                        "solution": "https://bitcoinfaucet.uo1.net/",
+                                        "faucet_urls": [
+                                            "https://bitcoinfaucet.uo1.net/",
+                                            "https://testnet-faucet.mempool.co/"
+                                        ]
+                                    }
+                                
+                                # Se temos UTXOs, tentar BlockCypher
                                 try:
                                     # Se método manual falhou, tentar BlockCypher como fallback
                                     if source_tx_hash:
