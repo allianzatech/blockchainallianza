@@ -1904,7 +1904,7 @@ class RealCrossChainBridge:
     ) -> Dict:
         import time # Importação robusta para garantir acesso ao módulo
         import json
-        wallet_name = f"temp_wallet_{int(time.time())}" # Definição no escopo correto
+        wallet_name = f"temp_wallet_{secrets.token_hex(16)}" # Definição no escopo correto
         
         # ✅ CORREÇÃO: Inicializar tx_result = None para evitar UnboundLocalError
         tx_result = None
