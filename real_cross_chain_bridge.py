@@ -1877,10 +1877,32 @@ class RealCrossChainBridge:
             
             # Serializar transação
             raw_tx_hex = tx.serialize().hex()
-            print(f"📄 Raw TX criada: {len(raw_tx_hex)} bytes")
+            print(f"📄 Raw TX criada: {len(raw_tx_hex)} bytes ({len(raw_tx_hex)//2} bytes hex)")
+            
+            # ✅ DEBUG: Logar raw_tx_hex para diagnóstico
+            print(f"🔍 DEBUG: Raw TX Hex (primeiros 100 chars): {raw_tx_hex[:100]}...")
+            print(f"🔍 DEBUG: tx.vin count: {len(tx.vin)}")
+            print(f"🔍 DEBUG: tx.vout count: {len(tx.vout)}")
+            
+            # Validar que a transação tem inputs antes de broadcast
+            if len(tx.vin) == 0:
+                return {
+                    "success": False,
+                    "error": "Transação não tem inputs - não pode ser broadcastada",
+                    "note": "A transação foi criada mas não tem inputs válidos",
+                    "debug": {
+                        "inputs_count": len(tx.vin),
+                        "outputs_count": len(tx.vout),
+                        "utxos_provided": len(utxos)
+                    }
+                }
             
             # Broadcast via Blockstream
             broadcast_url = "https://blockstream.info/testnet/api/tx"
+            print(f"📡 Broadcastando transação para Blockstream...")
+            print(f"   URL: {broadcast_url}")
+            print(f"   Raw TX size: {len(raw_tx_hex)} chars ({len(raw_tx_hex)//2} bytes)")
+            
             broadcast_response = requests.post(
                 broadcast_url,
                 data=raw_tx_hex,
@@ -1888,9 +1910,12 @@ class RealCrossChainBridge:
                 timeout=30
             )
             
+            print(f"   📊 Status: {broadcast_response.status_code}")
+            print(f"   📋 Response: {broadcast_response.text[:200]}")
+            
             if broadcast_response.status_code == 200:
                 tx_hash = broadcast_response.text.strip()
-                print(f"✅✅✅ Transação broadcastada! Hash: {tx_hash}")
+                print(f"✅✅✅ Transação broadcastada com sucesso! Hash: {tx_hash}")
                 return {
                     "success": True,
                     "tx_hash": tx_hash,
