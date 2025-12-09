@@ -2748,14 +2748,77 @@ class RealCrossChainBridge:
                             # DEBUG: Log do estado antes de tentar métodos alternativos
                             print(f"🔍 DEBUG: wallet_send_to_success={wallet_send_to_success}, wallet_utxos={len(wallet_utxos) if wallet_utxos else 0}, api_utxos={len(utxos) if utxos else 0}")
                             
-                            # ✅ CORREÇÃO CRÍTICA: Se wallet.send_to() falhou, SEMPRE tentar métodos alternativos com UTXOs da API
-                            # Não importa se wallet_utxos está vazio ou não - se temos UTXOs da API, usamos eles!
-                            if not wallet_send_to_success and utxos:
-                                print(f"✅ wallet.send_to() falhou, mas temos {len(utxos)} UTXOs da API - tentando métodos alternativos...")
-                                add_log("trying_alternative_methods", {"utxos_count": len(utxos), "op_return_needed": bool(source_tx_hash)}, "info")
+                            # ✅ CORREÇÃO CRÍTICA: Se wallet.send_to() falhou, SEMPRE buscar UTXOs da Blockstream e usar métodos alternativos
+                            if not wallet_send_to_success:
+                                print(f"⚠️  wallet.send_to() falhou - buscando UTXOs da Blockstream e tentando métodos alternativos...")
                                 
-                                # Se não temos UTXOs da API ainda, buscar diretamente da Blockstream
-                                if not utxos:
+                                # ✅ SEMPRE buscar UTXOs da Blockstream quando send_to() falhar (mais confiável)
+                                print(f"🔄 Buscando UTXOs diretamente da Blockstream API para {from_address}...")
+                                try:
+                                    utxos_url = f"https://blockstream.info/testnet/api/address/{from_address}/utxo"
+                                    print(f"   📡 URL: {utxos_url}")
+                                    utxos_response = requests.get(utxos_url, timeout=15)
+                                    print(f"   📊 Status: {utxos_response.status_code}")
+                                    
+                                    if utxos_response.status_code == 200:
+                                        blockstream_utxos = utxos_response.json()
+                                        print(f"   📦 Resposta JSON: {len(blockstream_utxos) if blockstream_utxos else 0} UTXOs")
+                                        
+                                        if blockstream_utxos:
+                                            # Converter formato Blockstream para formato esperado
+                                            utxos = []
+                                            for bs_utxo in blockstream_utxos:
+                                                utxos.append({
+                                                    'txid': bs_utxo.get('txid'),
+                                                    'vout': bs_utxo.get('vout', 0),
+                                                    'output_n': bs_utxo.get('vout', 0),
+                                                    'value': bs_utxo.get('value', 0),
+                                                    'address': from_address
+                                                })
+                                            
+                                            # ✅ DEBUG: Logar UTXOs encontrados
+                                            total_value = self._debug_print_utxos(utxos, "UTXOs da Blockstream API")
+                                            print(f"✅ {len(utxos)} UTXOs encontrados via Blockstream API!")
+                                            print(f"   💰 Valor total: {total_value / 100000000:.8f} BTC")
+                                            add_log("blockstream_utxos_fetched", {"count": len(utxos), "total_sats": total_value}, "info")
+                                        else:
+                                            print(f"⚠️  Blockstream retornou lista vazia de UTXOs")
+                                            add_log("blockstream_no_utxos", {"address": from_address}, "warning")
+                                    else:
+                                        print(f"⚠️  Blockstream API retornou status {utxos_response.status_code}: {utxos_response.text[:200]}")
+                                        add_log("blockstream_api_error", {"status": utxos_response.status_code, "error": utxos_response.text[:200]}, "error")
+                                except Exception as bs_err:
+                                    print(f"⚠️  Erro ao buscar UTXOs da Blockstream: {bs_err}")
+                                    import traceback
+                                    traceback.print_exc()
+                                    add_log("blockstream_fetch_error", {"error": str(bs_err)}, "error")
+                                
+                                # Se temos UTXOs (da Blockstream), tentar métodos alternativos
+                                if utxos and len(utxos) > 0:
+                                    print(f"✅ Temos {len(utxos)} UTXOs - tentando métodos alternativos...")
+                                    add_log("trying_alternative_methods", {"utxos_count": len(utxos), "op_return_needed": bool(source_tx_hash)}, "info")
+                                    
+                                # Se não temos UTXOs após buscar da Blockstream, retornar erro
+                                if not utxos or len(utxos) == 0:
+                                    print(f"❌ Nenhum UTXO encontrado após buscar da Blockstream!")
+                                    proof_data["final_result"] = {
+                                        "success": False,
+                                        "error": "Nenhum UTXO encontrado para criar transação",
+                                        "note": "Verifique se o endereço tem saldo na testnet Bitcoin"
+                                    }
+                                    proof_file = self._save_transaction_proof(proof_data)
+                                    return {
+                                        "success": False,
+                                        "error": "Nenhum UTXO encontrado para criar transação",
+                                        "from_address": from_address,
+                                        "to_address": to_address,
+                                        "amount": amount_btc,
+                                        "note": "Verifique se o endereço tem saldo na testnet Bitcoin",
+                                        "proof_file": proof_file
+                                    }
+                                
+                                # Se temos UTXOs, tentar métodos alternativos
+                                try:
                                     print(f"🔄 Buscando UTXOs diretamente da Blockstream API...")
                                     try:
                                         utxos_url = f"https://blockstream.info/testnet/api/address/{from_address}/utxo"
