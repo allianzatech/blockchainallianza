@@ -2383,13 +2383,46 @@ class RealCrossChainBridge:
                                 traceback.print_exc()
                                 add_log("wallet_send_to_failed", {"error": str(wallet_send_err)}, "error")
                             
-                            # Se wallet.send_to() falhou e temos UTXOs da API, tentar BlockCypher
+                            # Se wallet.send_to() falhou e temos UTXOs da API, tentar método manual primeiro
                             if not wallet_send_to_success and (not wallet_utxos and utxos):
+                                # SOLUÇÃO DEFINITIVA: Tentar método manual com python-bitcointx primeiro
+                                print(f"🔧 wallet.send_to() falhou, tentando método manual com python-bitcointx...")
+                                add_log("trying_manual_method", {"utxos_count": len(utxos), "op_return_needed": bool(source_tx_hash)}, "info")
+                                
+                                try:
+                                    amount_satoshis = int(amount_btc * 100000000)
+                                    memo_hex = source_tx_hash if source_tx_hash else None
+                                    
+                                    manual_result = self._create_bitcoin_tx_with_op_return_manual(
+                                        from_private_key=from_private_key,
+                                        from_address=from_address,
+                                        to_address=to_address,
+                                        amount_satoshis=amount_satoshis,
+                                        utxos=utxos,
+                                        memo_hex=memo_hex
+                                    )
+                                    
+                                    if manual_result.get("success"):
+                                        print(f"✅✅✅ Método manual funcionou!")
+                                        proof_data["success"] = True
+                                        proof_data["tx_hash"] = manual_result.get("tx_hash")
+                                        proof_data["final_result"] = manual_result
+                                        proof_file = self._save_transaction_proof(proof_data)
+                                        manual_result["proof_file"] = proof_file
+                                        return manual_result
+                                    else:
+                                        print(f"⚠️  Método manual falhou: {manual_result.get('error')}")
+                                        add_log("manual_method_failed", {"error": manual_result.get('error')}, "error")
+                                except Exception as manual_err:
+                                    print(f"⚠️  Erro ao tentar método manual: {manual_err}")
+                                    add_log("manual_method_exception", {"error": str(manual_err)}, "error")
+                                
+                                # Se método manual falhou, tentar BlockCypher como fallback
                                 if source_tx_hash:
-                                    print(f"🔗 OP_RETURN necessário - wallet.send_to() falhou, usando BlockCypher API...")
+                                    print(f"🔗 OP_RETURN necessário - método manual falhou, usando BlockCypher API...")
                                 else:
-                                    print(f"⚠️  wallet.send_to() falhou, usando BlockCypher API como fallback...")
-                                add_log("using_blockcypher_api", {"utxos_count": len(utxos), "op_return_needed": bool(source_tx_hash), "wallet_send_to_failed": True}, "info")
+                                    print(f"⚠️  Método manual falhou, usando BlockCypher API como fallback...")
+                                add_log("using_blockcypher_api", {"utxos_count": len(utxos), "op_return_needed": bool(source_tx_hash), "manual_method_failed": True}, "info")
                                 
                                 try:
                                     # Usar BlockCypher API para criar e assinar transação
