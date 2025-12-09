@@ -2817,33 +2817,8 @@ class RealCrossChainBridge:
                                         "proof_file": proof_file
                                     }
                                 
-                                # Se temos UTXOs, tentar métodos alternativos
+                                # Se temos UTXOs (da Blockstream), tentar métodos alternativos
                                 try:
-                                    print(f"🔄 Buscando UTXOs diretamente da Blockstream API...")
-                                    try:
-                                        utxos_url = f"https://blockstream.info/testnet/api/address/{from_address}/utxo"
-                                        utxos_response = requests.get(utxos_url, timeout=10)
-                                        if utxos_response.status_code == 200:
-                                            blockstream_utxos = utxos_response.json()
-                                            if blockstream_utxos:
-                                                # Converter formato Blockstream para formato esperado
-                                                utxos = []
-                                                for bs_utxo in blockstream_utxos:
-                                                    utxos.append({
-                                                        'txid': bs_utxo.get('txid'),
-                                                        'vout': bs_utxo.get('vout', 0),
-                                                        'output_n': bs_utxo.get('vout', 0),
-                                                        'value': bs_utxo.get('value', 0),
-                                                        'address': from_address
-                                                    })
-                                                print(f"✅ {len(utxos)} UTXOs encontrados via Blockstream API!")
-                                                total_value = sum(u.get('value', 0) for u in utxos)
-                                                print(f"   💰 Valor total: {total_value / 100000000:.8f} BTC")
-                                    except Exception as bs_err:
-                                        print(f"⚠️  Erro ao buscar UTXOs da Blockstream: {bs_err}")
-                                
-                                # Se temos UTXOs (da API ou Blockstream), tentar métodos alternativos
-                                if utxos and len(utxos) > 0:
                                     try:
                                         amount_satoshis = int(amount_btc * 100000000)
                                         memo_hex = source_tx_hash if source_tx_hash else None
