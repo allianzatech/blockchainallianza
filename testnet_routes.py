@@ -2835,6 +2835,30 @@ def decode_memo_page(identifier):
         if not zk_proof and "zk_proof" in memo:
             zk_proof = memo["zk_proof"]
         
+        # Garantir que zk_proof tem o campo verified extraído corretamente
+        if zk_proof:
+            # Se zk_proof é string, tentar parsear
+            if isinstance(zk_proof, str):
+                try:
+                    import json
+                    zk_proof = json.loads(zk_proof)
+                except:
+                    zk_proof = {}
+            # Garantir que verified está presente
+            if isinstance(zk_proof, dict):
+                # Se não tem verified, tentar extrair do memo
+                if "verified" not in zk_proof and "zk_proof" in memo:
+                    memo_zk = memo["zk_proof"]
+                    if isinstance(memo_zk, dict) and "verified" in memo_zk:
+                        zk_proof["verified"] = memo_zk["verified"]
+                    elif isinstance(memo_zk, str):
+                        try:
+                            memo_zk = json.loads(memo_zk)
+                            if isinstance(memo_zk, dict) and "verified" in memo_zk:
+                                zk_proof["verified"] = memo_zk["verified"]
+                        except:
+                            pass
+        
         import json
         memo_json = json.dumps(memo, indent=2)
         
@@ -2871,7 +2895,26 @@ def api_verify_zk_proof():
         data = request.get_json() or {}
         proof = data.get('proof', '').strip()
         verification_key = data.get('verification_key', '').strip()
-        public_inputs = data.get('public_inputs', {})
+        public_inputs_raw = data.get('public_inputs', {})
+        
+        # Garantir que public_inputs é um dict
+        if isinstance(public_inputs_raw, str):
+            try:
+                import json
+                public_inputs = json.loads(public_inputs_raw) if public_inputs_raw else {}
+            except:
+                # Se for apenas uma string (state_hash), converter para dict
+                public_inputs = {"state_hash": public_inputs_raw} if public_inputs_raw else {}
+        elif isinstance(public_inputs_raw, dict):
+            public_inputs = public_inputs_raw
+        else:
+            public_inputs = {}
+        
+        # Se public_inputs está vazio mas há um campo state_hash ou state_transition_hash no data
+        if not public_inputs:
+            state_hash = data.get('state_hash') or data.get('state_transition_hash')
+            if state_hash:
+                public_inputs = {"state_hash": state_hash}
         
         if not proof or not verification_key:
             return jsonify({

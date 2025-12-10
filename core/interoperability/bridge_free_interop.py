@@ -1030,25 +1030,64 @@ class BridgeFreeInterop:
         """
         try:
             if uchain_id:
+                # Primeiro tentar buscar em memória
                 if uchain_id not in self.uchain_ids:
-                    return {"success": False, "error": "UChainID não encontrado"}
+                    # Se não encontrou em memória, buscar no banco de dados
+                    try:
+                        conn = self.db.get_connection()
+                        cursor = conn.cursor()
+                        cursor.execute("SELECT * FROM cross_chain_uchainids WHERE uchain_id = ?", (uchain_id,))
+                        row = cursor.fetchone()
+                        if row:
+                            # Carregar do banco e adicionar em memória
+                            uchain_id_db, source_chain, target_chain, recipient, amount, timestamp, memo, commitment_id, proof_id, state_id, tx_hash, explorer_url = row
+                            uchain_data = {
+                                "source_chain": source_chain,
+                                "target_chain": target_chain,
+                                "recipient": recipient,
+                                "amount": amount,
+                                "timestamp": timestamp,
+                                "memo": json.loads(memo) if memo else {},
+                                "commitment_id": commitment_id,
+                                "proof_id": proof_id,
+                                "state_id": state_id,
+                                "tx_hash": tx_hash,
+                                "explorer_url": explorer_url
+                            }
+                            self.uchain_ids[uchain_id] = uchain_data
+                            conn.close()
+                        else:
+                            conn.close()
+                            return {"success": False, "error": "UChainID não encontrado"}
+                    except Exception as e:
+                        return {"success": False, "error": f"UChainID não encontrado: {str(e)}"}
                 
+                # Garantir que uchain_data está definido
                 uchain_data = self.uchain_ids[uchain_id]
                 result = {
                     "success": True,
                     "uchain_id": uchain_id,
-                    "source_chain": uchain_data["source_chain"],
-                    "target_chain": uchain_data["target_chain"],
-                    "recipient": uchain_data["recipient"],
-                    "amount": uchain_data["amount"],
-                    "timestamp": uchain_data["timestamp"],
-                    "memo": uchain_data["memo"]
+                    "source_chain": uchain_data.get("source_chain"),
+                    "target_chain": uchain_data.get("target_chain"),
+                    "recipient": uchain_data.get("recipient"),
+                    "amount": uchain_data.get("amount"),
+                    "timestamp": uchain_data.get("timestamp"),
+                    "memo": uchain_data.get("memo", {}),
+                    "tx_hash": uchain_data.get("tx_hash"),
+                    "explorer_url": uchain_data.get("explorer_url")
                 }
                 
                 # Adicionar ZK Proof se disponível
-                if "zk_proof" in uchain_data["memo"]:
+                if "zk_proof" in uchain_data.get("memo", {}):
                     memo_zk_proof = uchain_data["memo"]["zk_proof"]
-                    zk_proof_id = memo_zk_proof.get("proof_id")
+                    # Garantir que memo_zk_proof é um dict
+                    if isinstance(memo_zk_proof, str):
+                        try:
+                            memo_zk_proof = json.loads(memo_zk_proof)
+                        except:
+                            memo_zk_proof = {}
+                    
+                    zk_proof_id = memo_zk_proof.get("proof_id") if isinstance(memo_zk_proof, dict) else None
                     if zk_proof_id and zk_proof_id in self.zk_proofs:
                         # Mesclar dados do memo com dados do sistema, priorizando memo (especialmente 'verified')
                         zk_proof = self.zk_proofs[zk_proof_id].copy()
@@ -1059,8 +1098,11 @@ class BridgeFreeInterop:
                         })
                         result["zk_proof"] = zk_proof
                     else:
-                        # Se não encontrou no sistema, usar apenas do memo
-                        result["zk_proof"] = memo_zk_proof
+                        # Se não encontrou no sistema, usar apenas do memo mas garantir estrutura
+                        if isinstance(memo_zk_proof, dict):
+                            result["zk_proof"] = memo_zk_proof
+                        else:
+                            result["zk_proof"] = {"verified": False}
                 
                 return result
             

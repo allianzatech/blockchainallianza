@@ -551,10 +551,17 @@
                 const data = await response.json();
 
                 if (data.success && data.zk_proof) {
-                    document.getElementById('verifierProof').value = data.zk_proof.proof || '';
-                    document.getElementById('verifierKey').value = data.zk_proof.verification_key || '';
-                    document.getElementById('verifierInputs').value = data.zk_proof.state_transition_hash || '';
-                    alert('{{ t("proof_data_loaded") or "Proof data loaded successfully!" }}');
+                    // Garantir que zk_proof é um objeto, não string
+                    const zkProof = typeof data.zk_proof === 'string' ? JSON.parse(data.zk_proof) : data.zk_proof;
+                    
+                    if (zkProof && typeof zkProof === 'object') {
+                        document.getElementById('verifierProof').value = zkProof.proof || zkProof.proof_id || '';
+                        document.getElementById('verifierKey').value = zkProof.verification_key || '';
+                        document.getElementById('verifierInputs').value = zkProof.state_transition_hash || zkProof.state_hash || '';
+                        alert('{{ t("proof_data_loaded") or "Proof data loaded successfully!" }}');
+                    } else {
+                        alert('{{ t("zk_proof_invalid_format") or "ZK Proof data is in invalid format" }}');
+                    }
                 } else {
                     alert('{{ t("uchainid_not_found") or "UChainID not found or no ZK Proof available" }}');
                 }
