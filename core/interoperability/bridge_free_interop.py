@@ -1040,9 +1040,11 @@ class BridgeFreeInterop:
             if uchain_id:
                 # Primeiro tentar buscar em memória
                 if uchain_id not in self.uchain_ids:
+                    print(f"🔄 UChainID não encontrado em memória, buscando no banco: {uchain_id}")
                     # Se não encontrou em memória, buscar no banco de dados
                     try:
                         rows = self.db.execute_query("SELECT * FROM cross_chain_uchainids WHERE uchain_id = ?", (uchain_id,))
+                        print(f"   📊 Resultado da busca: {len(rows)} linha(s) encontrada(s)")
                         if rows:
                             row = rows[0]
                             # Carregar do banco e adicionar em memória
@@ -1063,12 +1065,41 @@ class BridgeFreeInterop:
                             self.uchain_ids[uchain_id] = uchain_data
                             print(f"✅ UChainID carregado do banco: {uchain_id}")
                         else:
-                            return {"success": False, "error": "UChainID não encontrado"}
+                            # Tentar recarregar todos do banco antes de retornar erro
+                            print(f"   ⚠️  UChainID não encontrado, tentando recarregar todos do banco...")
+                            self._load_from_db()
+                            # Tentar buscar novamente após recarregar
+                            if uchain_id in self.uchain_ids:
+                                print(f"   ✅ UChainID encontrado após recarregar do banco!")
+                            else:
+                                # Última tentativa: buscar diretamente do banco novamente
+                                rows = self.db.execute_query("SELECT * FROM cross_chain_uchainids WHERE uchain_id = ?", (uchain_id,))
+                                if rows:
+                                    row = rows[0]
+                                    uchain_id_db, source_chain, target_chain, recipient, amount, timestamp, memo, commitment_id, proof_id, state_id, tx_hash, explorer_url = row
+                                    uchain_data = {
+                                        "source_chain": source_chain,
+                                        "target_chain": target_chain,
+                                        "recipient": recipient,
+                                        "amount": amount,
+                                        "timestamp": timestamp,
+                                        "memo": json.loads(memo) if memo else {},
+                                        "commitment_id": commitment_id,
+                                        "proof_id": proof_id,
+                                        "state_id": state_id,
+                                        "tx_hash": tx_hash,
+                                        "explorer_url": explorer_url
+                                    }
+                                    self.uchain_ids[uchain_id] = uchain_data
+                                    print(f"   ✅ UChainID encontrado na segunda tentativa!")
+                                else:
+                                    print(f"   ❌ UChainID não encontrado no banco após todas as tentativas")
+                                    return {"success": False, "error": "UChainID não encontrado no banco de dados"}
                     except Exception as e:
                         print(f"⚠️  Erro ao buscar UChainID do banco: {e}")
                         import traceback
                         traceback.print_exc()
-                        return {"success": False, "error": f"UChainID não encontrado: {str(e)}"}
+                        return {"success": False, "error": f"Erro ao buscar UChainID: {str(e)}"}
                 
                 # Garantir que uchain_data está definido
                 uchain_data = self.uchain_ids[uchain_id]

@@ -2826,14 +2826,28 @@ def decode_memo_page(identifier):
         
         if not result.get("success"):
             # Tentar recarregar do banco antes de retornar erro
-            print(f"🔄 UChainID não encontrado em memória, tentando recarregar do banco: {uchain_id}")
+            print(f"🔄 Decoder: UChainID não encontrado, tentando recarregar do banco: {uchain_id}")
             bridge_free_interop._load_from_db()
             result = bridge_free_interop.get_cross_chain_proof(uchain_id=uchain_id)
             
             if not result.get("success"):
-                return render_template('testnet/decode_memo.html',
-                                     uchain_id=uchain_id,
-                                     error=result.get("error", "UChainID not found"))
+                # Última tentativa: verificar se existe no banco diretamente
+                try:
+                    from db_manager import DBManager
+                    db_manager = DBManager()
+                    rows = db_manager.execute_query("SELECT * FROM cross_chain_uchainids WHERE uchain_id = ?", (uchain_id,))
+                    if rows:
+                        print(f"   ✅ UChainID encontrado diretamente no banco, mas get_cross_chain_proof falhou")
+                        # Tentar forçar o carregamento
+                        bridge_free_interop._load_uchain_id_from_db(uchain_id)
+                        result = bridge_free_interop.get_cross_chain_proof(uchain_id=uchain_id)
+                except Exception as e:
+                    print(f"   ⚠️  Erro na última tentativa: {e}")
+                
+                if not result.get("success"):
+                    return render_template('testnet/decode_memo.html',
+                                         uchain_id=uchain_id,
+                                         error=result.get("error", "UChainID not found"))
         
         memo = result.get("memo", {})
         # Extrair zk_proof do resultado ou do memo
