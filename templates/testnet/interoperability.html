@@ -604,40 +604,47 @@
                 return;
             }
 
+            // Mostrar loading
+            const resultsDiv = document.getElementById('verifierResults');
+            const resultContent = document.getElementById('verifierContent');
+            resultsDiv.classList.remove('hidden');
+            resultContent.innerHTML = '<p class="info">⏳ {{ t("loading") or "Loading..." }}</p>';
+
             try {
                 const response = await fetch(`/api/cross-chain/proof/${encodeURIComponent(uchainId)}`);
                 const data = await response.json();
 
-                if (data.success && data.zk_proof) {
-                    // Garantir que zk_proof é um objeto, não string
-                    const zkProof = typeof data.zk_proof === 'string' ? JSON.parse(data.zk_proof) : data.zk_proof;
-                    
-                    if (zkProof && typeof zkProof === 'object') {
-                        // Preencher campos do verifier com os dados corretos
-                        document.getElementById('verifierProof').value = zkProof.proof || '';
-                        document.getElementById('verifierKey').value = zkProof.verification_key || '';
-                        document.getElementById('verifierInputs').value = zkProof.state_transition_hash || zkProof.state_hash || '';
+                if (data.success) {
+                    if (data.zk_proof) {
+                        // Garantir que zk_proof é um objeto, não string
+                        const zkProof = typeof data.zk_proof === 'string' ? JSON.parse(data.zk_proof) : data.zk_proof;
                         
-                        // Mostrar feedback visual
-                        const resultsDiv = document.getElementById('verifierResults');
-                        const resultContent = document.getElementById('verifierContent');
-                        resultsDiv.classList.remove('hidden');
-                        resultContent.innerHTML = `
-                            <p class="success">✅ {{ t("proof_data_loaded") or "Proof data loaded successfully!" }}</p>
-                            <p class="info mt-2"><strong>UChainID:</strong> <span class="font-mono text-sm">${uchainId}</span></p>
-                            <p class="info"><strong>Proof ID:</strong> <span class="font-mono text-sm">${zkProof.proof_id || 'N/A'}</span></p>
-                            <p class="info"><strong>State Hash:</strong> <span class="font-mono text-xs">${zkProof.state_transition_hash || zkProof.state_hash || 'N/A'}</span></p>
-                            <p class="info"><strong>Verified:</strong> ${zkProof.verified || zkProof.valid ? '✅ Yes' : '❌ No'}</p>
-                            <p class="text-xs text-gray-400 mt-3">{{ t("fields_auto_filled") or "All fields have been automatically filled. Click 'Verify Proof' to verify." }}</p>
-                        `;
+                        if (zkProof && typeof zkProof === 'object') {
+                            // Preencher campos do verifier com os dados corretos
+                            document.getElementById('verifierProof').value = zkProof.proof || '';
+                            document.getElementById('verifierKey').value = zkProof.verification_key || '';
+                            document.getElementById('verifierInputs').value = zkProof.state_transition_hash || zkProof.state_hash || '';
+                            
+                            // Mostrar feedback visual
+                            resultContent.innerHTML = `
+                                <p class="success">✅ {{ t("proof_data_loaded") or "Proof data loaded successfully!" }}</p>
+                                <p class="info mt-2"><strong>UChainID:</strong> <span class="font-mono text-sm">${uchainId}</span></p>
+                                <p class="info"><strong>Proof ID:</strong> <span class="font-mono text-sm">${zkProof.proof_id || 'N/A'}</span></p>
+                                <p class="info"><strong>State Hash:</strong> <span class="font-mono text-xs">${zkProof.state_transition_hash || zkProof.state_hash || 'N/A'}</span></p>
+                                <p class="info"><strong>Verified:</strong> ${zkProof.verified || zkProof.valid ? '✅ Yes' : '❌ No'}</p>
+                                <p class="text-xs text-gray-400 mt-3">{{ t("fields_auto_filled") or "All fields have been automatically filled. Click 'Verify Proof' to verify." }}</p>
+                            `;
+                        } else {
+                            resultContent.innerHTML = `<p class="error">❌ {{ t("zk_proof_invalid_format") or "ZK Proof data is in invalid format" }}</p>`;
+                        }
                     } else {
-                        alert('{{ t("zk_proof_invalid_format") or "ZK Proof data is in invalid format" }}');
+                        resultContent.innerHTML = `<p class="error">❌ {{ t("no_zk_proof_available") or "No ZK Proof available for this UChainID" }}</p>`;
                     }
                 } else {
-                    alert('{{ t("uchainid_not_found") or "UChainID not found or no ZK Proof available" }}');
+                    resultContent.innerHTML = `<p class="error">❌ ${data.error || '{{ t("uchainid_not_found") or "UChainID not found" }}'}</p>`;
                 }
             } catch (error) {
-                alert('{{ t("error_loading_proof") or "Error loading proof" }}: ' + error.message);
+                resultContent.innerHTML = `<p class="error">❌ {{ t("error_loading_proof") or "Error loading proof" }}: ${error.message}</p>`;
             }
         }
 

@@ -44,8 +44,13 @@
                             <p><strong>Proof ID:</strong> <span class="font-mono text-sm">{{ zk_proof.proof_id }}</span></p>
                             <p><strong>State Hash:</strong> <span class="font-mono text-sm">{{ zk_proof.state_hash }}</span></p>
                             <p><strong>Verified:</strong> 
-                                {% if zk_proof and (zk_proof.verified == True or zk_proof.verified == 'true' or zk_proof.verified == 1) %}
-                                <span class="text-green-400">✅ Yes</span>
+                                {% if zk_proof %}
+                                    {% set verified_value = zk_proof.get('verified') if zk_proof is mapping else (zk_proof.verified if hasattr(zk_proof, 'verified') else None) %}
+                                    {% if verified_value == True or verified_value == 'true' or verified_value == 1 or verified_value == 'True' %}
+                                    <span class="text-green-400">✅ Yes</span>
+                                    {% else %}
+                                    <span class="text-red-400">❌ No</span>
+                                    {% endif %}
                                 {% else %}
                                 <span class="text-red-400">❌ No</span>
                                 {% endif %}
