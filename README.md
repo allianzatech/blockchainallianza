@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Testnet Status](https://img.shields.io/badge/Testnet-Active-success)](https://testnet.allianza.tech)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![CI Status](https://github.com/dieisonmaach-lang/allianzablockchain/workflows/CI/badge.svg)](https://github.com/dieisonmaach-lang/allianzablockchain/actions)
+[![CI Status](https://github.com/allianzatech/blockchainallianza/workflows/CI/badge.svg)](https://github.com/allianzatech/blockchainallianza/actions)
 [![Security](https://img.shields.io/badge/Security-Audited-blue)](SECURITY.md)
 [![Contributors Welcome](https://img.shields.io/badge/contributors-welcome-brightgreen)](CONTRIBUTING.md)
 [![Documentation](https://img.shields.io/badge/docs-available-blue)](docs/)
@@ -21,7 +21,7 @@
 **⚡ Fastest Way:**
 ```bash
 # Clone and setup automatically
-git clone https://github.com/dieisonmaach-lang/allianzablockchain.git
+git clone https://github.com/allianzatech/blockchainallianza.git
 cd allianzablockchain
 
 # Run setup script (Linux/Mac)
@@ -76,9 +76,9 @@ python tests/public/run_verification_tests.py
 - **Proof-of-Lock**: [`core/interoperability/proof_of_lock.py`](core/interoperability/proof_of_lock.py) - Proof-of-Lock implementation
 
 **🔍 Direct Links to Core Code:**
-- [QRS-3 Implementation](https://github.com/dieisonmaach-lang/allianzablockchain/tree/main/core/crypto)
-- [ALZ-NIEV Protocol](https://github.com/dieisonmaach-lang/allianzablockchain/tree/main/core/consensus)
-- [Interoperability](https://github.com/dieisonmaach-lang/allianzablockchain/tree/main/core/interoperability)
+- [QRS-3 Implementation](https://github.com/allianzatech/blockchainallianza/tree/main/core/crypto)
+- [ALZ-NIEV Protocol](https://github.com/allianzatech/blockchainallianza/tree/main/core/consensus)
+- [Interoperability](https://github.com/allianzatech/blockchainallianza/tree/main/core/interoperability)
 
 **✅ All source code is in this public repository - no private repositories for core functionality.**
 
