@@ -320,12 +320,18 @@
                 </form>
                 <div class="mt-4">
                     <p class="text-sm text-gray-400 mb-2">{{ t('quick_load') or 'Quick Load from System:' }}</p>
-                    <div class="flex gap-2">
-                        <input type="text" id="quickUChainID" placeholder="UCHAIN-..." 
-                               class="flex-1 bg-gray-700 text-white p-2 rounded font-mono">
-                        <button onclick="loadFromUChainID()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded transition">
-                            <i class="fas fa-search"></i> {{ t('load') or 'Load' }}
-                        </button>
+                    <div class="space-y-2">
+                        <div class="flex gap-2">
+                            <select id="recentUChainIDs" class="flex-1 bg-gray-700 text-white p-2 rounded font-mono text-sm" onchange="selectUChainID()">
+                                <option value="">{{ t('select_recent_uchainid') or 'Select recent UChainID...' }}</option>
+                            </select>
+                            <input type="text" id="quickUChainID" placeholder="UCHAIN-..." 
+                                   class="flex-1 bg-gray-700 text-white p-2 rounded font-mono">
+                            <button onclick="loadFromUChainID()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded transition">
+                                <i class="fas fa-search"></i> {{ t('load') or 'Load' }}
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500">{{ t('quick_load_hint') or 'Select from recent transfers or paste a UChainID manually' }}</p>
                     </div>
                 </div>
                 <div id="verifierResults" class="hidden mt-4">
@@ -538,6 +544,43 @@
             }
         });
 
+        // Load recent UChainIDs on page load
+        async function loadRecentUChainIDs() {
+            try {
+                const response = await fetch('/api/cross-chain/proofs?limit=20');
+                const data = await response.json();
+                
+                const select = document.getElementById('recentUChainIDs');
+                if (data.success && data.proofs && data.proofs.length > 0) {
+                    // Limpar opções existentes (exceto a primeira)
+                    while (select.options.length > 1) {
+                        select.remove(1);
+                    }
+                    
+                    // Adicionar UChainIDs recentes
+                    data.proofs.forEach(proof => {
+                        const option = document.createElement('option');
+                        option.value = proof.uchain_id;
+                        const date = new Date(proof.timestamp * 1000).toLocaleString();
+                        option.textContent = `${proof.uchain_id} (${proof.source_chain} → ${proof.target_chain}, ${date})`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading recent UChainIDs:', error);
+            }
+        }
+
+        // Select UChainID from dropdown
+        function selectUChainID() {
+            const select = document.getElementById('recentUChainIDs');
+            const uchainId = select.value;
+            if (uchainId) {
+                document.getElementById('quickUChainID').value = uchainId;
+                loadFromUChainID();
+            }
+        }
+
         // Load from UChainID (ZK Verifier)
         async function loadFromUChainID() {
             const uchainId = document.getElementById('quickUChainID').value.trim();
@@ -547,7 +590,7 @@
             }
 
             try {
-                const response = await fetch(`/api/cross-chain/proof/${uchainId}`);
+                const response = await fetch(`/api/cross-chain/proof/${encodeURIComponent(uchainId)}`);
                 const data = await response.json();
 
                 if (data.success && data.zk_proof) {
@@ -555,10 +598,23 @@
                     const zkProof = typeof data.zk_proof === 'string' ? JSON.parse(data.zk_proof) : data.zk_proof;
                     
                     if (zkProof && typeof zkProof === 'object') {
-                        document.getElementById('verifierProof').value = zkProof.proof || zkProof.proof_id || '';
+                        // Preencher campos do verifier com os dados corretos
+                        document.getElementById('verifierProof').value = zkProof.proof || '';
                         document.getElementById('verifierKey').value = zkProof.verification_key || '';
                         document.getElementById('verifierInputs').value = zkProof.state_transition_hash || zkProof.state_hash || '';
-                        alert('{{ t("proof_data_loaded") or "Proof data loaded successfully!" }}');
+                        
+                        // Mostrar feedback visual
+                        const resultsDiv = document.getElementById('verifierResults');
+                        const resultContent = document.getElementById('verifierContent');
+                        resultsDiv.classList.remove('hidden');
+                        resultContent.innerHTML = `
+                            <p class="success">✅ {{ t("proof_data_loaded") or "Proof data loaded successfully!" }}</p>
+                            <p class="info mt-2"><strong>UChainID:</strong> <span class="font-mono text-sm">${uchainId}</span></p>
+                            <p class="info"><strong>Proof ID:</strong> <span class="font-mono text-sm">${zkProof.proof_id || 'N/A'}</span></p>
+                            <p class="info"><strong>State Hash:</strong> <span class="font-mono text-xs">${zkProof.state_transition_hash || zkProof.state_hash || 'N/A'}</span></p>
+                            <p class="info"><strong>Verified:</strong> ${zkProof.verified || zkProof.valid ? '✅ Yes' : '❌ No'}</p>
+                            <p class="text-xs text-gray-400 mt-3">{{ t("fields_auto_filled") or "All fields have been automatically filled. Click 'Verify Proof' to verify." }}</p>
+                        `;
                     } else {
                         alert('{{ t("zk_proof_invalid_format") or "ZK Proof data is in invalid format" }}');
                     }
@@ -569,6 +625,21 @@
                 alert('{{ t("error_loading_proof") or "Error loading proof" }}: ' + error.message);
             }
         }
+
+        // Load recent UChainIDs when ZK Verifier tab is shown
+        document.addEventListener('DOMContentLoaded', function() {
+            // Carregar UChainIDs recentes quando a aba ZK Verifier for clicada
+            const zkVerifierTab = document.querySelector('[onclick*="tab-verifier"]');
+            if (zkVerifierTab) {
+                zkVerifierTab.addEventListener('click', function() {
+                    setTimeout(loadRecentUChainIDs, 100);
+                });
+            }
+            // Também carregar se já estiver na aba verifier
+            if (document.getElementById('tab-verifier') && document.getElementById('tab-verifier').classList.contains('active')) {
+                loadRecentUChainIDs();
+            }
+        });
     </script>
 </body>
 </html>

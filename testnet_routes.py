@@ -2844,20 +2844,35 @@ def decode_memo_page(identifier):
                     zk_proof = json.loads(zk_proof)
                 except:
                     zk_proof = {}
-            # Garantir que verified está presente
+            # Garantir que verified está presente - PRIORIDADE: memo > zk_proof do sistema
             if isinstance(zk_proof, dict):
-                # Se não tem verified, tentar extrair do memo
-                if "verified" not in zk_proof and "zk_proof" in memo:
+                # SEMPRE tentar extrair verified do memo primeiro (é a fonte mais confiável)
+                if "zk_proof" in memo:
                     memo_zk = memo["zk_proof"]
-                    if isinstance(memo_zk, dict) and "verified" in memo_zk:
-                        zk_proof["verified"] = memo_zk["verified"]
+                    if isinstance(memo_zk, dict):
+                        # Se o memo tem verified, usar ele (prioridade máxima)
+                        if "verified" in memo_zk:
+                            zk_proof["verified"] = memo_zk["verified"]
+                        # Mesclar outros campos do memo também
+                        zk_proof.update({
+                            "proof_id": memo_zk.get("proof_id", zk_proof.get("proof_id")),
+                            "state_hash": memo_zk.get("state_hash", zk_proof.get("state_hash", zk_proof.get("state_transition_hash")))
+                        })
                     elif isinstance(memo_zk, str):
                         try:
                             memo_zk = json.loads(memo_zk)
-                            if isinstance(memo_zk, dict) and "verified" in memo_zk:
-                                zk_proof["verified"] = memo_zk["verified"]
+                            if isinstance(memo_zk, dict):
+                                if "verified" in memo_zk:
+                                    zk_proof["verified"] = memo_zk["verified"]
+                                zk_proof.update({
+                                    "proof_id": memo_zk.get("proof_id", zk_proof.get("proof_id")),
+                                    "state_hash": memo_zk.get("state_hash", zk_proof.get("state_hash", zk_proof.get("state_transition_hash")))
+                                })
                         except:
                             pass
+                # Se ainda não tem verified, usar do zk_proof do sistema
+                if "verified" not in zk_proof:
+                    zk_proof["verified"] = zk_proof.get("valid", False)
         
         import json
         memo_json = json.dumps(memo, indent=2)
