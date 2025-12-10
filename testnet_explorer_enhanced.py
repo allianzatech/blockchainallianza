@@ -20,7 +20,7 @@ class EnhancedTestnetExplorer:
         # Cache de estatísticas
         self._stats_cache = {}
         self._cache_timestamp = 0
-        self._cache_ttl = 30  # 30 segundos
+        self._cache_ttl = 10  # 10 segundos (reduzido para atualização mais frequente)
     
     # =========================================================================
     # MÉTODOS MELHORADOS DE BLOCOS
@@ -436,9 +436,21 @@ class EnhancedTestnetExplorer:
                 from db_manager import DBManager
                 db_manager = DBManager()
                 result = db_manager.execute_query("SELECT COUNT(*) FROM transactions_history", ())
-                if result:
-                    total_transactions_real = result[0][0] if isinstance(result[0], tuple) else result[0]
+                if result and len(result) > 0:
+                    # Extrair o valor do COUNT corretamente
+                    count_value = result[0]
+                    if isinstance(count_value, tuple):
+                        total_transactions_real = count_value[0]
+                    elif isinstance(count_value, list):
+                        total_transactions_real = count_value[0] if len(count_value) > 0 else 0
+                    else:
+                        total_transactions_real = count_value
+                    
+                    # Log para debug (apenas se diferente do esperado)
+                    if total_transactions_real != len(transactions):
+                        print(f"📊 Total de transações no banco: {total_transactions_real}, Transações recentes: {len(transactions)}")
             except Exception as db_err:
+                print(f"⚠️  Erro ao contar transações do banco: {db_err}")
                 # Se falhar, usar contagem das transações recentes
                 total_transactions_real = len(transactions) if transactions else 0
             
