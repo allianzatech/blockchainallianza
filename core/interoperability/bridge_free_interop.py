@@ -1161,9 +1161,14 @@ class BridgeFreeInterop:
                     else:
                         # Se não encontrou no sistema, usar apenas do memo mas garantir estrutura
                         if isinstance(memo_zk_proof, dict):
-                            result["zk_proof"] = memo_zk_proof
+                            # Garantir que tem todos os campos necessários
+                            zk_proof_from_memo = memo_zk_proof.copy()
+                            # Se não tem verified, tentar usar valid do sistema ou False
+                            if "verified" not in zk_proof_from_memo:
+                                zk_proof_from_memo["verified"] = zk_proof_from_memo.get("valid", False)
+                            result["zk_proof"] = zk_proof_from_memo
                         else:
-                            result["zk_proof"] = {"verified": False}
+                            result["zk_proof"] = {"verified": False, "proof_id": zk_proof_id}
                 
                 return result
             

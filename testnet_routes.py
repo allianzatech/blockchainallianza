@@ -2893,6 +2893,19 @@ def decode_memo_page(identifier):
                 # Se ainda não tem verified, usar do zk_proof do sistema
                 if "verified" not in zk_proof:
                     zk_proof["verified"] = zk_proof.get("valid", False)
+        else:
+            # Se não tem zk_proof no resultado, tentar extrair diretamente do memo
+            if "zk_proof" in memo:
+                zk_proof = memo["zk_proof"]
+                if isinstance(zk_proof, str):
+                    try:
+                        import json
+                        zk_proof = json.loads(zk_proof)
+                    except:
+                        zk_proof = {}
+                # Garantir que é um dict
+                if not isinstance(zk_proof, dict):
+                    zk_proof = {}
         
         import json
         memo_json = json.dumps(memo, indent=2)
