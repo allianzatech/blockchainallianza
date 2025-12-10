@@ -1124,6 +1124,10 @@ class RealCrossChainBridge:
                     "to": to_checksum
                 }
             
+            # ✅ CORREÇÃO: Garantir que tx_hash_hex tenha prefixo 0x para explorers EVM
+            if not tx_hash_hex.startswith('0x'):
+                tx_hash_hex = '0x' + tx_hash_hex
+            
             # Atualizar explorer_urls com tx_hash (já definido antes do try)
             explorer_urls = {
                 "polygon": f"https://amoy.polygonscan.com/tx/{tx_hash_hex}",
@@ -3325,12 +3329,12 @@ class RealCrossChainBridge:
                                                         print(f"      UTXO: {bs_utxo}")
                                                         continue
                                             
-                                            if utxos:
-                                                # ✅ DEBUG: Logar UTXOs encontrados
-                                                total_value = self._debug_print_utxos(utxos, "UTXOs da Blockstream API")
-                                                print(f"✅ {len(utxos)} UTXOs válidos encontrados via Blockstream API!")
-                                                print(f"   💰 Valor total: {total_value / 100000000:.8f} BTC")
-                                                add_log("blockstream_utxos_fetched", {"count": len(utxos), "total_sats": total_value}, "info")
+                                                if utxos:
+                                                    # ✅ DEBUG: Logar UTXOs encontrados
+                                                    total_value = self._debug_print_utxos(utxos, "UTXOs da Blockstream API")
+                                                    print(f"✅ {len(utxos)} UTXOs válidos encontrados via Blockstream API!")
+                                                    print(f"   💰 Valor total: {total_value / 100000000:.8f} BTC")
+                                                    add_log("blockstream_utxos_fetched", {"count": len(utxos), "total_sats": total_value}, "info")
                                                 else:
                                                     print(f"⚠️  Nenhum UTXO válido após processamento")
                                                     add_log("blockstream_no_valid_utxos", {"address": from_address}, "warning")
@@ -3403,39 +3407,41 @@ class RealCrossChainBridge:
                                                         print(f"   ❌ UTXO [{i+1}] output_n inválido: {output_n}, pulando...")
                                                         continue
                                                     
-                                                    # ✅ VERIFICAÇÃO ADICIONAL: Verificar se o UTXO está realmente disponível via BlockCypher
-                                                    # Isso evita usar UTXOs que o BlockCypher não consegue encontrar
-                                                    try:
-                                                        print(f"      🔍 Verificando UTXO {txid[:16]}...:{output_n_int} via BlockCypher...")
-                                                        btc_tx_url = f"{self.btc_api_base}/txs/{txid}"
-                                                        btc_tx_headers = {'token': self.blockcypher_token} if self.blockcypher_token else {}
-                                                        btc_tx_response = requests.get(btc_tx_url, headers=btc_tx_headers, timeout=10)
-                                                        
-                                                        if btc_tx_response.status_code == 200:
-                                                            btc_tx_data = btc_tx_response.json()
-                                                            outputs = btc_tx_data.get('outputs', [])
+                                                    # ✅ VERIFICAÇÃO ADICIONAL: Se UTXO não veio do BlockCypher, verificar agora
+                                                    # Se já veio do BlockCypher, confiar (já foi verificado)
+                                                    if utxo.get('source') != 'blockcypher':
+                                                        try:
+                                                            print(f"      🔍 Verificando UTXO {txid[:16]}...:{output_n_int} via BlockCypher...")
+                                                            btc_tx_url = f"{self.btc_api_base}/txs/{txid}?token={self.blockcypher_token}"
+                                                            btc_tx_response = requests.get(btc_tx_url, timeout=10)
                                                             
-                                                            if output_n_int >= len(outputs):
-                                                                print(f"   ❌ Output {output_n_int} não existe na transação {txid[:16]}... (tem apenas {len(outputs)} outputs)")
+                                                            if btc_tx_response.status_code == 200:
+                                                                btc_tx_data = btc_tx_response.json()
+                                                                outputs = btc_tx_data.get('outputs', [])
+                                                                
+                                                                if output_n_int >= len(outputs):
+                                                                    print(f"   ❌ Output {output_n_int} não existe na transação {txid[:16]}... (tem apenas {len(outputs)} outputs)")
+                                                                    continue
+                                                                
+                                                                output_data = outputs[output_n_int]
+                                                                spent_by = output_data.get('spent_by', None)
+                                                                
+                                                                if spent_by:
+                                                                    print(f"   ❌ Output {output_n_int} já foi gasto na transação {txid[:16]}... (gasto em: {spent_by[:16] if spent_by else 'N/A'}...)")
+                                                                    continue
+                                                                
+                                                                print(f"      ✅ UTXO {txid[:16]}...:{output_n_int} verificado e disponível via BlockCypher")
+                                                            else:
+                                                                print(f"   ❌ Não foi possível verificar UTXO {txid[:16]}...:{output_n_int} via BlockCypher (status: {btc_tx_response.status_code})")
+                                                                print(f"      Resposta: {btc_tx_response.text[:200]}")
+                                                                # NÃO usar UTXO se não conseguir verificar via BlockCypher
                                                                 continue
-                                                            
-                                                            output_data = outputs[output_n_int]
-                                                            spent_by = output_data.get('spent_by', None)
-                                                            
-                                                            if spent_by:
-                                                                print(f"   ❌ Output {output_n_int} já foi gasto na transação {txid[:16]}... (gasto em: {spent_by[:16] if spent_by else 'N/A'}...)")
-                                                                continue
-                                                            
-                                                            print(f"      ✅ UTXO {txid[:16]}...:{output_n_int} verificado e disponível via BlockCypher")
-                                                        else:
-                                                            print(f"   ❌ Não foi possível verificar UTXO {txid[:16]}...:{output_n_int} via BlockCypher (status: {btc_tx_response.status_code})")
-                                                            print(f"      Resposta: {btc_tx_response.text[:200]}")
-                                                            # NÃO usar UTXO se não conseguir verificar via BlockCypher
+                                                        except Exception as btc_check_err:
+                                                            print(f"   ❌ Erro ao verificar UTXO {txid[:16]}...:{output_n_int} via BlockCypher: {btc_check_err}")
+                                                            # NÃO usar UTXO se houver erro na verificação
                                                             continue
-                                                    except Exception as btc_check_err:
-                                                        print(f"   ❌ Erro ao verificar UTXO {txid[:16]}...:{output_n_int} via BlockCypher: {btc_check_err}")
-                                                        # NÃO usar UTXO se houver erro na verificação
-                                                        continue
+                                                    else:
+                                                        print(f"      ✅ UTXO {txid[:16]}...:{output_n_int} já veio do BlockCypher (confiável)")
                                                     
                                                     if not value or int(value) <= 0:
                                                         print(f"   ⚠️  UTXO [{i+1}] valor inválido: {value}, pulando...")
@@ -4505,6 +4511,141 @@ class RealCrossChainBridge:
                                                 "status_code": broadcast_response.status_code,
                                                 "error": error_text
                                             }, "error")
+
+                                        # ✅ NOVO FALLBACK: construir e assinar transação manualmente com python-bitcointx (P2PKH) antes de desistir
+                                        try:
+                                            print("   🔧 Fallback extra: criando transação manual com python-bitcointx...")
+                                            add_log("trying_python_bitcointx_fallback", {}, "info")
+
+                                            from bitcointx.wallet import CBitcoinSecret, P2PKHBitcoinAddress
+                                            from bitcointx.core import CMutableTransaction, CMutableTxOut, CMutableTxIn, COutPoint
+                                            from bitcointx.core.script import CScript, OP_RETURN, OP_DUP, OP_HASH160, OP_EQUALVERIFY, OP_CHECKSIG, SignatureHash, SIGHASH_ALL
+                                            from bitcointx import select_chain_params
+                                            from bitcointx.core import lx
+
+                                            select_chain_params('bitcoin/testnet')
+
+                                            # Carregar chave e endereços
+                                            seckey = CBitcoinSecret(from_private_key)
+                                            from_addr = P2PKHBitcoinAddress(from_address)
+                                            to_addr = P2PKHBitcoinAddress(to_address) if to_address.startswith(('m', 'n')) else None
+
+                                            # Se destino não for P2PKH (ex: bech32 tb1), usar scriptPubKey custom
+                                            dest_script = to_addr.to_scriptPubKey() if to_addr else None
+                                            if not dest_script:
+                                                from bitcointx.core.key import CPubKey
+                                                from bitcointx.wallet import CBitcoinAddress
+                                                try:
+                                                    dest_script = CBitcoinAddress(to_address).to_scriptPubKey()
+                                                except Exception:
+                                                    raise Exception(f"Destino {to_address} não suportado pelo fallback python-bitcointx")
+
+                                            # Buscar scriptPubKey para cada UTXO (necessário para assinatura correta)
+                                            enriched_utxos = []
+                                            for utxo in utxos:
+                                                txid = utxo.get('txid') or utxo.get('tx_hash')
+                                                vout = int(utxo.get('vout') or utxo.get('output_n') or 0)
+                                                value = int(utxo.get('value', 0))
+                                                if not txid or value <= 0:
+                                                    continue
+                                                try:
+                                                    tx_detail_url = f"https://blockstream.info/testnet/api/tx/{txid}"
+                                                    tx_detail_resp = requests.get(tx_detail_url, timeout=10)
+                                                    if tx_detail_resp.status_code == 200:
+                                                        tx_detail = tx_detail_resp.json()
+                                                        vouts = tx_detail.get("vout", [])
+                                                        if vout < len(vouts):
+                                                            spk = vouts[vout].get("scriptpubkey")
+                                                            if spk:
+                                                                utxo["scriptpubkey"] = spk
+                                                                enriched_utxos.append(utxo)
+                                                            else:
+                                                                print(f"   ⚠️  scriptpubkey ausente para {txid}:{vout}")
+                                                        else:
+                                                            print(f"   ⚠️  vout {vout} fora do range para {txid}")
+                                                    else:
+                                                        print(f"   ⚠️  Falha ao obter tx {txid}: {tx_detail_resp.status_code}")
+                                                except Exception as e:
+                                                    print(f"   ⚠️  Erro ao enriquecer UTXO {txid}:{vout}: {e}")
+
+                                            if not enriched_utxos:
+                                                raise Exception("Nenhum UTXO enriquecido com scriptpubkey para assinar")
+
+                                            tx = CMutableTransaction()
+
+                                            # Adicionar inputs
+                                            for u in enriched_utxos:
+                                                txid = u.get("txid") or u.get("tx_hash")
+                                                vout = int(u.get("vout") or u.get("output_n") or 0)
+                                                outpoint = COutPoint(lx(txid), vout)
+                                                tx.vin.append(CMutableTxIn(outpoint))
+
+                                            # Adicionar outputs: destino
+                                            tx.vout.append(CMutableTxOut(int(output_value), dest_script))
+
+                                            # OP_RETURN opcional
+                                            if source_tx_hash:
+                                                memo_bytes = bytes.fromhex(source_tx_hash) if len(source_tx_hash) % 2 == 0 else source_tx_hash.encode()
+                                                if len(memo_bytes) > 80:
+                                                    memo_bytes = memo_bytes[:80]
+                                                op_return_script = CScript([OP_RETURN, memo_bytes])
+                                                tx.vout.append(CMutableTxOut(0, op_return_script))
+
+                                            # Troco
+                                            if change_value > 546:
+                                                tx.vout.append(CMutableTxOut(int(change_value), from_addr.to_scriptPubKey()))
+
+                                            # Assinar cada input (P2PKH)
+                                            for i, u in enumerate(enriched_utxos):
+                                                spk_hex = u.get("scriptpubkey")
+                                                value = int(u.get("value", 0))
+                                                spk = bytes.fromhex(spk_hex)
+                                                sighash = SignatureHash(CScript(spk), tx, i, SIGHASH_ALL)
+                                                sig = seckey.sign(sighash) + bytes([SIGHASH_ALL])
+                                                tx.vin[i].scriptSig = CScript([sig, seckey.pub])
+
+                                            raw_tx_hex = tx.serialize().hex()
+                                            print(f"   ✅ python-bitcointx gerou raw TX ({len(raw_tx_hex)} hex chars)")
+
+                                            # Broadcast novamente via Blockstream
+                                            broadcast_response = requests.post(
+                                                "https://blockstream.info/testnet/api/tx",
+                                                data=raw_tx_hex,
+                                                headers={"Content-Type": "text/plain"},
+                                                timeout=30
+                                            )
+
+                                            if broadcast_response.status_code == 200:
+                                                tx_hash = broadcast_response.text.strip()
+                                                print(f"   ✅ Broadcast OK (fallback python-bitcointx)! Hash: {tx_hash}")
+                                                add_log("transaction_broadcasted_blockstream_bitcointx", {"tx_hash": tx_hash}, "info")
+                                                proof_data["success"] = True
+                                                proof_data["tx_hash"] = tx_hash
+                                                proof_data["final_result"] = {
+                                                    "success": True,
+                                                    "tx_hash": tx_hash,
+                                                    "method": "blockstream_api_bitcointx"
+                                                }
+                                                proof_file = self._save_transaction_proof(proof_data)
+                                                return {
+                                                    "success": True,
+                                                    "tx_hash": tx_hash,
+                                                    "from": from_address,
+                                                    "to": to_address,
+                                                    "amount": amount_btc,
+                                                    "chain": "bitcoin",
+                                                    "status": "broadcasted",
+                                                    "explorer_url": f"https://blockstream.info/testnet/tx/{tx_hash}",
+                                                    "note": "✅ Transação REAL criada com python-bitcointx e broadcastada via Blockstream",
+                                                    "real_broadcast": True,
+                                                    "method": "blockstream_api_bitcointx",
+                                                    "proof_file": proof_file
+                                                }
+                                            else:
+                                                print(f"   ⚠️  Broadcast via Blockstream falhou também no fallback python-bitcointx: {broadcast_response.status_code} - {broadcast_response.text[:200]}")
+                                        except Exception as bitcointx_err:
+                                            print(f"   ❌ Fallback python-bitcointx falhou: {bitcointx_err}")
+                                            add_log("bitcointx_fallback_failed", {"error": str(bitcointx_err)}, "error")
                                             
                                             # Tentar BlockCypher como fallback
                                             print(f"   🔄 Tentando BlockCypher como fallback...")

@@ -130,3 +130,16 @@ VARIAVEIS_RENDER_COPIAR_COLAR.txt
 *_COPIAR*.txt
 *_COLAR*.txt
 
+# GitHub tokens and credentials
+ghp_*
+gho_*
+ghu_*
+ghs_*
+github_pat_*
+*_token*.txt
+*_TOKEN*.txt
+*_GITHUB*.txt
+
+# Temporary documentation files
+LIMPAR_ARQUIVOS_DESNECESSARIOS.md
+

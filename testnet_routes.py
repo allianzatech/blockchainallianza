@@ -2830,7 +2830,10 @@ def decode_memo_page(identifier):
                                  error=result.get("error", "UChainID not found"))
         
         memo = result.get("memo", {})
-        zk_proof = result.get("zk_proof", {})
+        # Extrair zk_proof do resultado ou do memo
+        zk_proof = result.get("zk_proof")
+        if not zk_proof and "zk_proof" in memo:
+            zk_proof = memo["zk_proof"]
         
         import json
         memo_json = json.dumps(memo, indent=2)
