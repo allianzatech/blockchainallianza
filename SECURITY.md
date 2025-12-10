@@ -5,7 +5,7 @@
 If you discover a security vulnerability, **DO NOT** open a public issue. Instead:
 
 1. **Send an email** to: security@allianza.tech
-2. **Or use** GitHub Security Advisory: https://github.com/dieisonmaach-lang/allianzablockchain/security/advisories/new
+2. **Or use** GitHub Security Advisory: https://github.com/allianzatech/blockchainallianza/security/advisories/new
 
 ### What to include in the report:
 
@@ -176,7 +176,7 @@ Before each release:
 ## 📧 Contact
 
 - **Security Email**: security@allianza.tech
-- **GitHub Security**: https://github.com/dieisonmaach-lang/allianzablockchain/security
+- **GitHub Security**: https://github.com/allianzatech/blockchainallianza/security
 
 ---
 

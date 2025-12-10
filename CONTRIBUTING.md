@@ -109,7 +109,7 @@ Ajude outros contribuidores respondendo questões, testando PRs, ou fornecendo f
 
 ```bash
 # 1. Clone o repositório
-git clone https://github.com/dieisonmaach-lang/allianzablockchain.git
+git clone https://github.com/allianzatech/blockchainallianza.git
 cd allianzablockchain
 
 # 2. Crie um ambiente virtual (Python)
@@ -279,7 +279,7 @@ Fixes #(número da issue)
 
 ### Bounties Ativos
 
-Mantemos uma lista de bounties para incentivar contribuições. Consulte [Issues com label `bounty`](https://github.com/dieisonmaach-lang/allianzablockchain/issues?q=is%3Aissue+is%3Aopen+label%3Abounty).
+Mantemos uma lista de bounties para incentivar contribuições. Consulte [Issues com label `bounty`](https://github.com/allianzatech/blockchainallianza/issues?q=is%3Aissue+is%3Aopen+label%3Abounty).
 
 ### Como Participar
 

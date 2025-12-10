@@ -188,7 +188,7 @@ To become the leading post-quantum, interoperable blockchain ecosystem, providin
 
 - **Testnet**: https://testnet.allianza.tech
 - **Documentation**: [docs/](docs/)
-- **GitHub**: https://github.com/dieisonmaach-lang/allianzablockchain
+- **GitHub**: https://github.com/allianzatech/blockchainallianza
 - **Website**: https://allianza.tech
 - **Whitepaper**: [WHITEPAPER_ALLIANZA_BLOCKCHAIN.md](WHITEPAPER_ALLIANZA_BLOCKCHAIN.md)
 

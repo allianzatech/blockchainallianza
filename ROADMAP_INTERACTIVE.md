@@ -132,9 +132,9 @@
 
 ## 🔗 Track Progress
 
-- **GitHub Projects**: [View Board](https://github.com/dieisonmaach-lang/allianzablockchain/projects)
-- **Milestones**: [View Milestones](https://github.com/dieisonmaach-lang/allianzablockchain/milestones)
-- **Issues**: [View Issues](https://github.com/dieisonmaach-lang/allianzablockchain/issues)
+- **GitHub Projects**: [View Board](https://github.com/allianzatech/blockchainallianza/projects)
+- **Milestones**: [View Milestones](https://github.com/allianzatech/blockchainallianza/milestones)
+- **Issues**: [View Issues](https://github.com/allianzatech/blockchainallianza/issues)
 
 ---
 

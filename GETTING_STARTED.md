@@ -15,7 +15,7 @@ Welcome to Allianza Blockchain! This guide will help you get started quickly.
 
 ```bash
 # Clone repository
-git clone https://github.com/dieisonmaach-lang/allianzablockchain.git
+git clone https://github.com/allianzatech/blockchainallianza.git
 cd allianzablockchain
 
 # Run setup script
@@ -41,7 +41,7 @@ python allianza_blockchain.py
 
 ```bash
 # Clone repository
-git clone https://github.com/dieisonmaach-lang/allianzablockchain.git
+git clone https://github.com/allianzatech/blockchainallianza.git
 cd allianzablockchain
 
 # Start all services
@@ -101,8 +101,8 @@ pytest tests/public/ --cov=core --cov-report=html
 ## ❓ Need Help?
 
 - 📖 [Documentation](docs/)
-- 💬 [GitHub Discussions](https://github.com/dieisonmaach-lang/allianzablockchain/discussions)
-- 🐛 [Report Issues](https://github.com/dieisonmaach-lang/allianzablockchain/issues)
+- 💬 [GitHub Discussions](https://github.com/allianzatech/blockchainallianza/discussions)
+- 🐛 [Report Issues](https://github.com/allianzatech/blockchainallianza/issues)
 - 📧 Email: support@allianza.tech
 
 ## 🔧 Troubleshooting
