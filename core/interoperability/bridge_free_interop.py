@@ -99,7 +99,8 @@ class BridgeFreeInterop:
     def _save_uchain_id(self, uchain_id: str, data: Dict):
         """Salva UChainID no banco de dados"""
         try:
-            self.db.execute_query(
+            # Usar execute_commit para garantir que o commit seja feito
+            self.db.execute_commit(
                 """INSERT OR REPLACE INTO cross_chain_uchainids 
                    (uchain_id, source_chain, target_chain, recipient, amount, timestamp, memo, 
                     commitment_id, proof_id, state_id, tx_hash, explorer_url)
@@ -112,14 +113,17 @@ class BridgeFreeInterop:
                     data.get("explorer_url")
                 )
             )
-            self.db.conn.commit()
+            print(f"✅ UChainID salvo no banco: {uchain_id}")
         except Exception as e:
             print(f"⚠️  Erro ao salvar UChainID: {e}")
+            import traceback
+            traceback.print_exc()
     
     def _save_zk_proof(self, proof_id: str, data: Dict):
         """Salva ZK Proof no banco de dados"""
         try:
-            self.db.execute_query(
+            # Usar execute_commit para garantir que o commit seja feito
+            self.db.execute_commit(
                 """INSERT OR REPLACE INTO cross_chain_zk_proofs 
                    (proof_id, source_chain, target_chain, source_commitment_id, 
                     state_transition_hash, proof, verification_key, created_at, valid)
@@ -131,14 +135,17 @@ class BridgeFreeInterop:
                     data.get("created_at"), 1 if data.get("valid") else 0
                 )
             )
-            self.db.conn.commit()
+            print(f"✅ ZK Proof salvo no banco: {proof_id}")
         except Exception as e:
             print(f"⚠️  Erro ao salvar ZK Proof: {e}")
+            import traceback
+            traceback.print_exc()
     
     def _save_state_commitment(self, commitment_id: str, data: Dict):
         """Salva State Commitment no banco de dados"""
         try:
-            self.db.execute_query(
+            # Usar execute_commit para garantir que o commit seja feito
+            self.db.execute_commit(
                 """INSERT OR REPLACE INTO cross_chain_state_commitments 
                    (commitment_id, chain, state_data, contract_address, timestamp)
                    VALUES (?, ?, ?, ?, ?)""",
@@ -148,9 +155,10 @@ class BridgeFreeInterop:
                     data.get("contract_address"), data.get("timestamp")
                 )
             )
-            self.db.conn.commit()
         except Exception as e:
             print(f"⚠️  Erro ao salvar State Commitment: {e}")
+            import traceback
+            traceback.print_exc()
     
     def _load_uchain_id_from_db(self, uchain_id: str):
         """Carrega um UChainID específico do banco de dados"""
@@ -1034,11 +1042,9 @@ class BridgeFreeInterop:
                 if uchain_id not in self.uchain_ids:
                     # Se não encontrou em memória, buscar no banco de dados
                     try:
-                        conn = self.db.get_connection()
-                        cursor = conn.cursor()
-                        cursor.execute("SELECT * FROM cross_chain_uchainids WHERE uchain_id = ?", (uchain_id,))
-                        row = cursor.fetchone()
-                        if row:
+                        rows = self.db.execute_query("SELECT * FROM cross_chain_uchainids WHERE uchain_id = ?", (uchain_id,))
+                        if rows:
+                            row = rows[0]
                             # Carregar do banco e adicionar em memória
                             uchain_id_db, source_chain, target_chain, recipient, amount, timestamp, memo, commitment_id, proof_id, state_id, tx_hash, explorer_url = row
                             uchain_data = {
@@ -1055,11 +1061,13 @@ class BridgeFreeInterop:
                                 "explorer_url": explorer_url
                             }
                             self.uchain_ids[uchain_id] = uchain_data
-                            conn.close()
+                            print(f"✅ UChainID carregado do banco: {uchain_id}")
                         else:
-                            conn.close()
                             return {"success": False, "error": "UChainID não encontrado"}
                     except Exception as e:
+                        print(f"⚠️  Erro ao buscar UChainID do banco: {e}")
+                        import traceback
+                        traceback.print_exc()
                         return {"success": False, "error": f"UChainID não encontrado: {str(e)}"}
                 
                 # Garantir que uchain_data está definido
@@ -1193,23 +1201,52 @@ class BridgeFreeInterop:
     def list_cross_chain_proofs(self, limit: int = 50) -> Dict:
         """
         Lista todas as provas cross-chain (últimas N)
+        Busca tanto da memória quanto do banco de dados
         """
         try:
+            # Se a memória está vazia ou tem poucos itens, recarregar do banco
+            if len(self.uchain_ids) == 0:
+                print("🔄 Memória vazia, recarregando do banco de dados...")
+                self._load_from_db()
+            
+            # Buscar também do banco para garantir que temos todos os UChainIDs
+            try:
+                rows = self.db.execute_query("SELECT * FROM cross_chain_uchainids ORDER BY timestamp DESC LIMIT ?", (limit * 2,))
+                for row in rows:
+                    uchain_id, source_chain, target_chain, recipient, amount, timestamp, memo, commitment_id, proof_id, state_id, tx_hash, explorer_url = row
+                    # Adicionar à memória se não estiver lá
+                    if uchain_id not in self.uchain_ids:
+                        self.uchain_ids[uchain_id] = {
+                            "source_chain": source_chain,
+                            "target_chain": target_chain,
+                            "recipient": recipient,
+                            "amount": amount,
+                            "timestamp": timestamp,
+                            "memo": json.loads(memo) if memo else {},
+                            "commitment_id": commitment_id,
+                            "proof_id": proof_id,
+                            "state_id": state_id,
+                            "tx_hash": tx_hash,
+                            "explorer_url": explorer_url
+                        }
+            except Exception as e:
+                print(f"⚠️  Erro ao buscar do banco: {e}")
+            
             proofs = []
             sorted_uchains = sorted(
                 self.uchain_ids.items(),
-                key=lambda x: x[1]["timestamp"],
+                key=lambda x: x[1].get("timestamp", 0),
                 reverse=True
             )[:limit]
             
             for uchain_id, data in sorted_uchains:
                 proof = {
                     "uchain_id": uchain_id,
-                    "source_chain": data["source_chain"],
-                    "target_chain": data["target_chain"],
-                    "amount": data["amount"],
-                    "timestamp": data["timestamp"],
-                    "has_zk_proof": "zk_proof" in data["memo"]
+                    "source_chain": data.get("source_chain"),
+                    "target_chain": data.get("target_chain"),
+                    "amount": data.get("amount"),
+                    "timestamp": data.get("timestamp"),
+                    "has_zk_proof": "zk_proof" in data.get("memo", {})
                 }
                 proofs.append(proof)
             
