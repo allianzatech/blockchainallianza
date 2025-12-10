@@ -1330,7 +1330,14 @@ class BridgeFreeInterop:
                     
                     # Verificar public inputs se fornecidos
                     if public_inputs:
-                        state_hash = public_inputs.get("state_hash") or public_inputs.get("state_transition_hash")
+                        # Garantir que public_inputs é um dict
+                        if isinstance(public_inputs, str):
+                            state_hash = public_inputs
+                        elif isinstance(public_inputs, dict):
+                            state_hash = public_inputs.get("state_hash") or public_inputs.get("state_transition_hash")
+                        else:
+                            state_hash = None
+                        
                         if state_hash and zk_data.get("state_transition_hash") != state_hash:
                             return {
                                 "success": True,
@@ -1374,7 +1381,14 @@ class BridgeFreeInterop:
                         
                         # Verificar public inputs se fornecidos
                         if public_inputs:
-                            state_hash = public_inputs.get("state_hash") or public_inputs.get("state_transition_hash")
+                            # Garantir que public_inputs é um dict
+                            if isinstance(public_inputs, str):
+                                state_hash = public_inputs
+                            elif isinstance(public_inputs, dict):
+                                state_hash = public_inputs.get("state_hash") or public_inputs.get("state_transition_hash")
+                            else:
+                                state_hash = None
+                            
                             if state_hash and zk_data.get("state_transition_hash") != state_hash:
                                 return {
                                     "success": True,

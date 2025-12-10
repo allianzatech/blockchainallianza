@@ -2825,9 +2825,15 @@ def decode_memo_page(identifier):
         result = bridge_free_interop.get_cross_chain_proof(uchain_id=uchain_id)
         
         if not result.get("success"):
-            return render_template('testnet/decode_memo.html',
-                                 uchain_id=uchain_id,
-                                 error=result.get("error", "UChainID not found"))
+            # Tentar recarregar do banco antes de retornar erro
+            print(f"🔄 UChainID não encontrado em memória, tentando recarregar do banco: {uchain_id}")
+            bridge_free_interop._load_from_db()
+            result = bridge_free_interop.get_cross_chain_proof(uchain_id=uchain_id)
+            
+            if not result.get("success"):
+                return render_template('testnet/decode_memo.html',
+                                     uchain_id=uchain_id,
+                                     error=result.get("error", "UChainID not found"))
         
         memo = result.get("memo", {})
         # Extrair zk_proof do resultado ou do memo
