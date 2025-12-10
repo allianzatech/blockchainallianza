@@ -1096,13 +1096,35 @@ class BridgeFreeInterop:
                             memo_zk_proof = {}
                     
                     zk_proof_id = memo_zk_proof.get("proof_id") if isinstance(memo_zk_proof, dict) else None
+                    
+                    # Se não está na memória, buscar do banco
+                    if zk_proof_id and zk_proof_id not in self.zk_proofs:
+                        try:
+                            rows = self.db.execute_query("SELECT * FROM cross_chain_zk_proofs WHERE proof_id = ?", (zk_proof_id,))
+                            if rows:
+                                row = rows[0]
+                                proof_id_db, source_chain, target_chain, source_commitment_id, state_transition_hash, proof, verification_key, created_at, valid = row
+                                self.zk_proofs[zk_proof_id] = {
+                                    "source_chain": source_chain,
+                                    "target_chain": target_chain,
+                                    "source_commitment_id": source_commitment_id,
+                                    "state_transition_hash": state_transition_hash,
+                                    "proof": proof,
+                                    "verification_key": verification_key,
+                                    "created_at": created_at,
+                                    "valid": bool(valid)
+                                }
+                                print(f"✅ ZK Proof carregado do banco: {zk_proof_id}")
+                        except Exception as e:
+                            print(f"⚠️  Erro ao carregar ZK Proof do banco: {e}")
+                    
                     if zk_proof_id and zk_proof_id in self.zk_proofs:
                         # Mesclar dados do memo com dados do sistema, priorizando memo (especialmente 'verified')
                         zk_proof = self.zk_proofs[zk_proof_id].copy()
                         zk_proof.update({
                             "proof_id": memo_zk_proof.get("proof_id", zk_proof.get("proof_id")),
-                            "state_hash": memo_zk_proof.get("state_hash", zk_proof.get("state_hash")),
-                            "verified": memo_zk_proof.get("verified", zk_proof.get("verified", False))
+                            "state_hash": memo_zk_proof.get("state_hash", zk_proof.get("state_transition_hash")),
+                            "verified": memo_zk_proof.get("verified", zk_proof.get("valid", False))
                         })
                         result["zk_proof"] = zk_proof
                     else:
@@ -1299,7 +1321,7 @@ class BridgeFreeInterop:
                     "error": "Proof and verification_key are required"
                 }
             
-            # Verificar se a prova está no sistema
+            # Verificar se a prova está no sistema (memória)
             proof_found = False
             for proof_id, zk_data in self.zk_proofs.items():
                 if zk_data.get("proof") == proof and zk_data.get("verification_key") == verification_key:
@@ -1326,6 +1348,52 @@ class BridgeFreeInterop:
                         "target_chain": zk_data.get("target_chain"),
                         "state_transition_hash": zk_data.get("state_transition_hash")
                     }
+            
+            # Se não encontrou na memória, buscar no banco
+            if not proof_found:
+                try:
+                    rows = self.db.execute_query(
+                        "SELECT * FROM cross_chain_zk_proofs WHERE proof = ? AND verification_key = ?",
+                        (proof, verification_key)
+                    )
+                    if rows:
+                        row = rows[0]
+                        proof_id, source_chain, target_chain, source_commitment_id, state_transition_hash, proof_db, verification_key_db, created_at, valid = row
+                        # Adicionar à memória
+                        zk_data = {
+                            "source_chain": source_chain,
+                            "target_chain": target_chain,
+                            "source_commitment_id": source_commitment_id,
+                            "state_transition_hash": state_transition_hash,
+                            "proof": proof_db,
+                            "verification_key": verification_key_db,
+                            "created_at": created_at,
+                            "valid": bool(valid)
+                        }
+                        self.zk_proofs[proof_id] = zk_data
+                        
+                        # Verificar public inputs se fornecidos
+                        if public_inputs:
+                            state_hash = public_inputs.get("state_hash") or public_inputs.get("state_transition_hash")
+                            if state_hash and zk_data.get("state_transition_hash") != state_hash:
+                                return {
+                                    "success": True,
+                                    "valid": False,
+                                    "error": "Public inputs do not match proof",
+                                    "proof_id": proof_id
+                                }
+                        
+                        return {
+                            "success": True,
+                            "valid": bool(valid),
+                            "message": "✅ ZK Proof verified successfully" if valid else "❌ ZK Proof is invalid",
+                            "proof_id": proof_id,
+                            "source_chain": source_chain,
+                            "target_chain": target_chain,
+                            "state_transition_hash": state_transition_hash
+                        }
+                except Exception as e:
+                    print(f"⚠️  Erro ao buscar ZK Proof no banco: {e}")
             
             # Se não encontrou no sistema, verificar estrutura básica
             # (em produção, isso seria verificação real com circuito ZK)
