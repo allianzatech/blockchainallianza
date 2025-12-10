@@ -8,7 +8,7 @@ updates:
       day: "monday"
     open-pull-requests-limit: 10
     reviewers:
-      - "dieisonmaach-lang"
+      - "allianzatech"
     labels:
       - "dependencies"
       - "python"

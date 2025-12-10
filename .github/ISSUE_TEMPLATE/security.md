@@ -14,7 +14,7 @@ assignees: ''
 
 Please email security issues to: **security@allianza.tech**
 
-Or use GitHub Security Advisories: https://github.com/dieisonmaach-lang/allianzablockchain/security/advisories/new
+Or use GitHub Security Advisories: https://github.com/allianzatech/blockchainallianza/security/advisories/new
 
 ### 📋 Information to Include
 
