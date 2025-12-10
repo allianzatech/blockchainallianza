@@ -262,7 +262,7 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) for deta
 ### 🌐 Official Resources
 - **Website**: https://allianza.tech
 - **Testnet**: https://testnet.allianza.tech
-- **GitHub**: https://github.com/dieisonmaach-lang/allianzablockchain
+- **GitHub**: https://github.com/allianzatech/blockchainallianza
 
 ### 📖 Documentation
 - **Whitepaper**: [docs/WHITEPAPER.md](docs/WHITEPAPER.md)
