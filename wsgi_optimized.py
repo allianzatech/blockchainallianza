@@ -30,16 +30,28 @@ try:
     from allianza_blockchain import app as application
     application.config['ENV'] = os.getenv('FLASK_ENV', 'production')
     application.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
-    # Rota raiz de saúde simples, sobrepõe se já existir
-    @application.route('/', methods=['GET', 'HEAD'])
-    def root_health():
-        if request.method == 'HEAD':
-            return '', 200
-        return {
-            "status": "OK",
-            "service": "Allianza Blockchain",
-            "version": "1.0.0"
-        }, 200
+    # Verificar se já existe uma rota '/' registrada (do blueprint testnet)
+    # Se não existir, registrar uma rota simples de health check
+    has_root_route = False
+    try:
+        for rule in application.url_map.iter_rules():
+            if rule.rule == '/' and 'GET' in rule.methods:
+                has_root_route = True
+                break
+    except:
+        pass
+    
+    if not has_root_route:
+        # Registrar rota raiz de saúde simples apenas se não existir
+        @application.route('/', methods=['GET', 'HEAD'])
+        def root_health():
+            if request.method == 'HEAD':
+                return '', 200
+            return {
+                "status": "OK",
+                "service": "Allianza Blockchain",
+                "version": "1.0.0"
+            }, 200
     # Health check básico
     @application.route('/health')
     def health_check():
