@@ -1115,11 +1115,17 @@ class BridgeFreeInterop:
         """
         try:
             if uchain_id:
-                # OTIMIZAÇÃO: Buscar direto no banco se não estiver em memória (mais rápido)
+                # Buscar no banco com pequenas tentativas (para casos recém-criados)
                 if uchain_id not in self.uchain_ids:
-                    # Buscar diretamente no banco (mais rápido que recarregar tudo)
                     try:
-                        rows = self.db.execute_query("SELECT * FROM cross_chain_uchainids WHERE uchain_id = ?", (uchain_id,))
+                        max_retries = 3
+                        retry_delay = 0.25
+                        rows = []
+                        for attempt in range(max_retries):
+                            rows = self.db.execute_query("SELECT * FROM cross_chain_uchainids WHERE uchain_id = ?", (uchain_id,))
+                            if rows:
+                                break
+                            time.sleep(retry_delay)
                         if rows:
                             row = rows[0]
                             # Carregar do banco e adicionar em memória
@@ -1139,7 +1145,6 @@ class BridgeFreeInterop:
                             }
                             self.uchain_ids[uchain_id] = uchain_data
                         else:
-                            # Se não encontrou, retornar erro imediatamente (sem múltiplas tentativas lentas)
                             return {"success": False, "error": "UChainID não encontrado"}
                     except Exception as e:
                         return {"success": False, "error": f"Erro ao buscar UChainID: {str(e)}"}
