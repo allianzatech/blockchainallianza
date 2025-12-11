@@ -46,55 +46,93 @@ class AutoFaucetManager:
         self.faucet_apis = {
             "bitcoin": [
                 {
-                    "name": "Bitcoin Testnet Faucet",
-                    "url": "https://bitcoinfaucet.uo1.net/send.php",
+                    "name": "Bitcoin Testnet Faucet (uo1.net)",
+                    "url": "https://bitcoinfaucet.uo1.net/send",
                     "method": "POST",
                     "params": {"address": "{address}"},
-                    "headers": {"Content-Type": "application/x-www-form-urlencoded"}
+                    "headers": {"Content-Type": "application/x-www-form-urlencoded"},
+                    "check_balance": True
                 },
                 {
-                    "name": "Mempool Faucet",
-                    "url": "https://testnet-faucet.mempool.co/",
+                    "name": "Bitcoin Testnet Faucet (alternativo)",
+                    "url": "https://testnet-faucet.com/btc-testnet/",
                     "method": "POST",
                     "params": {"address": "{address}"},
-                    "headers": {"Content-Type": "application/json"}
+                    "headers": {"Content-Type": "application/json"},
+                    "check_balance": False
                 }
             ],
             "polygon": [
                 {
-                    "name": "Polygon Faucet",
+                    "name": "Polygon Faucet (Official - Amoy)",
                     "url": "https://faucet.polygon.technology/",
                     "method": "POST",
                     "params": {
-                        "network": "mumbai",
+                        "network": "amoy",  # Atualizado: usar Amoy, não Mumbai
                         "address": "{address}"
                     },
-                    "headers": {"Content-Type": "application/json"}
+                    "headers": {"Content-Type": "application/json"},
+                    "check_balance": True
                 },
                 {
-                    "name": "QuickNode Polygon Faucet",
-                    "url": "https://faucet.quicknode.com/polygon/mumbai",
+                    "name": "Alchemy Polygon Faucet",
+                    "url": "https://www.alchemy.com/faucets/polygon-amoy",
+                    "method": "GET",
+                    "params": {"address": "{address}"},
+                    "headers": {"Content-Type": "application/json"},
+                    "check_balance": False
+                },
+                {
+                    "name": "QuickNode Polygon Faucet (Amoy)",
+                    "url": "https://faucet.quicknode.com/polygon/amoy",
                     "method": "POST",
                     "params": {"address": "{address}"},
-                    "headers": {"Content-Type": "application/json"}
+                    "headers": {"Content-Type": "application/json"},
+                    "check_balance": False
                 }
             ],
             "ethereum": [
                 {
-                    "name": "Sepolia Faucet",
+                    "name": "Sepolia Faucet (Official)",
+                    "url": "https://faucet.sepolia.dev/",
+                    "method": "POST",
+                    "params": {"address": "{address}"},
+                    "headers": {"Content-Type": "application/json"},
+                    "check_balance": True
+                },
+                {
+                    "name": "QuickNode Sepolia Faucet",
+                    "url": "https://faucet.quicknode.com/ethereum/sepolia",
+                    "method": "POST",
+                    "params": {"address": "{address}"},
+                    "headers": {"Content-Type": "application/json"},
+                    "check_balance": False
+                },
+                {
+                    "name": "Alchemy Sepolia Faucet",
                     "url": "https://sepoliafaucet.com/",
                     "method": "POST",
                     "params": {"address": "{address}"},
-                    "headers": {"Content-Type": "application/json"}
+                    "headers": {"Content-Type": "application/json"},
+                    "check_balance": False
                 }
             ],
             "bsc": [
                 {
-                    "name": "BSC Testnet Faucet",
+                    "name": "BSC Testnet Faucet (Official)",
                     "url": "https://testnet.binance.org/faucet-smart",
                     "method": "POST",
                     "params": {"address": "{address}"},
-                    "headers": {"Content-Type": "application/json"}
+                    "headers": {"Content-Type": "application/json"},
+                    "check_balance": True
+                },
+                {
+                    "name": "QuickNode BSC Faucet",
+                    "url": "https://faucet.quicknode.com/binance/bnb-testnet",
+                    "method": "POST",
+                    "params": {"address": "{address}"},
+                    "headers": {"Content-Type": "application/json"},
+                    "check_balance": False
                 }
             ]
         }
@@ -284,8 +322,16 @@ class AutoFaucetManager:
                         "faucet": faucet['name'],
                         "message": f"Solicitação enviada com sucesso para {faucet['name']}"
                     }
+                elif response.status_code in [403, 429]:
+                    # Rate limit ou bloqueio - tentar próximo faucet
+                    print(f"⚠️  {faucet['name']} retornou status {response.status_code} (rate limit/bloqueio) - tentando próximo...")
+                    continue
+                elif response.status_code in [500, 502, 503]:
+                    # Erro do servidor - tentar próximo faucet
+                    print(f"⚠️  {faucet['name']} retornou status {response.status_code} (erro do servidor) - tentando próximo...")
+                    continue
                 else:
-                    print(f"⚠️  {faucet['name']} retornou status {response.status_code}")
+                    print(f"⚠️  {faucet['name']} retornou status {response.status_code} - tentando próximo...")
             
             except Exception as e:
                 print(f"⚠️  Erro ao solicitar de {faucet['name']}: {e}")
