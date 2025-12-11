@@ -2706,10 +2706,10 @@ def api_get_cross_chain_proof(uchain_id):
         from core.interoperability.bridge_free_interop import bridge_free_interop
         import time
         
-        # ESTRATÉGIA AGRESSIVA: Múltiplas tentativas com retry
+        # ESTRATÉGIA AGRESSIVA: Múltiplas tentativas com retry (mais tempo para recém-criados)
         result = None
-        max_retries = 5
-        retry_delay = 0.5
+        max_retries = 10
+        retry_delay = 0.4
         
         for attempt in range(max_retries):
             # Tentativa 1: Buscar em memória
@@ -2984,10 +2984,11 @@ def decode_memo_page(identifier):
                     # Tentativa 4: Retry com delay (pode estar sendo salvo ainda)
                     print(f"   📍 Tentativa 4: Retry com delay (pode estar sendo salvo)...")
                     import time
-                    retry_max = 6
+                    retry_max = 10  # aumentar tentativas
+                    retry_delay = 0.5
                     for retry in range(retry_max):  # mais tentativas e case-insensitive
-                        print(f"      ⏳ Retry {retry + 1}/{retry_max}: Aguardando 0.5s...")
-                        time.sleep(0.5)
+                        print(f"      ⏳ Retry {retry + 1}/{retry_max}: Aguardando {retry_delay}s...")
+                        time.sleep(retry_delay)
                         
                         # Recarregar do banco
                         bridge_free_interop._load_from_db()
@@ -3046,7 +3047,7 @@ def decode_memo_page(identifier):
                 traceback.print_exc()
         
         if not result or not result.get("success"):
-                    # Última tentativa: Verificar se existe algum UChainID similar (debug)
+            # Última tentativa: Verificar se existe algum UChainID similar (debug)
             try:
                 from db_manager import DBManager
                 db_manager = DBManager()
@@ -3083,9 +3084,11 @@ def decode_memo_page(identifier):
             except Exception as debug_err:
                 print(f"   ⚠️  Erro no debug: {debug_err}")
             
+            # Em vez de erro imediato, mostrar mensagem amigável de indexação
+            friendly_msg = result.get("error") if result else "UChainID not found yet"
             return render_template('testnet/decode_memo.html',
                                  uchain_id=uchain_id,
-                                 error=result.get("error", "UChainID not found") if result else "UChainID not found")
+                                 error=f"⏳ UChainID ainda indexando. Tente novamente em alguns segundos. ({friendly_msg})")
         
         memo = result.get("memo", {})
 
