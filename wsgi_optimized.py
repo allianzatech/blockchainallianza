@@ -43,7 +43,7 @@ try:
     
     if not has_root_route:
         # Registrar rota raiz de saúde simples apenas se não existir
-        @application.route('/', methods=['GET', 'HEAD'])
+        @application.route('/', methods=['GET', 'HEAD'], endpoint='wsgi_root')
         def root_health():
             if request.method == 'HEAD':
                 return '', 200
@@ -52,10 +52,22 @@ try:
                 "service": "Allianza Blockchain",
                 "version": "1.0.0"
             }, 200
-    # Health check básico
-    @application.route('/health')
-    def health_check():
-        return {"status": "ok", "service": "Allianza Blockchain"}, 200
+    
+    # Health check básico - verificar se já existe antes de registrar
+    has_health_route = False
+    try:
+        for rule in application.url_map.iter_rules():
+            if rule.rule == '/health' and 'GET' in rule.methods:
+                has_health_route = True
+                break
+    except:
+        pass
+    
+    if not has_health_route:
+        # Registrar health check apenas se não existir, com endpoint único
+        @application.route('/health', endpoint='wsgi_health')
+        def wsgi_health_status():
+            return {"status": "ok", "service": "Allianza Blockchain"}, 200
 except Exception as e:
     # Fallback mínimo se app completo falhar
     err_msg = str(e)
@@ -63,10 +75,10 @@ except Exception as e:
     application.config['ENV'] = os.getenv('FLASK_ENV', 'production')
     application.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
     application.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(32).hex())
-    @application.route('/')
+    @application.route('/', endpoint='wsgi_error_root')
     def error_root():
         return {"error": "Service initialization failed", "message": err_msg}, 500
-    @application.route('/health')
+    @application.route('/health', endpoint='wsgi_error_health')
     def health_fallback():
         return {"status": "initializing", "service": "Allianza Blockchain"}, 200
 
