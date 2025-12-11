@@ -500,8 +500,9 @@ class EnhancedTestnetExplorer:
                 "last_block_index": blocks[0].get("index") if blocks else 0
             }
             
-            # Atualizar cache
-            self._stats_cache = stats
+            # Atualizar cache (garantir que total_transactions está sempre atualizado com valor do banco)
+            self._stats_cache = stats.copy()
+            self._stats_cache["total_transactions"] = total_transactions_real  # Sempre o valor mais recente do banco
             self._cache_timestamp = now
             
             return stats
