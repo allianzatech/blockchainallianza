@@ -3088,11 +3088,42 @@ def decode_memo_page(identifier):
             except Exception as debug_err:
                 print(f"   ⚠️  Erro no debug: {debug_err}")
             
-            # Em vez de erro imediato, mostrar mensagem amigável de indexação
+            # Esperar até 60s antes de retornar erro, tentando a cada 2s
+            import time as _time
+            start_wait = _time.time()
+            wait_seconds = 60
+            interval = 2
+            print(f"   ⏳ Esperando até {wait_seconds}s para indexar UChainID: {uchain_id}")
+            while _time.time() - start_wait < wait_seconds:
+                bridge_free_interop._load_from_db()
+                result = bridge_free_interop.get_cross_chain_proof(uchain_id=uchain_id)
+                if result.get("success"):
+                    print(f"   ✅ UChainID encontrado durante espera: {uchain_id}")
+                    memo = result.get("memo", {})
+                    zk_proof = memo.get("zk_proof") or result.get("zk_proof") or {}
+                    if isinstance(zk_proof, str):
+                        try:
+                            zk_proof = json.loads(zk_proof)
+                        except Exception:
+                            zk_proof = {}
+                    return render_template('testnet/decode_memo.html',
+                                           uchain_id=uchain_id,
+                                           memo_json=json.dumps(memo, indent=2),
+                                           tx_hash=result.get("tx_hash"),
+                                           explorer_url=result.get("explorer_url"),
+                                           zk_proof=zk_proof,
+                                           source_chain=result.get("source_chain"),
+                                           target_chain=result.get("target_chain"),
+                                           amount=result.get("amount"),
+                                           token=result.get("token", "ETH"),
+                                           recipient=result.get("recipient"))
+                _time.sleep(interval)
+
+            # Em vez de erro imediato, mostrar mensagem amigável após aguardar 60s
             friendly_msg = result.get("error") if result else "UChainID not found yet"
             return render_template('testnet/decode_memo.html',
                                  uchain_id=uchain_id,
-                                 error=f"⏳ UChainID ainda indexando. Tente novamente em alguns segundos. ({friendly_msg})")
+                                 error=f"⏳ UChainID ainda indexando. Aguarde alguns instantes e tente novamente. ({friendly_msg})")
         
         memo = result.get("memo", {})
 
