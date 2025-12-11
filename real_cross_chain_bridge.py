@@ -3573,12 +3573,19 @@ class RealCrossChainBridge:
                                         add_log("blockcypher_fetch_error", {"error": str(bc_err)}, "error")
                                 
                                 # ✅ FALLBACK: Se BlockCypher não retornou UTXOs, tentar Blockstream
+                                # ✅ CORREÇÃO CRÍTICA: Usar APENAS UTXOs confirmados (ignorar pendentes no mempool)
                                 if not utxos or len(utxos) == 0:
                                     print(f"🔄 BlockCypher não retornou UTXOs, tentando Blockstream API para {from_address}...")
-                                    try:
-                                        utxos_url = f"https://blockstream.info/testnet/api/address/{from_address}/utxo"
-                                        print(f"   📡 URL: {utxos_url}")
-                                        utxos_response = requests.get(utxos_url, timeout=15)
+                                    print(f"   ⚠️  IMPORTANTE: Usando apenas UTXOs CONFIRMADOS (ignorando pendentes no mempool)")
+                                    # Usar método que filtra apenas UTXOs confirmados
+                                    utxos = self._fetch_confirmed_utxos_only(from_address)
+                                    
+                                    # Se ainda não encontrou, tentar método antigo como fallback
+                                    if not utxos or len(utxos) == 0:
+                                        try:
+                                            utxos_url = f"https://blockstream.info/testnet/api/address/{from_address}/utxo"
+                                            print(f"   📡 URL: {utxos_url}")
+                                            utxos_response = requests.get(utxos_url, timeout=15)
                                         print(f"   📊 Status: {utxos_response.status_code}")
                                         
                                         if utxos_response.status_code == 200:
