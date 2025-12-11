@@ -2822,32 +2822,42 @@ def decode_memo_page(identifier):
                                  error="Invalid identifier. Use UCHAIN-<hash> or 0x<tx_hash>",
                                  identifier=identifier), 400
         
+        # SEMPRE recarregar do banco antes de buscar (garante dados atualizados)
+        print(f"🔄 Decoder: Recarregando todas as provas do banco antes de buscar UChainID: {uchain_id}")
+        bridge_free_interop._load_from_db()
+        
         result = bridge_free_interop.get_cross_chain_proof(uchain_id=uchain_id)
         
         if not result.get("success"):
-            # Tentar recarregar do banco antes de retornar erro
-            print(f"🔄 Decoder: UChainID não encontrado, tentando recarregar do banco: {uchain_id}")
-            bridge_free_interop._load_from_db()
-            result = bridge_free_interop.get_cross_chain_proof(uchain_id=uchain_id)
+            # Tentar buscar diretamente no banco como fallback
+            print(f"🔄 Decoder: UChainID não encontrado após recarregar, tentando busca direta no banco: {uchain_id}")
+            try:
+                from db_manager import DBManager
+                db_manager = DBManager()
+                rows = db_manager.execute_query("SELECT * FROM cross_chain_uchainids WHERE uchain_id = ?", (uchain_id,))
+                if rows:
+                    print(f"   ✅ UChainID encontrado diretamente no banco, forçando carregamento")
+                    # Tentar forçar o carregamento
+                    bridge_free_interop._load_uchain_id_from_db(uchain_id)
+                    result = bridge_free_interop.get_cross_chain_proof(uchain_id=uchain_id)
+                else:
+                    # Última tentativa: retry com delay (pode estar sendo salvo ainda)
+                    import time
+                    for retry in range(3):
+                        print(f"   ⏳ Tentativa {retry + 1}/3: Aguardando 0.5s e recarregando...")
+                        time.sleep(0.5)
+                        bridge_free_interop._load_from_db()
+                        result = bridge_free_interop.get_cross_chain_proof(uchain_id=uchain_id)
+                        if result.get("success"):
+                            print(f"   ✅ UChainID encontrado após retry {retry + 1}")
+                            break
+            except Exception as e:
+                print(f"   ⚠️  Erro na busca direta: {e}")
             
             if not result.get("success"):
-                # Última tentativa: verificar se existe no banco diretamente
-                try:
-                    from db_manager import DBManager
-                    db_manager = DBManager()
-                    rows = db_manager.execute_query("SELECT * FROM cross_chain_uchainids WHERE uchain_id = ?", (uchain_id,))
-                    if rows:
-                        print(f"   ✅ UChainID encontrado diretamente no banco, mas get_cross_chain_proof falhou")
-                        # Tentar forçar o carregamento
-                        bridge_free_interop._load_uchain_id_from_db(uchain_id)
-                        result = bridge_free_interop.get_cross_chain_proof(uchain_id=uchain_id)
-                except Exception as e:
-                    print(f"   ⚠️  Erro na última tentativa: {e}")
-                
-                if not result.get("success"):
-                    return render_template('testnet/decode_memo.html',
-                                         uchain_id=uchain_id,
-                                         error=result.get("error", "UChainID not found"))
+                return render_template('testnet/decode_memo.html',
+                                     uchain_id=uchain_id,
+                                     error=result.get("error", "UChainID not found"))
         
         memo = result.get("memo", {})
         # Extrair zk_proof do resultado ou do memo

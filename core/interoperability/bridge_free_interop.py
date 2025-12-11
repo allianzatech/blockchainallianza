@@ -327,7 +327,9 @@ class BridgeFreeInterop:
         private_key: Optional[str] = None,
         include_memo: bool = True,
         zk_proof_id: Optional[str] = None,
-        token_symbol: Optional[str] = "ETH"
+        token_symbol: Optional[str] = "ETH",
+        uchain_id: Optional[str] = None,  # CRÍTICO: Aceitar UChainID já gerado
+        memo_data: Optional[Dict] = None  # CRÍTICO: Aceitar memo já criado
     ) -> Dict:
         """
         Enviar transação REAL para blockchain
@@ -353,18 +355,29 @@ class BridgeFreeInterop:
                     # Garantir que as conexões estão configuradas (inclui btc_api_base)
                     bridge.setup_connections()
                     
-                    # Gerar UChainID e criar memo se solicitado
-                    uchain_id = None
+                    # CRÍTICO: Usar UChainID já gerado ou gerar novo apenas se não fornecido
                     memo_info = None
                     if include_memo:
-                        uchain_id = self.generate_uchain_id(source_chain, target_chain, recipient)
-                        memo_info = self.create_cross_chain_memo(
-                            uchain_id=uchain_id,
-                            zk_proof_id=zk_proof_id,
-                            source_chain=source_chain,
-                            target_chain=target_chain,
-                            amount=amount
-                        )
+                        if uchain_id and memo_data:
+                            # Usar UChainID e memo já fornecidos (evita duplicação)
+                            memo_info = {
+                                "memo_data": memo_data,
+                                "memo_json": json.dumps(memo_data, sort_keys=True),
+                                "memo_hex": json.dumps(memo_data, sort_keys=True).encode().hex(),
+                                "memo_length": len(json.dumps(memo_data, sort_keys=True).encode().hex())
+                            }
+                            print(f"   ✅ Usando UChainID já gerado: {uchain_id}")
+                        else:
+                            # Gerar novo apenas se não foi fornecido
+                            uchain_id = self.generate_uchain_id(source_chain, target_chain, recipient)
+                            memo_info = self.create_cross_chain_memo(
+                                uchain_id=uchain_id,
+                                zk_proof_id=zk_proof_id,
+                                source_chain=source_chain,
+                                target_chain=target_chain,
+                                amount=amount
+                            )
+                            print(f"   ⚠️  Novo UChainID gerado (não foi fornecido): {uchain_id}")
                     
                     # Converter amount para BTC se necessário
                     if token_symbol == "BTC":
@@ -538,18 +551,29 @@ class BridgeFreeInterop:
             gas_price = w3.eth.gas_price
             base_gas = 21000
             
-            # Gerar UChainID e criar memo se solicitado
-            uchain_id = None
+            # CRÍTICO: Usar UChainID já gerado ou gerar novo apenas se não fornecido
             memo_info = None
             if include_memo:
-                uchain_id = self.generate_uchain_id(source_chain, target_chain, recipient)
-                memo_info = self.create_cross_chain_memo(
-                    uchain_id=uchain_id,
-                    zk_proof_id=zk_proof_id,
-                    source_chain=source_chain,
-                    target_chain=target_chain,
-                    amount=amount
-                )
+                if uchain_id and memo_data:
+                    # Usar UChainID e memo já fornecidos (evita duplicação)
+                    memo_info = {
+                        "memo_data": memo_data,
+                        "memo_json": json.dumps(memo_data, sort_keys=True),
+                        "memo_hex": json.dumps(memo_data, sort_keys=True).encode().hex(),
+                        "memo_length": len(json.dumps(memo_data, sort_keys=True).encode().hex())
+                    }
+                    print(f"   ✅ Usando UChainID já gerado: {uchain_id}")
+                else:
+                    # Gerar novo apenas se não foi fornecido
+                    uchain_id = self.generate_uchain_id(source_chain, target_chain, recipient)
+                    memo_info = self.create_cross_chain_memo(
+                        uchain_id=uchain_id,
+                        zk_proof_id=zk_proof_id,
+                        source_chain=source_chain,
+                        target_chain=target_chain,
+                        amount=amount
+                    )
+                    print(f"   ⚠️  Novo UChainID gerado (não foi fornecido): {uchain_id}")
                 
                 # Armazenar UChainID para rastreio
                 self.uchain_ids[uchain_id] = {
@@ -943,7 +967,7 @@ class BridgeFreeInterop:
             if not apply_result["success"]:
                 return apply_result
             
-            # 4. Gerar UChainID e memo (sempre, mesmo em simulação)
+            # 4. Gerar UChainID ÚNICO UMA VEZ (CRÍTICO: usar o mesmo em toda a operação)
             uchain_id = self.generate_uchain_id(source_chain, target_chain, recipient)
             memo_info = self.create_cross_chain_memo(
                 uchain_id=uchain_id,
@@ -952,6 +976,12 @@ class BridgeFreeInterop:
                 target_chain=target_chain,
                 amount=amount
             )
+            
+            # CRÍTICO: Salvar ZK Proof no banco ANTES de continuar
+            if proof_id and proof_id in self.zk_proofs:
+                zk_proof_data = self.zk_proofs[proof_id]
+                self._save_zk_proof(proof_id, zk_proof_data)
+                print(f"✅ ZK Proof salvo no banco ANTES de enviar transação: {proof_id}")
             
             # Armazenar UChainID para rastreio (memória + banco)
             uchain_data = {
@@ -966,9 +996,10 @@ class BridgeFreeInterop:
                 "state_id": apply_result["state_id"]
             }
             self.uchain_ids[uchain_id] = uchain_data
-            self._save_uchain_id(uchain_id, uchain_data)  # Persistir no banco
+            self._save_uchain_id(uchain_id, uchain_data)  # Persistir no banco ANTES de enviar transação
             
             # 5. Se send_real=True, enviar transação REAL para blockchain
+            # CRÍTICO: Passar o UChainID já gerado para evitar gerar outro
             real_tx_result = None
             if send_real:
                 real_tx_result = self.send_real_transaction(
@@ -979,7 +1010,9 @@ class BridgeFreeInterop:
                     private_key=private_key,
                     include_memo=True,  # Incluir memo com UChainID e ZK Proof
                     zk_proof_id=proof_id,  # Incluir ZK Proof no memo
-                    token_symbol=token_symbol
+                    token_symbol=token_symbol,
+                    uchain_id=uchain_id,  # CRÍTICO: Passar UChainID já gerado
+                    memo_data=memo_info["memo_data"]  # Passar memo já criado
                 )
             
             result = {
