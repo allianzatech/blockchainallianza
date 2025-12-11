@@ -3067,84 +3067,65 @@ def decode_memo_page(identifier):
                                  error=result.get("error", "UChainID not found") if result else "UChainID not found")
         
         memo = result.get("memo", {})
-        # Extrair zk_proof do resultado ou do memo
-        zk_proof = result.get("zk_proof")
-        if not zk_proof and "zk_proof" in memo:
-            zk_proof = memo["zk_proof"]
         
-        # Garantir que zk_proof tem o campo verified extraído corretamente
-        # PRIORIDADE MÁXIMA: verified do memo (é a fonte mais confiável, vem on-chain)
-        if zk_proof:
-            # Se zk_proof é string, tentar parsear
+        # CRÍTICO: Extrair zk_proof DIRETAMENTE do memo (fonte mais confiável, vem on-chain)
+        zk_proof = None
+        if "zk_proof" in memo:
+            zk_proof = memo["zk_proof"]
+            # Se é string, parsear
             if isinstance(zk_proof, str):
                 try:
                     import json
                     zk_proof = json.loads(zk_proof)
                 except:
                     zk_proof = {}
-            # Garantir que verified está presente - PRIORIDADE: memo > zk_proof do sistema
-            if isinstance(zk_proof, dict):
-                # SEMPRE tentar extrair verified do memo primeiro (é a fonte mais confiável)
-                if "zk_proof" in memo:
-                    memo_zk = memo["zk_proof"]
-                    if isinstance(memo_zk, dict):
-                        # Se o memo tem verified, usar ele (prioridade máxima)
-                        if "verified" in memo_zk:
-                            zk_proof["verified"] = memo_zk["verified"]
-                        # Mesclar outros campos do memo também
-                        zk_proof.update({
-                            "proof_id": memo_zk.get("proof_id", zk_proof.get("proof_id")),
-                            "state_hash": memo_zk.get("state_hash", zk_proof.get("state_hash", zk_proof.get("state_transition_hash")))
-                        })
-                    elif isinstance(memo_zk, str):
-                        try:
-                            memo_zk = json.loads(memo_zk)
-                            if isinstance(memo_zk, dict):
-                                if "verified" in memo_zk:
-                                    zk_proof["verified"] = memo_zk["verified"]
-                                zk_proof.update({
-                                    "proof_id": memo_zk.get("proof_id", zk_proof.get("proof_id")),
-                                    "state_hash": memo_zk.get("state_hash", zk_proof.get("state_hash", zk_proof.get("state_transition_hash")))
-                                })
-                        except:
-                            pass
-                # Se ainda não tem verified, usar do zk_proof do sistema
-                if "verified" not in zk_proof or zk_proof.get("verified") is None:
-                    zk_proof["verified"] = zk_proof.get("valid", False)
-                # Garantir que verified é um booleano (não string)
-                if isinstance(zk_proof.get("verified"), str):
-                    zk_proof["verified"] = zk_proof["verified"].lower() in ('true', '1', 'yes')
-        else:
-            # Se não tem zk_proof no resultado, tentar extrair diretamente do memo
-            if "zk_proof" in memo:
-                zk_proof = memo["zk_proof"]
-                if isinstance(zk_proof, str):
-                    try:
-                        import json
-                        zk_proof = json.loads(zk_proof)
-                    except:
-                        zk_proof = {}
-                # Garantir que é um dict e tem verified
-                if not isinstance(zk_proof, dict):
+        # Se não tem no memo, tentar do resultado
+        elif result.get("zk_proof"):
+            zk_proof = result.get("zk_proof")
+            if isinstance(zk_proof, str):
+                try:
+                    import json
+                    zk_proof = json.loads(zk_proof)
+                except:
                     zk_proof = {}
-                # Garantir que verified é um booleano
-                if isinstance(zk_proof.get("verified"), str):
-                    zk_proof["verified"] = zk_proof["verified"].lower() in ('true', '1', 'yes')
-                elif "verified" not in zk_proof:
-                    zk_proof["verified"] = False
+        
+        # Garantir que zk_proof é um dict válido
+        if not isinstance(zk_proof, dict):
+            zk_proof = {}
+        
+        # PRIORIDADE MÁXIMA: verified do memo (vem on-chain, é a fonte mais confiável)
+        if "zk_proof" in memo:
+            memo_zk = memo["zk_proof"]
+            if isinstance(memo_zk, str):
+                try:
+                    import json
+                    memo_zk = json.loads(memo_zk)
+                except:
+                    memo_zk = {}
+            
+            if isinstance(memo_zk, dict):
+                # SEMPRE usar verified do memo (prioridade máxima)
+                if "verified" in memo_zk:
+                    zk_proof["verified"] = memo_zk["verified"]
+                # Mesclar outros campos também
+                zk_proof.update({
+                    "proof_id": memo_zk.get("proof_id", zk_proof.get("proof_id")),
+                    "state_hash": memo_zk.get("state_hash", zk_proof.get("state_hash", zk_proof.get("state_transition_hash")))
+                })
+        
+        # Se ainda não tem verified, tentar do zk_proof do sistema
+        if "verified" not in zk_proof or zk_proof.get("verified") is None:
+            zk_proof["verified"] = zk_proof.get("valid", False)
+        
+        # Garantir que verified é um booleano (não string)
+        verified_value = zk_proof.get("verified")
+        if isinstance(verified_value, str):
+            zk_proof["verified"] = verified_value.lower() in ('true', '1', 'yes', 'True')
+        elif verified_value is None:
+            zk_proof["verified"] = False
         else:
-            # Se não tem zk_proof no resultado, tentar extrair diretamente do memo
-            if "zk_proof" in memo:
-                zk_proof = memo["zk_proof"]
-                if isinstance(zk_proof, str):
-                    try:
-                        import json
-                        zk_proof = json.loads(zk_proof)
-                    except:
-                        zk_proof = {}
-                # Garantir que é um dict
-                if not isinstance(zk_proof, dict):
-                    zk_proof = {}
+            # Garantir que é booleano
+            zk_proof["verified"] = bool(verified_value)
         
         import json
         memo_json = json.dumps(memo, indent=2)

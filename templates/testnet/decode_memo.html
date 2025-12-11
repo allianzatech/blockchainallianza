@@ -44,14 +44,17 @@
                             <p><strong>Proof ID:</strong> <span class="font-mono text-sm">{{ zk_proof.proof_id }}</span></p>
                             <p><strong>State Hash:</strong> <span class="font-mono text-sm">{{ zk_proof.state_hash }}</span></p>
                             <p><strong>Verified:</strong> 
-                                {% if zk_proof %}
-                                    {% if zk_proof.verified == True or zk_proof.verified == 'true' or zk_proof.verified == 1 or zk_proof.verified == 'True' or (zk_proof.verified is not defined and zk_proof.valid == True) %}
+                                {% if zk_proof and zk_proof.verified is defined %}
+                                    {% set verified_val = zk_proof.verified %}
+                                    {% if verified_val == True or verified_val == 'true' or verified_val == 1 or verified_val == 'True' or verified_val == '1' or (verified_val is string and verified_val.lower() == 'true') %}
                                     <span class="text-green-400">✅ Yes</span>
                                     {% else %}
                                     <span class="text-red-400">❌ No</span>
                                     {% endif %}
+                                {% elif zk_proof and zk_proof.valid is defined and zk_proof.valid == True %}
+                                    <span class="text-green-400">✅ Yes</span>
                                 {% else %}
-                                <span class="text-red-400">❌ No</span>
+                                    <span class="text-red-400">❌ No</span>
                                 {% endif %}
                             </p>
                         </div>
