@@ -382,6 +382,8 @@ TRANSLATIONS = {
         'complete_results': 'Complete Results',
         'copy': 'Copy',
         'download': 'Download',
+        'no_proofs_yet': 'No cross-chain proofs found yet.',
+        'create_first_transfer': 'Create your first cross-chain transfer to generate proofs.',
         # Public Tests
         'public_tests': 'Public Tests',
         'public_tests_subtitle': 'Execute real tests and see results in real time',
