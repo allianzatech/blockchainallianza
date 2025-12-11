@@ -1506,35 +1506,57 @@ class RealCrossChainBridge:
                 # Adicionar input com todas as informações disponíveis
                 # ✅ CORREÇÃO: Garantir que value é sempre passado como inteiro
                 try:
-                    # bitcoinlib aceita txid, output_n, value e keys
-                    # ✅ CRÍTICO: value DEVE ser um inteiro (satoshis)
-                    tx.add_input(
-                        prev_txid=txid,
-                        output_n=vout,  # Já convertido para int acima
-                        value=value,    # Já convertido para int acima
-                        keys=key,
-                        script=script_pubkey if script_pubkey else None
-                    )
-                    total_input_value += value
-                    print(f"      ✅ Input adicionado com sucesso (value={value} satoshis, output_n={vout})")
-                except Exception as add_input_err:
-                    print(f"      ⚠️  Erro ao adicionar input: {add_input_err}")
-                    print(f"         Tentando sem script...")
-                    # Tentar sem script
+                    # ✅ CRÍTICO: bitcoinlib precisa do prev_txid em bytes (little-endian) para alguns métodos
+                    # Mas também aceita string hex. Vamos tentar ambos os métodos.
+                    
+                    # Método 1: Tentar com string hex (formato mais comum)
                     try:
                         tx.add_input(
-                            prev_txid=txid,
-                            output_n=vout,  # Já convertido para int
-                            value=value,    # Já convertido para int
-                            keys=key
+                            prev_txid=txid,  # String hex
+                            output_n=vout,   # Já convertido para int acima
+                            value=value,     # Já convertido para int acima
+                            keys=key,
+                            script=script_pubkey if script_pubkey else None
                         )
                         total_input_value += value
-                        print(f"      ✅ Input adicionado sem script (value={value} satoshis, output_n={vout})")
-                    except Exception as add_input_err2:
-                        print(f"      ❌ Falha ao adicionar input: {add_input_err2}")
-                        import traceback
-                        traceback.print_exc()
-                        continue
+                        print(f"      ✅ Input adicionado com sucesso (value={value} satoshis, output_n={vout})")
+                    except Exception as method1_err:
+                        print(f"      ⚠️  Método 1 falhou: {method1_err}")
+                        # Método 2: Tentar sem script
+                        try:
+                            tx.add_input(
+                                prev_txid=txid,
+                                output_n=vout,
+                                value=value,
+                                keys=key
+                            )
+                            total_input_value += value
+                            print(f"      ✅ Input adicionado sem script (value={value} satoshis, output_n={vout})")
+                        except Exception as method2_err:
+                            print(f"      ⚠️  Método 2 falhou: {method2_err}")
+                            # Método 3: Tentar com prev_txid em bytes (little-endian)
+                            try:
+                                txid_bytes = bytes.fromhex(txid)
+                                txid_bytes_le = txid_bytes[::-1]  # Little-endian
+                                tx.add_input(
+                                    prev_txid=txid_bytes_le,
+                                    output_n=vout,
+                                    value=value,
+                                    keys=key
+                                )
+                                total_input_value += value
+                                print(f"      ✅ Input adicionado com bytes LE (value={value} satoshis, output_n={vout})")
+                            except Exception as method3_err:
+                                print(f"      ❌ Todos os métodos falharam para este UTXO")
+                                print(f"         Erro método 3: {method3_err}")
+                                import traceback
+                                traceback.print_exc()
+                                continue
+                except Exception as add_input_err:
+                    print(f"      ❌ Erro geral ao adicionar input: {add_input_err}")
+                    import traceback
+                    traceback.print_exc()
+                    continue
             
             if len(tx.inputs) == 0:
                 return {
@@ -1683,7 +1705,61 @@ class RealCrossChainBridge:
             # Obter raw transaction
             print(f"📄 Serializando transação...")
             try:
-                raw_tx_hex = tx.raw_hex()
+                # ✅ CORREÇÃO: Verificar se a transação tem inputs antes de serializar
+                if len(tx.inputs) == 0:
+                    return {
+                        "success": False,
+                        "error": "Transação não tem inputs antes de serializar",
+                        "note": "A transação foi criada mas não tem inputs válidos",
+                        "debug": {
+                            "inputs_count": len(tx.inputs),
+                            "outputs_count": len(tx.outputs),
+                            "utxos_provided": len(utxos)
+                        }
+                    }
+                
+                # ✅ CORREÇÃO: Tentar múltiplos métodos de serialização
+                raw_tx_hex = None
+                try:
+                    raw_tx_hex = tx.raw_hex()
+                    print(f"✅ Raw TX criada via raw_hex(): {len(raw_tx_hex)} bytes")
+                except Exception as raw_hex_err:
+                    print(f"⚠️  raw_hex() falhou: {raw_hex_err}")
+                    try:
+                        # Método alternativo: serialize()
+                        raw_tx_hex = tx.serialize()
+                        if isinstance(raw_tx_hex, bytes):
+                            raw_tx_hex = raw_tx_hex.hex()
+                        print(f"✅ Raw TX criada via serialize(): {len(raw_tx_hex)} bytes")
+                    except Exception as serialize_err:
+                        print(f"⚠️  serialize() também falhou: {serialize_err}")
+                        try:
+                            # Método alternativo 2: raw()
+                            raw_tx_hex = tx.raw()
+                            if isinstance(raw_tx_hex, bytes):
+                                raw_tx_hex = raw_tx_hex.hex()
+                            print(f"✅ Raw TX criada via raw(): {len(raw_tx_hex)} bytes")
+                        except Exception as raw_err:
+                            return {
+                                "success": False,
+                                "error": f"Todos os métodos de serialização falharam",
+                                "note": "A transação foi criada e assinada mas não pôde ser serializada",
+                                "debug": {
+                                    "raw_hex_error": str(raw_hex_err),
+                                    "serialize_error": str(serialize_err),
+                                    "raw_error": str(raw_err),
+                                    "inputs_count": len(tx.inputs),
+                                    "outputs_count": len(tx.outputs)
+                                }
+                            }
+                
+                if not raw_tx_hex:
+                    return {
+                        "success": False,
+                        "error": "Raw TX não foi criada",
+                        "note": "A transação foi criada mas não pôde ser serializada"
+                    }
+                
                 print(f"✅ Raw TX criada: {len(raw_tx_hex)} bytes ({len(raw_tx_hex)//2} bytes hex)")
                 
                 # ✅ VALIDAÇÃO FINAL: Verificar se a transação serializada tem tamanho mínimo
@@ -3699,6 +3775,26 @@ class RealCrossChainBridge:
                                         
                                         # ✅ PRIORIDADE 2: Tentar bitcoinlib como fallback
                                         print(f"🔄 Tentando bitcoinlib como fallback...")
+                                        # ✅ VALIDAÇÃO: Garantir que UTXOs estão no formato correto
+                                        if utxos:
+                                            validated_utxos = []
+                                            for utxo in utxos:
+                                                # Garantir que todos os campos necessários estão presentes e são do tipo correto
+                                                validated_utxo = {
+                                                    'txid': str(utxo.get('txid', '')).strip(),
+                                                    'vout': int(utxo.get('vout', utxo.get('output_n', 0))),
+                                                    'output_n': int(utxo.get('output_n', utxo.get('vout', 0))),
+                                                    'value': int(utxo.get('value', 0)),
+                                                    'address': from_address
+                                                }
+                                                # Validar UTXO
+                                                if validated_utxo['txid'] and len(validated_utxo['txid']) == 64 and validated_utxo['value'] > 0:
+                                                    validated_utxos.append(validated_utxo)
+                                                else:
+                                                    print(f"   ⚠️  UTXO inválido ignorado: {validated_utxo}")
+                                            utxos = validated_utxos
+                                            print(f"   ✅ {len(utxos)} UTXOs validados para bitcoinlib")
+                                        
                                         try:
                                             bitcoinlib_result = self._create_bitcoin_tx_with_bitcoinlib_op_return(
                                                 from_private_key=from_private_key,
@@ -3724,6 +3820,22 @@ class RealCrossChainBridge:
                                         
                                         # ✅ PRIORIDADE 3: Tentar método manual com python-bitcointx como último recurso
                                         print(f"🔄 Tentando método manual (python-bitcointx) como último recurso...")
+                                        # ✅ VALIDAÇÃO: Garantir que UTXOs estão no formato correto para método manual também
+                                        if utxos:
+                                            validated_utxos_manual = []
+                                            for utxo in utxos:
+                                                validated_utxo = {
+                                                    'txid': str(utxo.get('txid', '')).strip(),
+                                                    'vout': int(utxo.get('vout', utxo.get('output_n', 0))),
+                                                    'output_n': int(utxo.get('output_n', utxo.get('vout', 0))),
+                                                    'value': int(utxo.get('value', 0)),
+                                                    'address': from_address
+                                                }
+                                                if validated_utxo['txid'] and len(validated_utxo['txid']) == 64 and validated_utxo['value'] > 0:
+                                                    validated_utxos_manual.append(validated_utxo)
+                                            utxos = validated_utxos_manual
+                                            print(f"   ✅ {len(utxos)} UTXOs validados para método manual")
+                                        
                                         try:
                                             manual_result = self._create_bitcoin_tx_with_op_return_manual(
                                                 from_private_key=from_private_key,
