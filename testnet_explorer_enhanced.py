@@ -458,44 +458,7 @@ class EnhancedTestnetExplorer:
                 if validator and validator != "unknown":
                     validators.add(validator)
             
-            # Contar total real de transações do banco de dados (SEMPRE buscar do banco, sem cache)
-            total_transactions_real = 0
-            try:
-                from db_manager import DBManager
-                db_manager = DBManager()
-                
-                # Query direta para contar todas as transações
-                result = db_manager.execute_query("SELECT COUNT(*) as total FROM transactions_history", ())
-                
-                if result and len(result) > 0:
-                    # Extrair o valor do COUNT corretamente
-                    count_value = result[0]
-                    if isinstance(count_value, tuple):
-                        total_transactions_real = int(count_value[0]) if count_value[0] is not None else 0
-                    elif isinstance(count_value, list):
-                        total_transactions_real = int(count_value[0]) if len(count_value) > 0 and count_value[0] is not None else 0
-                    elif isinstance(count_value, (int, float)):
-                        total_transactions_real = int(count_value)
-                    else:
-                        # Tentar acessar como dict se for o caso
-                        total_transactions_real = int(count_value.get('total', 0)) if isinstance(count_value, dict) else 0
-                    
-                    # Garantir que é um número válido
-                    if not isinstance(total_transactions_real, int) or total_transactions_real < 0:
-                        total_transactions_real = 0
-                    
-                    # Log sempre para debug
-                    print(f"📊 Total de transações no banco (EXATO): {total_transactions_real}")
-                else:
-                    print(f"⚠️  Query COUNT retornou resultado vazio")
-                    total_transactions_real = 0
-                    
-            except Exception as db_err:
-                import traceback
-                print(f"❌ Erro ao contar transações do banco: {db_err}")
-                print(traceback.format_exc())
-                # Se falhar, usar 0 para não mostrar número incorreto
-                total_transactions_real = 0
+            # total_transactions_real já foi calculado no início da função (sempre do banco)
             
             # Contar transações pendentes de todos os shards
             pending_count = 0
