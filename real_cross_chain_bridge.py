@@ -1449,7 +1449,37 @@ class RealCrossChainBridge:
             print(f"   OP_RETURN: {'Sim' if memo_hex else 'Não'}")
             
             # Criar chave privada
-            key = HDKey(from_private_key, network='testnet')
+            # ✅ CORREÇÃO: Validar formato WIF antes de criar HDKey
+            try:
+                # Tentar validar se é WIF válido
+                from bitcoinlib.keys import Key
+                test_key = Key(from_private_key, network='testnet')
+                # Se chegou aqui, é WIF válido
+                key = HDKey(from_private_key, network='testnet')
+            except Exception as wif_err:
+                print(f"⚠️  Chave não é WIF válido no bitcoinlib: {wif_err}")
+                # Tentar converter de hex para WIF
+                try:
+                    if from_private_key.startswith('0x'):
+                        priv_key_hex = from_private_key[2:]
+                    elif len(from_private_key) == 64:
+                        priv_key_hex = from_private_key
+                    else:
+                        raise ValueError("Formato de chave não reconhecido")
+                    
+                    priv_key_bytes = bytes.fromhex(priv_key_hex)
+                    key = HDKey(priv_key_bytes, network='testnet')
+                    wif_key = key.wif()
+                    print(f"✅ Chave convertida para WIF: {wif_key[:15]}...")
+                    from_private_key = wif_key
+                except Exception as conv_err:
+                    print(f"❌ Não foi possível converter chave para WIF: {conv_err}")
+                    return {
+                        "success": False,
+                        "error": f"Chave privada em formato inválido: {str(wif_err)}",
+                        "error_type": "BKeyError",
+                        "note": "A chave deve estar em formato WIF (começa com 'c' ou '9' para testnet) ou hex (64 caracteres)"
+                    }
             
             # ✅ CORREÇÃO: Determinar witness_type baseado no endereço
             # Endereços que começam com 'm' ou 'n' são legacy (P2PKH)
@@ -2501,7 +2531,43 @@ class RealCrossChainBridge:
                     
                     # Tentar criar wallet com a chave WIF
                     # MELHORIA: Tentar todos os tipos de witness_type para encontrar o que tem saldo
-                    key = HDKey(from_private_key, network='testnet')
+                    # ✅ CORREÇÃO: Validar e converter chave privada para formato WIF se necessário
+                    try:
+                        # Tentar validar se é WIF válido
+                        from bitcoinlib.keys import Key
+                        test_key = Key(from_private_key, network='testnet')
+                        # Se chegou aqui, é WIF válido
+                        key = HDKey(from_private_key, network='testnet')
+                    except Exception as wif_err:
+                        print(f"⚠️  Chave não é WIF válido: {wif_err}")
+                        # Tentar converter de hex para WIF
+                        try:
+                            # Se a chave começa com 0x ou é hex puro, converter para WIF
+                            if from_private_key.startswith('0x'):
+                                priv_key_hex = from_private_key[2:]
+                            elif len(from_private_key) == 64:
+                                priv_key_hex = from_private_key
+                            else:
+                                raise ValueError("Formato de chave não reconhecido")
+                            
+                            # Converter hex para bytes e depois para WIF
+                            from bitcoinlib.keys import HDKey
+                            priv_key_bytes = bytes.fromhex(priv_key_hex)
+                            # Criar HDKey a partir de bytes (bitcoinlib aceita isso)
+                            key = HDKey(priv_key_bytes, network='testnet')
+                            # Obter WIF da chave criada
+                            wif_key = key.wif()
+                            print(f"✅ Chave convertida para WIF: {wif_key[:15]}...")
+                            from_private_key = wif_key  # Usar WIF daqui em diante
+                        except Exception as conv_err:
+                            print(f"❌ Não foi possível converter chave para WIF: {conv_err}")
+                            return {
+                                "success": False,
+                                "error": f"Chave privada em formato inválido: {str(wif_err)}",
+                                "error_type": "BKeyError",
+                                "note": "A chave deve estar em formato WIF (começa com 'c' ou '9' para testnet) ou hex (64 caracteres)",
+                                "bitcoinlib_installed": True
+                            }
                     
                     # Lista de witness_types para tentar (na ordem mais comum)
                     witness_types_to_try = ['legacy', 'segwit', 'p2sh-segwit']
@@ -2530,7 +2596,8 @@ class RealCrossChainBridge:
                             
                             # Obter endereço deste tipo
                             # Criar wallet primeiro para obter o endereço correto
-                            test_key = HDKey(from_private_key, network='testnet')
+                            # ✅ CORREÇÃO: Usar a chave já validada/convertida acima
+                            test_key = key  # Reutilizar key já criada e validada acima
                             
                             # Obter endereço do wallet criado (mais confiável)
                             test_wallet_keys = test_wallet.keys()
@@ -2655,9 +2722,21 @@ class RealCrossChainBridge:
                         utxos = wallet.utxos()
                     else:
                         # Se não há wallet, criar endereço padrão
-                            key = HDKey(from_private_key, network='testnet')
+                        # ✅ CORREÇÃO: Usar a chave já validada/convertida (key já existe do código acima)
+                        try:
+                            if 'key' not in locals():
+                                # Se key não existe, criar agora (pode ter falhado antes)
+                                key = HDKey(from_private_key, network='testnet')
                             from_address = key.address(script_type='p2pkh')
                             print(f"⚠️  Usando endereço padrão (legacy): {from_address}")
+                        except Exception as key_err:
+                            print(f"❌ Erro ao criar endereço padrão: {key_err}")
+                            return {
+                                "success": False,
+                                "error": f"Erro ao criar endereço Bitcoin: {str(key_err)}",
+                                "error_type": type(key_err).__name__,
+                                "note": "Verifique se a chave privada está no formato WIF correto"
+                            }
                     
                     if not wallet:
                         return {
