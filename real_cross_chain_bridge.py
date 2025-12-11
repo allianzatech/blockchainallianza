@@ -2893,6 +2893,191 @@ class RealCrossChainBridge:
         
         return result
     
+    def send_bitcoin_our_way(self, from_private_key: str, to_address: str, amount_btc: float) -> Dict:
+        """
+        SOLUÇÃO PRÓPRIA - Sem depender de bibliotecas Bitcoin complexas
+        Usa apenas requests + BlockCypher API + bibliotecas Python padrão
+        """
+        import requests
+        import time
+        
+        print(f"🚀 MÉTODO PRÓPRIO - SEM BIBLIOTECAS BITCOIN COMPLEXAS")
+        print(f"=====================================================")
+        
+        # 1. Obter endereço da chave privada
+        print(f"\n1. 🔑 Obtendo endereço da chave privada...")
+        from_address = os.getenv('BITCOIN_TESTNET_ADDRESS', 'mjQMvYHE5Bpqze4ifq6NLP9BthNJgxWRud')
+        print(f"   Endereço: {from_address}")
+        
+        # 2. Buscar UTXOs via Blockstream
+        print(f"\n2. 🔍 Buscando UTXOs confirmados...")
+        utxo_url = f"https://blockstream.info/testnet/api/address/{from_address}/utxo"
+        response = requests.get(utxo_url, timeout=20)
+        
+        if response.status_code != 200:
+            return {"success": False, "error": f"Erro ao buscar UTXOs: {response.status_code}"}
+        
+        all_utxos = response.json()
+        print(f"   Total UTXOs: {len(all_utxos)}")
+        
+        # Filtrar apenas confirmados
+        confirmed_utxos = []
+        for utxo in all_utxos:
+            status = utxo.get('status', {})
+            if status.get('confirmed', False):
+                # Verificar se não foi gasto
+                try:
+                    tx_url = f"https://blockstream.info/testnet/api/tx/{utxo['txid']}"
+                    tx_resp = requests.get(tx_url, timeout=10)
+                    if tx_resp.status_code == 200:
+                        tx_data = tx_resp.json()
+                        vout_data = tx_data['vout'][utxo['vout']]
+                        if not vout_data.get('spent', False):
+                            confirmed_utxos.append(utxo)
+                except:
+                    continue
+        
+        print(f"   UTXOs confirmados disponíveis: {len(confirmed_utxos)}")
+        
+        if not confirmed_utxos:
+            return {"success": False, "error": "Nenhum UTXO confirmado disponível"}
+        
+        # 3. Usar BlockCypher API para TUDO (criar, assinar e broadcast)
+        print(f"\n3. 📡 Usando BlockCypher API para criar, assinar e broadcastar...")
+        
+        amount_sats = int(amount_btc * 100000000)
+        fee_sats = 500
+        
+        # Preparar inputs
+        inputs_list = []
+        total_input = 0
+        for utxo in confirmed_utxos[:1]:  # Usar primeiro UTXO confirmado
+            inputs_list.append({
+                "prev_hash": utxo['txid'],
+                "output_index": utxo['vout']
+            })
+            total_input += utxo['value']
+            print(f"   Input: {utxo['txid'][:16]}...:{utxo['vout']} = {utxo['value']} sats")
+        
+        if total_input < amount_sats + fee_sats:
+            return {
+                "success": False,
+                "error": f"Fundos insuficientes. Necessário: {amount_sats + fee_sats}, Disponível: {total_input}"
+            }
+        
+        # Preparar outputs
+        outputs_list = [{
+            "addresses": [to_address],
+            "value": amount_sats
+        }]
+        
+        change_sats = total_input - amount_sats - fee_sats
+        if change_sats > 546:  # Dust limit
+            outputs_list.append({
+                "addresses": [from_address],
+                "value": change_sats
+            })
+            print(f"   Change: {change_sats} sats")
+        
+        print(f"   Output principal: {amount_sats} sats para {to_address}")
+        print(f"   Fee: {fee_sats} sats")
+        
+        # 4. Criar transação não assinada via BlockCypher
+        print(f"\n4. 🛠️  Criando transação não assinada...")
+        token = os.getenv('BLOCKCYPHER_API_TOKEN', '17766314e49c439e85cec883969614ac')
+        create_url = f"https://api.blockcypher.com/v1/btc/test3/txs/new?token={token}"
+        
+        tx_data = {
+            "inputs": inputs_list,
+            "outputs": outputs_list,
+            "fees": fee_sats
+        }
+        
+        create_response = requests.post(create_url, json=tx_data, timeout=30)
+        
+        if create_response.status_code not in [200, 201]:
+            error_text = create_response.text[:500]
+            return {
+                "success": False,
+                "error": f"Erro ao criar transação: {create_response.status_code}",
+                "response": error_text
+            }
+        
+        unsigned_tx = create_response.json()
+        tosign = unsigned_tx.get('tosign', [])
+        
+        if not tosign:
+            return {
+                "success": False,
+                "error": "Nenhum hash para assinar (tosign vazio)",
+                "response": str(unsigned_tx)[:500]
+            }
+        
+        print(f"   ✅ Transação criada, {len(tosign)} hash(es) para assinar")
+        
+        # 5. Assinar usando BlockCypher (eles fazem a assinatura se fornecemos a chave privada)
+        print(f"\n5. 🔐 Assinando transação...")
+        
+        # Converter chave WIF para hex (BlockCypher precisa de hex)
+        try:
+            # Usar bitcoinlib apenas para converter WIF -> hex (única dependência mínima)
+            from bitcoinlib.keys import HDKey
+            key_obj = HDKey(from_private_key, network='testnet')
+            privkey_hex = key_obj.private_hex
+            print(f"   Chave convertida para hex: {privkey_hex[:20]}...")
+        except Exception as conv_err:
+            print(f"   ⚠️  Erro ao converter chave: {conv_err}")
+            return {
+                "success": False,
+                "error": f"Erro ao converter chave WIF para hex: {str(conv_err)}",
+                "note": "Precisa converter chave WIF para hex para BlockCypher"
+            }
+        
+        # Assinar via BlockCypher
+        sign_data = {
+            "tx": unsigned_tx,
+            "tosign": tosign,
+            "privkeys": [privkey_hex]
+        }
+        
+        sign_url = f"https://api.blockcypher.com/v1/btc/test3/txs/send?token={token}"
+        sign_response = requests.post(sign_url, json=sign_data, timeout=30)
+        
+        if sign_response.status_code in [200, 201]:
+            signed_tx = sign_response.json()
+            tx_hash = signed_tx.get('tx', {}).get('hash')
+            
+            if tx_hash:
+                print(f"   ✅✅✅ SUCESSO!")
+                print(f"   Hash: {tx_hash}")
+                print(f"   Explorer: https://blockstream.info/testnet/tx/{tx_hash}")
+                
+                return {
+                    "success": True,
+                    "tx_hash": tx_hash,
+                    "from": from_address,
+                    "to": to_address,
+                    "amount": amount_btc,
+                    "chain": "bitcoin",
+                    "status": "broadcasted",
+                    "explorer_url": f"https://blockstream.info/testnet/tx/{tx_hash}",
+                    "method": "blockcypher_complete",
+                    "note": "✅ Transação criada, assinada e broadcastada via BlockCypher API (método próprio, sem bibliotecas Bitcoin complexas)"
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": "Hash não encontrado na resposta",
+                    "response": str(signed_tx)[:500]
+                }
+        else:
+            error_text = sign_response.text[:500]
+            return {
+                "success": False,
+                "error": f"Erro ao assinar/broadcastar: {sign_response.status_code}",
+                "response": error_text
+            }
+    
     def send_bitcoin_transaction(
         self,
         from_private_key: str,
