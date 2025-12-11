@@ -2,6 +2,8 @@
 import hashlib
 import json
 import time
+import sys
+import threading
 from uuid import uuid4
 from db_manager import DBManager
 import logging
@@ -4387,26 +4389,54 @@ try:
     print("   • GET  /api/network/stats - Estatísticas da rede")
     
     # =============================================================================
-    # INICIALIZAR GERENCIADOR AUTOMÁTICO DE FAUCET
+    # INICIALIZAR GERENCIADOR AUTOMÁTICO DE FAUCET (LAZY LOADING)
+    # Movido para inicialização lazy para evitar execução durante import
     # =============================================================================
-    try:
-        from auto_faucet_manager import AutoFaucetManager
+    _auto_faucet_initialized = False
+    _auto_faucet_lock = threading.Lock()
+    
+    def initialize_heavy_services():
+        """Inicializa serviços pesados apenas quando necessário (lazy loading)"""
+        global _auto_faucet_initialized
         
-        # Inicializar gerenciador de faucet automático
-        auto_faucet = AutoFaucetManager()
+        if _auto_faucet_initialized:
+            return
         
-        # Iniciar agendador (verifica a cada 12 horas)
-        auto_faucet.start_scheduler(interval_hours=12)
-        
-        logger.info("🚰 GERENCIADOR AUTOMÁTICO DE FAUCET: Inicializado!")
-        print("🚰 GERENCIADOR AUTOMÁTICO DE FAUCET: Inicializado!")
-        print("   • Verifica saldos automaticamente a cada 12 horas")
-        print("   • Solicita faucet quando saldo está baixo")
-        print("   • Suporta: Bitcoin, Polygon, Ethereum, BSC")
-        
-    except Exception as e:
-        logger.warning(f"⚠️  Gerenciador automático de faucet não disponível: {e}")
-        print(f"⚠️  Gerenciador automático de faucet não disponível: {e}")
+        # Usar lock para garantir thread-safety
+        with _auto_faucet_lock:
+            if _auto_faucet_initialized:
+                return
+            
+            try:
+                from auto_faucet_manager import AutoFaucetManager
+                
+                # Inicializar gerenciador de faucet automático
+                auto_faucet = AutoFaucetManager()
+                
+                # Iniciar agendador (verifica a cada 12 horas)
+                auto_faucet.start_scheduler(interval_hours=12)
+                
+                logger.info("🚰 GERENCIADOR AUTOMÁTICO DE FAUCET: Inicializado!")
+                print("🚰 GERENCIADOR AUTOMÁTICO DE FAUCET: Inicializado!")
+                print("   • Verifica saldos automaticamente a cada 12 horas")
+                print("   • Solicita faucet quando saldo está baixo")
+                print("   • Suporta: Bitcoin, Polygon, Ethereum, BSC")
+                
+                _auto_faucet_initialized = True
+                
+            except Exception as e:
+                logger.warning(f"⚠️  Gerenciador automático de faucet não disponível: {e}")
+                print(f"⚠️  Gerenciador automático de faucet não disponível: {e}")
+                _auto_faucet_initialized = True  # Marcar como inicializado para não tentar novamente
+    
+    # Inicializar serviços pesados em background após um pequeno delay
+    # Isso permite que a app Flask seja importada sem bloqueio
+    def delayed_init():
+        time.sleep(2)  # Aguardar 2 segundos para garantir que a app está pronta
+        initialize_heavy_services()
+    
+    init_thread = threading.Thread(target=delayed_init, daemon=True)
+    init_thread.start()
     
     # Verificar se o blueprint foi registrado
     registered_blueprints = [bp.name for bp in app.blueprints.values()]
