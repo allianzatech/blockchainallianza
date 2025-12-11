@@ -90,6 +90,9 @@ TRANSLATIONS = {
         'complete_suite_short': 'Suite completa',
         '41_validations': 'Validações',
         'validations_complete': 'Validações Completas',
+        'notice_title': 'Aviso',
+        'notice_message': 'Estamos em constante criação e melhorias para melhor experiência de todos. Se notar divergências entre site, whitepaper e testnet, por favor desconsidere: estamos evoluindo continuamente.',
+        'notice_close': 'Entendi',
         'complete': 'Completas',
         # Network Status
         'network_status_title': 'Status da Rede',
@@ -316,6 +319,9 @@ TRANSLATIONS = {
         'complete_suite_short': 'Complete suite',
         '41_validations': 'Validations',
         'validations_complete': 'Validations Complete',
+        'notice_title': 'Notice',
+        'notice_message': 'We are continuously improving for a better experience. If you see any differences between the site, whitepaper, and testnet, please disregard them — we are evolving fast.',
+        'notice_close': 'Got it',
         'complete': 'Complete',
         # Network Status
         'network_status_title': 'Network Status',

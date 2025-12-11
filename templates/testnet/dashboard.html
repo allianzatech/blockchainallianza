@@ -30,6 +30,19 @@
     </style>
 </head>
 <body class="bg-gray-900 text-white">
+    <!-- Notice banner -->
+    <div id="notice-banner" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+        <div class="bg-gray-800 text-white p-6 rounded-lg shadow-lg max-w-lg w-full mx-4 border border-gray-600">
+            <h3 class="text-xl font-semibold mb-3">{{ t('notice_title') or 'Notice' }}</h3>
+            <p class="text-sm text-gray-200 leading-relaxed mb-4">
+                {{ t('notice_message') or 'We are continuously improving for a better experience. If you see any differences between the site, whitepaper, and testnet, please disregard them — we are evolving fast.' }}
+            </p>
+            <button id="notice-close" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition">
+                {{ t('notice_close') or 'Got it' }}
+            </button>
+        </div>
+    </div>
+
     <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
         <!-- Header -->
         <div class="mb-8">
@@ -235,4 +248,27 @@
     </div>
 </body>
 </html>
+<script>
+    // Show notice once per session. Default to EN unless browser is pt-BR/pt.
+    (function() {
+        const banner = document.getElementById('notice-banner');
+        const closeBtn = document.getElementById('notice-close');
+        if (!banner || !closeBtn) return;
+
+        const lsKey = 'allianza_notice_closed';
+        const isClosed = sessionStorage.getItem(lsKey);
+
+        // Language detection: if browser language starts with pt, show PT text (handled by backend t() when lang == pt)
+        // Otherwise the default EN text is shown (t fallback).
+
+        if (!isClosed) {
+            banner.classList.remove('hidden');
+        }
+
+        closeBtn.addEventListener('click', () => {
+            banner.classList.add('hidden');
+            sessionStorage.setItem(lsKey, '1');
+        });
+    })();
+</script>
 
