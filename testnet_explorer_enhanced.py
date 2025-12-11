@@ -374,10 +374,38 @@ class EnhancedTestnetExplorer:
     
     def get_network_stats(self) -> Dict:
         """Retorna estatísticas detalhadas da rede"""
-        # Verificar cache
+        # SEMPRE buscar total_transactions do banco (sem cache para garantir exatidão)
         now = time.time()
-        if (now - self._cache_timestamp) < self._cache_ttl and self._stats_cache:
-            return self._stats_cache
+        use_cache = (now - self._cache_timestamp) < self._cache_ttl and self._stats_cache
+        
+        # Contar total de transações SEMPRE do banco (antes de qualquer cache)
+        total_transactions_real = 0
+        try:
+            from db_manager import DBManager
+            db_manager = DBManager()
+            result = db_manager.execute_query("SELECT COUNT(*) FROM transactions_history", ())
+            if result and len(result) > 0:
+                count_value = result[0]
+                if isinstance(count_value, tuple):
+                    total_transactions_real = int(count_value[0]) if count_value[0] is not None else 0
+                elif isinstance(count_value, list):
+                    total_transactions_real = int(count_value[0]) if len(count_value) > 0 and count_value[0] is not None else 0
+                elif isinstance(count_value, (int, float)):
+                    total_transactions_real = int(count_value)
+                else:
+                    total_transactions_real = int(count_value.get('total', 0)) if isinstance(count_value, dict) else 0
+                if not isinstance(total_transactions_real, int) or total_transactions_real < 0:
+                    total_transactions_real = 0
+                print(f"📊 Total de transações (EXATO do banco): {total_transactions_real}")
+        except Exception as db_err:
+            print(f"❌ Erro ao contar transações: {db_err}")
+            total_transactions_real = 0
+        
+        # Se usar cache, atualizar apenas total_transactions
+        if use_cache:
+            cached_stats = self._stats_cache.copy()
+            cached_stats["total_transactions"] = total_transactions_real
+            return cached_stats
         
         try:
             blocks = self.get_recent_blocks(limit=1000)
@@ -430,29 +458,44 @@ class EnhancedTestnetExplorer:
                 if validator and validator != "unknown":
                     validators.add(validator)
             
-            # Contar total real de transações do banco de dados
+            # Contar total real de transações do banco de dados (SEMPRE buscar do banco, sem cache)
             total_transactions_real = 0
             try:
                 from db_manager import DBManager
                 db_manager = DBManager()
-                result = db_manager.execute_query("SELECT COUNT(*) FROM transactions_history", ())
+                
+                # Query direta para contar todas as transações
+                result = db_manager.execute_query("SELECT COUNT(*) as total FROM transactions_history", ())
+                
                 if result and len(result) > 0:
                     # Extrair o valor do COUNT corretamente
                     count_value = result[0]
                     if isinstance(count_value, tuple):
-                        total_transactions_real = count_value[0]
+                        total_transactions_real = int(count_value[0]) if count_value[0] is not None else 0
                     elif isinstance(count_value, list):
-                        total_transactions_real = count_value[0] if len(count_value) > 0 else 0
+                        total_transactions_real = int(count_value[0]) if len(count_value) > 0 and count_value[0] is not None else 0
+                    elif isinstance(count_value, (int, float)):
+                        total_transactions_real = int(count_value)
                     else:
-                        total_transactions_real = count_value
+                        # Tentar acessar como dict se for o caso
+                        total_transactions_real = int(count_value.get('total', 0)) if isinstance(count_value, dict) else 0
                     
-                    # Log para debug (apenas se diferente do esperado)
-                    if total_transactions_real != len(transactions):
-                        print(f"📊 Total de transações no banco: {total_transactions_real}, Transações recentes: {len(transactions)}")
+                    # Garantir que é um número válido
+                    if not isinstance(total_transactions_real, int) or total_transactions_real < 0:
+                        total_transactions_real = 0
+                    
+                    # Log sempre para debug
+                    print(f"📊 Total de transações no banco (EXATO): {total_transactions_real}")
+                else:
+                    print(f"⚠️  Query COUNT retornou resultado vazio")
+                    total_transactions_real = 0
+                    
             except Exception as db_err:
-                print(f"⚠️  Erro ao contar transações do banco: {db_err}")
-                # Se falhar, usar contagem das transações recentes
-                total_transactions_real = len(transactions) if transactions else 0
+                import traceback
+                print(f"❌ Erro ao contar transações do banco: {db_err}")
+                print(traceback.format_exc())
+                # Se falhar, usar 0 para não mostrar número incorreto
+                total_transactions_real = 0
             
             # Contar transações pendentes de todos os shards
             pending_count = 0
