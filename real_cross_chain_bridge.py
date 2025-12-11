@@ -1868,17 +1868,45 @@ class RealCrossChainBridge:
                         print(f"      - Inputs na transação: {len(tx.inputs)}")
                         print(f"      - Raw TX size: {len(raw_tx_hex)} bytes")
                         print(f"      - Raw TX preview: {raw_tx_hex[:200]}")
+                        
+                        # ✅ VALIDAÇÃO CRÍTICA: Verificar se a transação serializada realmente tem inputs
+                        # Uma transação Bitcoin válida deve começar com versão (4 bytes) + input count (varint)
+                        # Se não tiver inputs, o input count será 0x00
+                        try:
+                            raw_tx_bytes = bytes.fromhex(raw_tx_hex)
+                            if len(raw_tx_bytes) < 10:
+                                print(f"   ❌ ERRO CRÍTICO: Transação serializada muito pequena ({len(raw_tx_bytes)} bytes)")
+                            else:
+                                # Verificar input count (após versão de 4 bytes)
+                                version = int.from_bytes(raw_tx_bytes[0:4], 'little')
+                                print(f"   📋 Versão da transação: {version}")
+                                
+                                # Tentar decodificar input count (varint)
+                                input_count_pos = 4
+                                if input_count_pos < len(raw_tx_bytes):
+                                    first_byte = raw_tx_bytes[input_count_pos]
+                                    if first_byte == 0x00:
+                                        print(f"   ❌ ERRO CRÍTICO: Input count é 0 - transação não tem inputs!")
+                                    elif first_byte < 0xFD:
+                                        input_count = first_byte
+                                        print(f"   📊 Input count (varint): {input_count}")
+                                    else:
+                                        print(f"   ⚠️  Input count usa formato varint estendido")
+                        except Exception as decode_err:
+                            print(f"   ⚠️  Erro ao decodificar raw TX: {decode_err}")
+                        
                         return {
                             "success": False,
                             "error": f"TX decode failed - transação não tem inputs válidos",
                             "error_details": error_text,
-                            "note": "A transação foi criada mas o Blockstream não conseguiu decodificá-la",
+                            "note": "A transação foi criada mas o Blockstream não conseguiu decodificá-la. Os inputs podem não estar sendo serializados corretamente.",
                             "debug": {
                                 "inputs_count": len(tx.inputs),
                                 "outputs_count": len(tx.outputs),
                                 "raw_tx_size": len(raw_tx_hex),
                                 "raw_tx_preview": raw_tx_hex[:200],
-                                "broadcast_status": broadcast_response.status_code
+                                "broadcast_status": broadcast_response.status_code,
+                                "suggestion": "Tente usar o método manual (python-bitcointx) ou verifique se os UTXOs estão no formato correto"
                             }
                         }
                     
