@@ -41,7 +41,7 @@
             <!-- Complete Validation Suite -->
             <div class="bg-gray-800 p-6 rounded-lg border-2 border-blue-500">
                 <h3 class="text-xl font-semibold mb-2">
-                    <i class="fas fa-check-circle text-blue-400"></i> Complete Validation Suite
+                    <i class="fas fa-check-circle text-blue-400"></i> {{ t('complete_validation_suite') or 'Complete Validation Suite' }}
                 </h3>
                 <p class="text-gray-400 mb-4">{{ t('8_validation_tests') or '8 complete validation tests' }}</p>
                 <button onclick="runCompleteValidation()" class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition">
@@ -52,7 +52,7 @@
             <!-- Critical Tests Suite -->
             <div class="bg-gray-800 p-6 rounded-lg border-2 border-red-500">
                 <h3 class="text-xl font-semibold mb-2">
-                    <i class="fas fa-exclamation-triangle text-red-400"></i> Critical Tests Suite
+                    <i class="fas fa-exclamation-triangle text-red-400"></i> {{ t('critical_tests_suite') or 'Critical Tests Suite' }}
                 </h3>
                 <p class="text-gray-400 mb-4">{{ t('6_critical_tests') or '6 critical tests' }}</p>
                 <button onclick="runCriticalTests()" class="w-full bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition">
@@ -63,7 +63,7 @@
             <!-- Professional Suite -->
             <div class="bg-gray-800 p-6 rounded-lg border-2 border-purple-500">
                 <h3 class="text-xl font-semibold mb-2">
-                    <i class="fas fa-star text-purple-400"></i> Professional Suite
+                    <i class="fas fa-star text-purple-400"></i> {{ t('professional_suite') or 'Professional Suite' }}
                 </h3>
                 <p class="text-gray-400 mb-4">{{ t('14_professional_tests') or '14 professional tests' }}</p>
                 <button onclick="runProfessionalSuite()" class="w-full bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded transition">
@@ -98,6 +98,43 @@
     </div>
 
     <script>
+        // Definir lang global para JavaScript
+        window.lang = '{{ lang or "en" }}';
+        window.t = function(key, defaultVal) {
+            // Traduções simples para JavaScript
+            const translations = {
+                'pt': {
+                    'copy': 'Copiar',
+                    'download': 'Baixar',
+                    'total_tests': 'Total de Testes',
+                    'successful_tests': 'Sucessos',
+                    'failed_tests': 'Falhas',
+                    'success_rate': 'Taxa de Sucesso',
+                    'view_details': 'Ver Detalhes',
+                    'executing_tests': 'Executando testes... Isso pode levar alguns minutos.',
+                    'error_executing': 'Erro ao executar testes:',
+                    'unknown_error': 'Erro desconhecido',
+                    'results_copied': '✅ Resultados copiados para a área de transferência!',
+                    'error_copying': '❌ Erro ao copiar. Tente selecionar e copiar manualmente.'
+                },
+                'en': {
+                    'copy': 'Copy',
+                    'download': 'Download',
+                    'total_tests': 'Total Tests',
+                    'successful_tests': 'Successful',
+                    'failed_tests': 'Failed',
+                    'success_rate': 'Success Rate',
+                    'view_details': 'View Details',
+                    'executing_tests': 'Executing tests... This may take a few minutes.',
+                    'error_executing': 'Error executing tests:',
+                    'unknown_error': 'Unknown error',
+                    'results_copied': '✅ Results copied to clipboard!',
+                    'error_copying': '❌ Error copying. Try selecting and copying manually.'
+                }
+            };
+            return translations[window.lang]?.[key] || defaultVal || key;
+        };
+
         async function runCompleteValidation() {
             showLoading();
             try {
@@ -206,7 +243,7 @@
             document.getElementById('results-content').innerHTML = `
                 <div class="text-center">
                     <i class="fas fa-spinner fa-spin text-4xl text-blue-400"></i>
-                    <p class="mt-4">Executing tests... This may take a few minutes.</p>
+                    <p class="mt-4">${window.t('executing_tests', 'Executing tests... This may take a few minutes.')}</p>
                 </div>
             `;
         }
@@ -225,32 +262,40 @@
                 const summary = results.summary || {};
                 
                 html += `
+                    <div class="mb-4 flex gap-2 justify-end">
+                        <button onclick="copyCompleteResults()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition flex items-center gap-2">
+                            <i class="fas fa-copy"></i> ${window.t ? window.t('copy') : (window.lang === 'pt' ? 'Copiar' : 'Copy')}
+                        </button>
+                        <button onclick="downloadCompleteResults()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded transition flex items-center gap-2">
+                            <i class="fas fa-download"></i> ${window.t ? window.t('download') : (window.lang === 'pt' ? 'Baixar' : 'Download')}
+                        </button>
+                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                         <div class="bg-green-900 p-4 rounded">
                             <div class="text-2xl font-bold">${summary.total_validations || summary.total_tests || 'N/A'}</div>
-                            <div class="text-sm text-gray-300">Total Tests</div>
+                            <div class="text-sm text-gray-300">${window.t ? window.t('total_tests') : (window.lang === 'pt' ? 'Total de Testes' : 'Total Tests')}</div>
                         </div>
                         <div class="bg-blue-900 p-4 rounded">
                             <div class="text-2xl font-bold">${summary.successful_validations || summary.successful_tests || 'N/A'}</div>
-                            <div class="text-sm text-gray-300">Sucessos</div>
+                            <div class="text-sm text-gray-300">${window.t ? window.t('successful_tests') : (window.lang === 'pt' ? 'Sucessos' : 'Successful')}</div>
                         </div>
                         <div class="bg-red-900 p-4 rounded">
                             <div class="text-2xl font-bold">${summary.failed_validations || summary.failed_tests || 'N/A'}</div>
-                            <div class="text-sm text-gray-300">Falhas</div>
+                            <div class="text-sm text-gray-300">${window.t ? window.t('failed_tests') : (window.lang === 'pt' ? 'Falhas' : 'Failed')}</div>
                         </div>
                         <div class="bg-purple-900 p-4 rounded">
                             <div class="text-2xl font-bold">${summary.success_rate ? summary.success_rate.toFixed(1) : 'N/A'}%</div>
-                            <div class="text-sm text-gray-300">Taxa de Sucesso</div>
+                            <div class="text-sm text-gray-300">${window.t ? window.t('success_rate') : (window.lang === 'pt' ? 'Taxa de Sucesso' : 'Success Rate')}</div>
                         </div>
                     </div>
                 `;
                 
                 // Detalhes dos testes
                 if (results.tests || results.suites) {
-                    html += `<details class="mt-4"><summary class="cursor-pointer text-blue-400">Ver Detalhes</summary><pre class="mt-2 bg-gray-900 p-4 rounded overflow-auto text-xs">${JSON.stringify(results, null, 2)}</pre></details>`;
+                    html += `<details class="mt-4"><summary class="cursor-pointer text-blue-400">${window.t('view_details', 'View Details')}</summary><pre class="mt-2 bg-gray-900 p-4 rounded overflow-auto text-xs">${JSON.stringify(results, null, 2)}</pre></details>`;
                 }
             } else {
-                html += `<div class="bg-red-900 p-4 rounded"><p class="text-red-200">Erro: ${data.error || 'Erro desconhecido'}</p></div>`;
+                html += `<div class="bg-red-900 p-4 rounded"><p class="text-red-200">${window.t('error_executing', 'Error:')} ${data.error || window.t('unknown_error', 'Unknown error')}</p></div>`;
             }
             
             document.getElementById('results-content').innerHTML = html;
@@ -260,10 +305,10 @@
         function copyCompleteResults() {
             const content = completeResultsData ? JSON.stringify(completeResultsData, null, 2) : document.getElementById('results-content').innerText;
             navigator.clipboard.writeText(content).then(() => {
-                alert('✅ Resultados copiados para a área de transferência!');
+                alert(window.t('results_copied', '✅ Results copied to clipboard!'));
             }).catch(err => {
                 console.error('Erro ao copiar:', err);
-                alert('❌ Erro ao copiar. Tente selecionar e copiar manualmente.');
+                alert(window.t('error_copying', '❌ Error copying. Try selecting and copying manually.'));
             });
         }
 
@@ -284,7 +329,7 @@
             document.getElementById('results').classList.remove('hidden');
             document.getElementById('results-content').innerHTML = `
                 <div class="bg-red-900 p-4 rounded">
-                    <p class="text-red-200">Erro ao executar testes: ${error.message}</p>
+                    <p class="text-red-200">${window.t('error_executing', 'Error executing tests:')} ${error.message}</p>
                 </div>
             `;
         }

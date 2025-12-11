@@ -112,6 +112,11 @@ TRANSLATIONS = {
         'execute_all_button': 'Executar Todos',
         'results': 'Resultados',
         'executing_tests': 'Executando testes...',
+        'total_tests': 'Total de Testes',
+        'successful_tests': 'Sucessos',
+        'failed_tests': 'Falhas',
+        'success_rate': 'Taxa de Sucesso',
+        'view_details': 'Ver Detalhes',
         # Professional Tests
         'professional_tests_title': 'Testes Profissionais',
         'professional_tests_subtitle': 'Suite completa de testes obrigatórios para testnet profissional',
@@ -341,6 +346,11 @@ TRANSLATIONS = {
         'execute_all_button': 'Execute All',
         'results': 'Results',
         'executing_tests': 'Executing tests...',
+        'total_tests': 'Total Tests',
+        'successful_tests': 'Successful',
+        'failed_tests': 'Failed',
+        'success_rate': 'Success Rate',
+        'view_details': 'View Details',
         # Professional Tests
         'professional_tests_title': 'Professional Tests',
         'professional_tests_subtitle': 'Complete suite of mandatory tests for professional testnet',

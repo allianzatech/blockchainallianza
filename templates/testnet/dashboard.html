@@ -43,6 +43,41 @@
         </div>
     </div>
 
+    <script>
+        // Definir lang global para JavaScript
+        window.lang = '{{ lang or "en" }}';
+        window.t = function(key, defaultVal) {
+            // Traduções simples para JavaScript
+            const translations = {
+                'pt': {
+                    'copy': 'Copiar',
+                    'download': 'Baixar',
+                    'total_tests': 'Total de Testes',
+                    'successful_tests': 'Sucessos',
+                    'failed_tests': 'Falhas',
+                    'success_rate': 'Taxa de Sucesso',
+                    'view_details': 'Ver Detalhes',
+                    'executing_tests': 'Executando testes... Isso pode levar alguns minutos.',
+                    'error_executing': 'Erro ao executar testes:',
+                    'unknown_error': 'Erro desconhecido'
+                },
+                'en': {
+                    'copy': 'Copy',
+                    'download': 'Download',
+                    'total_tests': 'Total Tests',
+                    'successful_tests': 'Successful',
+                    'failed_tests': 'Failed',
+                    'success_rate': 'Success Rate',
+                    'view_details': 'View Details',
+                    'executing_tests': 'Executing tests... This may take a few minutes.',
+                    'error_executing': 'Error executing tests:',
+                    'unknown_error': 'Unknown error'
+                }
+            };
+            return translations[window.lang]?.[key] || defaultVal || key;
+        };
+    </script>
+
     <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
         <!-- Header -->
         <div class="mb-8">
