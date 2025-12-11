@@ -2438,6 +2438,160 @@ class RealCrossChainBridge:
                 }
             }
     
+    def debug_utxo_pending(self, address: str = None):
+        """
+        Debug específico para UTXOs pendentes no mempool
+        """
+        if not address:
+            # Tentar obter do .env
+            address = (
+                os.getenv('BITCOIN_TESTNET_ADDRESS') or
+                os.getenv('BITCOIN_ADDRESS') or
+                os.getenv('BTC_ADDRESS')
+            )
+        
+        if not address:
+            print(f"❌ Endereço não fornecido e não encontrado no .env")
+            return {"error": "Endereço não fornecido"}
+        
+        print(f"🔍 DEBUG UTXOs pendentes para {address}")
+        
+        try:
+            # 1. Verificar transações no mempool
+            mempool_url = f"https://blockstream.info/testnet/api/address/{address}/txs"
+            response = requests.get(mempool_url, timeout=15)
+            
+            if response.status_code == 200:
+                txs = response.json()
+                print(f"📋 {len(txs)} transações totais")
+                
+                for i, tx in enumerate(txs[:5]):  # Primeiras 5 transações
+                    txid = tx.get('txid')
+                    status = tx.get('status', {})
+                    confirmed = status.get('confirmed', False)
+                    
+                    print(f"\n📄 Transação {i+1}: {txid[:16]}...")
+                    print(f"   Confirmada: {confirmed}")
+                    print(f"   Block height: {status.get('block_height', 'mempool')}")
+            
+            # 2. Verificar UTXOs específicos
+            print(f"\n🔄 Buscando UTXOs específicos...")
+            utxo_url = f"https://blockstream.info/testnet/api/address/{address}/utxo"
+            utxo_response = requests.get(utxo_url, timeout=15)
+            
+            if utxo_response.status_code == 200:
+                utxos = utxo_response.json()
+                print(f"📦 {len(utxos)} UTXOs encontrados")
+                
+                confirmed_utxos = []
+                unconfirmed_utxos = []
+                
+                for utxo in utxos:
+                    txid = utxo.get('txid')
+                    vout = utxo.get('vout')
+                    value = utxo.get('value')
+                    status = utxo.get('status', {})
+                    
+                    utxo_info = {
+                        'txid': txid,
+                        'vout': vout,
+                        'value': value,
+                        'confirmed': status.get('confirmed', False),
+                        'block_height': status.get('block_height')
+                    }
+                    
+                    if utxo_info['confirmed']:
+                        confirmed_utxos.append(utxo_info)
+                    else:
+                        unconfirmed_utxos.append(utxo_info)
+                
+                print(f"\n✅ UTXOs Confirmados: {len(confirmed_utxos)}")
+                total_confirmed = 0
+                for utxo in confirmed_utxos:
+                    print(f"   {utxo['txid'][:16]}...:{utxo['vout']} = {utxo['value']} sats (bloco {utxo['block_height']})")
+                    total_confirmed += utxo['value']
+                print(f"   💰 Total confirmado: {total_confirmed} satoshis ({total_confirmed/100000000:.8f} BTC)")
+                
+                print(f"\n⏳ UTXOs Não Confirmados (mempool): {len(unconfirmed_utxos)}")
+                total_unconfirmed = 0
+                for utxo in unconfirmed_utxos:
+                    print(f"   {utxo['txid'][:16]}...:{utxo['vout']} = {utxo['value']} sats (pendente)")
+                    total_unconfirmed += utxo['value']
+                print(f"   💰 Total pendente: {total_unconfirmed} satoshis ({total_unconfirmed/100000000:.8f} BTC)")
+                
+                return {
+                    "address": address,
+                    "confirmed_utxos": len(confirmed_utxos),
+                    "unconfirmed_utxos": len(unconfirmed_utxos),
+                    "total_confirmed": total_confirmed,
+                    "total_unconfirmed": total_unconfirmed
+                }
+            else:
+                print(f"⚠️ Blockstream retornou {utxo_response.status_code}")
+                return {"error": f"API retornou {utxo_response.status_code}"}
+                
+        except Exception as e:
+            print(f"❌ Erro no debug: {e}")
+            import traceback
+            traceback.print_exc()
+            return {"error": str(e)}
+    
+    def _fetch_confirmed_utxos_only(self, address: str) -> list:
+        """
+        Buscar APENAS UTXOs confirmados (ignorar pendentes no mempool)
+        """
+        print(f"🔍 Buscando APENAS UTXOs confirmados para {address}...")
+        
+        try:
+            utxo_url = f"https://blockstream.info/testnet/api/address/{address}/utxo"
+            response = requests.get(utxo_url, timeout=15)
+            
+            if response.status_code != 200:
+                print(f"⚠️ Erro ao buscar UTXOs: {response.status_code}")
+                return []
+            
+            all_utxos = response.json()
+            print(f"📦 {len(all_utxos)} UTXOs totais encontrados")
+            
+            # Filtrar apenas UTXOs confirmados e não gastos
+            confirmed_utxos = []
+            for utxo in all_utxos:
+                status = utxo.get('status', {})
+                if status.get('confirmed', False):
+                    # Verificar se realmente não foi gasto
+                    try:
+                        tx_url = f"https://blockstream.info/testnet/api/tx/{utxo['txid']}"
+                        tx_response = requests.get(tx_url, timeout=10)
+                        
+                        if tx_response.status_code == 200:
+                            tx_data = tx_response.json()
+                            vout_data = tx_data['vout'][utxo['vout']]
+                            
+                            if not vout_data.get('spent', False):
+                                confirmed_utxos.append({
+                                    'txid': utxo['txid'],
+                                    'vout': utxo['vout'],
+                                    'value': utxo['value'],
+                                    'confirmed': True,
+                                    'block_height': status.get('block_height')
+                                })
+                                print(f"   ✅ UTXO confirmado: {utxo['txid'][:16]}...:{utxo['vout']} = {utxo['value']} sats")
+                    except Exception as check_err:
+                        print(f"   ⚠️ Erro ao verificar UTXO {utxo['txid'][:16]}...: {check_err}")
+                        continue
+            
+            print(f"✅ {len(confirmed_utxos)} UTXOs confirmados disponíveis")
+            total_value = sum(u['value'] for u in confirmed_utxos)
+            print(f"💰 Total disponível: {total_value} satoshis ({total_value/100000000:.8f} BTC)")
+            
+            return confirmed_utxos
+            
+        except Exception as e:
+            print(f"❌ Erro ao buscar UTXOs confirmados: {e}")
+            import traceback
+            traceback.print_exc()
+            return []
+    
     def send_bitcoin_transaction(
         self,
         from_private_key: str,
