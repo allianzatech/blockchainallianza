@@ -109,10 +109,10 @@ class BridgeFreeInterop:
             print(f"⚠️  Erro ao carregar do banco: {e}")
     
     def _save_uchain_id(self, uchain_id: str, data: Dict):
-        """Salva UChainID no banco de dados"""
+        """Salva UChainID no banco de dados de forma síncrona e garantida"""
         try:
-            # Usar execute_commit para garantir que o commit seja feito
-            self.db.execute_commit(
+            # Usar execute_commit para garantir que o commit seja feito IMEDIATAMENTE
+            success = self.db.execute_commit(
                 """INSERT OR REPLACE INTO cross_chain_uchainids 
                    (uchain_id, source_chain, target_chain, recipient, amount, timestamp, memo, 
                     commitment_id, proof_id, state_id, tx_hash, explorer_url)
@@ -125,11 +125,27 @@ class BridgeFreeInterop:
                     data.get("explorer_url")
                 )
             )
-            print(f"✅ UChainID salvo no banco: {uchain_id}")
+            if not success:
+                # Se falhou, tentar novamente uma vez
+                self.db.execute_commit(
+                    """INSERT OR REPLACE INTO cross_chain_uchainids 
+                       (uchain_id, source_chain, target_chain, recipient, amount, timestamp, memo, 
+                        commitment_id, proof_id, state_id, tx_hash, explorer_url)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (
+                        uchain_id, data.get("source_chain"), data.get("target_chain"),
+                        data.get("recipient"), data.get("amount"), data.get("timestamp"),
+                        json.dumps(data.get("memo", {})), data.get("commitment_id"),
+                        data.get("proof_id"), data.get("state_id"), data.get("tx_hash"),
+                        data.get("explorer_url")
+                    )
+                )
         except Exception as e:
             print(f"⚠️  Erro ao salvar UChainID: {e}")
             import traceback
             traceback.print_exc()
+            # Re-raise para que o código que chama saiba que falhou
+            raise
     
     def _save_zk_proof(self, proof_id: str, data: Dict):
         """Salva ZK Proof no banco de dados"""
@@ -1008,19 +1024,23 @@ class BridgeFreeInterop:
                 "state_id": apply_result["state_id"]
             }
             self.uchain_ids[uchain_id] = uchain_data
-            # CRÍTICO: Salvar no banco ANTES de qualquer outra operação
-            print(f"💾 Salvando UChainID no banco ANTES de enviar transação: {uchain_id}")
+            # CRÍTICO: Salvar no banco IMEDIATAMENTE e de forma síncrona
             self._save_uchain_id(uchain_id, uchain_data)
-            # Verificar se foi salvo corretamente
-            try:
-                rows = self.db.execute_query("SELECT uchain_id FROM cross_chain_uchainids WHERE uchain_id = ?", (uchain_id,))
-                if rows:
-                    print(f"✅ UChainID confirmado no banco: {uchain_id}")
-                else:
-                    print(f"⚠️  UChainID NÃO encontrado no banco após salvar! Tentando novamente...")
-                    self._save_uchain_id(uchain_id, uchain_data)  # Tentar novamente
-            except Exception as e:
-                print(f"⚠️  Erro ao verificar UChainID no banco: {e}")
+            # Verificar se foi salvo corretamente (com retry se necessário)
+            max_save_retries = 3
+            for save_retry in range(max_save_retries):
+                try:
+                    rows = self.db.execute_query("SELECT uchain_id FROM cross_chain_uchainids WHERE uchain_id = ?", (uchain_id,))
+                    if rows:
+                        break  # Salvo com sucesso, sair do loop
+                    elif save_retry < max_save_retries - 1:
+                        # Tentar salvar novamente
+                        self._save_uchain_id(uchain_id, uchain_data)
+                except Exception as e:
+                    if save_retry < max_save_retries - 1:
+                        self._save_uchain_id(uchain_id, uchain_data)
+                    else:
+                        print(f"⚠️  Erro ao verificar UChainID no banco após {max_save_retries} tentativas: {e}")
             
             # 5. Se send_real=True, enviar transação REAL para blockchain
             # CRÍTICO: Passar o UChainID já gerado para evitar gerar outro
@@ -1095,13 +1115,11 @@ class BridgeFreeInterop:
         """
         try:
             if uchain_id:
-                # Primeiro tentar buscar em memória
+                # OTIMIZAÇÃO: Buscar direto no banco se não estiver em memória (mais rápido)
                 if uchain_id not in self.uchain_ids:
-                    print(f"🔄 UChainID não encontrado em memória, buscando no banco: {uchain_id}")
-                    # Se não encontrou em memória, buscar no banco de dados
+                    # Buscar diretamente no banco (mais rápido que recarregar tudo)
                     try:
                         rows = self.db.execute_query("SELECT * FROM cross_chain_uchainids WHERE uchain_id = ?", (uchain_id,))
-                        print(f"   📊 Resultado da busca: {len(rows)} linha(s) encontrada(s)")
                         if rows:
                             row = rows[0]
                             # Carregar do banco e adicionar em memória
@@ -1120,42 +1138,10 @@ class BridgeFreeInterop:
                                 "explorer_url": explorer_url
                             }
                             self.uchain_ids[uchain_id] = uchain_data
-                            print(f"✅ UChainID carregado do banco: {uchain_id}")
                         else:
-                            # Tentar recarregar todos do banco antes de retornar erro
-                            print(f"   ⚠️  UChainID não encontrado, tentando recarregar todos do banco...")
-                            self._load_from_db()
-                            # Tentar buscar novamente após recarregar
-                            if uchain_id in self.uchain_ids:
-                                print(f"   ✅ UChainID encontrado após recarregar do banco!")
-                            else:
-                                # Última tentativa: buscar diretamente do banco novamente
-                                rows = self.db.execute_query("SELECT * FROM cross_chain_uchainids WHERE uchain_id = ?", (uchain_id,))
-                                if rows:
-                                    row = rows[0]
-                                    uchain_id_db, source_chain, target_chain, recipient, amount, timestamp, memo, commitment_id, proof_id, state_id, tx_hash, explorer_url = row
-                                    uchain_data = {
-                                        "source_chain": source_chain,
-                                        "target_chain": target_chain,
-                                        "recipient": recipient,
-                                        "amount": amount,
-                                        "timestamp": timestamp,
-                                        "memo": json.loads(memo) if memo else {},
-                                        "commitment_id": commitment_id,
-                                        "proof_id": proof_id,
-                                        "state_id": state_id,
-                                        "tx_hash": tx_hash,
-                                        "explorer_url": explorer_url
-                                    }
-                                    self.uchain_ids[uchain_id] = uchain_data
-                                    print(f"   ✅ UChainID encontrado na segunda tentativa!")
-                                else:
-                                    print(f"   ❌ UChainID não encontrado no banco após todas as tentativas")
-                                    return {"success": False, "error": "UChainID não encontrado no banco de dados"}
+                            # Se não encontrou, retornar erro imediatamente (sem múltiplas tentativas lentas)
+                            return {"success": False, "error": "UChainID não encontrado"}
                     except Exception as e:
-                        print(f"⚠️  Erro ao buscar UChainID do banco: {e}")
-                        import traceback
-                        traceback.print_exc()
                         return {"success": False, "error": f"Erro ao buscar UChainID: {str(e)}"}
                 
                 # Garantir que uchain_data está definido

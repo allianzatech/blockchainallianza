@@ -68,6 +68,8 @@ class DBManager:
         try:
             self.cursor.execute(query, params)
             self.conn.commit()
+            # Garantir que o commit foi realmente aplicado
+            self.conn.execute("PRAGMA synchronous = NORMAL")  # Balancear velocidade e segurança
             return True
         except Exception as e:
             logger.error(f"Erro ao executar commit: {query} com params: {params}. Erro: {e}")

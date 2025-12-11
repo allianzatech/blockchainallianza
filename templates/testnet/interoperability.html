@@ -445,26 +445,36 @@
             }
         });
 
-        // Search Proof (Test Tab) - Com retry automático
+        // Search Proof (Test Tab) - Com retry automático e loading contínuo
         document.getElementById('searchForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const uchainId = document.getElementById('uchainId').value;
+            const uchainId = document.getElementById('uchainId').value.trim();
+            if (!uchainId) {
+                alert('{{ t("please_enter_uchainid") or "Please enter a UChainID" }}');
+                return;
+            }
 
             const searchResults = document.getElementById('searchResults');
             const searchContent = document.getElementById('searchContent');
             searchResults.classList.remove('hidden');
-            searchContent.innerHTML = '<p class="info">⏳ {{ t("searching_proof") or "Searching proof..." }}</p>';
+            
+            // Mostrar loading desde o início (nunca mostrar erro nas primeiras tentativas)
+            let loadingDots = 0;
+            const loadingInterval = setInterval(() => {
+                loadingDots = (loadingDots + 1) % 4;
+                const dots = '.'.repeat(loadingDots);
+                searchContent.innerHTML = `<p class="info">⏳ {{ t("searching_proof") or "Searching proof..." }}${dots}</p>`;
+            }, 300);
 
-            // Retry automático no frontend também
+            // Retry automático no frontend (silencioso, sem mostrar erro)
             let result = null;
             let lastError = null;
-            const maxRetries = 5;
-            const retryDelay = 500; // 0.5 segundos
+            const maxRetries = 8; // Aumentar para 8 tentativas
+            const retryDelay = 300; // Reduzir delay para 300ms (mais rápido)
 
             for (let attempt = 0; attempt < maxRetries; attempt++) {
                 try {
                     if (attempt > 0) {
-                        searchContent.innerHTML = `<p class="info">⏳ {{ t("searching_proof") or "Searching proof..." }} (Tentativa ${attempt + 1}/${maxRetries})</p>`;
                         await new Promise(resolve => setTimeout(resolve, retryDelay));
                     }
 
@@ -472,6 +482,7 @@
                     result = await response.json();
 
                     if (result.success) {
+                        clearInterval(loadingInterval);
                         searchContent.innerHTML = `
                             <p class="success">✅ {{ t('proof_found') or 'Proof found!' }}</p>
                             <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
@@ -479,7 +490,7 @@
                         return; // Sucesso, sair do loop
                     } else {
                         lastError = result.error || '{{ t("proof_not_found") or "Proof not found" }}';
-                        // Continuar para próxima tentativa
+                        // Continuar para próxima tentativa (não mostrar erro ainda)
                     }
                 } catch (error) {
                     lastError = error.message;
@@ -487,7 +498,8 @@
                 }
             }
 
-            // Se chegou aqui, todas as tentativas falharam
+            // Só mostrar erro após todas as tentativas falharem
+            clearInterval(loadingInterval);
             searchContent.innerHTML = `
                 <p class="error">❌ ${lastError || '{{ t("proof_not_found") or "Proof not found" }}'}</p>
                 <p class="info mt-2 text-xs">ℹ️ Tentou ${maxRetries} vezes. O UChainID pode estar sendo salvo ainda. Tente novamente em alguns segundos.</p>
