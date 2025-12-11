@@ -23,7 +23,7 @@ os.environ.setdefault('FLASK_ENV', 'production')
 os.environ.setdefault('FLASK_DEBUG', 'False')
 
 # Importar Flask básico primeiro
-from flask import Flask
+from flask import Flask, request
 
 # Importar app completo diretamente (sem lazy loading)
 try:
