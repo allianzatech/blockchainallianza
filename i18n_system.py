@@ -146,6 +146,8 @@ TRANSLATIONS = {
         'complete_results': 'Resultados Completos',
         'copy': 'Copiar',
         'download': 'Baixar',
+        'no_proofs_yet': 'Nenhuma prova cross-chain encontrada ainda.',
+        'create_first_transfer': 'Crie sua primeira transferência cross-chain para gerar provas.',
         # Public Tests
         'public_tests': 'Testes Públicos',
         'public_tests_subtitle': 'Execute testes reais e veja os resultados em tempo real',

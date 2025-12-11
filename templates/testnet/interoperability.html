@@ -90,6 +90,29 @@
             <p class="text-gray-400">{{ t('bridge_free_interoperability_complete') or 'Bridge-free cross-chain interoperability with UChainID and ZK Proofs' }}</p>
         </div>
 
+        <!-- Quick Load UChainID - Topo da página para acesso rápido -->
+        <div class="bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-lg p-4 mb-6 border border-blue-500/30">
+            <div class="flex items-center gap-2 mb-3">
+                <i class="fas fa-bolt text-yellow-400"></i>
+                <h3 class="text-lg font-semibold">{{ t('quick_load') or 'Quick Load UChainID' }}</h3>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+                <select id="recentUChainIDs" class="flex-1 min-w-[200px] bg-gray-700 text-white p-2 rounded font-mono text-sm border border-gray-600" onchange="selectUChainID()">
+                    <option value="">{{ t('select_recent_uchainid') or 'Select recent UChainID...' }}</option>
+                </select>
+                <input type="text" id="quickUChainID" placeholder="UCHAIN-..." 
+                       class="flex-1 min-w-[250px] bg-gray-700 text-white p-2 rounded font-mono border border-gray-600"
+                       onkeypress="if(event.key==='Enter') loadFromUChainID()">
+                <button onclick="loadFromUChainID()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded transition font-semibold whitespace-nowrap">
+                    <i class="fas fa-search"></i> {{ t('load') or 'Load' }}
+                </button>
+            </div>
+            <p class="text-xs text-gray-400 mt-2">{{ t('quick_load_hint') or 'Select from recent transfers or paste a UChainID manually' }}</p>
+            <div id="quickLoadResults" class="hidden mt-3">
+                <div id="quickLoadContent" class="bg-gray-800 rounded p-3 border border-gray-600"></div>
+            </div>
+        </div>
+
         <!-- Tabs -->
         <div class="mb-6 flex gap-2 overflow-x-auto">
             <button class="tab-button active" onclick="showTab('about')">
@@ -318,22 +341,6 @@
                         <i class="fas fa-check-circle mr-2"></i> {{ t('verify_proof') or 'Verify Proof' }}
                     </button>
                 </form>
-                <div class="mt-4">
-                    <p class="text-sm text-gray-400 mb-2">{{ t('quick_load') or 'Quick Load from System:' }}</p>
-                    <div class="space-y-2">
-                        <div class="flex gap-2">
-                            <select id="recentUChainIDs" class="flex-1 bg-gray-700 text-white p-2 rounded font-mono text-sm" onchange="selectUChainID()">
-                                <option value="">{{ t('select_recent_uchainid') or 'Select recent UChainID...' }}</option>
-                            </select>
-                            <input type="text" id="quickUChainID" placeholder="UCHAIN-..." 
-                                   class="flex-1 bg-gray-700 text-white p-2 rounded font-mono">
-                            <button onclick="loadFromUChainID()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded transition">
-                                <i class="fas fa-search"></i> {{ t('load') or 'Load' }}
-                            </button>
-                        </div>
-                        <p class="text-xs text-gray-500">{{ t('quick_load_hint') or 'Select from recent transfers or paste a UChainID manually' }}</p>
-                    </div>
-                </div>
                 <div id="verifierResults" class="hidden mt-4">
                     <div id="verifierContent" class="result-box" onclick="copyToClipboard('verifierContent')">
                         <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('verifierContent')">
@@ -528,10 +535,17 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    resultContent.innerHTML = `
-                        <p class="success">✅ ${result.total} {{ t('proofs_found_showing') or 'proofs found (showing' }} ${result.returned})</p>
-                        <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
-                    `;
+                    if (result.total === 0) {
+                        resultContent.innerHTML = `
+                            <p class="info">ℹ️ {{ t('no_proofs_yet') or 'No cross-chain proofs found yet.' }}</p>
+                            <p class="text-xs text-gray-400 mt-2">{{ t('create_first_transfer') or 'Create your first cross-chain transfer to generate proofs.' }}</p>
+                        `;
+                    } else {
+                        resultContent.innerHTML = `
+                            <p class="success">✅ ${result.total} {{ t('proofs_found_showing') or 'proofs found (showing' }} ${result.returned})</p>
+                            <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                        `;
+                    }
                 } else {
                     resultContent.innerHTML = `<p class="error">❌ ${result.error || '{{ t("error_listing_proofs") or "Error listing proofs" }}'}</p>`;
                 }
@@ -591,13 +605,16 @@
             }
         });
 
-        // Load recent UChainIDs on page load
+        // Load recent UChainIDs on page load (Otimizado)
         async function loadRecentUChainIDs() {
             try {
+                // Carregar em paralelo sem bloquear
                 const response = await fetch('/api/cross-chain/proofs?limit=20');
                 const data = await response.json();
                 
                 const select = document.getElementById('recentUChainIDs');
+                if (!select) return;
+                
                 if (data.success && data.proofs && data.proofs.length > 0) {
                     // Limpar opções existentes (exceto a primeira)
                     while (select.options.length > 1) {
@@ -608,8 +625,9 @@
                     data.proofs.forEach(proof => {
                         const option = document.createElement('option');
                         option.value = proof.uchain_id;
-                        const date = new Date(proof.timestamp * 1000).toLocaleString();
-                        option.textContent = `${proof.uchain_id} (${proof.source_chain} → ${proof.target_chain}, ${date})`;
+                        const date = proof.timestamp ? new Date(proof.timestamp * 1000).toLocaleString() : 'Recent';
+                        const shortId = proof.uchain_id.length > 20 ? proof.uchain_id.substring(0, 20) + '...' : proof.uchain_id;
+                        option.textContent = `${shortId} (${proof.source_chain} → ${proof.target_chain})`;
                         select.appendChild(option);
                     });
                 }
@@ -628,7 +646,11 @@
             }
         }
 
-        // Load from UChainID (ZK Verifier)
+        // Cache para resultados recentes
+        const uchainIdCache = new Map();
+        const CACHE_TTL = 30000; // 30 segundos
+
+        // Load from UChainID (Otimizado - mais rápido)
         async function loadFromUChainID() {
             const uchainId = document.getElementById('quickUChainID').value.trim();
             if (!uchainId) {
@@ -636,24 +658,30 @@
                 return;
             }
 
-            // Mostrar loading persistente
-            const resultsDiv = document.getElementById('verifierResults');
-            const resultContent = document.getElementById('verifierContent');
+            // Verificar cache primeiro
+            const cached = uchainIdCache.get(uchainId);
+            if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+                displayQuickLoadResult(cached.data, uchainId);
+                return;
+            }
+
+            // Mostrar loading no topo
+            const resultsDiv = document.getElementById('quickLoadResults');
+            const resultContent = document.getElementById('quickLoadContent');
             resultsDiv.classList.remove('hidden');
             let loadingDots = 0;
             const loadingInterval = setInterval(() => {
                 loadingDots = (loadingDots + 1) % 4;
                 const dots = '.'.repeat(loadingDots);
                 resultContent.innerHTML = `<p class="info">⏳ {{ t("loading") or "Loading..." }}${dots}</p>`;
-            }, 400);
+            }, 200);
 
             try {
-                // Tentar múltiplas vezes se necessário (pode estar sendo salvo ainda)
+                // Busca otimizada: menos tentativas, delay menor
                 let data = null;
                 let attempts = 0;
-                // 90s total: 30 tentativas x 3s
-                const maxAttempts = 30;
-                const delayMs = 3000;
+                const maxAttempts = 5; // Reduzido de 30 para 5
+                const delayMs = 500; // Reduzido de 3000ms para 500ms
                 
                 while (attempts < maxAttempts) {
                     attempts++;
@@ -661,6 +689,8 @@
                     data = await response.json();
                     
                     if (data.success && data.zk_proof) {
+                        // Salvar no cache
+                        uchainIdCache.set(uchainId, { data, timestamp: Date.now() });
                         break; // Encontrou, sair do loop
                     }
                     
@@ -670,56 +700,8 @@
                     }
                 }
 
-                if (data && data.success) {
-                    if (data.zk_proof) {
-                        // Garantir que zk_proof é um objeto, não string
-                        let zkProof = data.zk_proof;
-                        if (typeof zkProof === 'string') {
-                            try {
-                                zkProof = JSON.parse(zkProof);
-                            } catch {
-                                zkProof = {};
-                            }
-                        }
-                        
-                        if (zkProof && typeof zkProof === 'object') {
-                            // Preencher campos do verifier com os dados corretos
-                            document.getElementById('verifierProof').value = zkProof.proof || '';
-                            document.getElementById('verifierKey').value = zkProof.verification_key || '';
-                            document.getElementById('verifierInputs').value = zkProof.state_transition_hash || zkProof.state_hash || '';
-                            
-                            // Determinar status verified (pode ser boolean, string, ou número)
-                            let verifiedStatus = false;
-                            if (zkProof.verified !== undefined && zkProof.verified !== null) {
-                                if (typeof zkProof.verified === 'boolean') {
-                                    verifiedStatus = zkProof.verified;
-                                } else if (typeof zkProof.verified === 'string') {
-                                    verifiedStatus = zkProof.verified.toLowerCase() in ('true', '1', 'yes');
-                                } else if (typeof zkProof.verified === 'number') {
-                                    verifiedStatus = zkProof.verified !== 0;
-                                }
-                            } else if (zkProof.valid !== undefined) {
-                                verifiedStatus = zkProof.valid === true || zkProof.valid === 1 || zkProof.valid === 'true';
-                            }
-                            
-                            // Mostrar feedback visual
-                            resultContent.innerHTML = `
-                                <p class="success">✅ {{ t("proof_data_loaded") or "Proof data loaded successfully!" }}</p>
-                                <p class="info mt-2"><strong>UChainID:</strong> <span class="font-mono text-sm">${uchainId}</span></p>
-                                <p class="info"><strong>Proof ID:</strong> <span class="font-mono text-sm">${zkProof.proof_id || 'N/A'}</span></p>
-                                <p class="info"><strong>State Hash:</strong> <span class="font-mono text-xs">${zkProof.state_transition_hash || zkProof.state_hash || 'N/A'}</span></p>
-                                <p class="info"><strong>Verified:</strong> ${verifiedStatus ? '✅ Yes' : '❌ No'}</p>
-                                <p class="text-xs text-gray-400 mt-3">{{ t("fields_auto_filled") or "All fields have been automatically filled. Click 'Verify Proof' to verify." }}</p>
-                            `;
-                        } else {
-                            resultContent.innerHTML = `<p class="error">❌ {{ t("zk_proof_invalid_format") or "ZK Proof data is in invalid format" }}</p>`;
-                        }
-                    } else {
-                        resultContent.innerHTML = `<p class="error">❌ {{ t("no_zk_proof_available") or "No ZK Proof available for this UChainID" }}</p>`;
-                    }
-                } else {
-                    resultContent.innerHTML = `<p class="error">❌ ${data ? (data.error || '{{ t("uchainid_not_found") or "UChainID not found" }}') : '{{ t("error_loading_proof") or "Error loading proof" }}'}</p>`;
-                }
+                // Exibir resultado
+                displayQuickLoadResult(data, uchainId);
             } catch (error) {
                 resultContent.innerHTML = `<p class="error">❌ {{ t("error_loading_proof") or "Error loading proof" }}: ${error.message}</p>`;
             } finally {
@@ -727,19 +709,84 @@
             }
         }
 
-        // Load recent UChainIDs when ZK Verifier tab is shown
+        // Função auxiliar para exibir resultado do quick load
+        function displayQuickLoadResult(data, uchainId) {
+            const resultsDiv = document.getElementById('quickLoadResults');
+            const resultContent = document.getElementById('quickLoadContent');
+            resultsDiv.classList.remove('hidden');
+
+            if (data && data.success) {
+                if (data.zk_proof) {
+                    // Garantir que zk_proof é um objeto, não string
+                    let zkProof = data.zk_proof;
+                    if (typeof zkProof === 'string') {
+                        try {
+                            zkProof = JSON.parse(zkProof);
+                        } catch {
+                            zkProof = {};
+                        }
+                    }
+                    
+                    if (zkProof && typeof zkProof === 'object') {
+                        // Preencher campos do verifier com os dados corretos (se existirem)
+                        const verifierProof = document.getElementById('verifierProof');
+                        const verifierKey = document.getElementById('verifierKey');
+                        const verifierInputs = document.getElementById('verifierInputs');
+                        
+                        if (verifierProof) verifierProof.value = zkProof.proof || '';
+                        if (verifierKey) verifierKey.value = zkProof.verification_key || '';
+                        if (verifierInputs) verifierInputs.value = zkProof.state_transition_hash || zkProof.state_hash || '';
+                        
+                        // Determinar status verified
+                        let verifiedStatus = false;
+                        if (zkProof.verified !== undefined && zkProof.verified !== null) {
+                            if (typeof zkProof.verified === 'boolean') {
+                                verifiedStatus = zkProof.verified;
+                            } else if (typeof zkProof.verified === 'string') {
+                                verifiedStatus = ['true', '1', 'yes'].includes(zkProof.verified.toLowerCase());
+                            } else if (typeof zkProof.verified === 'number') {
+                                verifiedStatus = zkProof.verified !== 0;
+                            }
+                        } else if (zkProof.valid !== undefined) {
+                            verifiedStatus = zkProof.valid === true || zkProof.valid === 1 || zkProof.valid === 'true';
+                        }
+                        
+                        // Mostrar feedback visual no topo
+                        resultContent.innerHTML = `
+                            <p class="success">✅ {{ t("proof_data_loaded") or "Proof data loaded successfully!" }}</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 text-sm">
+                                <p class="info"><strong>UChainID:</strong> <span class="font-mono text-xs">${uchainId}</span></p>
+                                <p class="info"><strong>Proof ID:</strong> <span class="font-mono text-xs">${zkProof.proof_id || 'N/A'}</span></p>
+                                <p class="info"><strong>State Hash:</strong> <span class="font-mono text-xs break-all">${zkProof.state_transition_hash || zkProof.state_hash || 'N/A'}</span></p>
+                                <p class="info"><strong>Verified:</strong> ${verifiedStatus ? '✅ Yes' : '❌ No'}</p>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2">{{ t("fields_auto_filled") or "All fields have been automatically filled. Go to 'ZK Verifier' tab to verify." }}</p>
+                        `;
+                        
+                        // Scroll suave para o resultado
+                        resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    } else {
+                        resultContent.innerHTML = `<p class="error">❌ {{ t("zk_proof_invalid_format") or "ZK Proof data is in invalid format" }}</p>`;
+                    }
+                } else {
+                    resultContent.innerHTML = `<p class="error">❌ {{ t("no_zk_proof_available") or "No ZK Proof available for this UChainID" }}</p>`;
+                }
+            } else {
+                resultContent.innerHTML = `<p class="error">❌ ${data ? (data.error || '{{ t("uchainid_not_found") or "UChainID not found" }}') : '{{ t("error_loading_proof") or "Error loading proof" }}'}</p>`;
+            }
+        }
+
+        // Load recent UChainIDs on page load (Otimizado - carregar imediatamente)
         document.addEventListener('DOMContentLoaded', function() {
-            // Carregar UChainIDs recentes quando a aba ZK Verifier for clicada
-            const zkVerifierTab = document.querySelector('[onclick*="tab-verifier"]');
-            if (zkVerifierTab) {
-                zkVerifierTab.addEventListener('click', function() {
-                    setTimeout(loadRecentUChainIDs, 100);
+            // Carregar UChainIDs recentes imediatamente ao carregar a página (campo está no topo)
+            loadRecentUChainIDs();
+            
+            // Também recarregar quando mudar de aba (caso novos proofs sejam criados)
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    setTimeout(loadRecentUChainIDs, 200);
                 });
-            }
-            // Também carregar se já estiver na aba verifier
-            if (document.getElementById('tab-verifier') && document.getElementById('tab-verifier').classList.contains('active')) {
-                loadRecentUChainIDs();
-            }
+            });
         });
     </script>
 </body>
