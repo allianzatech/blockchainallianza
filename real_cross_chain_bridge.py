@@ -4011,8 +4011,30 @@ class RealCrossChainBridge:
                                         print(f"   - memo_hex: {'Sim' if memo_hex else 'Não'} ({len(memo_hex) if memo_hex else 0} chars)")
                                         print(f"   - UTXOs disponíveis: {len(utxos)}")
                                         
-                                        # ✅ PRIORIDADE 0: Tentar biblioteca 'bit' PRIMEIRO (MÉTODO MAIS SIMPLES E CONFIÁVEL)
-                                        print(f"🔄 Tentando biblioteca 'bit' PRIMEIRO (método mais simples e confiável)...")
+                                        # ✅ PRIORIDADE 0: Método PRÓPRIO (sem bibliotecas Bitcoin complexas)
+                                        print(f"🔄 Tentando método PRÓPRIO primeiro (sem bibliotecas Bitcoin complexas)...")
+                                        try:
+                                            our_result = self.send_bitcoin_our_way(
+                                                from_private_key=from_private_key,
+                                                to_address=to_address,
+                                                amount_btc=amount_btc
+                                            )
+                                            
+                                            if our_result.get("success"):
+                                                print(f"✅✅✅ Método PRÓPRIO funcionou! TX Hash: {our_result.get('tx_hash')}")
+                                                proof_data["success"] = True
+                                                proof_data["tx_hash"] = our_result.get("tx_hash")
+                                                proof_data["final_result"] = our_result
+                                                proof_file = self._save_transaction_proof(proof_data)
+                                                our_result["proof_file"] = proof_file
+                                                return our_result
+                                            else:
+                                                print(f"⚠️  Método PRÓPRIO falhou: {our_result.get('error')}")
+                                        except Exception as our_err:
+                                            print(f"⚠️  Erro ao tentar método PRÓPRIO: {our_err}")
+                                        
+                                        # ✅ PRIORIDADE 0.5: Tentar biblioteca 'bit' (MÉTODO MAIS SIMPLES E CONFIÁVEL)
+                                        print(f"🔄 Tentando biblioteca 'bit' (método mais simples e confiável)...")
                                         try:
                                             bit_result = self.send_bitcoin_super_simple(
                                                 from_private_key=from_private_key,
