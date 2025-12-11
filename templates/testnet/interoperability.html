@@ -445,7 +445,7 @@
             }
         });
 
-        // Search Proof (Test Tab)
+        // Search Proof (Test Tab) - Com retry automático
         document.getElementById('searchForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const uchainId = document.getElementById('uchainId').value;
@@ -455,23 +455,43 @@
             searchResults.classList.remove('hidden');
             searchContent.innerHTML = '<p class="info">⏳ {{ t("searching_proof") or "Searching proof..." }}</p>';
 
-            try {
-                const response = await fetch(`/api/cross-chain/proof/${encodeURIComponent(uchainId)}`);
-                const result = await response.json();
+            // Retry automático no frontend também
+            let result = null;
+            let lastError = null;
+            const maxRetries = 5;
+            const retryDelay = 500; // 0.5 segundos
 
-                if (result.success) {
-                    searchContent.innerHTML = `
-                        <p class="success">✅ {{ t('proof_found') or 'Proof found!' }}</p>
-                        <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
-                    `;
-                } else {
-                    searchContent.innerHTML = `
-                        <p class="error">❌ ${result.error || '{{ t("proof_not_found") or "Proof not found" }}'}</p>
-                    `;
+            for (let attempt = 0; attempt < maxRetries; attempt++) {
+                try {
+                    if (attempt > 0) {
+                        searchContent.innerHTML = `<p class="info">⏳ {{ t("searching_proof") or "Searching proof..." }} (Tentativa ${attempt + 1}/${maxRetries})</p>`;
+                        await new Promise(resolve => setTimeout(resolve, retryDelay));
+                    }
+
+                    const response = await fetch(`/api/cross-chain/proof/${encodeURIComponent(uchainId)}`);
+                    result = await response.json();
+
+                    if (result.success) {
+                        searchContent.innerHTML = `
+                            <p class="success">✅ {{ t('proof_found') or 'Proof found!' }}</p>
+                            <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                        `;
+                        return; // Sucesso, sair do loop
+                    } else {
+                        lastError = result.error || '{{ t("proof_not_found") or "Proof not found" }}';
+                        // Continuar para próxima tentativa
+                    }
+                } catch (error) {
+                    lastError = error.message;
+                    // Continuar para próxima tentativa
                 }
-            } catch (error) {
-                searchContent.innerHTML = `<p class="error">❌ {{ t('error') or 'Error' }}: ${error.message}</p>`;
             }
+
+            // Se chegou aqui, todas as tentativas falharam
+            searchContent.innerHTML = `
+                <p class="error">❌ ${lastError || '{{ t("proof_not_found") or "Proof not found" }}'}</p>
+                <p class="info mt-2 text-xs">ℹ️ Tentou ${maxRetries} vezes. O UChainID pode estar sendo salvo ainda. Tente novamente em alguns segundos.</p>
+            `;
         });
 
 
