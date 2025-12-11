@@ -50,23 +50,35 @@ class BridgeFreeInterop:
     def _load_from_db(self):
         """Carrega UChainIDs, ZK Proofs e State Commitments do banco de dados"""
         try:
-            # Carregar UChainIDs
-            rows = self.db.execute_query("SELECT * FROM cross_chain_uchainids")
+            # Carregar UChainIDs - ORDENAR POR TIMESTAMP DESC para carregar os mais recentes primeiro
+            rows = self.db.execute_query("SELECT * FROM cross_chain_uchainids ORDER BY timestamp DESC")
+            loaded_count = 0
             for row in rows:
                 uchain_id, source_chain, target_chain, recipient, amount, timestamp, memo, commitment_id, proof_id, state_id, tx_hash, explorer_url = row
+                # Parsear memo se for string
+                if isinstance(memo, str):
+                    try:
+                        memo_dict = json.loads(memo) if memo else {}
+                    except:
+                        memo_dict = {}
+                else:
+                    memo_dict = memo or {}
+                
                 self.uchain_ids[uchain_id] = {
                     "source_chain": source_chain,
                     "target_chain": target_chain,
                     "recipient": recipient,
                     "amount": amount,
                     "timestamp": timestamp,
-                    "memo": json.loads(memo) if memo else {},
+                    "memo": memo_dict,
                     "commitment_id": commitment_id,
                     "proof_id": proof_id,
                     "state_id": state_id,
                     "tx_hash": tx_hash,
                     "explorer_url": explorer_url
                 }
+                loaded_count += 1
+            print(f"✅ Carregados {loaded_count} UChainIDs do banco de dados")
             
             # Carregar ZK Proofs
             rows = self.db.execute_query("SELECT * FROM cross_chain_zk_proofs")
