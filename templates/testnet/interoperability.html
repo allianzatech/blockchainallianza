@@ -90,29 +90,6 @@
             <p class="text-gray-400">{{ t('bridge_free_interoperability_complete') or 'Bridge-free cross-chain interoperability with UChainID and ZK Proofs' }}</p>
         </div>
 
-        <!-- Quick Load UChainID - Topo da página para acesso rápido -->
-        <div class="bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-lg p-4 mb-6 border border-blue-500/30">
-            <div class="flex items-center gap-2 mb-3">
-                <i class="fas fa-bolt text-yellow-400"></i>
-                <h3 class="text-lg font-semibold">{{ t('quick_load') or 'Quick Load UChainID' }}</h3>
-            </div>
-            <div class="flex gap-2 flex-wrap">
-                <select id="recentUChainIDs" class="flex-1 min-w-[200px] bg-gray-700 text-white p-2 rounded font-mono text-sm border border-gray-600" onchange="selectUChainID()">
-                    <option value="">{{ t('select_recent_uchainid') or 'Select recent UChainID...' }}</option>
-                </select>
-                <input type="text" id="quickUChainID" placeholder="UCHAIN-..." 
-                       class="flex-1 min-w-[250px] bg-gray-700 text-white p-2 rounded font-mono border border-gray-600"
-                       onkeypress="if(event.key==='Enter') loadFromUChainID()">
-                <button onclick="loadFromUChainID()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded transition font-semibold whitespace-nowrap">
-                    <i class="fas fa-search"></i> {{ t('load') or 'Load' }}
-                </button>
-            </div>
-            <p class="text-xs text-gray-400 mt-2">{{ t('quick_load_hint') or 'Select from recent transfers or paste a UChainID manually' }}</p>
-            <div id="quickLoadResults" class="hidden mt-3">
-                <div id="quickLoadContent" class="bg-gray-800 rounded p-3 border border-gray-600"></div>
-            </div>
-        </div>
-
         <!-- Tabs -->
         <div class="mb-6 flex gap-2 overflow-x-auto">
             <button class="tab-button active" onclick="showTab('about')">
@@ -318,6 +295,30 @@
                     <i class="fas fa-shield-alt text-green-400"></i> {{ t('zk_proof_verifier') or 'ZK Proof Verifier' }}
                 </h2>
                 <p class="text-sm text-gray-400 mb-4">{{ t('verify_zk_proofs') or 'Verify Zero-Knowledge proofs from cross-chain transfers' }}</p>
+                
+                <!-- Quick Load UChainID - Topo da aba ZK Verifier -->
+                <div class="bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-lg p-4 mb-6 border border-blue-500/30">
+                    <div class="flex items-center gap-2 mb-3">
+                        <i class="fas fa-bolt text-yellow-400"></i>
+                        <h3 class="text-lg font-semibold">{{ t('quick_load') or 'Quick Load UChainID' }}</h3>
+                    </div>
+                    <div class="flex gap-2 flex-wrap">
+                        <select id="recentUChainIDs" class="flex-1 min-w-[200px] bg-gray-700 text-white p-2 rounded font-mono text-sm border border-gray-600" onchange="selectUChainID()">
+                            <option value="">{{ t('select_recent_uchainid') or 'Select recent UChainID...' }}</option>
+                        </select>
+                        <input type="text" id="quickUChainID" placeholder="UCHAIN-..." 
+                               class="flex-1 min-w-[250px] bg-gray-700 text-white p-2 rounded font-mono border border-gray-600"
+                               onkeypress="if(event.key==='Enter') loadFromUChainID()">
+                        <button onclick="loadFromUChainID()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded transition font-semibold whitespace-nowrap">
+                            <i class="fas fa-search"></i> {{ t('load') or 'Load' }}
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">{{ t('quick_load_hint') or 'Select from recent transfers or paste a UChainID manually' }}</p>
+                    <div id="quickLoadResults" class="hidden mt-3">
+                        <div id="quickLoadContent" class="bg-gray-800 rounded p-3 border border-gray-600"></div>
+                    </div>
+                </div>
+                
                 <form id="verifierForm" class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium mb-2">Proof (hex string)</label>
