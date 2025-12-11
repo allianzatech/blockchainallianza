@@ -2984,6 +2984,15 @@ class RealCrossChainBridge:
         
         # 4. Criar transação não assinada via BlockCypher
         print(f"\n4. 🛠️  Criando transação não assinada...")
+        print(f"   📋 Dados da transação:")
+        print(f"      Inputs: {len(inputs_list)}")
+        for i, inp in enumerate(inputs_list):
+            print(f"         Input {i+1}: prev_hash={inp['prev_hash'][:16]}..., output_index={inp['output_index']}")
+        print(f"      Outputs: {len(outputs_list)}")
+        for i, out in enumerate(outputs_list):
+            print(f"         Output {i+1}: addresses={out['addresses']}, value={out['value']}")
+        print(f"      Fee: {fee_sats} satoshis")
+        
         token = os.getenv('BLOCKCYPHER_API_TOKEN', '17766314e49c439e85cec883969614ac')
         create_url = f"https://api.blockcypher.com/v1/btc/test3/txs/new?token={token}"
         
@@ -2993,27 +3002,47 @@ class RealCrossChainBridge:
             "fees": fee_sats
         }
         
+        print(f"   📡 Enviando para BlockCypher: {create_url}")
+        print(f"   📦 Payload: {json.dumps(tx_data, indent=2)}")
+        
         create_response = requests.post(create_url, json=tx_data, timeout=30)
+        
+        print(f"   📊 Status: {create_response.status_code}")
+        print(f"   📋 Response: {create_response.text[:500]}")
         
         if create_response.status_code not in [200, 201]:
             error_text = create_response.text[:500]
             return {
                 "success": False,
                 "error": f"Erro ao criar transação: {create_response.status_code}",
-                "response": error_text
+                "response": error_text,
+                "tx_data": tx_data
             }
         
         unsigned_tx = create_response.json()
+        
+        # ✅ VALIDAÇÃO CRÍTICA: Verificar se a transação tem inputs
+        tx_inputs = unsigned_tx.get('tx', {}).get('inputs', [])
+        print(f"   🔍 Validação: Transação tem {len(tx_inputs)} inputs")
+        if len(tx_inputs) == 0:
+            return {
+                "success": False,
+                "error": "Transação criada sem inputs!",
+                "response": str(unsigned_tx)[:1000],
+                "tx_data": tx_data
+            }
+        
         tosign = unsigned_tx.get('tosign', [])
         
         if not tosign:
             return {
                 "success": False,
                 "error": "Nenhum hash para assinar (tosign vazio)",
-                "response": str(unsigned_tx)[:500]
+                "response": str(unsigned_tx)[:500],
+                "tx_inputs_count": len(tx_inputs)
             }
         
-        print(f"   ✅ Transação criada, {len(tosign)} hash(es) para assinar")
+        print(f"   ✅ Transação criada com {len(tx_inputs)} inputs, {len(tosign)} hash(es) para assinar")
         
         # 5. Assinar usando BlockCypher (eles fazem a assinatura se fornecemos a chave privada)
         print(f"\n5. 🔐 Assinando transação...")
@@ -3034,6 +3063,11 @@ class RealCrossChainBridge:
             }
         
         # Assinar via BlockCypher
+        print(f"   📋 Dados para assinar:")
+        print(f"      tosign count: {len(tosign)}")
+        print(f"      privkeys count: 1")
+        print(f"      tx inputs: {len(tx_inputs)}")
+        
         sign_data = {
             "tx": unsigned_tx,
             "tosign": tosign,
@@ -3041,16 +3075,44 @@ class RealCrossChainBridge:
         }
         
         sign_url = f"https://api.blockcypher.com/v1/btc/test3/txs/send?token={token}"
+        print(f"   📡 Enviando para assinar/broadcastar: {sign_url}")
+        
         sign_response = requests.post(sign_url, json=sign_data, timeout=30)
+        
+        print(f"   📊 Status: {sign_response.status_code}")
+        print(f"   📋 Response: {sign_response.text[:500]}")
         
         if sign_response.status_code in [200, 201]:
             signed_tx = sign_response.json()
+            
+            # ✅ VALIDAÇÃO: Verificar se a transação assinada tem inputs
+            signed_tx_inputs = signed_tx.get('tx', {}).get('inputs', [])
+            print(f"   🔍 Validação pós-assinatura: Transação tem {len(signed_tx_inputs)} inputs")
+            
+            if len(signed_tx_inputs) == 0:
+                return {
+                    "success": False,
+                    "error": "Transação assinada sem inputs!",
+                    "response": str(signed_tx)[:1000],
+                    "unsigned_tx_inputs": len(tx_inputs)
+                }
+            
             tx_hash = signed_tx.get('tx', {}).get('hash')
             
             if tx_hash:
                 print(f"   ✅✅✅ SUCESSO!")
                 print(f"   Hash: {tx_hash}")
                 print(f"   Explorer: https://blockstream.info/testnet/tx/{tx_hash}")
+                
+                # ✅ VALIDAÇÃO FINAL: Verificar se a transação foi realmente broadcastada
+                time.sleep(2)  # Aguardar um pouco
+                verify_url = f"https://blockstream.info/testnet/api/tx/{tx_hash}"
+                verify_response = requests.get(verify_url, timeout=10)
+                
+                if verify_response.status_code == 200:
+                    print(f"   ✅ Transação confirmada na rede!")
+                else:
+                    print(f"   ⚠️  Transação ainda não encontrada (pode estar no mempool)")
                 
                 return {
                     "success": True,
@@ -3062,20 +3124,29 @@ class RealCrossChainBridge:
                     "status": "broadcasted",
                     "explorer_url": f"https://blockstream.info/testnet/tx/{tx_hash}",
                     "method": "blockcypher_complete",
-                    "note": "✅ Transação criada, assinada e broadcastada via BlockCypher API (método próprio, sem bibliotecas Bitcoin complexas)"
+                    "note": "✅ Transação criada, assinada e broadcastada via BlockCypher API (método próprio, sem bibliotecas Bitcoin complexas)",
+                    "inputs_count": len(signed_tx_inputs),
+                    "verified_on_network": verify_response.status_code == 200
                 }
             else:
                 return {
                     "success": False,
                     "error": "Hash não encontrado na resposta",
-                    "response": str(signed_tx)[:500]
+                    "response": str(signed_tx)[:500],
+                    "signed_tx_inputs": len(signed_tx_inputs)
                 }
         else:
             error_text = sign_response.text[:500]
+            print(f"   ❌ Erro detalhado: {error_text}")
             return {
                 "success": False,
                 "error": f"Erro ao assinar/broadcastar: {sign_response.status_code}",
-                "response": error_text
+                "response": error_text,
+                "sign_data_preview": {
+                    "tosign_count": len(tosign),
+                    "privkeys_count": 1,
+                    "tx_inputs_count": len(tx_inputs)
+                }
             }
     
     def send_bitcoin_transaction(
