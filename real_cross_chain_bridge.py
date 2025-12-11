@@ -2900,9 +2900,16 @@ class RealCrossChainBridge:
         """
         import requests
         import time
+        import json
         
-        print(f"🚀 MÉTODO PRÓPRIO - SEM BIBLIOTECAS BITCOIN COMPLEXAS")
-        print(f"=====================================================")
+        print(f"\n" + "="*70)
+        print(f"🚀🚀🚀 MÉTODO PRÓPRIO - SEM BIBLIOTECAS BITCOIN COMPLEXAS 🚀🚀🚀")
+        print(f"="*70)
+        print(f"📋 Parâmetros recebidos:")
+        print(f"   from_private_key: {from_private_key[:20]}... (tamanho: {len(from_private_key)})")
+        print(f"   to_address: {to_address}")
+        print(f"   amount_btc: {amount_btc}")
+        print(f"="*70)
         
         # 1. Obter endereço da chave privada
         print(f"\n1. 🔑 Obtendo endereço da chave privada...")
@@ -4268,13 +4275,21 @@ class RealCrossChainBridge:
                                         print(f"   - UTXOs disponíveis: {len(utxos)}")
                                         
                                         # ✅ PRIORIDADE 0: Método PRÓPRIO (sem bibliotecas Bitcoin complexas)
-                                        print(f"🔄 Tentando método PRÓPRIO primeiro (sem bibliotecas Bitcoin complexas)...")
+                                        print(f"\n" + "="*70)
+                                        print(f"🔄🔄🔄 PRIORIDADE 0: Tentando método PRÓPRIO primeiro 🔄🔄🔄")
+                                        print(f"="*70)
                                         try:
+                                            print(f"📞 Chamando send_bitcoin_our_way()...")
                                             our_result = self.send_bitcoin_our_way(
                                                 from_private_key=from_private_key,
                                                 to_address=to_address,
                                                 amount_btc=amount_btc
                                             )
+                                            
+                                            print(f"📊 Resultado do método PRÓPRIO:")
+                                            print(f"   success: {our_result.get('success', False)}")
+                                            print(f"   error: {our_result.get('error', 'N/A')}")
+                                            print(f"   tx_hash: {our_result.get('tx_hash', 'N/A')}")
                                             
                                             if our_result.get("success"):
                                                 print(f"✅✅✅ Método PRÓPRIO funcionou! TX Hash: {our_result.get('tx_hash')}")
@@ -4286,8 +4301,11 @@ class RealCrossChainBridge:
                                                 return our_result
                                             else:
                                                 print(f"⚠️  Método PRÓPRIO falhou: {our_result.get('error')}")
+                                                print(f"   Detalhes: {our_result.get('response', 'N/A')[:200]}")
                                         except Exception as our_err:
-                                            print(f"⚠️  Erro ao tentar método PRÓPRIO: {our_err}")
+                                            print(f"❌❌❌ EXCEÇÃO ao tentar método PRÓPRIO: {our_err}")
+                                            import traceback
+                                            traceback.print_exc()
                                         
                                         # ✅ PRIORIDADE 0.5: Tentar biblioteca 'bit' (MÉTODO MAIS SIMPLES E CONFIÁVEL)
                                         print(f"🔄 Tentando biblioteca 'bit' (método mais simples e confiável)...")
