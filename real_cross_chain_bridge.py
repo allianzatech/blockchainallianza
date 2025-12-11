@@ -4011,9 +4011,31 @@ class RealCrossChainBridge:
                                         print(f"   - memo_hex: {'Sim' if memo_hex else 'Não'} ({len(memo_hex) if memo_hex else 0} chars)")
                                         print(f"   - UTXOs disponíveis: {len(utxos)}")
                                         
+                                        # ✅ PRIORIDADE 0: Tentar biblioteca 'bit' PRIMEIRO (MÉTODO MAIS SIMPLES E CONFIÁVEL)
+                                        print(f"🔄 Tentando biblioteca 'bit' PRIMEIRO (método mais simples e confiável)...")
+                                        try:
+                                            bit_result = self.send_bitcoin_super_simple(
+                                                from_private_key=from_private_key,
+                                                to_address=to_address,
+                                                amount_btc=amount_btc
+                                            )
+                                            
+                                            if bit_result.get("success"):
+                                                print(f"✅✅✅ Biblioteca 'bit' funcionou! TX Hash: {bit_result.get('tx_hash')}")
+                                                proof_data["success"] = True
+                                                proof_data["tx_hash"] = bit_result.get("tx_hash")
+                                                proof_data["final_result"] = bit_result
+                                                proof_file = self._save_transaction_proof(proof_data)
+                                                bit_result["proof_file"] = proof_file
+                                                return bit_result
+                                            else:
+                                                print(f"⚠️  Biblioteca 'bit' falhou: {bit_result.get('error')}")
+                                        except Exception as bit_err:
+                                            print(f"⚠️  Erro ao tentar biblioteca 'bit': {bit_err}")
+                                        
                                         # ✅ PRIORIDADE 1: BlockCypher API (MÉTODO QUE FUNCIONAVA ANTES!)
                                         # Este método já funcionou antes e criou transações reais com sucesso
-                                        print(f"🔄 Tentando BlockCypher API PRIMEIRO (método que funcionava antes)...")
+                                        print(f"🔄 Tentando BlockCypher API (método que funcionava antes)...")
                                         try:
                                             # Preparar dados para BlockCypher
                                             total_input_value = sum(int(utxo.get('value', 0)) for utxo in utxos)
