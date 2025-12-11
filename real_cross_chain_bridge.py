@@ -7391,6 +7391,31 @@ class RealCrossChainBridge:
                         "source_tx_success": True
                     }
                 
+                # ✅ CORREÇÃO CRÍTICA: Converter chave hex (0x...) para WIF se necessário
+                # Quando source_chain é EVM (ethereum/polygon), a chave pode estar em hex
+                if target_private_key.startswith('0x') or (len(target_private_key) == 64 and all(c in '0123456789abcdefABCDEF' for c in target_private_key)):
+                    print(f"⚠️  Chave detectada em formato hex, convertendo para WIF...")
+                    try:
+                        from bitcoinlib.keys import HDKey
+                        # Remover 0x se presente
+                        hex_key = target_private_key[2:] if target_private_key.startswith('0x') else target_private_key
+                        # Converter hex para bytes
+                        priv_key_bytes = bytes.fromhex(hex_key)
+                        # Criar HDKey a partir dos bytes
+                        key = HDKey(priv_key_bytes, network='testnet')
+                        # Obter WIF
+                        target_private_key = key.wif()
+                        print(f"✅ Chave convertida para WIF: {target_private_key[:15]}...")
+                    except Exception as conv_err:
+                        print(f"❌ Erro ao converter chave hex para WIF: {conv_err}")
+                        return {
+                            "success": False,
+                            "error": f"Erro ao converter chave privada para WIF: {str(conv_err)}",
+                            "note": "A chave deve estar em formato WIF (começa com c ou 9 para testnet) ou hex (64 caracteres)",
+                            "source_tx": source_tx_result,
+                            "source_tx_success": True
+                        }
+                
                 print(f"✅ Chave Bitcoin WIF válida detectada")
                 print(f"   Endereço de destino: {target_address}")
                 print(f"   Quantidade: {target_amount} BTC (convertido de {amount} {token_symbol})")
