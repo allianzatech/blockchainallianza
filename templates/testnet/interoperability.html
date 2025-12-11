@@ -631,10 +631,27 @@
             resultContent.innerHTML = '<p class="info">⏳ {{ t("loading") or "Loading..." }}</p>';
 
             try {
-                const response = await fetch(`/api/cross-chain/proof/${encodeURIComponent(uchainId)}`);
-                const data = await response.json();
+                // Tentar múltiplas vezes se necessário (pode estar sendo salvo ainda)
+                let data = null;
+                let attempts = 0;
+                const maxAttempts = 3;
+                
+                while (attempts < maxAttempts) {
+                    attempts++;
+                    const response = await fetch(`/api/cross-chain/proof/${encodeURIComponent(uchainId)}`);
+                    data = await response.json();
+                    
+                    if (data.success && data.zk_proof) {
+                        break; // Encontrou, sair do loop
+                    }
+                    
+                    // Se não encontrou e ainda há tentativas, aguardar um pouco
+                    if (attempts < maxAttempts) {
+                        await new Promise(resolve => setTimeout(resolve, 500)); // Aguardar 500ms
+                    }
+                }
 
-                if (data.success) {
+                if (data && data.success) {
                     if (data.zk_proof) {
                         // Garantir que zk_proof é um objeto, não string
                         const zkProof = typeof data.zk_proof === 'string' ? JSON.parse(data.zk_proof) : data.zk_proof;
@@ -645,13 +662,27 @@
                             document.getElementById('verifierKey').value = zkProof.verification_key || '';
                             document.getElementById('verifierInputs').value = zkProof.state_transition_hash || zkProof.state_hash || '';
                             
+                            // Determinar status verified (pode ser boolean, string, ou número)
+                            let verifiedStatus = false;
+                            if (zkProof.verified !== undefined && zkProof.verified !== null) {
+                                if (typeof zkProof.verified === 'boolean') {
+                                    verifiedStatus = zkProof.verified;
+                                } else if (typeof zkProof.verified === 'string') {
+                                    verifiedStatus = zkProof.verified.toLowerCase() in ('true', '1', 'yes');
+                                } else if (typeof zkProof.verified === 'number') {
+                                    verifiedStatus = zkProof.verified !== 0;
+                                }
+                            } else if (zkProof.valid !== undefined) {
+                                verifiedStatus = zkProof.valid === true || zkProof.valid === 1 || zkProof.valid === 'true';
+                            }
+                            
                             // Mostrar feedback visual
                             resultContent.innerHTML = `
                                 <p class="success">✅ {{ t("proof_data_loaded") or "Proof data loaded successfully!" }}</p>
                                 <p class="info mt-2"><strong>UChainID:</strong> <span class="font-mono text-sm">${uchainId}</span></p>
                                 <p class="info"><strong>Proof ID:</strong> <span class="font-mono text-sm">${zkProof.proof_id || 'N/A'}</span></p>
                                 <p class="info"><strong>State Hash:</strong> <span class="font-mono text-xs">${zkProof.state_transition_hash || zkProof.state_hash || 'N/A'}</span></p>
-                                <p class="info"><strong>Verified:</strong> ${zkProof.verified || zkProof.valid ? '✅ Yes' : '❌ No'}</p>
+                                <p class="info"><strong>Verified:</strong> ${verifiedStatus ? '✅ Yes' : '❌ No'}</p>
                                 <p class="text-xs text-gray-400 mt-3">{{ t("fields_auto_filled") or "All fields have been automatically filled. Click 'Verify Proof' to verify." }}</p>
                             `;
                         } else {
@@ -661,7 +692,7 @@
                         resultContent.innerHTML = `<p class="error">❌ {{ t("no_zk_proof_available") or "No ZK Proof available for this UChainID" }}</p>`;
                     }
                 } else {
-                    resultContent.innerHTML = `<p class="error">❌ ${data.error || '{{ t("uchainid_not_found") or "UChainID not found" }}'}</p>`;
+                    resultContent.innerHTML = `<p class="error">❌ ${data ? (data.error || '{{ t("uchainid_not_found") or "UChainID not found" }}') : '{{ t("error_loading_proof") or "Error loading proof" }}'}</p>`;
                 }
             } catch (error) {
                 resultContent.innerHTML = `<p class="error">❌ {{ t("error_loading_proof") or "Error loading proof" }}: ${error.message}</p>`;

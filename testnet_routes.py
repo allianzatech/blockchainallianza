@@ -3073,6 +3073,7 @@ def decode_memo_page(identifier):
             zk_proof = memo["zk_proof"]
         
         # Garantir que zk_proof tem o campo verified extraído corretamente
+        # PRIORIDADE MÁXIMA: verified do memo (é a fonte mais confiável, vem on-chain)
         if zk_proof:
             # Se zk_proof é string, tentar parsear
             if isinstance(zk_proof, str):
@@ -3108,8 +3109,29 @@ def decode_memo_page(identifier):
                         except:
                             pass
                 # Se ainda não tem verified, usar do zk_proof do sistema
-                if "verified" not in zk_proof:
+                if "verified" not in zk_proof or zk_proof.get("verified") is None:
                     zk_proof["verified"] = zk_proof.get("valid", False)
+                # Garantir que verified é um booleano (não string)
+                if isinstance(zk_proof.get("verified"), str):
+                    zk_proof["verified"] = zk_proof["verified"].lower() in ('true', '1', 'yes')
+        else:
+            # Se não tem zk_proof no resultado, tentar extrair diretamente do memo
+            if "zk_proof" in memo:
+                zk_proof = memo["zk_proof"]
+                if isinstance(zk_proof, str):
+                    try:
+                        import json
+                        zk_proof = json.loads(zk_proof)
+                    except:
+                        zk_proof = {}
+                # Garantir que é um dict e tem verified
+                if not isinstance(zk_proof, dict):
+                    zk_proof = {}
+                # Garantir que verified é um booleano
+                if isinstance(zk_proof.get("verified"), str):
+                    zk_proof["verified"] = zk_proof["verified"].lower() in ('true', '1', 'yes')
+                elif "verified" not in zk_proof:
+                    zk_proof["verified"] = False
         else:
             # Se não tem zk_proof no resultado, tentar extrair diretamente do memo
             if "zk_proof" in memo:

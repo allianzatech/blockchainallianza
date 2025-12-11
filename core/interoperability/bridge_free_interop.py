@@ -1220,9 +1220,24 @@ class BridgeFreeInterop:
                         if isinstance(memo_zk_proof, dict):
                             # Garantir que tem todos os campos necessários
                             zk_proof_from_memo = memo_zk_proof.copy()
-                            # Se não tem verified, tentar usar valid do sistema ou False
-                            if "verified" not in zk_proof_from_memo:
-                                zk_proof_from_memo["verified"] = zk_proof_from_memo.get("valid", False)
+                            # PRIORIDADE: verified do memo é a fonte mais confiável
+                            # Se não tem verified no memo, tentar buscar do banco pelo proof_id
+                            if "verified" not in zk_proof_from_memo or zk_proof_from_memo.get("verified") is None:
+                                # Tentar buscar do banco se tiver proof_id
+                                if zk_proof_id:
+                                    try:
+                                        rows = self.db.execute_query("SELECT valid FROM cross_chain_zk_proofs WHERE proof_id = ?", (zk_proof_id,))
+                                        if rows:
+                                            zk_proof_from_memo["verified"] = bool(rows[0][0])
+                                        else:
+                                            zk_proof_from_memo["verified"] = zk_proof_from_memo.get("valid", False)
+                                    except:
+                                        zk_proof_from_memo["verified"] = zk_proof_from_memo.get("valid", False)
+                                else:
+                                    zk_proof_from_memo["verified"] = zk_proof_from_memo.get("valid", False)
+                            # Garantir que verified é um booleano
+                            if isinstance(zk_proof_from_memo.get("verified"), str):
+                                zk_proof_from_memo["verified"] = zk_proof_from_memo["verified"].lower() in ('true', '1', 'yes')
                             result["zk_proof"] = zk_proof_from_memo
                         else:
                             result["zk_proof"] = {"verified": False, "proof_id": zk_proof_id}
