@@ -31,7 +31,7 @@
     <div class="container mx-auto px-4 py-8">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-4xl font-bold mb-2">🧪 {{ t('complete_tests_title') or 'Complete Tests - 41 Validations' }}</h1>
+            <h1 class="text-4xl font-bold mb-2">🧪 {{ t('complete_tests_title') or 'Complete Tests - All Validations' }}</h1>
             <p class="text-gray-400">{{ t('complete_tests_subtitle') or 'Execute all documented tests and verify results' }}</p>
             <a href="javascript:history.back()" class="btn-back mt-2">{{ t('back') or 'Back' }}</a>
         </div>
@@ -76,7 +76,7 @@
         <div class="mb-8">
             <div class="bg-gradient-to-r from-green-600 to-blue-600 p-6 rounded-lg">
                 <h3 class="text-2xl font-semibold mb-2">
-                    <i class="fas fa-rocket"></i> {{ t('execute_all_41_tests') or 'Execute All 41 Tests' }}
+                    <i class="fas fa-rocket"></i> {{ t('execute_all_41_tests') or 'Execute All Tests' }}
                 </h3>
                 <p class="text-gray-200 mb-4">{{ t('execute_all_description') or 'Execute all suites at once (may take several minutes)' }}</p>
                 <button onclick="runAllTests()" class="bg-white text-gray-900 px-6 py-3 rounded font-semibold hover:bg-gray-100 transition">
@@ -191,7 +191,11 @@
                 }
 
                 const data = await response.json();
-                showResults('All Tests (41 Validations)', data);
+                // Ajustar título para refletir o total retornado pelo backend
+                const results = data.results || data;
+                const summary = results.summary || {};
+                const total = summary.total_validations || summary.total_tests || 'N/A';
+                showResults(`All Tests (${total} Validations)`, data);
             } catch (error) {
                 showError(error);
             }
