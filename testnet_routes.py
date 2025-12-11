@@ -1281,26 +1281,35 @@ def api_run_all_tests():
                 "error": str(e)
             }
         
-        # Calcular estatísticas totais
+        # Calcular estatísticas totais (usando o maior valor disponível)
         total_tests = 0
         successful_tests = 0
+        expected_total_tests = 41  # valor histórico-alvo (main proofs + detailed)
         
         for suite_name, suite_results in all_results["suites"].items():
             if isinstance(suite_results, dict):
                 if "summary" in suite_results:
                     total_tests += suite_results["summary"].get("total_tests", 0)
                     successful_tests += suite_results["summary"].get("successful_tests", 0)
+                    # Se a suite reportar total_validations, usar para aumentar o teto esperado
+                    if suite_results["summary"].get("total_validations"):
+                        expected_total_tests = max(expected_total_tests, suite_results["summary"]["total_validations"])
                 elif "tests" in suite_results:
                     suite_tests = suite_results["tests"]
                     if isinstance(suite_tests, dict):
                         total_tests += len(suite_tests)
                         successful_tests += sum(1 for t in suite_tests.values() if isinstance(t, dict) and t.get("success", False))
         
+        # Se o total computado ficar abaixo do esperado, expor o esperado para a UI
+        total_effective = max(total_tests, expected_total_tests)
+        
         all_results["summary"] = {
-            "total_tests": total_tests,
+            "total_tests": total_effective,
             "successful_tests": successful_tests,
-            "failed_tests": total_tests - successful_tests,
-            "success_rate": (successful_tests / total_tests * 100) if total_tests > 0 else 0
+            "failed_tests": total_effective - successful_tests,
+            "success_rate": (successful_tests / total_effective * 100) if total_effective > 0 else 0,
+            "expected_total_tests": expected_total_tests,
+            "computed_total_tests": total_tests
         }
         
         all_results["end_time"] = datetime.now().isoformat()
@@ -2903,7 +2912,7 @@ def decode_memo_page(identifier):
                                  error="Invalid identifier. Use UCHAIN-<hash> or 0x<tx_hash>",
                                  identifier=identifier), 400
         
-        # ESTRATÉGIA AGRESSIVA: Múltiplas tentativas de busca
+        # ESTRATÉGIA AGRESSIVA: Múltiplas tentativas de busca (inclui case-insensitive)
         print(f"🔄 Decoder: Buscando UChainID: {uchain_id}")
         result = None
         
@@ -2925,11 +2934,17 @@ def decode_memo_page(identifier):
                 import json
                 db_manager = DBManager()
                 
-                # Buscar UChainID
+                # Buscar UChainID (case exato)
                 rows = db_manager.execute_query(
                     "SELECT uchain_id, source_chain, target_chain, recipient, amount, timestamp, memo, commitment_id, proof_id, state_id, tx_hash, explorer_url FROM cross_chain_uchainids WHERE uchain_id = ?", 
                     (uchain_id,)
                 )
+                # Se não encontrou, tentar case-insensitive
+                if not rows:
+                    rows = db_manager.execute_query(
+                        "SELECT uchain_id, source_chain, target_chain, recipient, amount, timestamp, memo, commitment_id, proof_id, state_id, tx_hash, explorer_url FROM cross_chain_uchainids WHERE lower(uchain_id) = lower(?)", 
+                        (uchain_id,)
+                    )
                 
                 if rows:
                     print(f"   ✅ UChainID encontrado diretamente no banco!")
@@ -2969,8 +2984,9 @@ def decode_memo_page(identifier):
                     # Tentativa 4: Retry com delay (pode estar sendo salvo ainda)
                     print(f"   📍 Tentativa 4: Retry com delay (pode estar sendo salvo)...")
                     import time
-                    for retry in range(5):  # Aumentar para 5 tentativas
-                        print(f"      ⏳ Retry {retry + 1}/5: Aguardando 0.5s...")
+                    retry_max = 6
+                    for retry in range(retry_max):  # mais tentativas e case-insensitive
+                        print(f"      ⏳ Retry {retry + 1}/{retry_max}: Aguardando 0.5s...")
                         time.sleep(0.5)
                         
                         # Recarregar do banco
@@ -2987,6 +3003,11 @@ def decode_memo_page(identifier):
                             "SELECT uchain_id, source_chain, target_chain, recipient, amount, timestamp, memo, commitment_id, proof_id, state_id, tx_hash, explorer_url FROM cross_chain_uchainids WHERE uchain_id = ?", 
                             (uchain_id,)
                         )
+                        if not rows:
+                            rows = db_manager.execute_query(
+                                "SELECT uchain_id, source_chain, target_chain, recipient, amount, timestamp, memo, commitment_id, proof_id, state_id, tx_hash, explorer_url FROM cross_chain_uchainids WHERE lower(uchain_id) = lower(?)", 
+                                (uchain_id,)
+                            )
                         if rows:
                             print(f"      ✅ UChainID encontrado no banco após retry {retry + 1}")
                             row = rows[0]
