@@ -996,7 +996,19 @@ class BridgeFreeInterop:
                 "state_id": apply_result["state_id"]
             }
             self.uchain_ids[uchain_id] = uchain_data
-            self._save_uchain_id(uchain_id, uchain_data)  # Persistir no banco ANTES de enviar transação
+            # CRÍTICO: Salvar no banco ANTES de qualquer outra operação
+            print(f"💾 Salvando UChainID no banco ANTES de enviar transação: {uchain_id}")
+            self._save_uchain_id(uchain_id, uchain_data)
+            # Verificar se foi salvo corretamente
+            try:
+                rows = self.db.execute_query("SELECT uchain_id FROM cross_chain_uchainids WHERE uchain_id = ?", (uchain_id,))
+                if rows:
+                    print(f"✅ UChainID confirmado no banco: {uchain_id}")
+                else:
+                    print(f"⚠️  UChainID NÃO encontrado no banco após salvar! Tentando novamente...")
+                    self._save_uchain_id(uchain_id, uchain_data)  # Tentar novamente
+            except Exception as e:
+                print(f"⚠️  Erro ao verificar UChainID no banco: {e}")
             
             # 5. Se send_real=True, enviar transação REAL para blockchain
             # CRÍTICO: Passar o UChainID já gerado para evitar gerar outro
