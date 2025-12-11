@@ -2571,11 +2571,13 @@ class RealCrossChainBridge:
                                 confirmed_utxos.append({
                                     'txid': utxo['txid'],
                                     'vout': utxo['vout'],
+                                    'output_n': utxo['vout'],  # ✅ CRÍTICO: Adicionar output_n para compatibilidade
                                     'value': utxo['value'],
                                     'confirmed': True,
-                                    'block_height': status.get('block_height')
+                                    'block_height': status.get('block_height'),
+                                    'source': 'blockstream_confirmed'  # Marcar origem
                                 })
-                                print(f"   ✅ UTXO confirmado: {utxo['txid'][:16]}...:{utxo['vout']} = {utxo['value']} sats")
+                                print(f"   ✅ UTXO confirmado: {utxo['txid'][:16]}...:{utxo['vout']} = {utxo['value']} sats (bloco {status.get('block_height', 'N/A')})")
                     except Exception as check_err:
                         print(f"   ⚠️ Erro ao verificar UTXO {utxo['txid'][:16]}...: {check_err}")
                         continue
