@@ -284,25 +284,18 @@
 </body>
 </html>
 <script>
-    // Show notice once per session. Default to EN unless browser is pt-BR/pt.
+    // Show notice EVERY TIME user enters dashboard (removed sessionStorage)
     (function() {
         const banner = document.getElementById('notice-banner');
         const closeBtn = document.getElementById('notice-close');
         if (!banner || !closeBtn) return;
 
-        const lsKey = 'allianza_notice_closed';
-        const isClosed = sessionStorage.getItem(lsKey);
-
-        // Language detection: if browser language starts with pt, show PT text (handled by backend t() when lang == pt)
-        // Otherwise the default EN text is shown (t fallback).
-
-        if (!isClosed) {
-            banner.classList.remove('hidden');
-        }
+        // Sempre mostrar o aviso (removido sessionStorage)
+        banner.classList.remove('hidden');
 
         closeBtn.addEventListener('click', () => {
             banner.classList.add('hidden');
-            sessionStorage.setItem(lsKey, '1');
+            // Não salvar no sessionStorage - aviso aparece sempre na próxima vez
         });
     })();
 </script>
