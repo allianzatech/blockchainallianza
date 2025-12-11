@@ -1115,20 +1115,24 @@ class BridgeFreeInterop:
         """
         try:
             if uchain_id:
-                # Buscar no banco com pequenas tentativas (para casos recém-criados)
+                # Buscar no banco com tentativas rápidas (casos recém-criados) e case-insensitive
                 if uchain_id not in self.uchain_ids:
                     try:
-                        max_retries = 3
+                        max_retries = 5
                         retry_delay = 0.25
                         rows = []
                         for attempt in range(max_retries):
+                            # Tentativa 1: match exato
                             rows = self.db.execute_query("SELECT * FROM cross_chain_uchainids WHERE uchain_id = ?", (uchain_id,))
+                            if rows:
+                                break
+                            # Tentativa 2: case-insensitive
+                            rows = self.db.execute_query("SELECT * FROM cross_chain_uchainids WHERE lower(uchain_id) = lower(?)", (uchain_id,))
                             if rows:
                                 break
                             time.sleep(retry_delay)
                         if rows:
                             row = rows[0]
-                            # Carregar do banco e adicionar em memória
                             uchain_id_db, source_chain, target_chain, recipient, amount, timestamp, memo, commitment_id, proof_id, state_id, tx_hash, explorer_url = row
                             uchain_data = {
                                 "source_chain": source_chain,
@@ -1143,7 +1147,8 @@ class BridgeFreeInterop:
                                 "tx_hash": tx_hash,
                                 "explorer_url": explorer_url
                             }
-                            self.uchain_ids[uchain_id] = uchain_data
+                            # Usar a chave retornada do banco (pode diferir no case)
+                            self.uchain_ids[uchain_id_db] = uchain_data
                         else:
                             return {"success": False, "error": "UChainID não encontrado"}
                     except Exception as e:
