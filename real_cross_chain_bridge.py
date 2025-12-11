@@ -2594,6 +2594,305 @@ class RealCrossChainBridge:
             traceback.print_exc()
             return []
     
+    def debug_bitcoin_issue_complete(self):
+        """DEBUG completo do problema Bitcoin"""
+        import requests
+        import json
+        
+        address = os.getenv('BITCOIN_TESTNET_ADDRESS', 'mjQMvYHE5Bpqze4ifq6NLP9BthNJgxWRud')
+        
+        print(f"🔍 DEBUG COMPLETO PARA {address}")
+        print(f"="*60)
+        
+        # 1. Buscar TODOS os UTXOs
+        print(f"\n1. 📦 BUSCANDO TODOS OS UTXOs:")
+        utxo_url = f"https://blockstream.info/testnet/api/address/{address}/utxo"
+        response = requests.get(utxo_url, timeout=20)
+        
+        utxos = []
+        if response.status_code == 200:
+            utxos = response.json()
+            print(f"   Total UTXOs: {len(utxos)}")
+            
+            for i, utxo in enumerate(utxos):
+                print(f"\n   UTXO {i+1}:")
+                print(f"      TXID: {utxo.get('txid')}")
+                print(f"      VOUT: {utxo.get('vout')}")
+                print(f"      Value: {utxo.get('value')} satoshis ({utxo.get('value')/100000000:.8f} BTC)")
+                print(f"      Status: {utxo.get('status', {})}")
+                
+                # Verificar transação detalhada
+                tx_url = f"https://blockstream.info/testnet/api/tx/{utxo.get('txid')}"
+                tx_resp = requests.get(tx_url, timeout=10)
+                
+                if tx_resp.status_code == 200:
+                    tx_data = tx_resp.json()
+                    vout_index = utxo.get('vout', 0)
+                    vouts = tx_data.get('vout', [])
+                    
+                    if vout_index < len(vouts):
+                        vout_data = vouts[vout_index]
+                        print(f"      ScriptPubKey: {vout_data.get('scriptpubkey', '')[:50]}...")
+                        print(f"      Gastado: {vout_data.get('spent', False)}")
+                        print(f"      Confirmado: {tx_data.get('status', {}).get('confirmed', False)}")
+                    else:
+                        print(f"      ❌ VOUT {vout_index} não existe!")
+                else:
+                    print(f"      ❌ Não foi possível verificar transação")
+        else:
+            print(f"   ❌ Erro ao buscar UTXOs: {response.status_code}")
+        
+        # 2. Verificar chave privada
+        print(f"\n2. 🔑 VERIFICANDO CHAVE PRIVADA:")
+        private_key = os.getenv('BITCOIN_PRIVATE_KEY', 'cSamqcRz79BCXe5LWhqVSMhKo1bkxZA3EE6PTpy8hkYVVmofUXfJ')
+        
+        try:
+            from bitcoinlib.keys import HDKey
+            key = HDKey(private_key, network='testnet')
+            derived_address = key.address()
+            print(f"   ✅ Chave WIF válida")
+            print(f"   Endereço derivado: {derived_address}")
+            print(f"   Endereço esperado: {address}")
+            print(f"   Coincide: {derived_address == address}")
+        except Exception as e:
+            print(f"   ❌ Erro na chave: {e}")
+        
+        # 3. Testar criação de transação com 'bit'
+        print(f"\n3. 🔧 TESTANDO CRIAÇÃO DE TRANSAÇÃO COM 'bit':")
+        if utxos:
+            try:
+                from bit import PrivateKey
+                from bit.network import NetworkAPI
+                from bit import network
+                
+                # Configurar testnet
+                network.set_testnet()
+                
+                # Criar chave
+                pk = PrivateKey.from_wif(private_key)
+                print(f"   ✅ Biblioteca 'bit' encontrada!")
+                print(f"   Chave carregada: {pk.address}")
+                
+                # Testar criação de transação simples
+                print(f"   Testando criação de transação...")
+                test_tx = pk.create_transaction(
+                    outputs=[("tb1q92s4pc5hxh0gmew4d026y7n5rtwc4astv3dn6q", 1000, 'satoshi')],
+                    fee=500
+                )
+                print(f"   ✅ Transação de teste criada: {len(test_tx)} bytes")
+                print(f"   Primeiros 100 chars: {test_tx[:100]}...")
+                
+            except ImportError:
+                print(f"   ❌ Biblioteca 'bit' não disponível")
+                print(f"   💡 Execute: pip install bit")
+            except Exception as e:
+                print(f"   ❌ Erro na criação: {e}")
+                import traceback
+                traceback.print_exc()
+        
+        print(f"\n" + "="*60)
+        print(f"DEBUG COMPLETO FINALIZADO")
+        
+        return {
+            "address": address,
+            "utxos_count": len(utxos),
+            "utxos": utxos[:3] if utxos else []  # Primeiros 3 para não sobrecarregar
+        }
+    
+    def send_bitcoin_super_simple(self, from_private_key: str = None, to_address: str = None, amount_btc: float = 0.00001) -> Dict:
+        """
+        Método SUPER SIMPLES que VAI FUNCIONAR
+        Usa biblioteca 'bit' que é muito mais simples e confiável
+        """
+        import requests
+        import time
+        
+        print(f"🚀 MÉTODO SUPER SIMPLES PARA BITCOIN")
+        print(f"=====================================")
+        
+        # Configurações
+        if not from_private_key:
+            from_private_key = os.getenv('BITCOIN_PRIVATE_KEY', 'cSamqcRz79BCXe5LWhqVSMhKo1bkxZA3EE6PTpy8hkYVVmofUXfJ')
+        if not to_address:
+            to_address = "tb1q92s4pc5hxh0gmew4d026y7n5rtwc4astv3dn6q"
+        
+        from_address = None
+        
+        print(f"📤 Chave privada: {from_private_key[:15]}...")
+        print(f"📥 Para: {to_address}")
+        print(f"💰 Valor: {amount_btc} BTC")
+        
+        # 1. Tentar usar biblioteca 'bit' (MÉTODO MAIS SIMPLES)
+        try:
+            from bit import PrivateKey
+            from bit.network import NetworkAPI
+            from bit import network
+            
+            print(f"\n✅ Biblioteca 'bit' encontrada!")
+            
+            # Configurar testnet
+            network.set_testnet()
+            
+            # Criar chave
+            pk = PrivateKey.from_wif(from_private_key)
+            from_address = pk.address
+            print(f"   Endereço derivado: {from_address}")
+            
+            # Buscar UTXOs via Blockstream
+            print(f"\n1. 🔍 Buscando UTXOs...")
+            utxo_url = f"https://blockstream.info/testnet/api/address/{from_address}/utxo"
+            response = requests.get(utxo_url, timeout=20)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"Erro UTXOs: {response.status_code}"}
+            
+            utxos = response.json()
+            print(f"   Encontrados: {len(utxos)} UTXOs")
+            
+            if not utxos:
+                return {"success": False, "error": "Nenhum UTXO encontrado"}
+            
+            # Filtrar apenas UTXOs confirmados
+            confirmed_utxos = [u for u in utxos if u.get('status', {}).get('confirmed', False)]
+            print(f"   Confirmados: {len(confirmed_utxos)} UTXOs")
+            
+            if not confirmed_utxos:
+                return {"success": False, "error": "Nenhum UTXO confirmado"}
+            
+            # Converter valor para satoshis
+            amount_sats = int(amount_btc * 100000000)
+            fee_sats = 500  # Taxa fixa
+            
+            # Calcular change
+            total_input = sum(u['value'] for u in confirmed_utxos[:1])  # Usar primeiro UTXO
+            change_sats = total_input - amount_sats - fee_sats
+            
+            if change_sats < 0:
+                return {
+                    "success": False,
+                    "error": f"UTXO insuficiente. Necessário: {amount_sats + fee_sats}, Disponível: {total_input}",
+                    "utxo_value": total_input,
+                    "required": amount_sats + fee_sats
+                }
+            
+            print(f"\n2. 🔧 Criando transação com 'bit'...")
+            print(f"   Input: {total_input} satoshis")
+            print(f"   Output: {amount_sats} satoshis")
+            print(f"   Fee: {fee_sats} satoshis")
+            print(f"   Change: {change_sats} satoshis")
+            
+            # Criar transação
+            outputs = [(to_address, amount_sats, 'satoshi')]
+            if change_sats > 546:  # Dust limit
+                outputs.append((from_address, change_sats, 'satoshi'))
+            
+            tx_hex = pk.create_transaction(
+                outputs=outputs,
+                fee=fee_sats
+            )
+            
+            print(f"   ✅ Transação criada: {len(tx_hex)} bytes")
+            
+            # Broadcast
+            print(f"\n3. 📡 Broadcastando...")
+            try:
+                tx_hash = NetworkAPI.broadcast_tx(tx_hex)
+                print(f"   ✅✅✅ SUCESSO!")
+                print(f"   Hash: {tx_hash}")
+                
+                return {
+                    "success": True,
+                    "tx_hash": tx_hash,
+                    "from": from_address,
+                    "to": to_address,
+                    "amount": amount_btc,
+                    "chain": "bitcoin",
+                    "status": "broadcasted",
+                    "explorer_url": f"https://blockstream.info/testnet/tx/{tx_hash}",
+                    "method": "bit_library",
+                    "note": "✅ Transação criada com biblioteca 'bit' - MÉTODO MAIS SIMPLES E CONFIÁVEL"
+                }
+            except Exception as broadcast_err:
+                print(f"   ❌ Erro no broadcast: {broadcast_err}")
+                # Tentar broadcast manual via Blockstream
+                try:
+                    broadcast_url = "https://blockstream.info/testnet/api/tx"
+                    broadcast_response = requests.post(broadcast_url, data=tx_hex, headers={'Content-Type': 'text/plain'}, timeout=30)
+                    
+                    if broadcast_response.status_code == 200:
+                        tx_hash = broadcast_response.text.strip()
+                        print(f"   ✅✅✅ SUCESSO via Blockstream!")
+                        print(f"   Hash: {tx_hash}")
+                        
+                        return {
+                            "success": True,
+                            "tx_hash": tx_hash,
+                            "from": from_address,
+                            "to": to_address,
+                            "amount": amount_btc,
+                            "chain": "bitcoin",
+                            "status": "broadcasted",
+                            "explorer_url": f"https://blockstream.info/testnet/tx/{tx_hash}",
+                            "method": "bit_library_blockstream",
+                            "note": "✅ Transação criada com 'bit' e broadcastada via Blockstream"
+                        }
+                    else:
+                        return {
+                            "success": False,
+                            "error": f"Broadcast falhou: {broadcast_response.status_code}",
+                            "response": broadcast_response.text[:200],
+                            "tx_hex_preview": tx_hex[:200]
+                        }
+                except Exception as manual_err:
+                    return {
+                        "success": False,
+                        "error": f"Erro no broadcast manual: {str(manual_err)}",
+                        "tx_hex_preview": tx_hex[:200]
+                    }
+        
+        except ImportError:
+            print(f"❌ Biblioteca 'bit' não disponível")
+            print(f"💡 Execute: pip install bit")
+            return {
+                "success": False,
+                "error": "Biblioteca 'bit' não disponível",
+                "solution": "Instale: pip install bit",
+                "note": "A biblioteca 'bit' é a mais simples para transações Bitcoin"
+            }
+        except Exception as e:
+            print(f"❌ Erro geral: {e}")
+            import traceback
+            traceback.print_exc()
+            return {
+                "success": False,
+                "error": str(e),
+                "note": "Erro inesperado ao usar biblioteca 'bit'"
+            }
+    
+    def emergency_bitcoin_fix(self):
+        """COMANDO DE EMERGÊNCIA - Execute isto AGORA"""
+        print(f"🚨 COMANDO DE EMERGÊNCIA PARA BITCOIN")
+        print(f"======================================")
+        
+        # Primeiro, debug completo
+        print(f"\n📊 PASSO 1: DEBUG COMPLETO")
+        debug_result = self.debug_bitcoin_issue_complete()
+        
+        # Segundo, tentar método super simples
+        print(f"\n📊 PASSO 2: MÉTODO SUPER SIMPLES")
+        result = self.send_bitcoin_super_simple(amount_btc=0.00001)
+        
+        print(f"\n📊 RESULTADO FINAL:")
+        print(f"   Sucesso: {result.get('success', False)}")
+        if result.get('success'):
+            print(f"   ✅ Hash: {result.get('tx_hash')}")
+            print(f"   🔗 Explorer: {result.get('explorer_url')}")
+        else:
+            print(f"   ❌ Erro: {result.get('error')}")
+            print(f"   💡 Solução: {result.get('solution', 'Verifique logs')}")
+        
+        return result
+    
     def send_bitcoin_transaction(
         self,
         from_private_key: str,
