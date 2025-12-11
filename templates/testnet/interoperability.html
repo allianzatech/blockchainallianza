@@ -636,17 +636,24 @@
                 return;
             }
 
-            // Mostrar loading
+            // Mostrar loading persistente
             const resultsDiv = document.getElementById('verifierResults');
             const resultContent = document.getElementById('verifierContent');
             resultsDiv.classList.remove('hidden');
-            resultContent.innerHTML = '<p class="info">⏳ {{ t("loading") or "Loading..." }}</p>';
+            let loadingDots = 0;
+            const loadingInterval = setInterval(() => {
+                loadingDots = (loadingDots + 1) % 4;
+                const dots = '.'.repeat(loadingDots);
+                resultContent.innerHTML = `<p class="info">⏳ {{ t("loading") or "Loading..." }}${dots}</p>`;
+            }, 400);
 
             try {
                 // Tentar múltiplas vezes se necessário (pode estar sendo salvo ainda)
                 let data = null;
                 let attempts = 0;
-                const maxAttempts = 3;
+                // 90s total: 30 tentativas x 3s
+                const maxAttempts = 30;
+                const delayMs = 3000;
                 
                 while (attempts < maxAttempts) {
                     attempts++;
@@ -659,14 +666,21 @@
                     
                     // Se não encontrou e ainda há tentativas, aguardar um pouco
                     if (attempts < maxAttempts) {
-                        await new Promise(resolve => setTimeout(resolve, 500)); // Aguardar 500ms
+                        await new Promise(resolve => setTimeout(resolve, delayMs));
                     }
                 }
 
                 if (data && data.success) {
                     if (data.zk_proof) {
                         // Garantir que zk_proof é um objeto, não string
-                        const zkProof = typeof data.zk_proof === 'string' ? JSON.parse(data.zk_proof) : data.zk_proof;
+                        let zkProof = data.zk_proof;
+                        if (typeof zkProof === 'string') {
+                            try {
+                                zkProof = JSON.parse(zkProof);
+                            } catch {
+                                zkProof = {};
+                            }
+                        }
                         
                         if (zkProof && typeof zkProof === 'object') {
                             // Preencher campos do verifier com os dados corretos
@@ -708,6 +722,8 @@
                 }
             } catch (error) {
                 resultContent.innerHTML = `<p class="error">❌ {{ t("error_loading_proof") or "Error loading proof" }}: ${error.message}</p>`;
+            } finally {
+                clearInterval(loadingInterval);
             }
         }
 
