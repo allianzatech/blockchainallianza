@@ -46,13 +46,14 @@ try:
         return {"status": "ok", "service": "Allianza Blockchain"}, 200
 except Exception as e:
     # Fallback mínimo se app completo falhar
+    err_msg = str(e)
     application = Flask(__name__)
     application.config['ENV'] = os.getenv('FLASK_ENV', 'production')
     application.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
     application.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(32).hex())
     @application.route('/')
     def error_root():
-        return {"error": "Service initialization failed", "message": str(e)}, 500
+        return {"error": "Service initialization failed", "message": err_msg}, 500
     @application.route('/health')
     def health_fallback():
         return {"status": "initializing", "service": "Allianza Blockchain"}, 200
