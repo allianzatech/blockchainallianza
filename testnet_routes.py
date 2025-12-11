@@ -3067,64 +3067,49 @@ def decode_memo_page(identifier):
                                  error=result.get("error", "UChainID not found") if result else "UChainID not found")
         
         memo = result.get("memo", {})
-        
-        # CRÍTICO: Extrair zk_proof DIRETAMENTE do memo (fonte mais confiável, vem on-chain)
-        zk_proof = None
-        if "zk_proof" in memo:
-            zk_proof = memo["zk_proof"]
-            # Se é string, parsear
-            if isinstance(zk_proof, str):
-                try:
-                    import json
-                    zk_proof = json.loads(zk_proof)
-                except:
-                    zk_proof = {}
-        # Se não tem no memo, tentar do resultado
-        elif result.get("zk_proof"):
-            zk_proof = result.get("zk_proof")
-            if isinstance(zk_proof, str):
-                try:
-                    import json
-                    zk_proof = json.loads(zk_proof)
-                except:
-                    zk_proof = {}
-        
-        # Garantir que zk_proof é um dict válido
+
+        # Extrair zk_proof priorizando SEMPRE o memo (fonte on-chain mais confiável)
+        zk_proof = memo.get("zk_proof") or result.get("zk_proof")
+
+        # Normalizar para dict
+        if isinstance(zk_proof, str):
+            try:
+                import json
+                zk_proof = json.loads(zk_proof)
+            except Exception:
+                zk_proof = {}
         if not isinstance(zk_proof, dict):
             zk_proof = {}
-        
-        # PRIORIDADE MÁXIMA: verified do memo (vem on-chain, é a fonte mais confiável)
-        if "zk_proof" in memo:
-            memo_zk = memo["zk_proof"]
-            if isinstance(memo_zk, str):
-                try:
-                    import json
-                    memo_zk = json.loads(memo_zk)
-                except:
-                    memo_zk = {}
-            
-            if isinstance(memo_zk, dict):
-                # SEMPRE usar verified do memo (prioridade máxima)
-                if "verified" in memo_zk:
-                    zk_proof["verified"] = memo_zk["verified"]
-                # Mesclar outros campos também
-                zk_proof.update({
-                    "proof_id": memo_zk.get("proof_id", zk_proof.get("proof_id")),
-                    "state_hash": memo_zk.get("state_hash", zk_proof.get("state_hash", zk_proof.get("state_transition_hash")))
-                })
-        
-        # Se ainda não tem verified, tentar do zk_proof do sistema
+
+        # Se memo tem zk_proof como string, parsear e sobrepor
+        memo_zk = memo.get("zk_proof")
+        if isinstance(memo_zk, str):
+            try:
+                import json
+                memo_zk = json.loads(memo_zk)
+            except Exception:
+                memo_zk = {}
+
+        # Sobrepor campos a partir do memo (prioridade máxima)
+        if isinstance(memo_zk, dict):
+            if "verified" in memo_zk:
+                zk_proof["verified"] = memo_zk["verified"]
+            zk_proof.update({
+                "proof_id": memo_zk.get("proof_id", zk_proof.get("proof_id")),
+                "state_hash": memo_zk.get("state_hash", zk_proof.get("state_hash", zk_proof.get("state_transition_hash")))
+            })
+
+        # Fallback: usar valid do sistema se verified ainda não definido
         if "verified" not in zk_proof or zk_proof.get("verified") is None:
             zk_proof["verified"] = zk_proof.get("valid", False)
-        
-        # Garantir que verified é um booleano (não string)
+
+        # Normalizar verified para booleano
         verified_value = zk_proof.get("verified")
         if isinstance(verified_value, str):
-            zk_proof["verified"] = verified_value.lower() in ('true', '1', 'yes', 'True')
+            zk_proof["verified"] = verified_value.lower() in ("true", "1", "yes")
         elif verified_value is None:
             zk_proof["verified"] = False
         else:
-            # Garantir que é booleano
             zk_proof["verified"] = bool(verified_value)
         
         import json
