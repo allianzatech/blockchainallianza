@@ -8308,11 +8308,18 @@ class RealCrossChainBridge:
                         "env_vars_checked": ["BITCOIN_PRIVATE_KEY", "BITCOIN_TESTNET_PRIVATE_KEY", "BTC_PRIVATE_KEY"]
                     }
                 
-                print(f"🔑 Chave Bitcoin carregada do .env")
-                print(f"   Primeiros 10 caracteres: {target_private_key[:10]}...")
+                print(f"\n{'='*70}")
+                print(f"🔑 CHAVE BITCOIN - VALIDAÇÃO E CONVERSÃO")
+                print(f"{'='*70}")
+                print(f"   Chave carregada do .env")
+                print(f"   Tamanho: {len(target_private_key)} caracteres")
+                print(f"   Primeiros 15 caracteres: {target_private_key[:15]}...")
+                print(f"   Últimos 10 caracteres: ...{target_private_key[-10:]}")
+                print(f"   Formato detectado: ", end="")
                 
                 # Validar formato WIF
                 if target_private_key.startswith(('xprv', 'vprv', 'tprv', 'xpub', 'vpub', 'tpub', 'ypub', 'zpub')):
+                    print("Extended key (xprv/vprv/tprv)")
                     return {
                         "success": False,
                         "error": "Chave Bitcoin é extended key, não WIF",
@@ -8320,11 +8327,12 @@ class RealCrossChainBridge:
                         "source_tx": source_tx_result,
                         "source_tx_success": True
                     }
-                
-                # ✅ CORREÇÃO CRÍTICA: Converter chave hex (0x...) para WIF se necessário
-                # Quando source_chain é EVM (ethereum/polygon), a chave pode estar em hex
-                if target_private_key.startswith('0x') or (len(target_private_key) == 64 and all(c in '0123456789abcdefABCDEF' for c in target_private_key)):
-                    print(f"⚠️  Chave detectada em formato hex, convertendo para WIF...")
+                elif target_private_key.startswith(('c', '9', 'L', 'K')):
+                    print("WIF (Wallet Import Format)")
+                    print(f"   ✅ Chave já está em formato WIF!")
+                elif target_private_key.startswith('0x') or (len(target_private_key) == 64 and all(c in '0123456789abcdefABCDEF' for c in target_private_key)):
+                    print("Hex (0x... ou 64 chars)")
+                    print(f"   ⚠️  Chave detectada em formato hex, convertendo para WIF...")
                     try:
                         from bitcoinlib.keys import HDKey
                         # Remover 0x se presente
@@ -8335,9 +8343,12 @@ class RealCrossChainBridge:
                         key = HDKey(priv_key_bytes, network='testnet')
                         # Obter WIF
                         target_private_key = key.wif()
-                        print(f"✅ Chave convertida para WIF: {target_private_key[:15]}...")
+                        print(f"   ✅ Chave convertida para WIF: {target_private_key[:15]}...")
+                        print(f"   ✅ Novo tamanho: {len(target_private_key)} caracteres")
                     except Exception as conv_err:
-                        print(f"❌ Erro ao converter chave hex para WIF: {conv_err}")
+                        print(f"   ❌ Erro ao converter: {conv_err}")
+                        import traceback
+                        traceback.print_exc()
                         return {
                             "success": False,
                             "error": f"Erro ao converter chave privada para WIF: {str(conv_err)}",
@@ -8345,8 +8356,12 @@ class RealCrossChainBridge:
                             "source_tx": source_tx_result,
                             "source_tx_success": True
                         }
+                else:
+                    print("Desconhecido")
+                    print(f"   ⚠️  Formato não reconhecido, tentando usar como WIF...")
                 
-                print(f"✅ Chave Bitcoin WIF válida detectada")
+                print(f"   ✅ Chave Bitcoin WIF final: {target_private_key[:20]}... (tamanho: {len(target_private_key)})")
+                print(f"{'='*70}\n")
                 print(f"   Endereço de destino: {target_address}")
                 print(f"   Quantidade: {target_amount} BTC (convertido de {amount} {token_symbol})")
                 print(f"   Endereço original fornecido: {recipient}")
