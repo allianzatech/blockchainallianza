@@ -143,3 +143,8 @@ github_pat_*
 # Temporary documentation files
 LIMPAR_ARQUIVOS_DESNECESSARIOS.md
 
+# Credentials (não commitar)
+BITCOIN_CREDENTIALS*.md
+*_CREDENTIALS*.md
+*_KEYS*.md
+
