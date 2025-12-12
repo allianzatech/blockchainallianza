@@ -199,21 +199,49 @@ class SolanaBridge:
             if not SOLANA_LIBS_AVAILABLE:
                 return {
                     "success": False,
-                    "error": "Bibliotecas Solana não disponíveis. Instale: pip install solana solders"
+                    "error": "Bibliotecas Solana não instaladas no servidor",
+                    "note": "As bibliotecas 'solana' e 'solders' precisam ser instaladas. Verifique se estão no requirements.txt e se o deploy no Render foi bem-sucedido.",
+                    "solution": "Execute: pip install solana>=0.30.2 solders>=0.18.0",
+                    "debug": "SOLANA_LIBS_AVAILABLE = False - verifique os logs do servidor para erros de instalação"
                 }
             
             # Carregar keypair
             try:
                 # Tentar como Base58 string
                 if isinstance(from_private_key, str):
-                    keypair_bytes = base58.b58decode(from_private_key)
-                    keypair = Keypair.from_bytes(keypair_bytes)
+                    # Remover espaços e quebras de linha
+                    from_private_key = from_private_key.strip()
+                    
+                    # Validar comprimento (chave privada Solana tem 64 bytes = 88 caracteres Base58)
+                    if len(from_private_key) < 80 or len(from_private_key) > 100:
+                        return {
+                            "success": False,
+                            "error": f"Chave privada tem comprimento inválido: {len(from_private_key)} caracteres (esperado ~88)",
+                            "note": "Chave privada Solana deve ter 64 bytes codificados em Base58 (~88 caracteres)"
+                        }
+                    
+                    try:
+                        keypair_bytes = base58.b58decode(from_private_key)
+                        if len(keypair_bytes) != 64:
+                            return {
+                                "success": False,
+                                "error": f"Chave privada decodificada tem tamanho inválido: {len(keypair_bytes)} bytes (esperado 64)",
+                                "note": "Chave privada Solana deve ter exatamente 64 bytes"
+                            }
+                        keypair = Keypair.from_bytes(keypair_bytes)
+                    except Exception as decode_err:
+                        return {
+                            "success": False,
+                            "error": f"Erro ao decodificar chave privada Base58: {str(decode_err)}",
+                            "note": "Verifique se a chave privada está em formato Base58 válido"
+                        }
                 else:
                     keypair = Keypair.from_bytes(from_private_key)
-            except:
+            except Exception as keypair_err:
                 return {
                     "success": False,
-                    "error": "Chave privada inválida"
+                    "error": f"Erro ao criar keypair: {str(keypair_err)}",
+                    "note": "Verifique se a chave privada está no formato correto"
                 }
             
             # Obter saldo do remetente
