@@ -95,6 +95,26 @@
         .copy-btn-small:hover {
             background: #4b5563;
         }
+        .copy-btn-large {
+            background: #2563eb;
+            border: 1px solid #3b82f6;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .copy-btn-large:hover {
+            background: #1d4ed8;
+            border-color: #2563eb;
+            transform: translateY(-1px);
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white">
@@ -208,6 +228,11 @@
             <div id="searchResults" class="hidden mt-4">
                 <div class="bg-gray-800 p-6 rounded-lg">
                     <h3 class="text-xl font-bold mb-4">{{ t('search_result') or 'Search Result' }}</h3>
+                    <div class="text-center mb-4">
+                        <button id="copyAllProofBtn" class="copy-btn-large hidden" onclick="copyAllProofInfo()" title="{{ t('copy_all_information') or 'Copy All Information' }}">
+                            <i class="fas fa-copy"></i> {{ t('copy_all_information') or 'Copy All Information' }}
+                        </button>
+                    </div>
                     <div id="searchContent" class="result-box" onclick="copyToClipboard('searchContent')" title="{{ t('click_to_copy') or 'Click to copy entire result' }}">
                         <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('searchContent')" title="{{ t('copy') or 'Copy' }}">
                             <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
@@ -362,7 +387,9 @@
 
             const searchResults = document.getElementById('searchResults');
             const searchContent = document.getElementById('searchContent');
+            const copyAllBtn = document.getElementById('copyAllProofBtn');
             searchResults.classList.remove('hidden');
+            copyAllBtn.classList.add('hidden'); // Esconder botão enquanto busca
             searchContent.innerHTML = '<p class="info">⏳ {{ t("searching_proof") or "Searching proof..." }}</p>';
 
             try {
@@ -371,16 +398,27 @@
 
                 if (result.success) {
                     const foundUchainId = result.uchain_id || uchainId;
+                    // Armazenar resultado globalmente para copiar depois
+                    window.lastProofResult = result;
+                    // Mostrar botão "Copy All"
+                    document.getElementById('copyAllProofBtn').classList.remove('hidden');
+                    
                     searchContent.innerHTML = `
                         <p class="success">✅ {{ t('proof_found') or 'Proof found!' }}</p>
                         <p class="info"><strong>{{ t('uchain_id') or 'UChainID' }}:</strong> <span id="searchUchainId">${foundUchainId}</span> <button onclick="copyText('${foundUchainId}')" class="copy-btn-small ml-2" title="{{ t('copy') or 'Copy' }}"><i class="fas fa-copy"></i></button></p>
                         ${result.proof_id ? `<p class="info"><strong>{{ t('proof_id') or 'Proof ID' }}:</strong> <span id="proofId">${result.proof_id}</span> <button onclick="copyText('${result.proof_id}')" class="copy-btn-small ml-2" title="{{ t('copy') or 'Copy' }}"><i class="fas fa-copy"></i></button></p>` : ''}
-                        <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                        ${result.tx_hash ? `<p class="info"><strong>{{ t('tx_hash') or 'TX Hash' }}:</strong> <span id="proofTxHash">${result.tx_hash}</span> <button onclick="copyText('${result.tx_hash}')" class="copy-btn-small ml-2" title="{{ t('copy') or 'Copy' }}"><i class="fas fa-copy"></i></button></p>` : ''}
+                        <pre id="fullProofJson" class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
                     `;
                 } else {
+                    // Armazenar resultado mesmo em caso de erro
+                    window.lastProofResult = result;
+                    // Mostrar botão "Copy All" mesmo em erro
+                    document.getElementById('copyAllProofBtn').classList.remove('hidden');
+                    
                     searchContent.innerHTML = `
                         <p class="error">❌ ${result.error || '{{ t("proof_not_found") or "Proof not found" }}'}</p>
-                        <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                        <pre id="fullProofJson" class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
                     `;
                 }
             } catch (error) {
