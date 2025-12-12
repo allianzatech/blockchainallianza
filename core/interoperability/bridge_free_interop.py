@@ -536,83 +536,12 @@ class BridgeFreeInterop:
                     "note": error_note
                 }
             
-            # ✅ CORREÇÃO: Solana como source chain precisa tratamento especial
+            # ✅ CORREÇÃO: Quando source_chain é Solana, a transação REAL é enviada na TARGET chain
+            # O commitment já foi criado na source chain (Solana), agora enviamos na target chain
+            # Não precisamos enviar transação Solana aqui, apenas continuar para enviar na target chain
             if source_chain == "solana":
-                print(f"⚡ Source é Solana (não EVM), usando SolanaBridge...")
-                try:
-                    from real_cross_chain_bridge import RealCrossChainBridge
-                    bridge = RealCrossChainBridge()
-                    bridge.setup_connections()
-                    
-                    # Verificar se SolanaBridge está disponível
-                    if not hasattr(bridge, 'solana_bridge') or not bridge.solana_bridge:
-                        return {
-                            "success": False,
-                            "error": "Solana Bridge não disponível",
-                            "note": "Instale bibliotecas Solana: pip install solana solders",
-                            "simulation": True
-                        }
-                    
-                    # Obter private key Solana
-                    solana_private_key = private_key or os.getenv('SOLANA_PRIVATE_KEY') or os.getenv('SOLANA_BRIDGE_PRIVATE_KEY')
-                    if not solana_private_key:
-                        return {
-                            "success": False,
-                            "error": "Private key Solana não configurada",
-                            "note": "Configure SOLANA_PRIVATE_KEY ou SOLANA_BRIDGE_PRIVATE_KEY no .env",
-                            "simulation": True
-                        }
-                    
-                    # Converter amount para SOL se necessário
-                    amount_sol = amount
-                    if token_symbol and token_symbol != "SOL":
-                        bridge.update_exchange_rates()
-                        source_price = bridge.get_exchange_rate(token_symbol)
-                        sol_price = bridge.get_exchange_rate("SOL")
-                        if source_price and sol_price:
-                            amount_sol = (amount * source_price) / sol_price
-                        else:
-                            amount_sol = amount / 1000  # Fallback
-                    
-                    print(f"   💰 Enviando {amount_sol:.9f} SOL de Solana...")
-                    
-                    # Enviar transação Solana
-                    solana_result = bridge.solana_bridge.send_transaction(
-                        from_private_key=solana_private_key,
-                        to_address=recipient,  # Para Solana, o recipient é o endereço Solana
-                        amount_sol=amount_sol
-                    )
-                    
-                    if solana_result.get("success"):
-                        return {
-                            "success": True,
-                            "tx_hash": solana_result.get("tx_hash") or solana_result.get("tx_signature"),
-                            "explorer_url": solana_result.get("explorer_url"),
-                            "from": solana_result.get("from"),
-                            "to": solana_result.get("to"),
-                            "amount": amount_sol,
-                            "source_chain": source_chain,
-                            "target_chain": target_chain,
-                            "chain": "solana",
-                            "confirmed": solana_result.get("confirmed"),
-                            "message": "🎉 Transação Solana enviada!",
-                            "real_transaction": True
-                        }
-                    else:
-                        return {
-                            "success": False,
-                            "error": f"Transação Solana falhou: {solana_result.get('error')}",
-                            "simulation": True
-                        }
-                except Exception as solana_err:
-                    print(f"❌ Erro ao processar Solana: {solana_err}")
-                    import traceback
-                    traceback.print_exc()
-                    return {
-                        "success": False,
-                        "error": f"Erro ao processar Solana: {str(solana_err)}",
-                        "simulation": True
-                    }
+                print(f"⚡ Source é Solana - commitment já criado, enviando transação REAL na target chain ({target_chain})...")
+                # Continuar para o código abaixo que envia na target chain (Ethereum/Polygon/etc)
             
             # ✅ CORREÇÃO: Solana não é EVM, precisa tratamento especial
             if target_chain == "solana":
