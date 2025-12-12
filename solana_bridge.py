@@ -21,13 +21,14 @@ try:
     from solders.pubkey import Pubkey
     from solders.system_program import transfer, TransferParams
     from solders.transaction import Transaction
-    from solders.rpc.requests import SendTransaction
+    # SendTransaction não existe mais na versão atual do solders - removido
     from solana.rpc.api import Client
     from solana.rpc.commitment import Confirmed
     SOLANA_LIBS_AVAILABLE = True
-except ImportError:
+except ImportError as e:
     SOLANA_LIBS_AVAILABLE = False
-    print("⚠️  Bibliotecas Solana não disponíveis. Instale com: pip install solana solders")
+    print(f"⚠️  Bibliotecas Solana não disponíveis: {e}")
+    print("   Instale com: pip install solana solders")
 
 class SolanaBridge:
     """Bridge para Solana - Transferências Reais"""
