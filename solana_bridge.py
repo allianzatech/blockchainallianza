@@ -19,6 +19,7 @@ load_dotenv()
 try:
     from solders.keypair import Keypair
     from solders.pubkey import Pubkey
+    from solders.signature import Signature
     from solders.system_program import transfer, TransferParams
     from solders.transaction import Transaction
     from solders.message import Message
@@ -352,15 +353,22 @@ class SolanaBridge:
             print(f"   📊 Resposta do RPC: {response}")
             
             if response.value:
-                tx_signature = str(response.value)
+                # response.value já é um objeto Signature, mas vamos garantir
+                if isinstance(response.value, str):
+                    tx_signature_obj = Signature.from_string(response.value)
+                else:
+                    tx_signature_obj = response.value
+                
+                tx_signature = str(tx_signature_obj)
                 print(f"   ✅ Transação enviada! Signature: {tx_signature}")
                 
                 # Aguardar confirmação
                 print(f"   ⏳ Aguardando confirmação...")
+                # confirm_transaction precisa de um objeto Signature, não string
                 # confirm_transaction não aceita timeout, usa sleep_seconds (padrão 0.5s)
                 # Vai tentar confirmar até que seja confirmado ou falhe
                 confirmation = self.client.confirm_transaction(
-                    tx_signature,
+                    tx_signature_obj,  # Passar objeto Signature, não string
                     commitment=Confirmed,
                     sleep_seconds=0.5  # Aguardar 0.5s entre tentativas
                 )
