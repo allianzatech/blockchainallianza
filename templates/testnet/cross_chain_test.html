@@ -297,6 +297,49 @@
                 console.error('Erro ao copiar:', err);
             });
         }
+
+        // Função para copiar toda a informação da prova
+        function copyAllProofInfo() {
+            let textToCopy = '';
+            // Priorizar o objeto JSON armazenado globalmente
+            if (window.lastProofResult) {
+                textToCopy = JSON.stringify(window.lastProofResult, null, 2);
+            } else {
+                // Fallback: tentar obter do pre tag
+                const preTag = document.getElementById('fullProofJson');
+                if (preTag) {
+                    textToCopy = preTag.textContent;
+                } else {
+                    // Último recurso: tentar encontrar qualquer pre tag dentro dos resultados
+                    const searchContent = document.getElementById('searchContent');
+                    const fallbackPre = searchContent ? searchContent.querySelector('pre') : null;
+                    if (fallbackPre) {
+                        textToCopy = fallbackPre.textContent;
+                    }
+                }
+            }
+
+            if (!textToCopy) {
+                alert('{{ t("no_data_to_copy") or "No data to copy" }}');
+                return;
+            }
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const button = document.getElementById('copyAllProofBtn');
+                if (button) {
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-check"></i> {{ t("all_information_copied") or "All Information Copied!" }}';
+                    button.style.background = '#10b981';
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.style.background = '';
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                alert('Erro ao copiar. Tente selecionar e copiar manualmente.');
+            });
+        }
         
         // Função para copiar para clipboard (resultado completo)
         function copyToClipboard(elementId) {
