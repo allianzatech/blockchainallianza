@@ -359,6 +359,8 @@ class BridgeFreeInterop:
         uchain_id: Optional[str] = None,  # CRÍTICO: Aceitar UChainID já gerado
         memo_data: Optional[Dict] = None  # CRÍTICO: Aceitar memo já criado
     ) -> Dict:
+        # ✅ INICIALIZAR memo_info no início para evitar erro de variável não definida
+        memo_info = None
         """
         Enviar transação REAL para blockchain
         INÉDITO: Transação real que aparece no explorer!
@@ -538,6 +540,26 @@ class BridgeFreeInterop:
                             "success": False,
                             "error": "Solana Bridge não disponível",
                             "note": "Instale bibliotecas Solana: pip install solana solders",
+                            "simulation": True,
+                            "debug": "SolanaBridge não foi inicializado no RealCrossChainBridge"
+                        }
+                    
+                    # Verificar se as bibliotecas Solana estão realmente disponíveis
+                    try:
+                        from solana_bridge import SOLANA_LIBS_AVAILABLE
+                        if not SOLANA_LIBS_AVAILABLE:
+                            return {
+                                "success": False,
+                                "error": "Bibliotecas Solana não instaladas no servidor",
+                                "note": "As bibliotecas 'solana' e 'solders' precisam ser instaladas. Verifique requirements.txt e o deploy no Render.",
+                                "simulation": True,
+                                "debug": "SOLANA_LIBS_AVAILABLE = False"
+                            }
+                    except ImportError:
+                        return {
+                            "success": False,
+                            "error": "Não foi possível verificar disponibilidade das bibliotecas Solana",
+                            "note": "Erro ao importar solana_bridge",
                             "simulation": True
                         }
                     
