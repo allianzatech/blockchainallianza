@@ -79,6 +79,24 @@
         .copy-btn-small:active {
             background: #1f2937;
         }
+        .copy-btn-large {
+            background: #2563eb;
+            border: 1px solid #3b82f6;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .copy-btn-large:hover {
+            background: #1d4ed8;
+            border-color: #2563eb;
+        }
         .success { color: #4ade80; }
         .error { color: #f87171; }
         .info { color: #60a5fa; }
@@ -238,6 +256,12 @@
                 </form>
             </div>
             <div id="transferResults" class="hidden">
+                <!-- Botão FORA da caixa para copiar tudo -->
+                <div class="text-center mb-4">
+                    <button id="copyAllTransferBtn" class="copy-btn-large hidden" onclick="copyAllTransferInfo()" title="{{ t('copy_all_information') or 'Copy All Information' }}">
+                        <i class="fas fa-copy"></i> {{ t('copy_all_information') or 'Copy All Information' }}
+                    </button>
+                </div>
                 <div class="bg-gray-800 p-6 rounded-lg mb-6">
                     <h2 class="text-2xl font-bold mb-4">{{ t('result') or 'Result' }}</h2>
                     <div id="transferResultContent" class="result-box">
@@ -420,6 +444,31 @@
                 alert('Erro ao copiar. Tente selecionar e copiar manualmente.');
             });
         }
+        
+        // Copy all transfer information
+        function copyAllTransferInfo() {
+            if (!window.lastTransferResult) {
+                alert('{{ t("no_data_to_copy") or "No data to copy" }}');
+                return;
+            }
+            
+            const textToCopy = JSON.stringify(window.lastTransferResult, null, 2);
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const button = document.getElementById('copyAllTransferBtn');
+                if (button) {
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-check"></i> {{ t("all_information_copied") or "All Information Copied!" }}';
+                    button.style.background = '#10b981';
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.style.background = '';
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                alert('Erro ao copiar. Tente selecionar e copiar manualmente.');
+            });
+        }
 
         // Create Transfer (Unified - Always Real)
         document.getElementById('transferForm').addEventListener('submit', async (e) => {
@@ -493,6 +542,14 @@
                 btnLoader.classList.add('hidden');
                 
                 if (result.success) {
+                    // Mostrar botão de copiar tudo
+                    const copyAllBtn = document.getElementById('copyAllTransferBtn');
+                    if (copyAllBtn) {
+                        copyAllBtn.classList.remove('hidden');
+                        // Armazenar resultado globalmente para função de copiar
+                        window.lastTransferResult = result;
+                    }
+                    
                     let txInfo = '';
                     if (result.real_transaction && result.real_transaction.success) {
                         txInfo = `
@@ -514,11 +571,6 @@
                         ${result.state_id ? `<p class="info mt-2"><strong>State ID:</strong> <span class="font-mono text-xs">${result.state_id}</span> <button class="copy-btn-small" onclick="copyText('${result.state_id}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>` : ''}
                         ${result.transfer_id ? `<p class="info mt-2"><strong>Transfer ID:</strong> <span class="font-mono text-xs">${result.transfer_id}</span> <button class="copy-btn-small" onclick="copyText('${result.transfer_id}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>` : ''}
                         ${result.memo && result.memo.zk_proof && result.memo.zk_proof.state_hash ? `<p class="info mt-2"><strong>State Hash:</strong> <span class="font-mono text-xs break-all">${result.memo.zk_proof.state_hash}</span> <button class="copy-btn-small" onclick="copyText('${result.memo.zk_proof.state_hash}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>` : ''}
-                        <div class="mt-4 pt-3 border-t border-gray-600">
-                            <button class="copy-btn-small bg-blue-600 hover:bg-blue-700 px-4 py-2" onclick="copyText(JSON.stringify(result, null, 2))" title="{{ t('copy_full_result') or 'Copy Full Result' }}">
-                                📋 {{ t('copy_full_result') or 'Copy Full Result' }}
-                            </button>
-                        </div>
                         ${txInfo}
                         <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
                     `;
