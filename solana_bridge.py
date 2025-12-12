@@ -300,10 +300,8 @@ class SolanaBridge:
                 amount_lamports = int(amount_sol * 1e9)
                 print(f"   ✅ Valor ajustado para incluir rent: {amount_sol} SOL ({amount_lamports} lamports)")
             
-            # Criar transação
-            to_pubkey = Pubkey.from_string(to_address)
-            
             # Criar instrução de transferência
+            # (to_pubkey já foi criado acima na linha 263)
             instruction = transfer(
                 TransferParams(
                     from_pubkey=from_pubkey,
