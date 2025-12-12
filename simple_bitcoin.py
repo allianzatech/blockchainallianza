@@ -300,32 +300,56 @@ class SimpleBitcoin:
                 }
             
             # Converter WIF para chave privada hex (BlockCypher precisa de hex)
-            print(f"\n   🔐 Convertendo chave privada...")
-            print(f"   WIF recebido: {from_wif[:15]}... (tamanho: {len(from_wif)})")
+            print(f"\n   🔐 Convertendo chave privada WIF para hex...")
+            print(f"   WIF recebido: {from_wif[:20]}... (tamanho: {len(from_wif)})")
+            print(f"   WIF completo (primeiros 30): {from_wif[:30]}")
+            print(f"   WIF completo (últimos 10): ...{from_wif[-10:]}")
             
             private_key_hex = None
+            conversion_method = None
             
             # ✅ MÉTODO 1: Tentar usar bitcoinlib (mais confiável)
             try:
                 from bitcoinlib.keys import HDKey
+                print(f"   🔄 Tentando bitcoinlib...")
                 key_obj = HDKey(from_wif, network='testnet')
                 private_key_hex = key_obj.private_hex
+                conversion_method = "bitcoinlib"
                 print(f"   ✅ Chave convertida via bitcoinlib: {private_key_hex[:20]}... (tamanho: {len(private_key_hex)})")
+                
+                # ✅ VALIDAÇÃO ADICIONAL: Verificar se o endereço derivado corresponde
+                derived_address = key_obj.address()
+                print(f"   🔍 Endereço derivado da chave: {derived_address}")
+                print(f"   🔍 Endereço esperado (from_address): {from_address}")
+                print(f"   🔍 Endereços coincidem: {derived_address == from_address}")
+                
+                if derived_address != from_address:
+                    print(f"   ⚠️  AVISO: Endereço derivado não corresponde ao from_address!")
+                    print(f"      Isso pode indicar que a chave WIF está incorreta")
+                
             except Exception as lib_err:
-                print(f"   ⚠️  bitcoinlib falhou: {lib_err}")
+                print(f"   ❌ bitcoinlib falhou: {lib_err}")
+                import traceback
+                traceback.print_exc()
                 
                 # ✅ MÉTODO 2: Tentar nossa implementação própria
                 try:
+                    print(f"   🔄 Tentando método próprio...")
                     private_key_bytes = self.wif_to_private_key(from_wif)
                     private_key_hex = private_key_bytes.hex()
+                    conversion_method = "método próprio"
                     print(f"   ✅ Chave convertida via método próprio: {private_key_hex[:20]}... (tamanho: {len(private_key_hex)})")
                 except Exception as own_err:
+                    print(f"   ❌ Método próprio também falhou: {own_err}")
+                    import traceback
+                    traceback.print_exc()
                     return {
                         "success": False,
                         "error": f"Erro ao converter WIF para hex: {own_err}",
                         "note": "Verifique se a chave WIF está correta",
                         "bitcoinlib_error": str(lib_err),
-                        "own_method_error": str(own_err)
+                        "own_method_error": str(own_err),
+                        "wif_preview": from_wif[:30] + "..."
                     }
             
             # ✅ VALIDAÇÃO CRÍTICA: Verificar se a chave hex é válida
@@ -354,17 +378,37 @@ class SimpleBitcoin:
                 }
             
             print(f"   ✅ Chave privada validada: {len(private_key_hex)} caracteres hex")
+            print(f"   ✅ Método de conversão usado: {conversion_method}")
+            
+            # ✅ VALIDAÇÃO EXTRA: Verificar se a chave hex corresponde ao endereço
+            try:
+                from bitcoinlib.keys import HDKey
+                test_key = HDKey(private_key_hex, network='testnet', key_type='private')
+                test_address = test_key.address()
+                print(f"   🔍 Validação: Endereço derivado da chave hex: {test_address}")
+                print(f"   🔍 Validação: Endereço esperado: {from_address}")
+                if test_address != from_address:
+                    print(f"   ⚠️  AVISO: Chave hex não corresponde ao endereço esperado!")
+                    print(f"      Isso pode causar erro no BlockCypher")
+            except Exception as val_err:
+                print(f"   ⚠️  Não foi possível validar chave hex: {val_err}")
             
             # Assinar transação
-            print(f"\n   🔐 Assinando transação...")
+            print(f"\n   🔐 Preparando dados para assinar transação...")
             print(f"   tosign count: {len(tosign)}")
             print(f"   private_key_hex length: {len(private_key_hex)}")
-            print(f"   private_key_hex preview: {private_key_hex[:30]}...")
+            print(f"   private_key_hex completo (primeiros 30): {private_key_hex[:30]}")
+            print(f"   private_key_hex completo (últimos 10): ...{private_key_hex[-10:]}")
+            
+            # ✅ GARANTIR que privkeys é uma lista com a chave hex
+            privkeys_list = [private_key_hex]
+            print(f"   📋 privkeys_list preparado: {len(privkeys_list)} chave(s)")
+            print(f"   📋 privkeys_list[0] tamanho: {len(privkeys_list[0]) if privkeys_list else 0}")
             
             sign_data = {
                 "tx": unsigned_tx,
                 "tosign": tosign,
-                "privkeys": [private_key_hex]
+                "privkeys": privkeys_list
             }
             
             print(f"   📋 sign_data preparado:")
