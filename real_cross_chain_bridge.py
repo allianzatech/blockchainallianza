@@ -27,6 +27,16 @@ except ImportError as e:
     print(f"⚠️  Improvement modules not available: {e}")
     IMPROVEMENTS_AVAILABLE = False
 
+# ✅ NOVA BIBLIOTECA PRÓPRIA: SimpleBitcoin
+try:
+    from simple_bitcoin import SimpleBitcoin
+    SIMPLE_BITCOIN_AVAILABLE = True
+    print("✅ SimpleBitcoin disponível!")
+except ImportError as e:
+    SIMPLE_BITCOIN_AVAILABLE = False
+    print(f"⚠️  SimpleBitcoin não disponível: {e}")
+    print("   💡 Instale: pip install ecdsa base58")
+
 load_dotenv()
 
 class RealCrossChainBridge:
@@ -137,6 +147,18 @@ class RealCrossChainBridge:
         except ImportError:
             self.lock_verifier = None
             print("⚠️  Verificador de Lock On-Chain: Não disponível")
+        
+        # ✅ NOVA BIBLIOTECA PRÓPRIA: SimpleBitcoin (PRIORIDADE MÁXIMA)
+        if SIMPLE_BITCOIN_AVAILABLE:
+            try:
+                self.simple_btc = SimpleBitcoin()
+                print("✅ SimpleBitcoin inicializado! (PRIORIDADE MÁXIMA para Bitcoin)")
+            except Exception as e:
+                self.simple_btc = None
+                print(f"⚠️  Erro ao inicializar SimpleBitcoin: {e}")
+        else:
+            self.simple_btc = None
+            print("⚠️  SimpleBitcoin não disponível - use: pip install ecdsa base58")
         
         # NOVAS MELHORIAS: Inicializar módulos de melhorias
         try:
@@ -3247,9 +3269,85 @@ class RealCrossChainBridge:
         add_log("address_validation_success", {})
         print(f"✅ Endereço Bitcoin validado com sucesso")
         
-        # ✅ PRIORIDADE 0: Método PRÓPRIO (sempre tentar PRIMEIRO, antes de qualquer outra coisa)
+        # ✅✅✅ PRIORIDADE MÁXIMA: SimpleBitcoin (biblioteca própria ultra simples)
+        if self.simple_btc:
+            print(f"\n" + "="*70)
+            print(f"🎯🎯🎯 PRIORIDADE MÁXIMA: SimpleBitcoin (biblioteca própria) 🎯🎯🎯")
+            print(f"="*70)
+            print(f"📋 Esta é a biblioteca própria ultra simples que VAI FUNCIONAR!")
+            
+            try:
+                # Verificar se a chave é WIF
+                if not from_private_key.startswith(('c', '9', 'L', 'K')):
+                    print(f"   ⚠️  Chave não parece ser WIF, tentando converter...")
+                    
+                    # Se for hex (0x... ou 64 chars), converter para WIF
+                    if (from_private_key.startswith('0x') and len(from_private_key) == 66) or \
+                       (len(from_private_key) == 64 and all(c in '0123456789abcdefABCDEF' for c in from_private_key)):
+                        try:
+                            from bitcoinlib.keys import HDKey
+                            
+                            if from_private_key.startswith('0x'):
+                                hex_key = from_private_key[2:]
+                            else:
+                                hex_key = from_private_key
+                            
+                            key_bytes = bytes.fromhex(hex_key)
+                            key = HDKey(key_bytes, network='testnet')
+                            wif_key = key.wif()
+                            
+                            print(f"   ✅ Convertido para WIF: {wif_key[:15]}...")
+                            from_private_key = wif_key
+                            
+                        except Exception as e:
+                            print(f"   ❌ Erro na conversão: {e}")
+                            return {
+                                "success": False,
+                                "error": f"Não foi possível converter chave: {e}",
+                                "note": "A chave deve ser WIF ou hex válido",
+                                "proof_file": self._save_transaction_proof(proof_data)
+                            }
+                    else:
+                        return {
+                            "success": False,
+                            "error": "Formato de chave inválido",
+                            "note": "Use WIF (começa com c/9) ou hex (64 chars/0x...)",
+                            "proof_file": self._save_transaction_proof(proof_data)
+                        }
+                
+                # Usar SimpleBitcoin
+                print(f"   📞 Chamando SimpleBitcoin.create_simple_transaction()...")
+                simple_result = self.simple_btc.create_simple_transaction(
+                    from_wif=from_private_key,
+                    to_address=to_address,
+                    amount_btc=amount_btc
+                )
+                
+                print(f"   📊 Resultado do SimpleBitcoin:")
+                print(f"      success: {simple_result.get('success', False)}")
+                print(f"      error: {simple_result.get('error', 'N/A')}")
+                print(f"      tx_hash: {simple_result.get('tx_hash', 'N/A')}")
+                
+                if simple_result.get("success"):
+                    print(f"   ✅✅✅ SimpleBitcoin FUNCIONOU! TX Hash: {simple_result.get('tx_hash')}")
+                    proof_data["success"] = True
+                    proof_data["tx_hash"] = simple_result.get("tx_hash")
+                    proof_data["final_result"] = simple_result
+                    proof_file = self._save_transaction_proof(proof_data)
+                    simple_result["proof_file"] = proof_file
+                    return simple_result
+                else:
+                    print(f"   ⚠️  SimpleBitcoin falhou: {simple_result.get('error')}")
+                    print(f"      Continuando com métodos alternativos...")
+            except Exception as simple_err:
+                print(f"   ❌❌❌ EXCEÇÃO ao tentar SimpleBitcoin: {simple_err}")
+                import traceback
+                traceback.print_exc()
+                print(f"      Continuando com métodos alternativos...")
+        
+        # ✅ PRIORIDADE 1: Método PRÓPRIO (send_bitcoin_our_way)
         print(f"\n" + "="*70)
-        print(f"🚀🚀🚀 PRIORIDADE 0: Tentando método PRÓPRIO PRIMEIRO 🚀🚀🚀")
+        print(f"🚀🚀🚀 PRIORIDADE 1: Tentando método PRÓPRIO (send_bitcoin_our_way) 🚀🚀🚀")
         print(f"="*70)
         print(f"📋 Este método busca seus próprios UTXOs via API e não depende de bibliotecas Bitcoin complexas")
         

@@ -18,3 +18,4 @@ requests>=2.31.0
 schedule>=1.2.0
 qiskit>=2.0.0
 qiskit-aer>=0.17.0
+ecdsa>=0.18.0
