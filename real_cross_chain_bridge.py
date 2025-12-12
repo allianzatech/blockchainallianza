@@ -3245,6 +3245,22 @@ class RealCrossChainBridge:
         Enviar transação REAL de Bitcoin com broadcast para a rede testnet
         Usa bitcoinlib para criar, assinar e broadcastar transação real
         """
+        # ✅ LOG DE EMERGÊNCIA - Verificar se SimpleBitcoin está disponível
+        print(f"\n{'='*80}")
+        print(f"🚨🚨🚨 LOG DE EMERGÊNCIA - send_bitcoin_transaction CHAMADO 🚨🚨🚨")
+        print(f"{'='*80}")
+        print(f"📋 Parâmetros recebidos:")
+        print(f"   from_private_key: {from_private_key[:30] if from_private_key else 'None'}... (tamanho: {len(from_private_key) if from_private_key else 0})")
+        print(f"   to_address: {to_address}")
+        print(f"   amount_btc: {amount_btc}")
+        print(f"   SimpleBitcoin disponível: {SIMPLE_BITCOIN_AVAILABLE}")
+        print(f"   self.simple_btc: {self.simple_btc is not None}")
+        if self.simple_btc:
+            print(f"   ✅ SimpleBitcoin está disponível e será usado!")
+        else:
+            print(f"   ⚠️  SimpleBitcoin NÃO está disponível - usando métodos alternativos")
+        print(f"{'='*80}\n")
+        
         # MELHORIA: Validar endereço Bitcoin antes de tentar enviar
         print(f"🔍 Validando endereço Bitcoin de destino: {to_address}")
         add_log("address_validation_start", {"to_address": to_address})
