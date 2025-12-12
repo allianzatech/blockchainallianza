@@ -357,10 +357,12 @@ class SolanaBridge:
                 
                 # Aguardar confirmação
                 print(f"   ⏳ Aguardando confirmação...")
+                # confirm_transaction não aceita timeout, usa sleep_seconds (padrão 0.5s)
+                # Vai tentar confirmar até que seja confirmado ou falhe
                 confirmation = self.client.confirm_transaction(
                     tx_signature,
                     commitment=Confirmed,
-                    timeout=30
+                    sleep_seconds=0.5  # Aguardar 0.5s entre tentativas
                 )
                 
                 confirmation_status = None
