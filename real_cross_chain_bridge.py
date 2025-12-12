@@ -3228,6 +3228,43 @@ class RealCrossChainBridge:
         add_log("address_validation_success", {})
         print(f"✅ Endereço Bitcoin validado com sucesso")
         
+        # ✅ PRIORIDADE 0: Método PRÓPRIO (sempre tentar PRIMEIRO, antes de qualquer outra coisa)
+        print(f"\n" + "="*70)
+        print(f"🚀🚀🚀 PRIORIDADE 0: Tentando método PRÓPRIO PRIMEIRO 🚀🚀🚀")
+        print(f"="*70)
+        print(f"📋 Este método busca seus próprios UTXOs via API e não depende de bibliotecas Bitcoin complexas")
+        
+        try:
+            print(f"📞 Chamando send_bitcoin_our_way()...")
+            our_result = self.send_bitcoin_our_way(
+                from_private_key=from_private_key,
+                to_address=to_address,
+                amount_btc=amount_btc
+            )
+            
+            print(f"📊 Resultado do método PRÓPRIO:")
+            print(f"   success: {our_result.get('success', False)}")
+            print(f"   error: {our_result.get('error', 'N/A')}")
+            print(f"   tx_hash: {our_result.get('tx_hash', 'N/A')}")
+            
+            if our_result.get("success"):
+                print(f"✅✅✅ Método PRÓPRIO funcionou! TX Hash: {our_result.get('tx_hash')}")
+                proof_data["success"] = True
+                proof_data["tx_hash"] = our_result.get("tx_hash")
+                proof_data["final_result"] = our_result
+                proof_file = self._save_transaction_proof(proof_data)
+                our_result["proof_file"] = proof_file
+                return our_result
+            else:
+                print(f"⚠️  Método PRÓPRIO falhou: {our_result.get('error')}")
+                print(f"   Detalhes: {our_result.get('response', 'N/A')[:200]}")
+                print(f"   Continuando com métodos alternativos...")
+        except Exception as our_err:
+            print(f"❌❌❌ EXCEÇÃO ao tentar método PRÓPRIO: {our_err}")
+            import traceback
+            traceback.print_exc()
+            print(f"   Continuando com métodos alternativos...")
+        
         try:
             # Validar valor mínimo (Bitcoin mínimo é 1 satoshi = 0.00000001 BTC)
             # REMOVIDO: Não forçar 0.0001 BTC mínimo - usar o valor convertido real
@@ -4258,9 +4295,10 @@ class RealCrossChainBridge:
                                             traceback.print_exc()
                                             add_log("blockstream_fetch_error", {"error": str(bs_err)}, "error")
                                 
-                                # Se temos UTXOs (da Blockstream), tentar métodos alternativos
+                                # ✅ NOTA: Método PRÓPRIO já foi tentado no início da função
+                                # Se chegou aqui, o método próprio falhou, então tentar métodos alternativos
                                 if utxos and len(utxos) > 0:
-                                    print(f"✅ Temos {len(utxos)} UTXOs - tentando métodos alternativos...")
+                                    print(f"\n✅ Temos {len(utxos)} UTXOs - tentando métodos alternativos...")
                                     add_log("trying_alternative_methods", {"utxos_count": len(utxos), "op_return_needed": bool(source_tx_hash)}, "info")
                                     
                                     # Se temos UTXOs (da Blockstream), tentar métodos alternativos
@@ -4273,39 +4311,6 @@ class RealCrossChainBridge:
                                         print(f"   - amount_satoshis: {amount_satoshis}")
                                         print(f"   - memo_hex: {'Sim' if memo_hex else 'Não'} ({len(memo_hex) if memo_hex else 0} chars)")
                                         print(f"   - UTXOs disponíveis: {len(utxos)}")
-                                        
-                                        # ✅ PRIORIDADE 0: Método PRÓPRIO (sem bibliotecas Bitcoin complexas)
-                                        print(f"\n" + "="*70)
-                                        print(f"🔄🔄🔄 PRIORIDADE 0: Tentando método PRÓPRIO primeiro 🔄🔄🔄")
-                                        print(f"="*70)
-                                        try:
-                                            print(f"📞 Chamando send_bitcoin_our_way()...")
-                                            our_result = self.send_bitcoin_our_way(
-                                                from_private_key=from_private_key,
-                                                to_address=to_address,
-                                                amount_btc=amount_btc
-                                            )
-                                            
-                                            print(f"📊 Resultado do método PRÓPRIO:")
-                                            print(f"   success: {our_result.get('success', False)}")
-                                            print(f"   error: {our_result.get('error', 'N/A')}")
-                                            print(f"   tx_hash: {our_result.get('tx_hash', 'N/A')}")
-                                            
-                                            if our_result.get("success"):
-                                                print(f"✅✅✅ Método PRÓPRIO funcionou! TX Hash: {our_result.get('tx_hash')}")
-                                                proof_data["success"] = True
-                                                proof_data["tx_hash"] = our_result.get("tx_hash")
-                                                proof_data["final_result"] = our_result
-                                                proof_file = self._save_transaction_proof(proof_data)
-                                                our_result["proof_file"] = proof_file
-                                                return our_result
-                                            else:
-                                                print(f"⚠️  Método PRÓPRIO falhou: {our_result.get('error')}")
-                                                print(f"   Detalhes: {our_result.get('response', 'N/A')[:200]}")
-                                        except Exception as our_err:
-                                            print(f"❌❌❌ EXCEÇÃO ao tentar método PRÓPRIO: {our_err}")
-                                            import traceback
-                                            traceback.print_exc()
                                         
                                         # ✅ PRIORIDADE 0.5: Tentar biblioteca 'bit' (MÉTODO MAIS SIMPLES E CONFIÁVEL)
                                         print(f"🔄 Tentando biblioteca 'bit' (método mais simples e confiável)...")
