@@ -200,7 +200,7 @@
             
             const textToCopy = JSON.stringify(info, null, 2);
             navigator.clipboard.writeText(textToCopy).then(() => {
-                const button = event.target || event.srcElement;
+                const button = document.querySelector('.copy-btn-large');
                 if (button) {
                     const originalText = button.innerHTML;
                     button.innerHTML = '<i class="fas fa-check"></i> All Information Copied!';
