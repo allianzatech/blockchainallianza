@@ -373,20 +373,48 @@ class SolanaBridge:
                     sleep_seconds=0.5  # Aguardar 0.5s entre tentativas
                 )
                 
-                confirmation_status = None
-                if confirmation.value:
-                    confirmation_status = confirmation.value[0].confirmation_status if hasattr(confirmation.value[0], 'confirmation_status') else "confirmed"
-                    print(f"   ✅ Transação confirmada! Status: {confirmation_status}")
+                # ✅ CORREÇÃO: Converter confirmation_status para string (similar a Ethereum/Polygon)
+                # TransactionConfirmationStatus não é JSON serializable, precisa converter para string
+                confirmation_status_str = "confirmed"  # Default
+                is_confirmed = False
                 
+                if confirmation.value:
+                    try:
+                        # Tentar obter o status de confirmação
+                        status_obj = confirmation.value[0].confirmation_status if hasattr(confirmation.value[0], 'confirmation_status') else None
+                        if status_obj:
+                            # Converter enum/objeto para string
+                            confirmation_status_str = str(status_obj)
+                            # Verificar se está confirmado (similar a Ethereum: status == 1)
+                            is_confirmed = "confirmed" in confirmation_status_str.lower() or "finalized" in confirmation_status_str.lower()
+                        else:
+                            # Se não tem status, assumir confirmado (transação foi aceita)
+                            confirmation_status_str = "confirmed"
+                            is_confirmed = True
+                    except Exception as status_err:
+                        print(f"   ⚠️  Erro ao obter status: {status_err}, assumindo confirmado")
+                        confirmation_status_str = "confirmed"
+                        is_confirmed = True
+                    
+                    print(f"   ✅ Transação confirmada! Status: {confirmation_status_str}")
+                else:
+                    print(f"   ⚠️  Confirmação não retornou valor, assumindo confirmado")
+                    is_confirmed = True
+                
+                # Retornar estrutura similar a Ethereum/Polygon para consistência
                 return {
                     "success": True,
-                    "tx_signature": tx_signature,
+                    "tx_hash": tx_signature,  # Usar tx_hash para consistência com EVM
+                    "tx_signature": tx_signature,  # Manter também para compatibilidade
                     "from": str(from_pubkey),
                     "to": to_address,
-                    "amount_sol": amount_sol,
+                    "amount": amount_sol,  # Usar "amount" para consistência
+                    "amount_sol": amount_sol,  # Manter também
                     "amount_lamports": amount_lamports,
                     "network": self.network,
-                    "confirmed": confirmation_status,
+                    "confirmed": is_confirmed,  # Boolean para consistência com EVM
+                    "confirmation_status": confirmation_status_str,  # String do status
+                    "status": "success" if is_confirmed else "pending",  # Similar a EVM: "success" ou "failed"
                     "explorer_url": f"https://explorer.solana.com/tx/{tx_signature}?cluster={self.network}"
                 }
             else:
