@@ -3601,8 +3601,8 @@ class RealCrossChainBridge:
                         "key_prefix": from_private_key[:4],
                         "expected_format": "WIF private key (starts with c/9/5/K/L, ~52 chars)",
                         "examples": {
-                            "correct_wif_testnet": "cPmkhTUA6E9Kwt7grHcf5b1F67k1iucDXDgqimnMDbJd4W5aE3MN",
-                            "incorrect_xpub": "vpub5SLqN2bLY4WeXx3uGPx62KTEXFF5Dv1TA3xra8QsC9p2cb"
+                            "correct_wif_testnet": "cPmkhTUA6E9Kwt7grHcf5b1F67k1iucDXDgqimnMDbJd4W5aE3MN (EXAMPLE - use sua própria chave)",
+                            "incorrect_xpub": "vpub5SLqN2bLY4WeXx3uGPx62KTEXFF5Dv1TA3xra8QsC9p2cb (EXAMPLE - não use chaves públicas)"
                         },
                         "proof_file": self._save_transaction_proof(proof_data)
                     }
@@ -3783,8 +3783,8 @@ class RealCrossChainBridge:
                         "key_prefix": from_private_key[:4],
                         "expected_format": "WIF private key (starts with c/9/5/K/L, ~52 chars)",
                         "examples": {
-                            "correct_wif_testnet": "cPmkhTUA6E9Kwt7grHcf5b1F67k1iucDXDgqimnMDbJd4W5aE3MN",
-                            "incorrect_xpub": "vpub5SLqN2bLY4WeXx3uGPx62KTEXFF5Dv1TA3xra8QsC9p2cb"
+                            "correct_wif_testnet": "cPmkhTUA6E9Kwt7grHcf5b1F67k1iucDXDgqimnMDbJd4W5aE3MN (EXAMPLE - use sua própria chave)",
+                            "incorrect_xpub": "vpub5SLqN2bLY4WeXx3uGPx62KTEXFF5Dv1TA3xra8QsC9p2cb (EXAMPLE - não use chaves públicas)"
                         },
                         "proof_file": self._save_transaction_proof(proof_data)
                     }

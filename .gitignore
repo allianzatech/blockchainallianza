@@ -100,6 +100,9 @@ TESTE_*.py
 teste_*.py
 *_teste.py
 testar_*.py
+check_render_keys.py
+verify_final_setup.py
+verify_new_address.py
 
 # Node.js
 node_modules/

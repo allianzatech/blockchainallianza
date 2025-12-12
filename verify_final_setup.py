@@ -3,9 +3,20 @@
 from bitcoinlib.keys import Key
 import requests
 
-# Dados do novo endereço
-new_wif = 'cPmkhTUA6E9Kwt7grHcf5b1F67k1iucDXDgqimnMDbJd4W5aE3MN'
-expected_address = 'mft38vhDpoF4qEAFChbfxZ5UrUemSViHHh'
+# ⚠️ SEGURANÇA: Ler de variáveis de ambiente, não hardcoded
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+# Dados do novo endereço - ler de env
+new_wif = os.getenv('BITCOIN_PRIVATE_KEY') or os.getenv('BITCOIN_TESTNET_PRIVATE_KEY') or None
+expected_address = os.getenv('BITCOIN_TESTNET_ADDRESS') or None
+
+if not new_wif or not expected_address:
+    print("❌ ERRO: Configure BITCOIN_PRIVATE_KEY e BITCOIN_TESTNET_ADDRESS no .env")
+    print("   Exemplo: BITCOIN_PRIVATE_KEY=cPmkhTUA6E9Kwt7grHcf5b1F67k1iucDXDgqimnMDbJd4W5aE3MN")
+    print("   Exemplo: BITCOIN_TESTNET_ADDRESS=mft38vhDpoF4qEAFChbfxZ5UrUemSViHHh")
+    exit(1)
 
 print("🔍 VERIFICAÇÃO FINAL DO SETUP")
 print("="*70)
