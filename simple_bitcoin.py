@@ -116,39 +116,78 @@ class SimpleBitcoin:
             return base58.b58encode(binary_address).decode('utf-8')
     
     def get_utxos(self, address: str, confirmed_only: bool = True) -> List[Dict]:
-        """Busca UTXOs de um endereço via Blockstream API"""
+        """Busca UTXOs de um endereço via Blockstream API com validação completa"""
         try:
             url = f"{self.blockstream_api}/address/{address}/utxo"
             response = requests.get(url, timeout=15)
             
             if response.status_code == 200:
                 utxos = response.json()
+                print(f"   📦 Total UTXOs encontrados: {len(utxos)}")
                 
                 if confirmed_only:
                     confirmed = []
-                    for utxo in utxos:
+                    for i, utxo in enumerate(utxos):
+                        txid = utxo.get('txid')
+                        vout = utxo.get('vout')
+                        value = utxo.get('value', 0)
                         status = utxo.get('status', {})
-                        if status.get('confirmed', False):
-                            # Verificar se não foi gasto
-                            try:
-                                tx_url = f"{self.blockstream_api}/tx/{utxo['txid']}"
-                                tx_resp = requests.get(tx_url, timeout=10)
-                                if tx_resp.status_code == 200:
-                                    tx_data = tx_resp.json()
-                                    vout_data = tx_data['vout'][utxo['vout']]
-                                    if not vout_data.get('spent', False):
-                                        confirmed.append(utxo)
-                            except:
+                        
+                        # ✅ VALIDAÇÃO 1: Verificar se está confirmado
+                        if not status.get('confirmed', False):
+                            print(f"   ⚠️  UTXO {i+1}: {txid[:16]}...:{vout} - NÃO CONFIRMADO")
+                            continue
+                        
+                        # ✅ VALIDAÇÃO 2: Verificar se o UTXO existe na rede e não foi gasto
+                        try:
+                            tx_url = f"{self.blockstream_api}/tx/{txid}"
+                            tx_resp = requests.get(tx_url, timeout=10)
+                            
+                            if tx_resp.status_code != 200:
+                                print(f"   ⚠️  UTXO {i+1}: {txid[:16]}...:{vout} - Transação não encontrada (status {tx_resp.status_code})")
                                 continue
+                            
+                            tx_data = tx_resp.json()
+                            
+                            # ✅ VALIDAÇÃO 3: Verificar se o vout existe
+                            if vout >= len(tx_data.get('vout', [])):
+                                print(f"   ⚠️  UTXO {i+1}: {txid[:16]}...:{vout} - vout não existe na transação")
+                                continue
+                            
+                            vout_data = tx_data['vout'][vout]
+                            
+                            # ✅ VALIDAÇÃO 4: Verificar se foi gasto
+                            if vout_data.get('spent', False):
+                                print(f"   ⚠️  UTXO {i+1}: {txid[:16]}...:{vout} - JÁ FOI GASTO!")
+                                continue
+                            
+                            # ✅ VALIDAÇÃO 5: Verificar se o valor corresponde
+                            vout_value = vout_data.get('value', 0)
+                            if vout_value != value:
+                                print(f"   ⚠️  UTXO {i+1}: {txid[:16]}...:{vout} - Valor não corresponde (esperado {value}, encontrado {vout_value})")
+                                # Usar o valor real da transação
+                                utxo['value'] = vout_value
+                            
+                            # ✅ UTXO VÁLIDO!
+                            confirmed.append(utxo)
+                            print(f"   ✅ UTXO {i+1} VÁLIDO: {txid[:16]}...:{vout} = {utxo['value']} sats")
+                            
+                        except Exception as val_err:
+                            print(f"   ⚠️  UTXO {i+1}: {txid[:16]}...:{vout} - Erro na validação: {val_err}")
+                            continue
+                    
+                    print(f"   ✅ Total UTXOs válidos após validação: {len(confirmed)}")
                     return confirmed
                 else:
                     return utxos
             else:
-                print(f"⚠️  Erro ao buscar UTXOs: {response.status_code}")
-                return []
+                print(f"   ❌ Erro ao buscar UTXOs: status {response.status_code}")
+            return []
                 
         except Exception as e:
             print(f"❌ Exceção ao buscar UTXOs: {e}")
+            import traceback
+            traceback.print_exc()
             return []
     
     def create_simple_transaction(
@@ -247,9 +286,14 @@ class SimpleBitcoin:
             # Preparar inputs
             inputs_list = []
             for utxo in selected_utxos:
+                # ✅ NORMALIZAÇÃO CRÍTICA: BlockCypher precisa de txid em lowercase
+                txid = utxo['txid']
+                if isinstance(txid, str):
+                    txid = txid.strip().lower()
+                
                 # ✅ CORREÇÃO CRÍTICA: BlockCypher precisa do campo 'value' no input para validação
                 inputs_list.append({
-                    "prev_hash": utxo['txid'],
+                    "prev_hash": txid,  # Normalizado para lowercase
                     "output_index": utxo['vout'],
                     "value": int(utxo['value'])  # ✅ ADICIONAR VALUE - CRÍTICO PARA BLOCKCYPHER
                 })

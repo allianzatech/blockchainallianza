@@ -2981,20 +2981,64 @@ class RealCrossChainBridge:
         print(f"\n1. 🔑 Obtendo endereço da chave privada...")
         from_address = None
         wif_valid = False
+        addresses_tried = []
         
         try:
-            # ✅ CORREÇÃO: Derivar endereço da chave privada (não usar env)
+            # ✅ CORREÇÃO: Tentar derivar endereço da chave privada em múltiplos formatos
             from bitcoinlib.keys import HDKey, Key
             print(f"   🔄 Tentando derivar endereço da chave WIF...")
             
-            # Tentar como HDKey primeiro
-            try:
-                key_obj = HDKey(from_private_key, network='testnet')
-                from_address = key_obj.address()
+            # Tentar múltiplos tipos de endereço (legacy, segwit, p2sh-segwit)
+            witness_types = ['legacy', 'segwit', 'p2sh-segwit']
+            
+            for witness_type in witness_types:
+                try:
+                    key_obj = HDKey(from_private_key, network='testnet')
+                    # Tentar obter endereço do tipo específico
+                    if witness_type == 'legacy':
+                        test_address = key_obj.address()
+                    elif witness_type == 'segwit':
+                        test_address = key_obj.address(script_type='p2wpkh')
+                    else:  # p2sh-segwit
+                        test_address = key_obj.address(script_type='p2sh-p2wpkh')
+                    
+                    addresses_tried.append((witness_type, test_address))
+                    print(f"   📍 {witness_type}: {test_address}")
+                    
+                    # Verificar se este endereço tem UTXOs
+                    try:
+                        utxo_test_url = f"https://blockstream.info/testnet/api/address/{test_address}/utxo"
+                        utxo_test_resp = requests.get(utxo_test_url, timeout=5)
+                        if utxo_test_resp.status_code == 200:
+                            test_utxos = utxo_test_resp.json()
+                            if test_utxos:
+                                # Verificar se tem UTXOs confirmados não gastos
+                                confirmed_count = 0
+                                for utxo in test_utxos:
+                                    if utxo.get('status', {}).get('confirmed', False):
+                                        confirmed_count += 1
+                                
+                                if confirmed_count > 0:
+                                    from_address = test_address
+                                    wif_valid = True
+                                    print(f"   ✅✅✅ Endereço {witness_type} tem {confirmed_count} UTXO(s) confirmado(s)!")
+                                    print(f"   ✅ Usando: {from_address}")
+                                    break
+                    except:
+                        continue
+                        
+                except Exception as e:
+                    print(f"   ⚠️  Erro ao tentar {witness_type}: {e}")
+                    continue
+            
+            # Se não encontrou endereço com UTXOs, usar o primeiro endereço derivado (legacy)
+            if not from_address and addresses_tried:
+                from_address = addresses_tried[0][1]  # Usar primeiro endereço (legacy)
                 wif_valid = True
-                print(f"   ✅ Endereço derivado via HDKey: {from_address}")
-            except:
-                # Se falhar, tentar como Key
+                print(f"   ⚠️  Nenhum endereço com UTXOs encontrado, usando primeiro: {from_address}")
+            
+            # Se ainda não tem endereço, tentar como Key simples
+            if not from_address:
                 try:
                     key_obj = Key(from_private_key, network='testnet')
                     from_address = key_obj.address()
@@ -3008,34 +3052,51 @@ class RealCrossChainBridge:
                 print(f"   ✅ Endereço derivado da chave: {from_address}")
             
             # ✅ VALIDAÇÃO CRÍTICA: Verificar se o endereço derivado tem saldo
-            print(f"   🔍 Verificando saldo do endereço derivado...")
-            try:
-                import requests
-                balance_url = f"https://blockstream.info/testnet/api/address/{from_address}"
-                balance_resp = requests.get(balance_url, timeout=5)
-                if balance_resp.status_code == 200:
-                    balance_data = balance_resp.json()
-                    funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
-                    spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
-                    balance_sats = funded - spent
-                    balance_btc = balance_sats / 100000000
-                    print(f"   💰 Saldo do endereço derivado: {balance_sats} satoshis ({balance_btc:.8f} BTC)")
-                    
-                    if balance_sats < 10000:  # Menos de 0.0001 BTC
-                        print(f"   ⚠️  AVISO: Saldo muito baixo! Pode não ser suficiente para a transação.")
-                        print(f"   💡 Considere enviar fundos para este endereço primeiro")
-                        print(f"   💡 Endereço: {from_address}")
-            except Exception as balance_err:
-                print(f"   ⚠️  Não foi possível verificar saldo: {balance_err} (continuando mesmo assim)")
+            if from_address:
+                print(f"   🔍 Verificando saldo do endereço derivado: {from_address}...")
+                try:
+                    import requests
+                    balance_url = f"https://blockstream.info/testnet/api/address/{from_address}"
+                    balance_resp = requests.get(balance_url, timeout=10)
+                    if balance_resp.status_code == 200:
+                        balance_data = balance_resp.json()
+                        funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
+                        spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
+                        balance_sats = funded - spent
+                        balance_btc = balance_sats / 100000000
+                        print(f"   💰 Saldo do endereço derivado: {balance_sats} satoshis ({balance_btc:.8f} BTC)")
+                        
+                        if balance_sats < 10000:  # Menos de 0.0001 BTC
+                            print(f"   ⚠️  AVISO: Saldo muito baixo! Tentando endereço do .env...")
+                            # Tentar endereço do .env como fallback
+                            env_address = os.getenv('BITCOIN_TESTNET_ADDRESS') or os.getenv('BITCOIN_ADDRESS') or os.getenv('BTC_ADDRESS')
+                            if env_address and env_address != from_address:
+                                print(f"   🔄 Tentando endereço do .env: {env_address}")
+                                env_balance_url = f"https://blockstream.info/testnet/api/address/{env_address}"
+                                env_balance_resp = requests.get(env_balance_url, timeout=10)
+                                if env_balance_resp.status_code == 200:
+                                    env_balance_data = env_balance_resp.json()
+                                    env_funded = env_balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
+                                    env_spent = env_balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
+                                    env_balance_sats = env_funded - env_spent
+                                    if env_balance_sats > balance_sats:
+                                        print(f"   ✅ Endereço do .env tem mais saldo ({env_balance_sats} sats), usando ele!")
+                                        from_address = env_address
+                    else:
+                        print(f"   ⚠️  Erro ao verificar saldo: status {balance_resp.status_code}")
+                except Exception as balance_err:
+                    print(f"   ⚠️  Não foi possível verificar saldo: {balance_err} (continuando mesmo assim)")
                 
         except Exception as addr_err:
             print(f"   ❌ Erro ao derivar endereço: {addr_err}")
             import traceback
             traceback.print_exc()
-            # Fallback para env se derivação falhar
+        
+        # Fallback final: usar endereço do .env se derivação falhou ou não tem saldo
+        if not from_address or not wif_valid:
             # ✅ NOVO ENDEREÇO COM SALDO: mft38vhDpoF4qEAFChbfxZ5UrUemSViHHh (0.00136960 BTC)
-            from_address = os.getenv('BITCOIN_TESTNET_ADDRESS', 'mft38vhDpoF4qEAFChbfxZ5UrUemSViHHh')
-            print(f"   ⚠️  Usando endereço do env: {from_address}")
+            from_address = os.getenv('BITCOIN_TESTNET_ADDRESS') or os.getenv('BITCOIN_ADDRESS') or os.getenv('BTC_ADDRESS', 'mft38vhDpoF4qEAFChbfxZ5UrUemSViHHh')
+            print(f"   ⚠️  Usando endereço do .env como fallback: {from_address}")
         
         # 2. Buscar UTXOs via Blockstream
         print(f"\n2. 🔍 Buscando UTXOs confirmados...")
@@ -3094,6 +3155,10 @@ class RealCrossChainBridge:
                 print(f"   ⚠️  UTXO inválido (campos faltando): txid={txid}, vout={vout}, value={value}")
                 continue
             
+            # ✅ NORMALIZAÇÃO CRÍTICA: BlockCypher precisa de txid em lowercase
+            if isinstance(txid, str):
+                txid = txid.strip().lower()
+            
             # ✅ VALIDAÇÃO CRÍTICA: Verificar se o UTXO realmente existe e não foi gasto
             try:
                 tx_url = f"https://blockstream.info/testnet/api/tx/{txid}"
@@ -3125,7 +3190,7 @@ class RealCrossChainBridge:
                 
                 # UTXO válido!
                 valid_utxos.append({
-                    'txid': txid,
+                    'txid': txid,  # Já normalizado para lowercase
                     'vout': vout,
                     'value': value
                 })
