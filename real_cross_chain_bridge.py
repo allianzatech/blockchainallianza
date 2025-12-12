@@ -2913,8 +2913,17 @@ class RealCrossChainBridge:
         
         # 1. Obter endereço da chave privada
         print(f"\n1. 🔑 Obtendo endereço da chave privada...")
-        from_address = os.getenv('BITCOIN_TESTNET_ADDRESS', 'mjQMvYHE5Bpqze4ifq6NLP9BthNJgxWRud')
-        print(f"   Endereço: {from_address}")
+        try:
+            # ✅ CORREÇÃO: Derivar endereço da chave privada (não usar env)
+            from bitcoinlib.keys import HDKey
+            key_obj = HDKey(from_private_key, network='testnet')
+            from_address = key_obj.address()
+            print(f"   ✅ Endereço derivado da chave: {from_address}")
+        except Exception as addr_err:
+            print(f"   ⚠️  Erro ao derivar endereço: {addr_err}")
+            # Fallback para env se derivação falhar
+            from_address = os.getenv('BITCOIN_TESTNET_ADDRESS', 'mjQMvYHE5Bpqze4ifq6NLP9BthNJgxWRud')
+            print(f"   ⚠️  Usando endereço do env: {from_address}")
         
         # 2. Buscar UTXOs via Blockstream
         print(f"\n2. 🔍 Buscando UTXOs confirmados...")
