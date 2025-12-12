@@ -3506,29 +3506,83 @@ class RealCrossChainBridge:
             print(f"📋 Método DIRETO que assina LOCALMENTE - MAIS ROBUSTO!")
             
             try:
+                # ✅ MELHORIA: Conversão automática de chave para WIF
+                original_key = from_private_key
+                print(f"   🔍 Verificando formato da chave: {from_private_key[:20]}... (tamanho: {len(from_private_key)})")
+                
                 # Verificar se a chave é WIF
-                if not from_private_key.startswith(('c', '9', 'L', 'K')):
+                if not from_private_key.startswith(('c', '9', '5', 'L', 'K')):
                     print(f"   ⚠️  Chave não parece ser WIF, tentando converter...")
-                    # Se for hex, converter para WIF
-                    if (from_private_key.startswith('0x') and len(from_private_key) == 66) or \
-                       (len(from_private_key) == 64 and all(c in '0123456789abcdefABCDEF' for c in from_private_key)):
+                    
+                    # Remover espaços e caracteres especiais
+                    from_private_key = from_private_key.strip()
+                    
+                    # Se for hex (0x... ou 64 chars), converter para WIF
+                    is_hex = False
+                    hex_key = None
+                    
+                    if from_private_key.startswith('0x') and len(from_private_key) == 66:
+                        hex_key = from_private_key[2:]
+                        is_hex = True
+                    elif len(from_private_key) == 64 and all(c in '0123456789abcdefABCDEF' for c in from_private_key):
+                        hex_key = from_private_key
+                        is_hex = True
+                    
+                    if is_hex:
                         try:
+                            print(f"   🔄 Detectado formato HEX, convertendo para WIF...")
                             from bitcoinlib.keys import HDKey
-                            if from_private_key.startswith('0x'):
-                                priv_key_hex = from_private_key[2:]
-                            else:
-                                priv_key_hex = from_private_key
-                            priv_key_bytes = bytes.fromhex(priv_key_hex)
-                            key = HDKey(priv_key_bytes, network='testnet')
+                            
+                            # Validar hex
+                            try:
+                                key_bytes = bytes.fromhex(hex_key)
+                            except ValueError:
+                                return {
+                                    "success": False,
+                                    "error": f"Chave hex inválida: não é hexadecimal válido",
+                                    "note": "A chave hex deve conter apenas caracteres 0-9, a-f, A-F",
+                                    "proof_file": self._save_transaction_proof(proof_data)
+                                }
+                            
+                            # Converter para WIF
+                            key = HDKey(key_bytes, network='testnet')
                             from_private_key = key.wif()
                             print(f"   ✅ Chave convertida para WIF: {from_private_key[:15]}...")
-                        except Exception as e:
+                            add_log("key_converted_hex_to_wif", {"original_format": "HEX", "wif_prefix": from_private_key[0]})
+                        except ImportError:
                             return {
                                 "success": False,
-                                "error": f"Não foi possível converter chave: {e}",
-                                "note": "A chave deve ser WIF ou hex válido",
+                                "error": "bitcoinlib não disponível para converter chave hex para WIF",
+                                "note": "Instale: pip install bitcoinlib OU use chave em formato WIF",
                                 "proof_file": self._save_transaction_proof(proof_data)
                             }
+                        except Exception as e:
+                            print(f"   ❌ Erro na conversão: {e}")
+                            import traceback
+                            traceback.print_exc()
+                            return {
+                                "success": False,
+                                "error": f"Não foi possível converter chave hex para WIF: {e}",
+                                "note": "Verifique se a chave hex está correta (64 caracteres)",
+                                "original_key_preview": original_key[:20] + "...",
+                                "proof_file": self._save_transaction_proof(proof_data)
+                            }
+                    else:
+                        # Formato desconhecido
+                        return {
+                            "success": False,
+                            "error": f"Formato de chave inválido: '{from_private_key[:20]}...'",
+                            "note": "Use WIF (começa com c/9/5/K/L) ou hex (64 chars ou 0x...64 chars)",
+                            "examples": {
+                                "WIF_testnet": "cPnvKu6XEhDLJxQjJASfQSyvb747nPaWeJ9VXqhvD3y9eK5P3qRw",
+                                "HEX_64chars": "c4bbcb1fbec99d65bf59d85c8cb62ee2db963f0fe106f483d9afa73bd4e39a8a",
+                                "HEX_with_0x": "0xc4bbcb1fbec99d65bf59d85c8cb62ee2db963f0fe106f483d9afa73bd4e39a8a"
+                            },
+                            "proof_file": self._save_transaction_proof(proof_data)
+                        }
+                else:
+                    print(f"   ✅ Chave já está em formato WIF")
+                    add_log("key_format_wif", {"wif_prefix": from_private_key[0]})
                 
                 # Usar SimpleBitcoinDirect
                 print(f"   📞 Chamando SimpleBitcoinDirect.create_and_broadcast_transaction()...")
