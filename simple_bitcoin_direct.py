@@ -153,7 +153,12 @@ class SimpleBitcoinDirect:
                     "error": f"UTXO insuficiente. Necessário: {amount_sats + fee_sats}, Disponível: {utxo['value']}"
                 }
             
-            print(f"   UTXO selecionado: {utxo['txid'][:16]}...:{utxo['vout']} = {utxo['value']} sats")
+            # ✅ NORMALIZAÇÃO CRÍTICA: BlockCypher precisa de txid em lowercase
+            txid = utxo['txid']
+            if isinstance(txid, str):
+                txid = txid.strip().lower()
+            
+            print(f"   UTXO selecionado: {txid[:16]}...:{utxo['vout']} = {utxo['value']} sats")
             print(f"   Amount: {amount_sats} sats, Fee: {fee_sats} sats, Change: {change_sats} sats")
             
             # 4. Usar BlockCypher para criar transação NÃO ASSINADA
@@ -163,7 +168,7 @@ class SimpleBitcoinDirect:
             
             tx_data = {
                 "inputs": [{
-                    "prev_hash": utxo['txid'],
+                    "prev_hash": txid,  # Normalizado para lowercase
                     "output_index": utxo['vout'],
                     "value": int(utxo['value'])  # ✅ ADICIONAR VALUE - CRÍTICO PARA BLOCKCYPHER
                 }],

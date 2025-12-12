@@ -3498,7 +3498,69 @@ class RealCrossChainBridge:
         add_log("address_validation_success", {})
         print(f"✅ Endereço Bitcoin validado com sucesso")
         
-        # ✅✅✅ PRIORIDADE MÁXIMA: SimpleBitcoin (biblioteca própria ultra simples)
+        # ✅✅✅ PRIORIDADE MÁXIMA ABSOLUTA: SimpleBitcoinDirect (assina localmente - MAIS ROBUSTO)
+        if self.simple_btc_direct:
+            print(f"\n" + "="*70)
+            print(f"🚀🚀🚀 PRIORIDADE MÁXIMA ABSOLUTA: SimpleBitcoinDirect 🚀🚀🚀")
+            print(f"="*70)
+            print(f"📋 Método DIRETO que assina LOCALMENTE - MAIS ROBUSTO!")
+            
+            try:
+                # Verificar se a chave é WIF
+                if not from_private_key.startswith(('c', '9', 'L', 'K')):
+                    print(f"   ⚠️  Chave não parece ser WIF, tentando converter...")
+                    # Se for hex, converter para WIF
+                    if (from_private_key.startswith('0x') and len(from_private_key) == 66) or \
+                       (len(from_private_key) == 64 and all(c in '0123456789abcdefABCDEF' for c in from_private_key)):
+                        try:
+                            from bitcoinlib.keys import HDKey
+                            if from_private_key.startswith('0x'):
+                                priv_key_hex = from_private_key[2:]
+                            else:
+                                priv_key_hex = from_private_key
+                            priv_key_bytes = bytes.fromhex(priv_key_hex)
+                            key = HDKey(priv_key_bytes, network='testnet')
+                            from_private_key = key.wif()
+                            print(f"   ✅ Chave convertida para WIF: {from_private_key[:15]}...")
+                        except Exception as e:
+                            return {
+                                "success": False,
+                                "error": f"Não foi possível converter chave: {e}",
+                                "note": "A chave deve ser WIF ou hex válido",
+                                "proof_file": self._save_transaction_proof(proof_data)
+                            }
+                
+                # Usar SimpleBitcoinDirect
+                print(f"   📞 Chamando SimpleBitcoinDirect.create_and_broadcast_transaction()...")
+                direct_result = self.simple_btc_direct.create_and_broadcast_transaction(
+                    from_wif=from_private_key,
+                    to_address=to_address,
+                    amount_btc=amount_btc
+                )
+                
+                print(f"   📊 Resultado do SimpleBitcoinDirect:")
+                print(f"      success: {direct_result.get('success', False)}")
+                print(f"      error: {direct_result.get('error', 'N/A')}")
+                print(f"      tx_hash: {direct_result.get('tx_hash', 'N/A')}")
+                
+                if direct_result.get("success"):
+                    print(f"   ✅✅✅ SimpleBitcoinDirect FUNCIONOU! TX Hash: {direct_result.get('tx_hash')}")
+                    proof_data["success"] = True
+                    proof_data["tx_hash"] = direct_result.get("tx_hash")
+                    proof_data["final_result"] = direct_result
+                    proof_file = self._save_transaction_proof(proof_data)
+                    direct_result["proof_file"] = proof_file
+                    return direct_result
+                else:
+                    print(f"   ⚠️  SimpleBitcoinDirect falhou: {direct_result.get('error')}")
+                    print(f"      Continuando com métodos alternativos...")
+            except Exception as direct_err:
+                print(f"   ❌❌❌ EXCEÇÃO ao tentar SimpleBitcoinDirect: {direct_err}")
+                import traceback
+                traceback.print_exc()
+                print(f"      Continuando com métodos alternativos...")
+        
+        # ✅✅✅ PRIORIDADE 2: SimpleBitcoin (biblioteca própria ultra simples)
         if self.simple_btc:
             print(f"\n" + "="*70)
             print(f"🎯🎯🎯 PRIORIDADE MÁXIMA: SimpleBitcoin (biblioteca própria) 🎯🎯🎯")
