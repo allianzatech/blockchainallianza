@@ -111,9 +111,10 @@ class SimpleBitcoinDirect:
         """
         MÉTODO DIRETO: Cria transação usando BlockCypher, assina LOCALMENTE, broadcasta via Blockstream
         """
-        print(f"\n{'='*70}")
-        print(f"🚀 SIMPLEBITCOIN DIRECT - Método que VAI FUNCIONAR")
-        print(f"{'='*70}")
+        try:
+            print(f"\n{'='*70}")
+            print(f"🚀 SIMPLEBITCOIN DIRECT - Método que VAI FUNCIONAR")
+            print(f"{'='*70}")
         
         # 1. Converter WIF para endereço
         try:
