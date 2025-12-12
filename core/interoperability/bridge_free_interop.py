@@ -465,7 +465,29 @@ class BridgeFreeInterop:
                             print(f"   📋 Memo JSON completo: {memo_info.get('memo_json', '')[:200]}...")
                         
                         # ✅ CORREÇÃO: Obter chave privada Bitcoin com fallback e validação
-                        bitcoin_private_key = private_key or os.getenv('BITCOIN_PRIVATE_KEY') or os.getenv('BITCOIN_TESTNET_PRIVATE_KEY') or os.getenv('BTC_PRIVATE_KEY')
+                        # ⚠️ CRÍTICO: NUNCA usar BASE_PRIVATE_KEY para Bitcoin - pode ser XPUB!
+                        bitcoin_private_key = (
+                            os.getenv('BITCOIN_PRIVATE_KEY') or 
+                            os.getenv('BITCOIN_TESTNET_PRIVATE_KEY') or 
+                            os.getenv('BTC_PRIVATE_KEY')
+                        )
+                        
+                        # ✅ VALIDAÇÃO CRÍTICA: Se private_key foi passado, verificar se NÃO é XPUB
+                        if private_key:
+                            private_key_stripped = private_key.strip()
+                            # Se começar com xpub/ypub/zpub/vpub, IGNORAR e usar apenas env vars
+                            if private_key_stripped.startswith(('xpub', 'ypub', 'zpub', 'tpub', 'upub', 'vpub')):
+                                print(f"   ⚠️  AVISO: private_key passado é XPUB (chave pública), IGNORANDO!")
+                                print(f"      Usando apenas variáveis de ambiente Bitcoin específicas")
+                                private_key = None  # Ignorar o private_key passado
+                            elif private_key_stripped.startswith(('c', '9', '5', 'L', 'K')):
+                                # É WIF válido, usar
+                                bitcoin_private_key = private_key_stripped
+                                print(f"   ✅ private_key passado é WIF válido, usando")
+                            else:
+                                # Formato desconhecido, usar env vars
+                                print(f"   ⚠️  private_key passado tem formato desconhecido, usando env vars")
+                                private_key = None
                         
                         if not bitcoin_private_key:
                             return {
@@ -482,6 +504,17 @@ class BridgeFreeInterop:
                                 "success": False,
                                 "error": "Chave privada Bitcoin está vazia",
                                 "note": "Verifique se BITCOIN_PRIVATE_KEY no .env não está vazio",
+                                "real_transaction": False
+                            }
+                        
+                        # ✅ VALIDAÇÃO FINAL: Garantir que NÃO é XPUB
+                        if bitcoin_private_key.startswith(('xpub', 'ypub', 'zpub', 'tpub', 'upub', 'vpub')):
+                            return {
+                                "success": False,
+                                "error": "Chave pública (XPUB) configurada em vez de chave privada (WIF)",
+                                "note": "BITCOIN_PRIVATE_KEY deve ser uma chave PRIVADA WIF (começa com c/9/5/K/L), não uma chave pública (xpub/ypub/zpub/vpub)",
+                                "detected_key_type": "public_key_extended",
+                                "key_prefix": bitcoin_private_key[:4],
                                 "real_transaction": False
                             }
                         
@@ -536,7 +569,29 @@ class BridgeFreeInterop:
                                 memo_hex_str = memo_hex_str[:160]
                         
                         # ✅ CORREÇÃO: Obter chave privada Bitcoin com fallback e validação
-                        bitcoin_private_key = private_key or os.getenv('BITCOIN_PRIVATE_KEY') or os.getenv('BITCOIN_TESTNET_PRIVATE_KEY') or os.getenv('BTC_PRIVATE_KEY')
+                        # ⚠️ CRÍTICO: NUNCA usar BASE_PRIVATE_KEY para Bitcoin - pode ser XPUB!
+                        bitcoin_private_key = (
+                            os.getenv('BITCOIN_PRIVATE_KEY') or 
+                            os.getenv('BITCOIN_TESTNET_PRIVATE_KEY') or 
+                            os.getenv('BTC_PRIVATE_KEY')
+                        )
+                        
+                        # ✅ VALIDAÇÃO CRÍTICA: Se private_key foi passado, verificar se NÃO é XPUB
+                        if private_key:
+                            private_key_stripped = private_key.strip()
+                            # Se começar com xpub/ypub/zpub/vpub, IGNORAR e usar apenas env vars
+                            if private_key_stripped.startswith(('xpub', 'ypub', 'zpub', 'tpub', 'upub', 'vpub')):
+                                print(f"   ⚠️  AVISO: private_key passado é XPUB (chave pública), IGNORANDO!")
+                                print(f"      Usando apenas variáveis de ambiente Bitcoin específicas")
+                                private_key = None  # Ignorar o private_key passado
+                            elif private_key_stripped.startswith(('c', '9', '5', 'L', 'K')):
+                                # É WIF válido, usar
+                                bitcoin_private_key = private_key_stripped
+                                print(f"   ✅ private_key passado é WIF válido, usando")
+                            else:
+                                # Formato desconhecido, usar env vars
+                                print(f"   ⚠️  private_key passado tem formato desconhecido, usando env vars")
+                                private_key = None
                         
                         if not bitcoin_private_key:
                             return {
@@ -553,6 +608,17 @@ class BridgeFreeInterop:
                                 "success": False,
                                 "error": "Chave privada Bitcoin está vazia",
                                 "note": "Verifique se BITCOIN_PRIVATE_KEY no .env não está vazio",
+                                "real_transaction": False
+                            }
+                        
+                        # ✅ VALIDAÇÃO FINAL: Garantir que NÃO é XPUB
+                        if bitcoin_private_key.startswith(('xpub', 'ypub', 'zpub', 'tpub', 'upub', 'vpub')):
+                            return {
+                                "success": False,
+                                "error": "Chave pública (XPUB) configurada em vez de chave privada (WIF)",
+                                "note": "BITCOIN_PRIVATE_KEY deve ser uma chave PRIVADA WIF (começa com c/9/5/K/L), não uma chave pública (xpub/ypub/zpub/vpub)",
+                                "detected_key_type": "public_key_extended",
+                                "key_prefix": bitcoin_private_key[:4],
                                 "real_transaction": False
                             }
                         
