@@ -2652,8 +2652,19 @@ class RealCrossChainBridge:
         import requests
         import json
         
-        # ✅ NOVO ENDEREÇO COM SALDO: mft38vhDpoF4qEAFChbfxZ5UrUemSViHHh (0.00136960 BTC)
-        address = os.getenv('BITCOIN_TESTNET_ADDRESS', 'mft38vhDpoF4qEAFChbfxZ5UrUemSViHHh')
+        # ✅ CORREÇÃO: Não usar endereço hardcoded, sempre derivar da chave privada
+        address = os.getenv('BITCOIN_TESTNET_ADDRESS') or os.getenv('BITCOIN_ADDRESS') or os.getenv('BTC_ADDRESS')
+        if not address:
+            # Tentar derivar da chave privada do .env
+            private_key = os.getenv('BITCOIN_PRIVATE_KEY') or os.getenv('BITCOIN_TESTNET_PRIVATE_KEY') or os.getenv('BTC_PRIVATE_KEY')
+            if private_key:
+                try:
+                    from bitcoinlib.keys import HDKey
+                    key = HDKey(private_key, network='testnet')
+                    address = key.address()
+                    print(f"   ✅ Endereço derivado da chave privada: {address}")
+                except:
+                    pass
         
         print(f"🔍 DEBUG COMPLETO PARA {address}")
         print(f"="*60)
@@ -3092,11 +3103,38 @@ class RealCrossChainBridge:
             import traceback
             traceback.print_exc()
         
-        # Fallback final: usar endereço do .env se derivação falhou ou não tem saldo
+        # Fallback final: tentar derivar endereço novamente ou usar do .env
         if not from_address or not wif_valid:
-            # ✅ NOVO ENDEREÇO COM SALDO: mft38vhDpoF4qEAFChbfxZ5UrUemSViHHh (0.00136960 BTC)
-            from_address = os.getenv('BITCOIN_TESTNET_ADDRESS') or os.getenv('BITCOIN_ADDRESS') or os.getenv('BTC_ADDRESS', 'mft38vhDpoF4qEAFChbfxZ5UrUemSViHHh')
-            print(f"   ⚠️  Usando endereço do .env como fallback: {from_address}")
+            # ✅ CORREÇÃO: Sempre derivar endereço da chave privada, nunca usar hardcoded
+            print(f"   ⚠️  Tentando derivar endereço da chave privada novamente...")
+            try:
+                from bitcoinlib.keys import HDKey, Key
+                # Tentar como HDKey primeiro
+                try:
+                    key_obj = HDKey(from_private_key, network='testnet')
+                    from_address = key_obj.address()
+                    wif_valid = True
+                    print(f"   ✅ Endereço derivado via HDKey: {from_address}")
+                except:
+                    # Tentar como Key simples
+                    key_obj = Key(from_private_key, network='testnet')
+                    from_address = key_obj.address()
+                    wif_valid = True
+                    print(f"   ✅ Endereço derivado via Key: {from_address}")
+            except Exception as deriv_err:
+                print(f"   ❌ Erro ao derivar endereço: {deriv_err}")
+                # Último recurso: usar do .env (mas nunca hardcoded)
+                env_address = os.getenv('BITCOIN_TESTNET_ADDRESS') or os.getenv('BITCOIN_ADDRESS') or os.getenv('BTC_ADDRESS')
+                if env_address:
+                    from_address = env_address
+                    print(f"   ⚠️  Usando endereço do .env: {from_address}")
+                else:
+                    return {
+                        "success": False,
+                        "error": f"Não foi possível derivar endereço da chave privada e nenhum endereço configurado no .env",
+                        "note": "Configure BITCOIN_TESTNET_ADDRESS no .env OU use uma chave privada WIF válida",
+                        "key_format": "WIF" if from_private_key.startswith(('c', '9', '5', 'K', 'L')) else "HEX" if len(from_private_key) == 64 or from_private_key.startswith('0x') else "UNKNOWN"
+                    }
         
         # 2. Buscar UTXOs via Blockstream
         print(f"\n2. 🔍 Buscando UTXOs confirmados...")
