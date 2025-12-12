@@ -372,11 +372,41 @@ class SimpleBitcoin:
             print(f"      - tosign: {len(tosign)} hashes")
             print(f"      - privkeys: {len(sign_data['privkeys'])} chave(s)")
             
+            # ✅ VALIDAÇÃO FINAL ANTES DE ENVIAR
+            print(f"\n   🔍 VALIDAÇÃO FINAL ANTES DE ENVIAR PARA BLOCKCYPHER:")
+            print(f"      - private_key_hex existe: {private_key_hex is not None}")
+            print(f"      - private_key_hex tamanho: {len(private_key_hex) if private_key_hex else 0}")
+            print(f"      - private_key_hex preview: {private_key_hex[:30] if private_key_hex else 'None'}...")
+            print(f"      - privkeys no sign_data: {len(sign_data.get('privkeys', []))}")
+            print(f"      - tosign count: {len(sign_data.get('tosign', []))}")
+            print(f"      - tx existe: {'tx' in sign_data}")
+            
+            # ✅ VALIDAÇÃO CRÍTICA: Verificar se privkeys não está vazio
+            if not sign_data.get('privkeys') or len(sign_data.get('privkeys', [])) == 0:
+                return {
+                    "success": False,
+                    "error": "Chave privada está vazia no sign_data",
+                    "note": "A chave privada não foi adicionada corretamente ao sign_data"
+                }
+            
+            if not sign_data['privkeys'][0] or len(sign_data['privkeys'][0]) != 64:
+                return {
+                    "success": False,
+                    "error": f"Chave privada inválida no sign_data: tamanho {len(sign_data['privkeys'][0]) if sign_data['privkeys'][0] else 0}",
+                    "note": "A chave privada deve ter exatamente 64 caracteres hex"
+                }
+            
             sign_url = f"{self.blockcypher_api}/txs/send?token={self.blockcypher_token}"
+            print(f"\n   📡 Enviando para BlockCypher: {sign_url}")
+            print(f"   📦 Payload (parcial):")
+            print(f"      - tx: presente")
+            print(f"      - tosign: {len(sign_data['tosign'])} hashes")
+            print(f"      - privkeys: {len(sign_data['privkeys'])} chave(s) (tamanho: {len(sign_data['privkeys'][0]) if sign_data['privkeys'] else 0})")
+            
             sign_response = requests.post(sign_url, json=sign_data, timeout=30)
             
             print(f"   📊 Status: {sign_response.status_code}")
-            print(f"   📋 Response: {sign_response.text[:300]}")
+            print(f"   📋 Response: {sign_response.text[:500]}")
             
             if sign_response.status_code in [200, 201]:
                 signed_tx = sign_response.json()
