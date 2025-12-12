@@ -416,7 +416,11 @@ class SolanaBridge:
         """Obter status de uma transação"""
         try:
             if self.client:
-                signature = Pubkey.from_string(tx_signature) if isinstance(tx_signature, str) else tx_signature
+                # Converter string para objeto Signature
+                if isinstance(tx_signature, str):
+                    signature = Signature.from_string(tx_signature)
+                else:
+                    signature = tx_signature
                 response = self.client.get_transaction(
                     signature,
                     commitment=Confirmed
