@@ -4406,19 +4406,40 @@ class RealCrossChainBridge:
                                 import traceback
                                 traceback.print_exc()
                     
-                    # CORREÇÃO CRÍTICA: Calcular saldo a partir dos UTXOs se balance_btc for 0
+                    # ✅ CORREÇÃO CRÍTICA: SEMPRE recalcular saldo a partir dos UTXOs (mais confiável que API)
                     if utxos:
                         total_utxo_value_satoshis = sum(utxo.get('value', 0) for utxo in utxos)
                         total_utxo_value_btc = total_utxo_value_satoshis / 100000000
                         print(f"📦 UTXOs encontrados: {len(utxos)} (Total: {total_utxo_value_btc} BTC = {total_utxo_value_satoshis} satoshis)")
                         
-                        # Se balance_btc é 0 mas temos UTXOs, usar o valor dos UTXOs
-                        if balance_btc == 0.0 and total_utxo_value_btc > 0:
-                            print(f"   ⚠️  balance_btc era 0.0, mas UTXOs têm {total_utxo_value_btc} BTC")
-                            print(f"   ✅ Atualizando balance_btc para {total_utxo_value_btc} BTC baseado nos UTXOs")
+                        # ✅ SEMPRE usar o valor dos UTXOs (mais preciso que API que pode ter cache)
+                        if total_utxo_value_btc > 0:
+                            if balance_btc != total_utxo_value_btc:
+                                print(f"   ⚠️  balance_btc da API ({balance_btc} BTC) difere dos UTXOs ({total_utxo_value_btc} BTC)")
+                                print(f"   ✅ Usando saldo calculado dos UTXOs: {total_utxo_value_btc} BTC (mais confiável)")
                             balance_btc = total_utxo_value_btc
+                        else:
+                            print(f"   ⚠️  UTXOs encontrados mas valor total é 0")
                     else:
                         print(f"⚠️  Nenhum UTXO encontrado no wallet nem via API")
+                        # Se não tem UTXOs mas balance_btc > 0, pode ser cache da API
+                        if balance_btc > 0:
+                            print(f"   ⚠️  balance_btc da API é {balance_btc} BTC mas nenhum UTXO encontrado")
+                            print(f"   💡 Tentando refresh do saldo via Blockstream...")
+                            try:
+                                import requests
+                                refresh_url = f"https://blockstream.info/testnet/api/address/{from_address}"
+                                refresh_resp = requests.get(refresh_url, timeout=10)
+                                if refresh_resp.status_code == 200:
+                                    refresh_data = refresh_resp.json()
+                                    refresh_funded = refresh_data.get('chain_stats', {}).get('funded_txo_sum', 0)
+                                    refresh_spent = refresh_data.get('chain_stats', {}).get('spent_txo_sum', 0)
+                                    refresh_balance_sats = refresh_funded - refresh_spent
+                                    refresh_balance_btc = refresh_balance_sats / 100000000
+                                    print(f"   🔄 Saldo atualizado via Blockstream: {refresh_balance_btc} BTC")
+                                    balance_btc = refresh_balance_btc
+                            except Exception as refresh_err:
+                                print(f"   ⚠️  Erro ao fazer refresh: {refresh_err}")
                     
                     # MELHORIA: Calcular fee mais preciso baseado em UTXOs
                     # CORREÇÃO: Taxa fixa e baixa para testnet (500 satoshis = 0.000005 BTC)
