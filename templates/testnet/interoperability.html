@@ -322,7 +322,14 @@
                     <i class="fas fa-list mr-2"></i> {{ t('load_all_proofs') or 'Load All Proofs (last 50)' }}
                 </button>
                 <div id="proofsResults" class="hidden mt-4">
-                    <div id="proofsContent" class="result-box">
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <div class="text-center mb-4">
+                            <button id="copyAllProofsBtn" class="copy-btn-large hidden" onclick="copyAllProofsInfo()" title="{{ t('copy_all_information') or 'Copy All Information' }}">
+                                <i class="fas fa-copy"></i> {{ t('copy_all_information') or 'Copy All Information' }}
+                            </button>
+                        </div>
+                        <div id="proofsContent" class="result-box">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -703,10 +710,48 @@
         });
 
         // Load All Proofs
+        // Função para copiar todas as provas
+        function copyAllProofsInfo() {
+            let textToCopy = '';
+            // Priorizar o objeto JSON armazenado globalmente
+            if (window.lastProofsResult) {
+                textToCopy = JSON.stringify(window.lastProofsResult, null, 2);
+            } else {
+                // Fallback: tentar obter do pre tag
+                const preTag = document.querySelector('#proofsContent pre');
+                if (preTag) {
+                    textToCopy = preTag.textContent;
+                }
+            }
+
+            if (!textToCopy) {
+                alert('{{ t("no_data_to_copy") or "No data to copy" }}');
+                return;
+            }
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const button = document.getElementById('copyAllProofsBtn');
+                if (button) {
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-check"></i> {{ t("all_information_copied") or "All Information Copied!" }}';
+                    button.style.background = '#10b981';
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.style.background = '';
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                alert('Erro ao copiar. Tente selecionar e copiar manualmente.');
+            });
+        }
+
         async function loadAllProofs() {
             const resultsDiv = document.getElementById('proofsResults');
             const resultContent = document.getElementById('proofsContent');
+            const copyAllBtn = document.getElementById('copyAllProofsBtn');
             resultsDiv.classList.remove('hidden');
+            copyAllBtn.classList.add('hidden'); // Esconder botão enquanto carrega
             resultContent.innerHTML = '<p class="info">⏳ {{ t("loading_proofs") or "Loading proofs..." }}</p>';
 
             try {
@@ -714,21 +759,33 @@
                 const result = await response.json();
 
                 if (result.success) {
+                    // Armazenar resultado globalmente para copiar depois
+                    window.lastProofsResult = result;
+                    
                     if (result.total === 0) {
+                        copyAllBtn.classList.add('hidden'); // Esconder se não há provas
                         resultContent.innerHTML = `
                             <p class="info">ℹ️ {{ t('no_proofs_yet') or 'No cross-chain proofs found yet.' }}</p>
                             <p class="text-xs text-gray-400 mt-2">{{ t('create_first_transfer') or 'Create your first cross-chain transfer to generate proofs.' }}</p>
                         `;
                     } else {
+                        copyAllBtn.classList.remove('hidden'); // Mostrar botão quando há provas
                         resultContent.innerHTML = `
                             <p class="success">✅ ${result.total} {{ t('proofs_found_showing') or 'proofs found (showing' }} ${result.returned})</p>
-                            <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                            <pre id="allProofsJson" class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
                         `;
                     }
                 } else {
-                    resultContent.innerHTML = `<p class="error">❌ ${result.error || '{{ t("error_listing_proofs") or "Error listing proofs" }}'}</p>`;
+                    // Armazenar resultado mesmo em caso de erro
+                    window.lastProofsResult = result;
+                    copyAllBtn.classList.remove('hidden'); // Mostrar botão mesmo em erro
+                    resultContent.innerHTML = `
+                        <p class="error">❌ ${result.error || '{{ t("error_listing_proofs") or "Error listing proofs" }}'}</p>
+                        <pre id="allProofsJson" class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                    `;
                 }
             } catch (error) {
+                copyAllBtn.classList.add('hidden'); // Esconder em caso de exceção
                 resultContent.innerHTML = `<p class="error">❌ {{ t('error') or 'Error' }}: ${error.message}</p>`;
             }
         }
