@@ -362,4 +362,84 @@ class SolanaBridge:
                 "success": False,
                 "error": f"Erro ao obter status: {e}"
             }
+    
+    def _send_transaction_via_rpc_direct(
+        self,
+        from_private_key: str,
+        to_address: str,
+        amount_sol: float
+    ) -> Dict:
+        """
+        Método alternativo: Enviar transação Solana via RPC HTTP direto
+        (sem precisar das bibliotecas solders/solana)
+        
+        NOTA: Este método requer construção manual da transação Solana,
+        o que é complexo. Por enquanto, retorna erro informativo.
+        """
+        try:
+            # Validar endereço
+            is_valid, error = self.validate_address(to_address)
+            if not is_valid:
+                return {
+                    "success": False,
+                    "error": f"Endereço de destino inválido: {error}"
+                }
+            
+            # Converter para lamports
+            amount_lamports = int(amount_sol * 1e9)
+            
+            # Verificar saldo primeiro (isso funciona sem bibliotecas)
+            from_address = os.getenv('SOLANA_ADDRESS')
+            if not from_address:
+                # Tentar derivar endereço da chave privada (simplificado)
+                try:
+                    keypair_bytes = base58.b58decode(from_private_key.strip())
+                    # Em Solana, a chave privada é 64 bytes: [32 bytes privados][32 bytes públicos]
+                    # A chave pública está nos últimos 32 bytes
+                    public_key_bytes = keypair_bytes[32:64] if len(keypair_bytes) == 64 else keypair_bytes[:32]
+                    from_address = base58.b58encode(public_key_bytes).decode('utf-8')
+                except:
+                    return {
+                        "success": False,
+                        "error": "Não foi possível derivar endereço da chave privada. Configure SOLANA_ADDRESS no .env"
+                    }
+            
+            balance_result = self.get_balance(from_address)
+            if not balance_result.get("success"):
+                return {
+                    "success": False,
+                    "error": f"Não foi possível verificar saldo: {balance_result.get('error')}"
+                }
+            
+            balance_sol = balance_result.get("balance_sol", 0)
+            fee_estimate = 0.000005
+            required = amount_sol + fee_estimate
+            
+            if balance_sol < required:
+                return {
+                    "success": False,
+                    "error": f"Saldo insuficiente. Disponível: {balance_sol} SOL, Necessário: {required} SOL",
+                    "balance": balance_sol,
+                    "required": required
+                }
+            
+            # ❌ CONSTRUÇÃO MANUAL DE TRANSAÇÃO SOLANA É MUITO COMPLEXA
+            # Requer: serialização de instruções, assinatura Ed25519, construção de transação versionada
+            # Por enquanto, retornar erro informativo sugerindo instalação das bibliotecas
+            
+            return {
+                "success": False,
+                "error": "Bibliotecas Solana não instaladas no servidor Render",
+                "note": "As bibliotecas 'solana' e 'solders' são necessárias para enviar transações Solana. A biblioteca 'solders' precisa ser compilada (Rust), o que pode estar falhando no build do Render.",
+                "solution": "1) Verifique os logs de build do Render para erros de compilação do 'solders', 2) Considere usar uma versão pré-compilada (wheel) se disponível, 3) Ou configure um ambiente de build com Rust compiler",
+                "requirements_check": "requirements.txt contém: solana>=0.30.2 e solders>=0.18.0",
+                "debug": "SOLANA_LIBS_AVAILABLE = False - tentativa de fallback via RPC direto não implementada (muito complexo)",
+                "alternative": "Para testar localmente, instale: pip install solana solders"
+            }
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Erro no método alternativo: {str(e)}"
+            }
 
