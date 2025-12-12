@@ -303,9 +303,9 @@ class SolanaBridge:
             )
             
             # Enviar transação
+            # A transação já está assinada pelo new_signed_with_payer, então só precisamos passar a transação
             response = self.client.send_transaction(
                 transaction,
-                keypair,
                 opts={"skip_preflight": False}
             )
             
