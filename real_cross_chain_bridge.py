@@ -3573,8 +3573,34 @@ class RealCrossChainBridge:
                         "proof_file": self._save_transaction_proof(proof_data)
                     }
                 
+                # ✅ DEBUG ULTRA-DETALHADO: Mostrar EXATAMENTE o que está sendo recebido
+                print(f"\n" + "="*70)
+                print(f"🔍🔍🔍 DEBUG ULTRA-DETALHADO DA CHAVE PRIVADA 🔍🔍🔍")
+                print(f"="*70)
+                print(f"   Tipo: {type(from_private_key)}")
+                print(f"   Tamanho: {len(from_private_key) if from_private_key else 0}")
+                print(f"   Repr (mostra caracteres invisíveis): {repr(from_private_key[:50])}")
+                print(f"   Primeiros 30 chars: '{from_private_key[:30]}'")
+                print(f"   Primeiro char (ord): {ord(from_private_key[0]) if from_private_key else 'N/A'} ('{from_private_key[0] if from_private_key else 'N/A'}')")
+                print(f"   Último char: '{from_private_key[-1] if from_private_key else 'N/A'}'")
+                print(f"   Tem espaços no início/fim: {from_private_key != from_private_key.strip()}")
+                print(f"   Começa com 'c': {from_private_key.startswith('c')}")
+                print(f"   Começa com '9': {from_private_key.startswith('9')}")
+                print(f"   Começa com '5': {from_private_key.startswith('5')}")
+                print(f"   Começa com 'L': {from_private_key.startswith('L')}")
+                print(f"   Começa com 'K': {from_private_key.startswith('K')}")
+                print(f"   Começa com qualquer prefixo WIF: {from_private_key.startswith(('c', '9', '5', 'L', 'K'))}")
+                print(f"   É hex (64 chars): {len(from_private_key) == 64 and all(c in '0123456789abcdefABCDEF' for c in from_private_key)}")
+                print(f"   É hex com 0x (66 chars): {from_private_key.startswith('0x') and len(from_private_key) == 66}")
+                print(f"="*70 + "\n")
+                
                 # Remover espaços e caracteres especiais ANTES de verificar
-                from_private_key = from_private_key.strip()
+                from_private_key_stripped = from_private_key.strip()
+                if from_private_key != from_private_key_stripped:
+                    print(f"   ⚠️  AVISO: Chave tinha espaços! Removendo...")
+                    print(f"      Antes: {repr(from_private_key[:50])}")
+                    print(f"      Depois: {repr(from_private_key_stripped[:50])}")
+                    from_private_key = from_private_key_stripped
                 
                 print(f"   🔍 Verificando formato da chave: {from_private_key[:20]}... (tamanho: {len(from_private_key)})")
                 print(f"   🔍 Primeiro caractere: '{from_private_key[0] if from_private_key else 'N/A'}'")
@@ -3638,11 +3664,28 @@ class RealCrossChainBridge:
                                 "proof_file": self._save_transaction_proof(proof_data)
                             }
                     else:
-                        # Formato desconhecido
+                        # Formato desconhecido - DEBUG EXTRA
+                        print(f"\n   ❌❌❌ FORMATO DESCONHECIDO DETECTADO ❌❌❌")
+                        print(f"   Chave recebida (repr): {repr(from_private_key)}")
+                        print(f"   Chave recebida (str): '{from_private_key}'")
+                        print(f"   Tamanho: {len(from_private_key)}")
+                        print(f"   Primeiro char: '{from_private_key[0] if from_private_key else 'N/A'}' (ord: {ord(from_private_key[0]) if from_private_key else 'N/A'})")
+                        print(f"   Todos os chars são ASCII imprimíveis: {all(32 <= ord(c) <= 126 for c in from_private_key) if from_private_key else False}")
+                        print(f"   Possíveis problemas:")
+                        print(f"      - Chave pode ter caracteres invisíveis no início/fim")
+                        print(f"      - Chave pode estar em formato não reconhecido")
+                        print(f"      - Chave pode estar corrompida")
                         return {
                             "success": False,
                             "error": f"Formato de chave inválido: '{from_private_key[:20]}...'",
                             "note": "Use WIF (começa com c/9/5/K/L) ou hex (64 chars ou 0x...64 chars)",
+                            "debug_info": {
+                                "key_length": len(from_private_key),
+                                "first_char": from_private_key[0] if from_private_key else None,
+                                "first_char_ord": ord(from_private_key[0]) if from_private_key else None,
+                                "key_repr": repr(from_private_key[:50]),
+                                "is_ascii": all(32 <= ord(c) <= 126 for c in from_private_key) if from_private_key else False
+                            },
                             "examples": {
                                 "WIF_testnet": "cPnvKu6XEhDLJxQjJASfQSyvb747nPaWeJ9VXqhvD3y9eK5P3qRw",
                                 "HEX_64chars": "c4bbcb1fbec99d65bf59d85c8cb62ee2db963f0fe106f483d9afa73bd4e39a8a",

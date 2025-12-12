@@ -485,6 +485,18 @@ class BridgeFreeInterop:
                                 "real_transaction": False
                             }
                         
+                        # ✅ DEBUG ULTRA-DETALHADO: Mostrar EXATAMENTE o que está sendo passado
+                        print(f"\n" + "="*70)
+                        print(f"🔍🔍🔍 DEBUG: Chave Bitcoin ANTES de passar para send_bitcoin_transaction 🔍🔍🔍")
+                        print(f"="*70)
+                        print(f"   Tipo: {type(bitcoin_private_key)}")
+                        print(f"   Tamanho: {len(bitcoin_private_key) if bitcoin_private_key else 0}")
+                        print(f"   Repr (primeiros 50): {repr(bitcoin_private_key[:50]) if bitcoin_private_key else 'None'}")
+                        print(f"   Primeiros 30 chars: '{bitcoin_private_key[:30] if bitcoin_private_key else 'None'}'")
+                        print(f"   Primeiro char: '{bitcoin_private_key[0] if bitcoin_private_key and len(bitcoin_private_key) > 0 else 'N/A'}'")
+                        print(f"   Começa com c/9/5/L/K: {bitcoin_private_key.startswith(('c', '9', '5', 'L', 'K')) if bitcoin_private_key else False}")
+                        print(f"="*70 + "\n")
+                        
                         print(f"   🔑 Chave privada Bitcoin obtida: {bitcoin_private_key[:10]}... (tamanho: {len(bitcoin_private_key)})")
                         
                         result = bridge.send_bitcoin_transaction(
