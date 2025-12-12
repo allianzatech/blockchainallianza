@@ -39,7 +39,6 @@
             max-height: 400px;
             overflow-y: auto;
             position: relative;
-            cursor: pointer;
             transition: all 0.2s;
         }
         .result-box:hover {
@@ -232,10 +231,7 @@
             <div id="transferResults" class="hidden">
                 <div class="bg-gray-800 p-6 rounded-lg mb-6">
                     <h2 class="text-2xl font-bold mb-4">{{ t('result') or 'Result' }}</h2>
-                    <div id="transferResultContent" class="result-box" onclick="copyToClipboard('transferResultContent')">
-                        <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('transferResultContent')">
-                            <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
-                        </button>
+                    <div id="transferResultContent" class="result-box">
                     </div>
                 </div>
             </div>
@@ -252,10 +248,7 @@
                     </button>
                 </form>
                 <div id="searchResults" class="hidden mt-4">
-                    <div id="searchContent" class="result-box" onclick="copyToClipboard('searchContent')">
-                        <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('searchContent')">
-                            <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
-                        </button>
+                    <div id="searchContent" class="result-box">
                     </div>
                 </div>
             </div>
@@ -279,10 +272,7 @@
                     </button>
                 </form>
                 <div id="decoderResults" class="hidden mt-4">
-                    <div id="decoderContent" class="result-box" onclick="copyToClipboard('decoderContent')">
-                        <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('decoderContent')">
-                            <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
-                        </button>
+                    <div id="decoderContent" class="result-box">
                     </div>
                 </div>
             </div>
@@ -299,10 +289,7 @@
                     <i class="fas fa-list mr-2"></i> {{ t('load_all_proofs') or 'Load All Proofs (last 50)' }}
                 </button>
                 <div id="proofsResults" class="hidden mt-4">
-                    <div id="proofsContent" class="result-box" onclick="copyToClipboard('proofsContent')">
-                        <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('proofsContent')">
-                            <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
-                        </button>
+                    <div id="proofsContent" class="result-box">
                     </div>
                 </div>
             </div>
@@ -363,10 +350,7 @@
                     </button>
                 </form>
                 <div id="verifierResults" class="hidden mt-4">
-                    <div id="verifierContent" class="result-box" onclick="copyToClipboard('verifierContent')">
-                        <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('verifierContent')">
-                            <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
-                        </button>
+                    <div id="verifierContent" class="result-box">
                     </div>
                 </div>
             </div>

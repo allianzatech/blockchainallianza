@@ -4475,10 +4475,25 @@ class RealCrossChainBridge:
                                                             continue
                                             
                                                     if utxos:
+                                                        # ✅ ORDENAR UTXOs: Usar sempre o MAIS RECENTE primeiro
+                                                        # Ordenar por confirmações (mais confirmações = mais antigo, mas mais seguro)
+                                                        # Mas preferir UTXOs com valor suficiente
+                                                        def sort_utxos(utxo):
+                                                            # Priorizar UTXOs com valor suficiente para a transação
+                                                            value = utxo.get('value', 0)
+                                                            if value >= amount_satoshis + 500:  # Valor suficiente
+                                                                return (0, -value)  # Prioridade alta, maior valor primeiro
+                                                            else:
+                                                                return (1, -value)  # Prioridade baixa, maior valor primeiro
+                                                        
+                                                        utxos.sort(key=sort_utxos)
+                                                        print(f"   📊 UTXOs ordenados: usando o mais adequado primeiro")
+                                                        
                                                         # ✅ DEBUG: Logar UTXOs encontrados
                                                         total_value = self._debug_print_utxos(utxos, "UTXOs da Blockstream API")
                                                         print(f"✅ {len(utxos)} UTXOs válidos encontrados via Blockstream API!")
                                                         print(f"   💰 Valor total: {total_value / 100000000:.8f} BTC")
+                                                        print(f"   🎯 UTXO selecionado (primeiro): {utxos[0].get('txid', 'N/A')[:16]}...:{utxos[0].get('vout', 'N/A')} = {utxos[0].get('value', 0)} sats")
                                                         add_log("blockstream_utxos_fetched", {"count": len(utxos), "total_sats": total_value}, "info")
                                                     else:
                                                         print(f"⚠️  Nenhum UTXO válido após processamento")
@@ -4547,10 +4562,23 @@ class RealCrossChainBridge:
                                             if change_value < 0:
                                                 print(f"⚠️  Fundos insuficientes para BlockCypher")
                                             else:
+                                                # ✅ ORDENAR UTXOs: Usar sempre o MAIS RECENTE primeiro
+                                                # Ordenar por valor (maior primeiro, mas suficiente para a transação)
+                                                def sort_utxos_for_blockcypher(utxo):
+                                                    value = utxo.get('value', 0)
+                                                    if value >= amount_satoshis + 500:  # Valor suficiente
+                                                        return (0, -value)  # Prioridade alta, maior valor primeiro
+                                                    else:
+                                                        return (1, -value)  # Prioridade baixa, maior valor primeiro
+                                                
+                                                utxos.sort(key=sort_utxos_for_blockcypher)
+                                                print(f"   📊 UTXOs ordenados: usando o mais adequado primeiro")
+                                                
                                                 # Preparar inputs
                                                 inputs_list = []
                                                 print(f"   🔍 Validando e preparando {len(utxos)} UTXOs para BlockCypher...")
                                                 print(f"   ⚠️  IMPORTANTE: Verificando cada UTXO individualmente antes de usar...")
+                                                print(f"   🎯 UTXO selecionado (primeiro): {utxos[0].get('txid', 'N/A')[:16] if utxos else 'N/A'}...:{utxos[0].get('vout', 'N/A') if utxos else 'N/A'} = {utxos[0].get('value', 0) if utxos else 0} sats")
                                                 
                                                 for i, utxo in enumerate(utxos):
                                                     txid = utxo.get('txid') or utxo.get('tx_hash')
