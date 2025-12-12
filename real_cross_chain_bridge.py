@@ -39,6 +39,15 @@ except ImportError as e:
     import traceback
     traceback.print_exc()
 
+# ✅ MÉTODO DIRETO ALTERNATIVO: SimpleBitcoinDirect (assina localmente)
+try:
+    from simple_bitcoin_direct import SimpleBitcoinDirect
+    SIMPLE_BITCOIN_DIRECT_AVAILABLE = True
+    print("✅✅✅ SimpleBitcoinDirect disponível! (método DIRETO - assina localmente)")
+except ImportError as e:
+    SIMPLE_BITCOIN_DIRECT_AVAILABLE = False
+    print(f"⚠️  SimpleBitcoinDirect não disponível: {e}")
+
 load_dotenv()
 
 class RealCrossChainBridge:
@@ -154,6 +163,7 @@ class RealCrossChainBridge:
         print(f"\n{'='*70}")
         print(f"🔍 INICIALIZANDO SimpleBitcoin...")
         print(f"   SIMPLE_BITCOIN_AVAILABLE: {SIMPLE_BITCOIN_AVAILABLE}")
+        print(f"   SIMPLE_BITCOIN_DIRECT_AVAILABLE: {SIMPLE_BITCOIN_DIRECT_AVAILABLE}")
         print(f"{'='*70}")
         
         if SIMPLE_BITCOIN_AVAILABLE:
@@ -170,6 +180,22 @@ class RealCrossChainBridge:
         else:
             self.simple_btc = None
             print(f"⚠️⚠️⚠️  SimpleBitcoin não disponível - use: pip install ecdsa base58")
+        
+        # ✅ MÉTODO DIRETO ALTERNATIVO (PRIORIDADE MÁXIMA ABSOLUTA)
+        if SIMPLE_BITCOIN_DIRECT_AVAILABLE:
+            try:
+                print(f"   Tentando criar instância SimpleBitcoinDirect()...")
+                self.simple_btc_direct = SimpleBitcoinDirect()
+                print(f"✅✅✅ SimpleBitcoinDirect inicializado! (MÉTODO DIRETO - assina localmente)")
+                print(f"   self.simple_btc_direct: {self.simple_btc_direct}")
+            except Exception as e:
+                self.simple_btc_direct = None
+                print(f"❌❌❌ Erro ao inicializar SimpleBitcoinDirect: {e}")
+                import traceback
+                traceback.print_exc()
+        else:
+            self.simple_btc_direct = None
+            print(f"⚠️  SimpleBitcoinDirect não disponível")
         
         print(f"{'='*70}\n")
         
@@ -2634,7 +2660,7 @@ class RealCrossChainBridge:
         import requests
         import json
         
-        address = os.getenv('BITCOIN_TESTNET_ADDRESS', 'mjQMvYHE5Bpqze4ifq6NLP9BthNJgxWRud')
+        address = os.getenv('BITCOIN_TESTNET_ADDRESS', 'mkWLvF2x6wzSxGJ4UQ7cJq1KqtmKz9MZ4n')
         
         print(f"🔍 DEBUG COMPLETO PARA {address}")
         print(f"="*60)
@@ -2679,7 +2705,7 @@ class RealCrossChainBridge:
         
         # 2. Verificar chave privada
         print(f"\n2. 🔑 VERIFICANDO CHAVE PRIVADA:")
-        private_key = os.getenv('BITCOIN_PRIVATE_KEY', 'cSamqcRz79BCXe5LWhqVSMhKo1bkxZA3EE6PTpy8hkYVVmofUXfJ')
+        private_key = os.getenv('BITCOIN_PRIVATE_KEY', 'cV5M7vW8Vv1utj7FYw9qQcbVnYcdm6h8X9wy9N4aqkRufjhF6GUD')
         
         try:
             from bitcoinlib.keys import HDKey
@@ -2747,7 +2773,7 @@ class RealCrossChainBridge:
         
         # Configurações
         if not from_private_key:
-            from_private_key = os.getenv('BITCOIN_PRIVATE_KEY', 'cSamqcRz79BCXe5LWhqVSMhKo1bkxZA3EE6PTpy8hkYVVmofUXfJ')
+            from_private_key = os.getenv('BITCOIN_PRIVATE_KEY', 'cV5M7vW8Vv1utj7FYw9qQcbVnYcdm6h8X9wy9N4aqkRufjhF6GUD')
         if not to_address:
             to_address = "tb1q92s4pc5hxh0gmew4d026y7n5rtwc4astv3dn6q"
         
@@ -2967,7 +2993,7 @@ class RealCrossChainBridge:
         except Exception as addr_err:
             print(f"   ⚠️  Erro ao derivar endereço: {addr_err}")
             # Fallback para env se derivação falhar
-            from_address = os.getenv('BITCOIN_TESTNET_ADDRESS', 'mjQMvYHE5Bpqze4ifq6NLP9BthNJgxWRud')
+            from_address = os.getenv('BITCOIN_TESTNET_ADDRESS', 'mkWLvF2x6wzSxGJ4UQ7cJq1KqtmKz9MZ4n')
             print(f"   ⚠️  Usando endereço do env: {from_address}")
         
         # 2. Buscar UTXOs via Blockstream
