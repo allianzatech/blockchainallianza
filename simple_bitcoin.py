@@ -300,26 +300,77 @@ class SimpleBitcoin:
                 }
             
             # Converter WIF para chave privada hex (BlockCypher precisa de hex)
+            print(f"\n   🔐 Convertendo chave privada...")
+            print(f"   WIF recebido: {from_wif[:15]}... (tamanho: {len(from_wif)})")
+            
+            private_key_hex = None
+            
+            # ✅ MÉTODO 1: Tentar usar bitcoinlib (mais confiável)
             try:
-                private_key_bytes = self.wif_to_private_key(from_wif)
-                private_key_hex = private_key_bytes.hex()
-                print(f"   ✅ Chave convertida para hex: {private_key_hex[:20]}...")
-            except Exception as e:
+                from bitcoinlib.keys import HDKey
+                key_obj = HDKey(from_wif, network='testnet')
+                private_key_hex = key_obj.private_hex
+                print(f"   ✅ Chave convertida via bitcoinlib: {private_key_hex[:20]}... (tamanho: {len(private_key_hex)})")
+            except Exception as lib_err:
+                print(f"   ⚠️  bitcoinlib falhou: {lib_err}")
+                
+                # ✅ MÉTODO 2: Tentar nossa implementação própria
+                try:
+                    private_key_bytes = self.wif_to_private_key(from_wif)
+                    private_key_hex = private_key_bytes.hex()
+                    print(f"   ✅ Chave convertida via método próprio: {private_key_hex[:20]}... (tamanho: {len(private_key_hex)})")
+                except Exception as own_err:
+                    return {
+                        "success": False,
+                        "error": f"Erro ao converter WIF para hex: {own_err}",
+                        "note": "Verifique se a chave WIF está correta",
+                        "bitcoinlib_error": str(lib_err),
+                        "own_method_error": str(own_err)
+                    }
+            
+            # ✅ VALIDAÇÃO CRÍTICA: Verificar se a chave hex é válida
+            if not private_key_hex:
                 return {
                     "success": False,
-                    "error": f"Erro ao converter WIF para hex: {e}",
-                    "note": "Verifique se a chave WIF está correta"
+                    "error": "Chave privada hex está vazia após conversão",
+                    "note": "A conversão WIF -> hex falhou"
                 }
+            
+            if len(private_key_hex) != 64:
+                return {
+                    "success": False,
+                    "error": f"Chave privada hex tem tamanho inválido: {len(private_key_hex)} (esperado 64)",
+                    "note": "A chave privada deve ter 32 bytes (64 caracteres hex)"
+                }
+            
+            # ✅ VALIDAÇÃO: Verificar se é hex válido
+            try:
+                bytes.fromhex(private_key_hex)
+            except ValueError:
+                return {
+                    "success": False,
+                    "error": "Chave privada hex contém caracteres inválidos",
+                    "note": "A chave deve ser hexadecimal válida (0-9, a-f)"
+                }
+            
+            print(f"   ✅ Chave privada validada: {len(private_key_hex)} caracteres hex")
             
             # Assinar transação
             print(f"\n   🔐 Assinando transação...")
             print(f"   tosign count: {len(tosign)}")
+            print(f"   private_key_hex length: {len(private_key_hex)}")
+            print(f"   private_key_hex preview: {private_key_hex[:30]}...")
             
             sign_data = {
                 "tx": unsigned_tx,
                 "tosign": tosign,
                 "privkeys": [private_key_hex]
             }
+            
+            print(f"   📋 sign_data preparado:")
+            print(f"      - tx: presente ({'tx' in unsigned_tx})")
+            print(f"      - tosign: {len(tosign)} hashes")
+            print(f"      - privkeys: {len(sign_data['privkeys'])} chave(s)")
             
             sign_url = f"{self.blockcypher_api}/txs/send?token={self.blockcypher_token}"
             sign_response = requests.post(sign_url, json=sign_data, timeout=30)
