@@ -3587,6 +3587,26 @@ class RealCrossChainBridge:
                         "proof_file": self._save_transaction_proof(proof_data)
                     }
                 
+                # ✅ VALIDAÇÃO CRÍTICA: Detectar se é chave pública (XPUB/YPUB/ZPUB) em vez de privada
+                if from_private_key.startswith(('xpub', 'ypub', 'zpub', 'tpub', 'upub', 'vpub')):
+                    print(f"   ❌❌❌ ERRO CRÍTICO: Chave PÚBLICA detectada em vez de PRIVADA! ❌❌❌")
+                    print(f"   Chave recebida: {from_private_key[:50]}...")
+                    print(f"   Tipo detectado: XPUB/Chave Pública Estendida")
+                    print(f"   ⚠️  Você configurou uma CHAVE PÚBLICA no lugar de uma CHAVE PRIVADA!")
+                    return {
+                        "success": False,
+                        "error": "Chave pública (XPUB) configurada em vez de chave privada (WIF)",
+                        "note": "BITCOIN_PRIVATE_KEY deve ser uma chave PRIVADA WIF (começa com c/9/5/K/L), não uma chave pública (xpub/ypub/zpub/vpub)",
+                        "detected_key_type": "public_key_extended",
+                        "key_prefix": from_private_key[:4],
+                        "expected_format": "WIF private key (starts with c/9/5/K/L, ~52 chars)",
+                        "examples": {
+                            "correct_wif_testnet": "cPmkhTUA6E9Kwt7grHcf5b1F67k1iucDXDgqimnMDbJd4W5aE3MN",
+                            "incorrect_xpub": "vpub5SLqN2bLY4WeXx3uGPx62KTEXFF5Dv1TA3xra8QsC9p2cb"
+                        },
+                        "proof_file": self._save_transaction_proof(proof_data)
+                    }
+                
                 # ✅ DEBUG ULTRA-DETALHADO: Mostrar EXATAMENTE o que está sendo recebido
                 print(f"\n" + "="*70)
                 print(f"🔍🔍🔍 DEBUG ULTRA-DETALHADO DA CHAVE PRIVADA 🔍🔍🔍")
