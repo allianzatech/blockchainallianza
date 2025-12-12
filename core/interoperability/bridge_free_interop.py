@@ -524,7 +524,86 @@ class BridgeFreeInterop:
                     "note": "Configure no .env: POLYGON_PRIVATE_KEY, BSC_PRIVATE_KEY ou ETH_PRIVATE_KEY"
                 }
             
-            # Escolher Web3 baseado na chain de destino
+            # ✅ CORREÇÃO: Solana não é EVM, precisa tratamento especial
+            if target_chain == "solana":
+                print(f"⚡ Target é Solana (não EVM), usando SolanaBridge...")
+                try:
+                    from real_cross_chain_bridge import RealCrossChainBridge
+                    bridge = RealCrossChainBridge()
+                    bridge.setup_connections()
+                    
+                    # Verificar se SolanaBridge está disponível
+                    if not hasattr(bridge, 'solana_bridge') or not bridge.solana_bridge:
+                        return {
+                            "success": False,
+                            "error": "Solana Bridge não disponível",
+                            "note": "Instale bibliotecas Solana: pip install solana solders",
+                            "simulation": True
+                        }
+                    
+                    # Obter private key Solana
+                    solana_private_key = os.getenv('SOLANA_BRIDGE_PRIVATE_KEY') or os.getenv('SOLANA_PRIVATE_KEY')
+                    if not solana_private_key:
+                        return {
+                            "success": False,
+                            "error": "Private key Solana não configurada",
+                            "note": "Configure SOLANA_PRIVATE_KEY ou SOLANA_BRIDGE_PRIVATE_KEY no .env",
+                            "simulation": True
+                        }
+                    
+                    # Converter amount para SOL se necessário
+                    amount_sol = amount
+                    if token_symbol and token_symbol != "SOL":
+                        # Usar taxas de câmbio do bridge
+                        bridge.update_exchange_rates()
+                        source_price = bridge.get_exchange_rate(token_symbol)
+                        sol_price = bridge.get_exchange_rate("SOL")
+                        if source_price and sol_price:
+                            amount_sol = (amount * source_price) / sol_price
+                        else:
+                            amount_sol = amount / 1000  # Fallback conservador
+                    
+                    print(f"   💰 Enviando {amount_sol:.9f} SOL para {recipient}")
+                    
+                    # Enviar transação Solana
+                    solana_result = bridge.solana_bridge.send_transaction(
+                        from_private_key=solana_private_key,
+                        to_address=recipient,
+                        amount_sol=amount_sol
+                    )
+                    
+                    if solana_result.get("success"):
+                        return {
+                            "success": True,
+                            "tx_hash": solana_result.get("tx_signature"),
+                            "explorer_url": solana_result.get("explorer_url"),
+                            "from": solana_result.get("from"),
+                            "to": solana_result.get("to"),
+                            "amount": amount_sol,
+                            "amount_lamports": solana_result.get("amount_lamports"),
+                            "network": solana_result.get("network"),
+                            "confirmed": solana_result.get("confirmed"),
+                            "chain": "solana",
+                            "memo_hex": memo_info.get("memo_hex") if memo_info else None
+                        }
+                    else:
+                        return {
+                            "success": False,
+                            "error": f"Transação Solana falhou: {solana_result.get('error')}",
+                            "simulation": True
+                        }
+                        
+                except Exception as solana_err:
+                    print(f"❌ Erro ao processar Solana: {solana_err}")
+                    import traceback
+                    traceback.print_exc()
+                    return {
+                        "success": False,
+                        "error": f"Erro ao processar Solana: {str(solana_err)}",
+                        "simulation": True
+                    }
+            
+            # Escolher Web3 baseado na chain de destino (apenas para EVM chains)
             w3 = None
             chain_id = None
             
