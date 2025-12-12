@@ -286,15 +286,10 @@ class SolanaBridge:
             recent_blockhash_resp = self.client.get_latest_blockhash(commitment=Confirmed)
             recent_blockhash = recent_blockhash_resp.value.blockhash
             
-            # Criar Message com a instrução
-            message = Message.new_with_blockhash(
-                [instruction],
-                from_pubkey
-            )
-            
             # ✅ CORREÇÃO: Nova API do solders - usar new_signed_with_payer
             # new_signed_with_payer(instructions, payer, signing_keypairs, recent_blockhash)
-            # Este método cria e assina a transação automaticamente
+            # Este método cria a Message, assina e cria a Transaction automaticamente
+            # Não precisamos criar Message separadamente
             transaction = Transaction.new_signed_with_payer(
                 [instruction],      # Lista de instruções
                 from_pubkey,        # Payer (remetente)
