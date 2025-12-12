@@ -2709,8 +2709,17 @@ class RealCrossChainBridge:
         
         # 2. Verificar chave privada
         print(f"\n2. 🔑 VERIFICANDO CHAVE PRIVADA:")
-        # ✅ NOVA CHAVE WIF COM SALDO: cPmkhTUA6E9Kwt7grHcf5b1F67k1iucDXDgqimnMDbJd4W5aE3MN (0.00136960 BTC)
-        private_key = os.getenv('BITCOIN_PRIVATE_KEY', 'cPmkhTUA6E9Kwt7grHcf5b1F67k1iucDXDgqimnMDbJd4W5aE3MN')
+        # ✅ CORREÇÃO: NUNCA usar chave hardcoded, sempre do .env
+        private_key = os.getenv('BITCOIN_PRIVATE_KEY') or os.getenv('BITCOIN_TESTNET_PRIVATE_KEY') or os.getenv('BTC_PRIVATE_KEY')
+        
+        if not private_key:
+            print(f"   ❌ ERRO: Chave privada Bitcoin não configurada no .env")
+            print(f"   💡 Configure: BITCOIN_PRIVATE_KEY, BITCOIN_TESTNET_PRIVATE_KEY ou BTC_PRIVATE_KEY")
+            return {
+                "success": False,
+                "error": "Chave privada Bitcoin não configurada",
+                "note": "Configure BITCOIN_PRIVATE_KEY, BITCOIN_TESTNET_PRIVATE_KEY ou BTC_PRIVATE_KEY no .env"
+            }
         
         try:
             from bitcoinlib.keys import HDKey
@@ -2778,8 +2787,15 @@ class RealCrossChainBridge:
         
         # Configurações
         if not from_private_key:
-            # ✅ NOVA CHAVE WIF COM SALDO: cPmkhTUA6E9Kwt7grHcf5b1F67k1iucDXDgqimnMDbJd4W5aE3MN (0.00136960 BTC)
-            from_private_key = os.getenv('BITCOIN_PRIVATE_KEY', 'cPmkhTUA6E9Kwt7grHcf5b1F67k1iucDXDgqimnMDbJd4W5aE3MN')
+            # ✅ CORREÇÃO: NUNCA usar chave hardcoded, sempre do .env
+            from_private_key = os.getenv('BITCOIN_PRIVATE_KEY') or os.getenv('BITCOIN_TESTNET_PRIVATE_KEY') or os.getenv('BTC_PRIVATE_KEY')
+            
+            if not from_private_key:
+                return {
+                    "success": False,
+                    "error": "Chave privada Bitcoin não configurada",
+                    "note": "Configure BITCOIN_PRIVATE_KEY, BITCOIN_TESTNET_PRIVATE_KEY ou BTC_PRIVATE_KEY no .env"
+                }
         if not to_address:
             to_address = "tb1q92s4pc5hxh0gmew4d026y7n5rtwc4astv3dn6q"
         
@@ -8827,11 +8843,11 @@ class RealCrossChainBridge:
                 
                 # Obter chave privada Bitcoin da bridge
                 # MELHORIA: Tentar múltiplas variáveis de ambiente
+                # ✅ CORREÇÃO: NUNCA usar chave hardcoded, sempre do .env
                 target_private_key = (
                     os.getenv('BITCOIN_PRIVATE_KEY') or 
                     os.getenv('BITCOIN_TESTNET_PRIVATE_KEY') or
-                    os.getenv('BTC_PRIVATE_KEY') or
-                    'cPmkhTUA6E9Kwt7grHcf5b1F67k1iucDXDgqimnMDbJd4W5aE3MN'  # ✅ NOVA CHAVE WIF COM SALDO (0.00136960 BTC)
+                    os.getenv('BTC_PRIVATE_KEY')
                 )
                 
                 if not target_private_key:
