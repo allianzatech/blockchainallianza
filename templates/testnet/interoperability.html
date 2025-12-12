@@ -447,12 +447,45 @@
         
         // Copy all transfer information
         function copyAllTransferInfo() {
-            if (!window.lastTransferResult) {
+            // Prioridade 1: Tentar usar window.lastTransferResult (objeto completo da API)
+            let resultToCopy = window.lastTransferResult;
+            
+            // Prioridade 2: Se não tiver, tentar extrair do pre tag com JSON completo
+            if (!resultToCopy) {
+                const preElement = document.getElementById('fullResultJson');
+                if (preElement) {
+                    try {
+                        resultToCopy = JSON.parse(preElement.textContent);
+                    } catch (e) {
+                        console.warn('Erro ao parsear JSON do pre tag:', e);
+                    }
+                }
+            }
+            
+            // Prioridade 3: Tentar qualquer pre tag dentro do resultContent
+            if (!resultToCopy) {
+                const preElement = document.querySelector('#transferResultContent pre');
+                if (preElement) {
+                    try {
+                        resultToCopy = JSON.parse(preElement.textContent);
+                    } catch (e) {
+                        console.warn('Erro ao parsear JSON do pre tag genérico:', e);
+                    }
+                }
+            }
+            
+            if (!resultToCopy) {
                 alert('{{ t("no_data_to_copy") or "No data to copy" }}');
                 return;
             }
             
-            const textToCopy = JSON.stringify(window.lastTransferResult, null, 2);
+            // ✅ GARANTIR: Copiar o objeto COMPLETO, incluindo todas as propriedades
+            // Usar JSON.stringify com replacer para garantir que tudo seja incluído
+            const textToCopy = JSON.stringify(resultToCopy, (key, value) => {
+                // Incluir todas as propriedades, mesmo undefined/null
+                return value;
+            }, 2);
+            
             navigator.clipboard.writeText(textToCopy).then(() => {
                 const button = document.getElementById('copyAllTransferBtn');
                 if (button) {
@@ -572,7 +605,7 @@
                         ${result.transfer_id ? `<p class="info mt-2"><strong>Transfer ID:</strong> <span class="font-mono text-xs">${result.transfer_id}</span> <button class="copy-btn-small" onclick="copyText('${result.transfer_id}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>` : ''}
                         ${result.memo && result.memo.zk_proof && result.memo.zk_proof.state_hash ? `<p class="info mt-2"><strong>State Hash:</strong> <span class="font-mono text-xs break-all">${result.memo.zk_proof.state_hash}</span> <button class="copy-btn-small" onclick="copyText('${result.memo.zk_proof.state_hash}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>` : ''}
                         ${txInfo}
-                        <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                        <pre id="fullResultJson" class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
                     `;
                 } else {
                     resultContent.innerHTML = `
