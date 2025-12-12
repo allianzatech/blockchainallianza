@@ -259,17 +259,46 @@ class SolanaBridge:
             
             balance_sol = balance_result.get("balance_sol", 0)
             
-            # Verificar saldo suficiente (incluindo fee)
-            fee_estimate = 0.000005  # ~5000 lamports (fee típico Solana)
-            required = amount_sol + fee_estimate
+            # ✅ CORREÇÃO CRÍTICA: Verificar se conta de destino existe e calcular rent
+            to_pubkey = Pubkey.from_string(to_address)
+            to_balance_result = self.get_balance(to_address)
+            to_balance_sol = to_balance_result.get("balance_sol", 0) if to_balance_result.get("success") else 0
             
-            if balance_sol < required:
+            # Rent mínimo em Solana é ~0.00089 SOL (890,000 lamports)
+            # Se a conta não existe ou tem saldo zero, precisamos adicionar rent
+            rent_exempt_minimum = 0.00089  # SOL mínimo para rent exemption
+            rent_needed = 0.0
+            
+            if to_balance_sol == 0:
+                # Conta não existe ou está vazia - precisa criar e pagar rent
+                # Se o valor enviado for menor que rent mínimo, adicionar rent
+                if amount_sol < rent_exempt_minimum:
+                    rent_needed = rent_exempt_minimum - amount_sol
+                    print(f"   ⚠️  Conta de destino não existe ou está vazia")
+                    print(f"   💰 Adicionando rent mínimo: {rent_needed} SOL (total: {amount_sol + rent_needed} SOL)")
+            
+            # Verificar saldo suficiente (incluindo fee e rent se necessário)
+            fee_estimate = 0.000005  # ~5000 lamports (fee típico Solana)
+            total_required = amount_sol + rent_needed + fee_estimate
+            
+            if balance_sol < total_required:
                 return {
                     "success": False,
-                    "error": f"Saldo insuficiente. Disponível: {balance_sol} SOL, Necessário: {required} SOL",
+                    "error": f"Saldo insuficiente. Disponível: {balance_sol} SOL, Necessário: {total_required} SOL (amount: {amount_sol}, rent: {rent_needed}, fee: {fee_estimate})",
                     "balance": balance_sol,
-                    "required": required
+                    "required": total_required,
+                    "breakdown": {
+                        "amount": amount_sol,
+                        "rent": rent_needed,
+                        "fee": fee_estimate
+                    }
                 }
+            
+            # Ajustar amount_lamports se precisar adicionar rent
+            if rent_needed > 0:
+                amount_sol = amount_sol + rent_needed
+                amount_lamports = int(amount_sol * 1e9)
+                print(f"   ✅ Valor ajustado para incluir rent: {amount_sol} SOL ({amount_lamports} lamports)")
             
             # Criar transação
             to_pubkey = Pubkey.from_string(to_address)
