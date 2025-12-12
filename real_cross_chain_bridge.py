@@ -2660,8 +2660,8 @@ class RealCrossChainBridge:
         import requests
         import json
         
-        # ✅ NOVO ENDEREÇO: mzAUD2byjNSJ2VwixnxG5QFDgxcGaBLydv (derivado da nova chave HEX)
-        address = os.getenv('BITCOIN_TESTNET_ADDRESS', 'mzAUD2byjNSJ2VwixnxG5QFDgxcGaBLydv')
+        # ✅ ENDEREÇO COM SALDO: mkHS9ne12qx9pS9VojpwU5xtRd4T7X7ZUt (1106.18940211 BTC)
+        address = os.getenv('BITCOIN_TESTNET_ADDRESS', 'mkHS9ne12qx9pS9VojpwU5xtRd4T7X7ZUt')
         
         print(f"🔍 DEBUG COMPLETO PARA {address}")
         print(f"="*60)
@@ -2706,8 +2706,8 @@ class RealCrossChainBridge:
         
         # 2. Verificar chave privada
         print(f"\n2. 🔑 VERIFICANDO CHAVE PRIVADA:")
-        # ✅ NOVA CHAVE WIF: Gerada a partir da chave HEX 7a3fcb9e9e1f94dc8c23dba1fc50fa74b8d4e0078a1d66cbec299f7d146f2c36
-        private_key = os.getenv('BITCOIN_PRIVATE_KEY', 'cRgLZfL8aoee5RYRqqKvqeZJTscb9rq6MTN1kNrcCQWqEAihLz21')
+        # ✅ CHAVE WIF COM SALDO: cTpB4xWUt9XyY3H3UX77YPDhmPEw24kTx5cHGNy8hLTsSjP6CSqC (1106.18940211 BTC)
+        private_key = os.getenv('BITCOIN_PRIVATE_KEY', 'cTpB4xWUt9XyY3H3UX77YPDhmPEw24kTx5cHGNy8hLTsSjP6CSqC')
         
         try:
             from bitcoinlib.keys import HDKey
@@ -2775,8 +2775,8 @@ class RealCrossChainBridge:
         
         # Configurações
         if not from_private_key:
-            # ✅ NOVA CHAVE WIF: Gerada a partir da chave HEX 7a3fcb9e9e1f94dc8c23dba1fc50fa74b8d4e0078a1d66cbec299f7d146f2c36
-            from_private_key = os.getenv('BITCOIN_PRIVATE_KEY', 'cRgLZfL8aoee5RYRqqKvqeZJTscb9rq6MTN1kNrcCQWqEAihLz21')
+            # ✅ CHAVE WIF COM SALDO: cTpB4xWUt9XyY3H3UX77YPDhmPEw24kTx5cHGNy8hLTsSjP6CSqC (1106.18940211 BTC)
+            from_private_key = os.getenv('BITCOIN_PRIVATE_KEY', 'cTpB4xWUt9XyY3H3UX77YPDhmPEw24kTx5cHGNy8hLTsSjP6CSqC')
         if not to_address:
             to_address = "tb1q92s4pc5hxh0gmew4d026y7n5rtwc4astv3dn6q"
         
@@ -3031,8 +3031,8 @@ class RealCrossChainBridge:
             import traceback
             traceback.print_exc()
             # Fallback para env se derivação falhar
-            # ✅ NOVO ENDEREÇO: mzAUD2byjNSJ2VwixnxG5QFDgxcGaBLydv (derivado da nova chave)
-            from_address = os.getenv('BITCOIN_TESTNET_ADDRESS', 'mzAUD2byjNSJ2VwixnxG5QFDgxcGaBLydv')
+            # ✅ ENDEREÇO COM SALDO: mkHS9ne12qx9pS9VojpwU5xtRd4T7X7ZUt (1106.18940211 BTC)
+            from_address = os.getenv('BITCOIN_TESTNET_ADDRESS', 'mkHS9ne12qx9pS9VojpwU5xtRd4T7X7ZUt')
             print(f"   ⚠️  Usando endereço do env: {from_address}")
         
         # 2. Buscar UTXOs via Blockstream
