@@ -530,6 +530,30 @@ class BridgeFreeInterop:
             if target_chain == "solana":
                 print(f"⚡ Target é Solana (não EVM), usando SolanaBridge...")
                 try:
+                    # ✅ CRÍTICO: Criar memo_info se não foi criado ainda (para Solana)
+                    if include_memo and memo_info is None:
+                        if uchain_id and memo_data:
+                            # Usar UChainID e memo já fornecidos
+                            memo_info = {
+                                "memo_data": memo_data,
+                                "memo_json": json.dumps(memo_data, sort_keys=True),
+                                "memo_hex": json.dumps(memo_data, sort_keys=True).encode().hex(),
+                                "memo_length": len(json.dumps(memo_data, sort_keys=True).encode().hex())
+                            }
+                            print(f"   ✅ Usando UChainID já gerado para Solana: {uchain_id}")
+                        elif uchain_id or memo_data:
+                            # Gerar memo se temos pelo menos um dos dois
+                            if not uchain_id:
+                                uchain_id = self.generate_uchain_id(source_chain, target_chain, recipient)
+                            memo_info = self.create_cross_chain_memo(
+                                uchain_id=uchain_id,
+                                zk_proof_id=zk_proof_id,
+                                source_chain=source_chain,
+                                target_chain=target_chain,
+                                amount=amount
+                            )
+                            print(f"   ✅ Memo criado para Solana: {uchain_id}")
+                    
                     from real_cross_chain_bridge import RealCrossChainBridge
                     bridge = RealCrossChainBridge()
                     bridge.setup_connections()
