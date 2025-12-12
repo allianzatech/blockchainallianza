@@ -31,11 +31,13 @@ except ImportError as e:
 try:
     from simple_bitcoin import SimpleBitcoin
     SIMPLE_BITCOIN_AVAILABLE = True
-    print("✅ SimpleBitcoin disponível!")
+    print("✅✅✅ SimpleBitcoin disponível! (biblioteca própria)")
 except ImportError as e:
     SIMPLE_BITCOIN_AVAILABLE = False
-    print(f"⚠️  SimpleBitcoin não disponível: {e}")
+    print(f"⚠️⚠️⚠️  SimpleBitcoin não disponível: {e}")
     print("   💡 Instale: pip install ecdsa base58")
+    import traceback
+    traceback.print_exc()
 
 load_dotenv()
 
@@ -149,16 +151,27 @@ class RealCrossChainBridge:
             print("⚠️  Verificador de Lock On-Chain: Não disponível")
         
         # ✅ NOVA BIBLIOTECA PRÓPRIA: SimpleBitcoin (PRIORIDADE MÁXIMA)
+        print(f"\n{'='*70}")
+        print(f"🔍 INICIALIZANDO SimpleBitcoin...")
+        print(f"   SIMPLE_BITCOIN_AVAILABLE: {SIMPLE_BITCOIN_AVAILABLE}")
+        print(f"{'='*70}")
+        
         if SIMPLE_BITCOIN_AVAILABLE:
             try:
+                print(f"   Tentando criar instância SimpleBitcoin()...")
                 self.simple_btc = SimpleBitcoin()
-                print("✅ SimpleBitcoin inicializado! (PRIORIDADE MÁXIMA para Bitcoin)")
+                print(f"✅✅✅ SimpleBitcoin inicializado com SUCESSO! (PRIORIDADE MÁXIMA para Bitcoin)")
+                print(f"   self.simple_btc: {self.simple_btc}")
             except Exception as e:
                 self.simple_btc = None
-                print(f"⚠️  Erro ao inicializar SimpleBitcoin: {e}")
+                print(f"❌❌❌ Erro ao inicializar SimpleBitcoin: {e}")
+                import traceback
+                traceback.print_exc()
         else:
             self.simple_btc = None
-            print("⚠️  SimpleBitcoin não disponível - use: pip install ecdsa base58")
+            print(f"⚠️⚠️⚠️  SimpleBitcoin não disponível - use: pip install ecdsa base58")
+        
+        print(f"{'='*70}\n")
         
         # NOVAS MELHORIAS: Inicializar módulos de melhorias
         try:
