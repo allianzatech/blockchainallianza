@@ -21,6 +21,7 @@ try:
     from solders.pubkey import Pubkey
     from solders.system_program import transfer, TransferParams
     from solders.transaction import Transaction
+    from solders.message import Message
     # SendTransaction não existe mais na versão atual do solders - removido
     from solana.rpc.api import Client
     from solana.rpc.commitment import Confirmed
@@ -281,16 +282,42 @@ class SolanaBridge:
                 )
             )
             
-            # Criar e assinar transação
-            transaction = Transaction()
-            transaction.add(instruction)
+            # Obter recent blockhash ANTES de criar a transação
+            recent_blockhash_resp = self.client.get_latest_blockhash(commitment=Confirmed)
+            recent_blockhash = recent_blockhash_resp.value.blockhash
             
-            # Obter recent blockhash
-            recent_blockhash = self.client.get_latest_blockhash(commitment=Confirmed)
-            transaction.recent_blockhash = recent_blockhash.value.blockhash
+            # Criar Message com a instrução
+            message = Message.new_with_blockhash(
+                [instruction],
+                from_pubkey
+            )
             
-            # Assinar transação
-            transaction.sign(keypair)
+            # ✅ CORREÇÃO: Nova API do solders - usar new_signed_with_payer ou new_with_payer
+            # new_signed_with_payer assina automaticamente, new_with_payer cria sem assinar
+            try:
+                # Método 1: new_signed_with_payer (assina automaticamente)
+                transaction = Transaction.new_signed_with_payer(
+                    [instruction],
+                    from_pubkey,
+                    [keypair],
+                    recent_blockhash
+                )
+            except (TypeError, AttributeError) as e1:
+                try:
+                    # Método 2: new_with_payer (cria sem assinar, depois assina)
+                    transaction = Transaction.new_with_payer(
+                        [instruction],
+                        from_pubkey
+                    )
+                    transaction.sign([keypair], recent_blockhash)
+                except (TypeError, AttributeError) as e2:
+                    try:
+                        # Método 3: new_unsigned (versão mais antiga)
+                        transaction = Transaction.new_unsigned(message)
+                        transaction.sign([keypair], recent_blockhash)
+                    except (TypeError, AttributeError) as e3:
+                        # Método 4: Construtor direto (última tentativa)
+                        transaction = Transaction([keypair], message, recent_blockhash)
             
             # Enviar transação
             response = self.client.send_transaction(
