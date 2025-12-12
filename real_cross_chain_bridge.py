@@ -2996,7 +2996,8 @@ class RealCrossChainBridge:
         except Exception as addr_err:
             print(f"   ⚠️  Erro ao derivar endereço: {addr_err}")
             # Fallback para env se derivação falhar
-            from_address = os.getenv('BITCOIN_TESTNET_ADDRESS', 'mkWLvF2x6wzSxGJ4UQ7cJq1KqtmKz9MZ4n')
+            # ✅ NOVO ENDEREÇO: mzAUD2byjNSJ2VwixnxG5QFDgxcGaBLydv (derivado da nova chave)
+            from_address = os.getenv('BITCOIN_TESTNET_ADDRESS', 'mzAUD2byjNSJ2VwixnxG5QFDgxcGaBLydv')
             print(f"   ⚠️  Usando endereço do env: {from_address}")
         
         # 2. Buscar UTXOs via Blockstream
