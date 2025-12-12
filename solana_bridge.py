@@ -199,10 +199,11 @@ class SolanaBridge:
             if not SOLANA_LIBS_AVAILABLE:
                 return {
                     "success": False,
-                    "error": "Bibliotecas Solana não instaladas no servidor",
-                    "note": "As bibliotecas 'solana' e 'solders' precisam ser instaladas. Verifique se estão no requirements.txt e se o deploy no Render foi bem-sucedido.",
-                    "solution": "Execute: pip install solana>=0.30.2 solders>=0.18.0",
-                    "debug": "SOLANA_LIBS_AVAILABLE = False - verifique os logs do servidor para erros de instalação"
+                    "error": "Bibliotecas Solana não instaladas no servidor Render",
+                    "note": "As bibliotecas 'solana' e 'solders' estão no requirements.txt, mas não foram instaladas no servidor.",
+                    "solution": "Verifique os logs de build do Render. Pode ser necessário: 1) Verificar se há erros de compilação, 2) Garantir que Python 3.9+ está sendo usado, 3) Verificar se há conflitos de dependências",
+                    "requirements_check": "requirements.txt contém: solana>=0.30.2 e solders>=0.18.0",
+                    "debug": "SOLANA_LIBS_AVAILABLE = False - as bibliotecas não foram importadas com sucesso no servidor"
                 }
             
             # Carregar keypair
