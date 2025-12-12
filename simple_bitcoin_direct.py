@@ -298,11 +298,11 @@ class SimpleBitcoinDirect:
                 }
                 
         except Exception as e:
-        print(f"   ❌ Exceção: {e}")
-        import traceback
-        traceback.print_exc()
-        return {
-            "success": False,
-            "error": f"Exception: {str(e)}"
-        }
+            print(f"   ❌ Exceção: {e}")
+            import traceback
+            traceback.print_exc()
+            return {
+                "success": False,
+                "error": f"Exception: {str(e)}"
+            }
 
