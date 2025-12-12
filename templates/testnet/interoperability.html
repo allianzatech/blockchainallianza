@@ -74,6 +74,21 @@
         .success { color: #4ade80; }
         .error { color: #f87171; }
         .info { color: #60a5fa; }
+        
+        /* Loading overlay animation */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white">
@@ -201,8 +216,13 @@
                         <input type="text" name="recipient" id="recipient" placeholder="0x... ou mjQMvYHE5Bpqze4ifq6NLP9BthNJgxWRud" class="w-full bg-gray-700 text-white p-2 rounded font-mono" required>
                         <p class="text-xs text-gray-400 mt-1">{{ t('recipient_hint') or 'EVM address (0x...) or Bitcoin address' }}</p>
                     </div>
-                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition">
-                        <i class="fas fa-rocket mr-2"></i> 🚀 {{ t('execute_real_transfer') or 'Execute REAL Transfer' }}
+                    <button type="submit" id="executeTransferBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition relative">
+                        <span id="btnText">
+                            <i class="fas fa-rocket mr-2"></i> 🚀 {{ t('execute_real_transfer') or 'Execute REAL Transfer' }}
+                        </span>
+                        <span id="btnLoader" class="hidden">
+                            <i class="fas fa-spinner fa-spin mr-2"></i> {{ t('processing') or 'Processing...' }}
+                        </span>
                     </button>
                     <p class="text-xs text-gray-400 text-center mt-2">
                         {{ t('all_transfers_real') or '⚠️ All transfers are REAL and will appear on-chain with UChainID and ZK Proofs' }}
@@ -397,7 +417,39 @@
         // Create Transfer (Unified - Always Real)
         document.getElementById('transferForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = new FormData(e.target);
+            
+            // Obter elementos
+            const submitBtn = document.getElementById('executeTransferBtn');
+            const btnText = document.getElementById('btnText');
+            const btnLoader = document.getElementById('btnLoader');
+            const form = e.target;
+            
+            // Mostrar loader e desabilitar botão
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+            btnText.classList.add('hidden');
+            btnLoader.classList.remove('hidden');
+            
+            // Criar overlay de loading
+            const loadingOverlay = document.createElement('div');
+            loadingOverlay.id = 'loadingOverlay';
+            loadingOverlay.className = 'fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center';
+            loadingOverlay.innerHTML = `
+                <div class="bg-gray-800 rounded-lg p-8 max-w-md w-full mx-4 border border-green-500">
+                    <div class="text-center">
+                        <div class="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500 mb-4"></div>
+                        <h3 class="text-xl font-bold text-white mb-2">{{ t("executing_real_transfer") or "Executing REAL Transfer" }}</h3>
+                        <p class="text-gray-300 mb-4">{{ t("please_wait") or "Please wait while we process your cross-chain transfer..." }}</p>
+                        <div class="flex items-center justify-center space-x-2 text-green-400">
+                            <i class="fas fa-rocket animate-pulse"></i>
+                            <span class="text-sm">{{ t("creating_transaction") or "Creating transaction..." }}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(loadingOverlay);
+            
+            const formData = new FormData(form);
             const data = {
                 source_chain: formData.get('source_chain'),
                 target_chain: formData.get('target_chain'),
@@ -420,6 +472,19 @@
                 });
 
                 const result = await response.json();
+                
+                // Remover overlay de loading
+                const overlay = document.getElementById('loadingOverlay');
+                if (overlay) {
+                    overlay.remove();
+                }
+                
+                // Restaurar botão
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                btnText.classList.remove('hidden');
+                btnLoader.classList.add('hidden');
+                
                 if (result.success) {
                     let txInfo = '';
                     if (result.real_transaction && result.real_transaction.success) {
@@ -449,6 +514,18 @@
                     `;
                 }
             } catch (error) {
+                // Remover overlay de loading em caso de erro
+                const overlay = document.getElementById('loadingOverlay');
+                if (overlay) {
+                    overlay.remove();
+                }
+                
+                // Restaurar botão
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                btnText.classList.remove('hidden');
+                btnLoader.classList.add('hidden');
+                
                 resultContent.innerHTML = `<p class="error">❌ {{ t("error") or "Error" }}: ${error.message}</p>`;
             }
         });
