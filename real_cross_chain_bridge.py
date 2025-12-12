@@ -3730,18 +3730,48 @@ class RealCrossChainBridge:
         # ✅✅✅ PRIORIDADE 2: SimpleBitcoin (biblioteca própria ultra simples)
         if self.simple_btc:
             print(f"\n" + "="*70)
-            print(f"🎯🎯🎯 PRIORIDADE MÁXIMA: SimpleBitcoin (biblioteca própria) 🎯🎯🎯")
+            print(f"🎯🎯🎯 PRIORIDADE 2: SimpleBitcoin (biblioteca própria) 🎯🎯🎯")
             print(f"="*70)
             print(f"📋 Esta é a biblioteca própria ultra simples que VAI FUNCIONAR!")
             
             try:
+                # ✅ DEBUG ULTRA-DETALHADO: Mostrar EXATAMENTE o que está sendo recebido
+                print(f"\n" + "="*70)
+                print(f"🔍🔍🔍 DEBUG ULTRA-DETALHADO DA CHAVE (SimpleBitcoin) 🔍🔍🔍")
+                print(f"="*70)
+                print(f"   Tipo: {type(from_private_key)}")
+                print(f"   Tamanho: {len(from_private_key) if from_private_key else 0}")
+                print(f"   Repr (mostra caracteres invisíveis): {repr(from_private_key[:50]) if from_private_key else 'None'}")
+                print(f"   Primeiros 30 chars: '{from_private_key[:30] if from_private_key else 'None'}'")
+                if from_private_key:
+                    print(f"   Primeiro char (ord): {ord(from_private_key[0])} ('{from_private_key[0]}')")
+                    print(f"   Último char: '{from_private_key[-1]}'")
+                    print(f"   Tem espaços no início/fim: {from_private_key != from_private_key.strip()}")
+                    print(f"   Começa com 'c': {from_private_key.startswith('c')}")
+                    print(f"   Começa com '9': {from_private_key.startswith('9')}")
+                    print(f"   Começa com '5': {from_private_key.startswith('5')}")
+                    print(f"   Começa com 'L': {from_private_key.startswith('L')}")
+                    print(f"   Começa com 'K': {from_private_key.startswith('K')}")
+                    print(f"   Começa com qualquer prefixo WIF: {from_private_key.startswith(('c', '9', '5', 'L', 'K'))}")
+                    print(f"   É hex (64 chars): {len(from_private_key) == 64 and all(c in '0123456789abcdefABCDEF' for c in from_private_key)}")
+                    print(f"   É hex com 0x (66 chars): {from_private_key.startswith('0x') and len(from_private_key) == 66}")
+                print(f"="*70 + "\n")
+                
+                # Remover espaços e caracteres especiais ANTES de verificar
+                from_private_key_stripped = from_private_key.strip() if from_private_key else None
+                if from_private_key and from_private_key != from_private_key_stripped:
+                    print(f"   ⚠️  AVISO: Chave tinha espaços! Removendo...")
+                    print(f"      Antes: {repr(from_private_key[:50])}")
+                    print(f"      Depois: {repr(from_private_key_stripped[:50])}")
+                    from_private_key = from_private_key_stripped
+                
                 # Verificar se a chave é WIF
-                if not from_private_key.startswith(('c', '9', 'L', 'K')):
+                if not from_private_key or not from_private_key.startswith(('c', '9', '5', 'L', 'K')):
                     print(f"   ⚠️  Chave não parece ser WIF, tentando converter...")
                     
                     # Se for hex (0x... ou 64 chars), converter para WIF
-                    if (from_private_key.startswith('0x') and len(from_private_key) == 66) or \
-                       (len(from_private_key) == 64 and all(c in '0123456789abcdefABCDEF' for c in from_private_key)):
+                    if from_private_key and ((from_private_key.startswith('0x') and len(from_private_key) == 66) or \
+                       (len(from_private_key) == 64 and all(c in '0123456789abcdefABCDEF' for c in from_private_key))):
                         try:
                             from bitcoinlib.keys import HDKey
                             
@@ -3759,6 +3789,8 @@ class RealCrossChainBridge:
                             
                         except Exception as e:
                             print(f"   ❌ Erro na conversão: {e}")
+                            import traceback
+                            traceback.print_exc()
                             return {
                                 "success": False,
                                 "error": f"Não foi possível converter chave: {e}",
@@ -3766,10 +3798,29 @@ class RealCrossChainBridge:
                                 "proof_file": self._save_transaction_proof(proof_data)
                             }
                     else:
+                        # Formato desconhecido - DEBUG EXTRA
+                        print(f"\n   ❌❌❌ FORMATO DESCONHECIDO DETECTADO (SimpleBitcoin) ❌❌❌")
+                        print(f"   Chave recebida (repr): {repr(from_private_key) if from_private_key else 'None'}")
+                        print(f"   Chave recebida (str): '{from_private_key if from_private_key else 'None'}'")
+                        if from_private_key:
+                            print(f"   Tamanho: {len(from_private_key)}")
+                            print(f"   Primeiro char: '{from_private_key[0]}' (ord: {ord(from_private_key[0])})")
+                            print(f"   Todos os chars são ASCII imprimíveis: {all(32 <= ord(c) <= 126 for c in from_private_key)}")
+                        print(f"   Possíveis problemas:")
+                        print(f"      - Chave pode ter caracteres invisíveis no início/fim")
+                        print(f"      - Chave pode estar em formato não reconhecido")
+                        print(f"      - Chave pode estar corrompida")
                         return {
                             "success": False,
                             "error": "Formato de chave inválido",
-                            "note": "Use WIF (começa com c/9) ou hex (64 chars/0x...)",
+                            "note": "Use WIF (começa com c/9/5/K/L) ou hex (64 chars ou 0x...64 chars)",
+                            "debug_info": {
+                                "key_length": len(from_private_key) if from_private_key else 0,
+                                "first_char": from_private_key[0] if from_private_key and len(from_private_key) > 0 else None,
+                                "first_char_ord": ord(from_private_key[0]) if from_private_key and len(from_private_key) > 0 else None,
+                                "key_repr": repr(from_private_key[:50]) if from_private_key else None,
+                                "is_ascii": all(32 <= ord(c) <= 126 for c in from_private_key) if from_private_key else False
+                            },
                             "proof_file": self._save_transaction_proof(proof_data)
                         }
                 
