@@ -4813,10 +4813,18 @@ class RealCrossChainBridge:
                             if not wallet_send_to_success:
                                 print(f"⚠️  wallet.send_to() falhou - buscando UTXOs da Blockstream e tentando métodos alternativos...")
                                 
-                                # ✅ PRIORIDADE: Buscar UTXOs via BlockCypher API (mais confiável com token)
-                                # Se tiver token, usar BlockCypher primeiro (mais preciso)
+                                # ✅ PRIORIDADE MÁXIMA: Usar Blockstream PRIMEIRO (mais atualizado, sem cache)
+                                # BlockCypher pode ter cache/atraso, então Blockstream é mais confiável
                                 utxos = []
-                                if self.blockcypher_token:
+                                print(f"🔄 Buscando UTXOs via Blockstream API PRIMEIRO (mais atualizado) para {from_address}...")
+                                print(f"   ⚠️  IMPORTANTE: Usando apenas UTXOs CONFIRMADOS (ignorando pendentes no mempool)")
+                                # Usar método que filtra apenas UTXOs confirmados
+                                utxos = self._fetch_confirmed_utxos_only(from_address)
+                                
+                                # ✅ FALLBACK: Se Blockstream não retornou UTXOs, tentar BlockCypher
+                                if not utxos or len(utxos) == 0:
+                                    print(f"🔄 Blockstream não retornou UTXOs, tentando BlockCypher API (pode ter cache)...")
+                                    if self.blockcypher_token:
                                     print(f"🔄 Buscando UTXOs via BlockCypher API (com token) para {from_address}...")
                                     try:
                                         btc_addr_url = f"{self.btc_api_base}/addrs/{from_address}?token={self.blockcypher_token}&unspentOnly=true"
@@ -4873,17 +4881,12 @@ class RealCrossChainBridge:
                                         import traceback
                                         traceback.print_exc()
                                         add_log("blockcypher_fetch_error", {"error": str(bc_err)}, "error")
+                                    else:
+                                        print(f"⚠️  BlockCypher token não configurado, usando apenas Blockstream")
                                 
-                                # ✅ FALLBACK: Se BlockCypher não retornou UTXOs, tentar Blockstream
-                                # ✅ CORREÇÃO CRÍTICA: Usar APENAS UTXOs confirmados (ignorar pendentes no mempool)
+                                # ✅ FALLBACK FINAL: Se nem Blockstream nem BlockCypher retornaram, tentar método direto
                                 if not utxos or len(utxos) == 0:
-                                    print(f"🔄 BlockCypher não retornou UTXOs, tentando Blockstream API para {from_address}...")
-                                    print(f"   ⚠️  IMPORTANTE: Usando apenas UTXOs CONFIRMADOS (ignorando pendentes no mempool)")
-                                    # Usar método que filtra apenas UTXOs confirmados
-                                    utxos = self._fetch_confirmed_utxos_only(from_address)
-                                    
-                                    # Se ainda não encontrou, tentar método antigo como fallback
-                                    if not utxos or len(utxos) == 0:
+                                    print(f"🔄 Nem Blockstream nem BlockCypher retornaram UTXOs, tentando método direto...")
                                         try:
                                             utxos_url = f"https://blockstream.info/testnet/api/address/{from_address}/utxo"
                                             print(f"   📡 URL: {utxos_url}")
