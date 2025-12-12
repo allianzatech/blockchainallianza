@@ -111,7 +111,7 @@ class RealCrossChainBridge:
         self.exchange_rates_usd = {
             "MATIC": 0.80,    # 1 MATIC ≈ $0.80
             "ETH": 3000.0,    # 1 ETH ≈ $3,000
-            "BNB": 350.0,     # 1 BNB ≈ $350
+            "SOL": 150.0,     # 1 SOL ≈ $150
             "BTC": 45000.0,   # 1 BTC ≈ $45,000
             "USDT": 1.0,      # 1 USDT ≈ $1.00
             "USDC": 1.0       # 1 USDC ≈ $1.00
@@ -125,7 +125,7 @@ class RealCrossChainBridge:
         self.coingecko_ids = {
             "MATIC": "matic-network",
             "ETH": "ethereum",
-            "BNB": "binancecoin",
+            "SOL": "solana",
             "BTC": "bitcoin",
             "USDT": "tether",
             "USDC": "usd-coin"
@@ -304,7 +304,6 @@ class RealCrossChainBridge:
         
         # Inicializar atributos Web3 como None (serão configurados em setup_connections)
         self.polygon_w3 = None
-        self.bsc_w3 = None
         self.eth_w3 = None
         self.base_w3 = None
         
@@ -336,7 +335,7 @@ class RealCrossChainBridge:
         
         print("🌉 REAL CROSS-CHAIN BRIDGE: Sistema inicializado!")
         print("🚀 Interoperabilidade REAL entre blockchains diferentes!")
-        print("✅ Polygon ↔ Bitcoin ↔ Ethereum ↔ BSC ↔ Solana")
+        print("✅ Polygon ↔ Bitcoin ↔ Ethereum ↔ Solana")
         print("🔒 MELHORIAS: Verificação de lock on-chain implementada!")
         if self.quantum_enabled:
             print("🔐 MELHORIA: Segurança Quântica (ML-DSA) ativada!")
@@ -427,7 +426,7 @@ class RealCrossChainBridge:
         
         while time.time() - start_time < max_wait_time:
             try:
-                if chain.lower() in ["polygon", "bsc", "ethereum", "base"]:
+                if chain.lower() in ["polygon", "ethereum", "base", "solana"]:
                     w3 = self.get_web3_for_chain(chain)
                     if w3 and w3.is_connected():
                         try:
@@ -491,7 +490,7 @@ class RealCrossChainBridge:
         MELHORIA: Verificação de lock antes de unlock
         """
         try:
-            if chain.lower() in ["polygon", "bsc", "ethereum", "base"]:
+            if chain.lower() in ["polygon", "ethereum", "base", "solana"]:
                 w3 = self.get_web3_for_chain(chain)
                 if w3 and w3.is_connected():
                     try:
@@ -567,9 +566,6 @@ class RealCrossChainBridge:
         if chain_lower == "polygon":
             w3 = self.polygon_w3
             rpc_url = getattr(self, 'polygon_rpc_url', 'https://rpc-amoy.polygon.technology')
-        elif chain_lower == "bsc":
-            w3 = self.bsc_w3
-            rpc_url = getattr(self, 'bsc_rpc_url', 'https://data-seed-prebsc-1-s1.binance.org:8545')
         elif chain_lower == "ethereum" or chain_lower == "eth":
             w3 = self.eth_w3
             rpc_url = getattr(self, 'eth_rpc_url', 'https://sepolia.infura.io/v3/')
@@ -633,22 +629,6 @@ class RealCrossChainBridge:
                 except:
                     continue
             
-            # BSC Testnet - Múltiplos RPCs
-            bsc_rpcs = [
-                os.getenv('BSC_RPC_URL', 'https://data-seed-prebsc-1-s1.binance.org:8545'),
-                'https://data-seed-prebsc-2-s1.binance.org:8545',
-                'https://bsc-testnet-rpc.publicnode.com'
-            ]
-            self.bsc_w3 = None
-            for rpc in bsc_rpcs:
-                try:
-                    test_w3 = Web3(Web3.HTTPProvider(rpc, request_kwargs={'timeout': 30}))
-                    if test_w3.is_connected():
-                        self.bsc_w3 = test_w3
-                        break
-                except:
-                    continue
-            
             # Ethereum Sepolia - Múltiplos RPCs
             eth_rpcs = [
                 os.getenv('ETH_RPC_URL', f'https://sepolia.infura.io/v3/{infura_id}'),
@@ -686,7 +666,6 @@ class RealCrossChainBridge:
             
             # Verificar conexões
             print(f"✅ Polygon: {'Conectado' if self.polygon_w3 and self.polygon_w3.is_connected() else 'Desconectado'}")
-            print(f"✅ BSC: {'Conectado' if self.bsc_w3 and self.bsc_w3.is_connected() else 'Desconectado'}")
             print(f"✅ Ethereum: {'Conectado' if self.eth_w3 and self.eth_w3.is_connected() else 'Desconectado'}")
             print(f"✅ Base: {'Conectado' if self.base_w3 and self.base_w3.is_connected() else 'Desconectado'}")
             print(f"✅ Bitcoin: BlockCypher API configurada")
@@ -702,7 +681,7 @@ class RealCrossChainBridge:
                 "MATIC": 1000.0,  # 1000 MATIC em reserva
                 "ETH": 10.0,       # 10 ETH em reserva (wrapped)
                 "BTC": 1.0,        # 1 BTC em reserva (wrapped)
-                "BNB": 50.0        # 50 BNB em reserva (wrapped)
+                "SOL": 100.0       # 100 SOL em reserva (wrapped)
             },
             "ethereum": {
                 "ETH": 100.0,
@@ -710,8 +689,8 @@ class RealCrossChainBridge:
                 "BTC": 5.0,        # Wrapped BTC
                 "BNB": 200.0       # Wrapped BNB
             },
-            "bsc": {
-                "BNB": 500.0,
+            "solana": {
+                "SOL": 500.0,
                 "ETH": 20.0,       # Wrapped ETH
                 "MATIC": 2000.0,   # Wrapped MATIC
                 "BTC": 2.0         # Wrapped BTC
@@ -818,7 +797,7 @@ class RealCrossChainBridge:
         """Obter Chain ID para chain EVM"""
         chain_ids = {
             "polygon": 80002,      # Amoy
-            "bsc": 97,             # BSC Testnet
+            "solana": "testnet",  # Solana Testnet
             "ethereum": 11155111,   # Sepolia
             "base": 84532           # Base Sepolia
         }
@@ -1057,9 +1036,9 @@ class RealCrossChainBridge:
             transaction_value_usd = 0.0
             if token_symbol and token_symbol in self.exchange_rates_usd:
                 transaction_value_usd = amount * self.exchange_rates_usd[token_symbol]
-            elif chain.lower() in ["polygon", "ethereum", "bsc"]:
+            elif chain.lower() in ["polygon", "ethereum", "solana"]:
                 # Tentar obter valor do token nativo
-                native_token = {"polygon": "MATIC", "ethereum": "ETH", "bsc": "BNB"}.get(chain.lower())
+                native_token = {"polygon": "MATIC", "ethereum": "ETH", "solana": "SOL"}.get(chain.lower())
                 if native_token and native_token in self.exchange_rates_usd:
                     transaction_value_usd = float(w3.from_wei(amount_wei, 'ether')) * self.exchange_rates_usd[native_token]
             
@@ -1111,7 +1090,7 @@ class RealCrossChainBridge:
             # (será atualizado com tx_hash depois)
             explorer_urls = {
                 "polygon": f"https://amoy.polygonscan.com/tx/",
-                "bsc": f"https://testnet.bscscan.com/tx/",
+                "solana": f"https://explorer.solana.com/?cluster=testnet&tx=",
                 "ethereum": f"https://sepolia.etherscan.io/tx/",
                 "base": f"https://sepolia.basescan.org/tx/"
             }
@@ -1192,7 +1171,7 @@ class RealCrossChainBridge:
             # Atualizar explorer_urls com tx_hash (já definido antes do try)
             explorer_urls = {
                 "polygon": f"https://amoy.polygonscan.com/tx/{tx_hash_hex}",
-                "bsc": f"https://testnet.bscscan.com/tx/{tx_hash_hex}",
+                "solana": f"https://explorer.solana.com/?cluster=testnet&tx={tx_hash_hex}",
                 "ethereum": f"https://sepolia.etherscan.io/tx/{tx_hash_hex}",
                 "base": f"https://sepolia.basescan.org/tx/{tx_hash_hex}"
             }
@@ -2425,7 +2404,7 @@ class RealCrossChainBridge:
             mcl = MCL()
             
             # 1. Consensus Proof
-            consensus_type = ConsensusType.POS if source_chain in ["polygon", "ethereum", "bsc", "base"] else ConsensusType.POW
+            consensus_type = ConsensusType.POS if source_chain in ["polygon", "ethereum", "solana", "base"] else ConsensusType.POW
             block_height = source_block_number if source_block_number else int(time.time()) % 1000000
             block_hash = hashlib.sha256(f"{source_chain}{source_tx_hash}{block_height}".encode()).hexdigest()
             
@@ -4583,8 +4562,24 @@ class RealCrossChainBridge:
                                                         print(f"   ❌ UTXO [{i+1}] sem txid, pulando...")
                                                         continue
                                                     
-                                                    if not isinstance(txid, str) or len(txid) != 64:
-                                                        print(f"   ❌ UTXO [{i+1}] txid inválido: {txid} (tipo: {type(txid)}, len: {len(txid) if isinstance(txid, str) else 'N/A'})")
+                                                    # ✅ VALIDAÇÃO CRÍTICA: Garantir formato correto do txid
+                                                    if not isinstance(txid, str):
+                                                        print(f"   ❌ UTXO [{i+1}] txid não é string: {type(txid)}")
+                                                        continue
+                                                    
+                                                    # Normalizar txid: remover espaços, converter para lowercase
+                                                    txid = txid.strip().lower()
+                                                    
+                                                    # Validar formato hex e tamanho
+                                                    if len(txid) != 64:
+                                                        print(f"   ❌ UTXO [{i+1}] txid tamanho inválido: {len(txid)} (esperado 64)")
+                                                        continue
+                                                    
+                                                    try:
+                                                        # Validar que é hex válido
+                                                        int(txid, 16)
+                                                    except ValueError:
+                                                        print(f"   ❌ UTXO [{i+1}] txid não é hexadecimal válido: {txid[:20]}...")
                                                         continue
                                                     
                                                     try:
@@ -7663,8 +7658,8 @@ class RealCrossChainBridge:
         try:
             address = address.strip()
             
-            # Se target é EVM (Polygon, BSC, Ethereum, Base)
-            if target_chain in ["polygon", "bsc", "ethereum", "base"]:
+            # Se target é EVM (Polygon, Ethereum, Base) ou Solana
+            if target_chain in ["polygon", "ethereum", "base", "solana"]:
                 # Validar se é endereço EVM válido
                 w3 = self.get_web3_for_chain(target_chain)
                 if w3 and w3.is_address(address):
@@ -7842,7 +7837,7 @@ class RealCrossChainBridge:
             # MELHORIA: Conversão de valores entre chains com taxa de câmbio baseada em USD
             # Converte valores baseado no equivalente em dólares, não apenas no número
             # Exemplo: $100 em MATIC → equivalente em BTC baseado nos preços atuais
-            if source_chain.lower() in ["polygon", "ethereum", "bsc", "base"] and target_chain.lower() == "bitcoin":
+            if source_chain.lower() in ["polygon", "ethereum", "solana", "base"] and target_chain.lower() == "bitcoin":
                 # Polygon/Ethereum → Bitcoin: converter MATIC/ETH para BTC
                 target_token_symbol = "BTC"
                 
@@ -7906,14 +7901,14 @@ class RealCrossChainBridge:
                         target_amount = 0.00001
                     print(f"🔄 Conversão conservadora: {amount} {token_symbol} → {target_amount} {target_token_symbol}")
                     print(f"   (Token não reconhecido, usando taxa padrão: 1:1000)")
-            elif source_chain.lower() == "bitcoin" and target_chain.lower() in ["polygon", "ethereum", "bsc", "base"]:
-                # Bitcoin → Polygon/Ethereum: converter BTC para token nativo da chain
+            elif source_chain.lower() == "bitcoin" and target_chain.lower() in ["polygon", "ethereum", "solana", "base"]:
+                # Bitcoin → Polygon/Ethereum/Solana: converter BTC para token nativo da chain
                 if target_chain.lower() == "polygon":
                     target_token_symbol = "MATIC"
                 elif target_chain.lower() == "ethereum":
                     target_token_symbol = "ETH"
-                elif target_chain.lower() == "bsc":
-                    target_token_symbol = "BNB"
+                elif target_chain.lower() == "solana":
+                    target_token_symbol = "SOL"
                 elif target_chain.lower() == "base":
                     target_token_symbol = "ETH"  # Base usa ETH
                 
@@ -7937,7 +7932,7 @@ class RealCrossChainBridge:
                     print(f"🔄 Conversão automática: {token_symbol} → {target_token_symbol} (sem conversão de valor)")
             
             # NOVA MELHORIA: Conversão para/de Solana
-            elif source_chain.lower() in ["polygon", "ethereum", "bsc", "base"] and target_chain.lower() == "solana":
+            elif source_chain.lower() in ["polygon", "ethereum", "base"] and target_chain.lower() == "solana":
                 target_token_symbol = "SOL"
                 self.update_exchange_rates()
                 
@@ -7951,13 +7946,11 @@ class RealCrossChainBridge:
                     print(f"   {amount} {token_symbol} × ${source_price_usd:,.2f} = ${value_usd:,.2f} USD")
                     print(f"   ${value_usd:,.2f} USD ÷ ${target_price_usd:,.2f} = {target_amount:.9f} {target_token_symbol}")
             
-            elif source_chain.lower() == "solana" and target_chain.lower() in ["polygon", "ethereum", "bsc", "base"]:
+            elif source_chain.lower() == "solana" and target_chain.lower() in ["polygon", "ethereum", "base"]:
                 if target_chain.lower() == "polygon":
                     target_token_symbol = "MATIC"
                 elif target_chain.lower() == "ethereum":
                     target_token_symbol = "ETH"
-                elif target_chain.lower() == "bsc":
-                    target_token_symbol = "BNB"
                 elif target_chain.lower() == "base":
                     target_token_symbol = "ETH"
                 
@@ -8010,7 +8003,7 @@ class RealCrossChainBridge:
             
             # 3. Enviar transação na chain de origem (lock)
             source_tx_result = None
-            if source_chain in ["polygon", "bsc", "ethereum", "base"]:
+            if source_chain in ["polygon", "ethereum", "base", "solana"]:
                 # Obter private key
                 if not source_private_key:
                     if source_chain == "polygon":
@@ -8019,9 +8012,9 @@ class RealCrossChainBridge:
                             os.getenv('REAL_POLY_PRIVATE_KEY') or 
                             os.getenv('POLYGON_MASTER_PRIVATE_KEY')
                         )
-                    elif source_chain == "bsc":
+                    elif source_chain == "solana":
                         source_private_key = (
-                            os.getenv('BSC_PRIVATE_KEY') or 
+                            os.getenv('SOLANA_PRIVATE_KEY') or 
                             os.getenv('POLYGON_PRIVATE_KEY') or 
                             os.getenv('REAL_POLY_PRIVATE_KEY') or 
                             os.getenv('POLYGON_MASTER_PRIVATE_KEY')
@@ -8203,7 +8196,7 @@ class RealCrossChainBridge:
                     block_number = None
                     confirmations = confirmed_result.get("confirmations", 0)
                     
-                    if source_chain.lower() in ["polygon", "bsc", "ethereum", "base"]:
+                    if source_chain.lower() in ["polygon", "ethereum", "base", "solana"]:
                         w3 = self.get_web3_for_chain(source_chain)
                         if w3 and w3.is_connected():
                             try:
@@ -8320,12 +8313,12 @@ class RealCrossChainBridge:
             
             # 4. Enviar transação na chain de destino (unlock/mint)
             target_tx_result = None
-            if target_chain in ["polygon", "bsc", "ethereum", "base"]:
+            if target_chain in ["polygon", "ethereum", "base", "solana"]:
                 # Obter private key da bridge na chain de destino
                 if target_chain == "polygon":
                     target_private_key = os.getenv('POLYGON_BRIDGE_PRIVATE_KEY')
-                elif target_chain == "bsc":
-                    target_private_key = os.getenv('BSC_BRIDGE_PRIVATE_KEY')
+                elif target_chain == "solana":
+                    target_private_key = os.getenv('SOLANA_BRIDGE_PRIVATE_KEY')
                 elif target_chain == "ethereum":
                     target_private_key = os.getenv('ETH_BRIDGE_PRIVATE_KEY')
                 elif target_chain == "base":
@@ -8335,9 +8328,9 @@ class RealCrossChainBridge:
                     # Se não tem bridge key, usar a mesma key (para teste)
                     if target_chain == "polygon":
                         target_private_key = os.getenv('POLYGON_PRIVATE_KEY') or os.getenv('POLYGON_MASTER_PRIVATE_KEY')
-                    elif target_chain == "bsc":
-                        # Para BSC, usar POLYGON_PRIVATE_KEY como fallback (mesma key para teste)
-                        target_private_key = os.getenv('BSC_PRIVATE_KEY') or os.getenv('POLYGON_PRIVATE_KEY') or os.getenv('POLYGON_MASTER_PRIVATE_KEY')
+                    elif target_chain == "solana":
+                        # Para Solana, usar POLYGON_PRIVATE_KEY como fallback (mesma key para teste)
+                        target_private_key = os.getenv('SOLANA_PRIVATE_KEY') or os.getenv('POLYGON_PRIVATE_KEY') or os.getenv('POLYGON_MASTER_PRIVATE_KEY')
                     elif target_chain == "ethereum":
                         # Para Ethereum, usar POLYGON_PRIVATE_KEY como fallback (mesma key para teste)
                         target_private_key = os.getenv('ETH_PRIVATE_KEY') or os.getenv('POLYGON_PRIVATE_KEY') or os.getenv('POLYGON_MASTER_PRIVATE_KEY')

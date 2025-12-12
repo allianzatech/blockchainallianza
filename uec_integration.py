@@ -131,7 +131,6 @@ class AllianzaUEC:
         self.bitcoin_clm = BitcoinCLM()
         self.solana_clm = SolanaCLM() 
         self.polygon_clm = PolygonCLM()
-        self.bsc_clm = BSC_CLM()
         
         self.token_factory = MetaProgrammableTokenFactory()
         self.reserve_manager = ReserveManager()
@@ -140,7 +139,7 @@ class AllianzaUEC:
         self.cross_chain_bridge = {
             "pending_transfers": {},
             "completed_transfers": {},
-            "supported_chains": ["bitcoin", "ethereum", "solana", "polygon", "bsc", "allianza"]
+            "supported_chains": ["bitcoin", "ethereum", "solana", "polygon", "allianza"]
         }
         
         # Conexão com blockchains reais
@@ -156,11 +155,10 @@ class AllianzaUEC:
         print("🔗 Bitcoin CLM: ACTIVE") 
         print("⚡ Solana CLM: ACTIVE")
         print("🔷 Polygon CLM: ACTIVE") 
-        print("💛 BSC CLM: ACTIVE")
         print("🎯 Metaprogrammable Tokens: ACTIVE")
         print("💰 Reserve Manager: ACTIVE")
         print("🚀 Real Interoperability: ENABLED")
-        print("🌉 6 BLOCKCHAINS SUPPORTED: Bitcoin, Ethereum, Solana, Polygon, BSC, Allianza")
+        print("🌉 5 BLOCKCHAINS SUPPORTED: Bitcoin, Ethereum, Solana, Polygon, Allianza")
     
     def create_uec_wallet(self, blockchain_source="allianza"):
         """Cria carteira UEC com chaves PQC e endereços para todas as chains"""

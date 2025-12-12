@@ -64,17 +64,6 @@ class AdvancedInteroperabilitySystem:
                     "https://solana-api.projectserum.com"
                 ]
             },
-            "bsc": {
-                "rpc": os.getenv('BSC_RPC_URL', 'https://data-seed-prebsc-1-s1.binance.org:8545'),
-                "chain_id": 97,  # BSC Testnet
-                "name": "BSC",
-                "symbol": "BNB",
-                "needs_poa": False,
-                "fallback_rpcs": [
-                    "https://data-seed-prebsc-2-s1.binance.org:8545",
-                    "https://data-seed-prebsc-1-s2.binance.org:8545"
-                ]
-            },
             "avalanche": {
                 "rpc": os.getenv('AVAX_RPC_URL', 'https://api.avax-test.network/ext/bc/C/rpc'),
                 "chain_id": 43113,  # Fuji Testnet
