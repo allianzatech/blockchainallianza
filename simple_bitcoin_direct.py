@@ -115,189 +115,189 @@ class SimpleBitcoinDirect:
             print(f"\n{'='*70}")
             print(f"🚀 SIMPLEBITCOIN DIRECT - Método que VAI FUNCIONAR")
             print(f"{'='*70}")
-        
-        # 1. Converter WIF para endereço
-        try:
-            from_address = self.wif_to_address(from_wif)
-            print(f"   ✅ Endereço: {from_address}")
-        except Exception as e:
-            return {
-                "success": False,
-                "error": f"Erro ao derivar endereço: {e}"
-            }
-        
-        print(f"   De: {from_address}")
-        print(f"   Para: {to_address}")
-        print(f"   Valor: {amount_btc} BTC")
-        
-        # 2. Buscar UTXOs
-        print(f"\n   🔍 Buscando UTXOs...")
-        utxos = self.get_utxos(from_address)
-        print(f"   UTXOs confirmados: {len(utxos)}")
-        
-        if not utxos:
-            return {
-                "success": False,
-                "error": "Nenhum UTXO confirmado encontrado"
-            }
-        
-        # 3. Selecionar UTXO
-        utxo = utxos[0]  # Usar primeiro UTXO
-        amount_sats = int(amount_btc * 100000000)
-        fee_sats = 500
-        change_sats = utxo['value'] - amount_sats - fee_sats
-        
-        if change_sats < 0:
-            return {
-                "success": False,
-                "error": f"UTXO insuficiente. Necessário: {amount_sats + fee_sats}, Disponível: {utxo['value']}"
-            }
-        
-        print(f"   UTXO selecionado: {utxo['txid'][:16]}...:{utxo['vout']} = {utxo['value']} sats")
-        print(f"   Amount: {amount_sats} sats, Fee: {fee_sats} sats, Change: {change_sats} sats")
-        
-        # 4. Usar BlockCypher para criar transação NÃO ASSINADA
-        print(f"\n   📡 Criando transação não assinada via BlockCypher...")
-        
-        token = os.getenv('BLOCKCYPHER_API_TOKEN', '17766314e49c439e85cec883969614ac')
-        
-        tx_data = {
-            "inputs": [{
-                "prev_hash": utxo['txid'],
-                "output_index": utxo['vout']
-            }],
-            "outputs": [{
-                "addresses": [to_address],
-                "value": amount_sats
-            }],
-            "fees": fee_sats
-        }
-        
-        if change_sats > 546:
-            tx_data["outputs"].append({
-                "addresses": [from_address],
-                "value": change_sats
-            })
-        
-        create_url = f"https://api.blockcypher.com/v1/btc/test3/txs/new?token={token}"
-        create_response = requests.post(create_url, json=tx_data, timeout=30)
-        
-        if create_response.status_code not in [200, 201]:
-            return {
-                "success": False,
-                "error": f"BlockCypher create error: {create_response.status_code}",
-                "response": create_response.text[:200]
-            }
-        
-        unsigned_tx = create_response.json()
-        tosign = unsigned_tx.get('tosign', [])
-        
-        if not tosign:
-            return {
-                "success": False,
-                "error": "No 'tosign' data from BlockCypher"
-            }
-        
-        print(f"   ✅ Transação criada: {len(tosign)} hash(es) para assinar")
-        
-        # 5. ASSINAR LOCALMENTE usando ecdsa
-        print(f"\n   🔐 Assinando LOCALMENTE com ecdsa...")
-        
-        try:
-            # Converter WIF para chave privada
-            private_key_bytes = self.wif_to_private_key_bytes(from_wif)
-            print(f"   ✅ Chave privada obtida: {len(private_key_bytes)} bytes")
             
-            # Criar SigningKey
-            sk = SigningKey.from_string(private_key_bytes, curve=SECP256k1)
-            
-            # Assinar cada hash em tosign
-            signatures = []
-            for i, hash_to_sign in enumerate(tosign):
-                print(f"   Assinando hash {i+1}/{len(tosign)}...")
-                hash_bytes = bytes.fromhex(hash_to_sign)
-                signature = sk.sign_digest(hash_bytes, sigencode=sigencode_der)
-                signatures.append(signature.hex())
-                print(f"   ✅ Assinado: {signature.hex()[:30]}...")
-            
-            print(f"   ✅ Todas as assinaturas criadas localmente!")
-            
-        except Exception as e:
-            print(f"   ❌ Erro ao assinar: {e}")
-            import traceback
-            traceback.print_exc()
-            return {
-                "success": False,
-                "error": f"Erro ao assinar localmente: {e}"
-            }
-        
-        # 6. Enviar transação assinada para BlockCypher para broadcast
-        print(f"\n   📡 Enviando transação assinada para BlockCypher...")
-        
-        sign_data = {
-            "tx": unsigned_tx,
-            "tosign": tosign,
-            "signatures": signatures
-        }
-        
-        sign_url = f"https://api.blockcypher.com/v1/btc/test3/txs/send?token={token}"
-        sign_response = requests.post(sign_url, json=sign_data, timeout=30)
-        
-        print(f"   📊 Status: {sign_response.status_code}")
-        print(f"   📋 Response: {sign_response.text[:500]}")
-        
-        if sign_response.status_code in [200, 201]:
-            signed_tx = sign_response.json()
-            tx_hash = signed_tx.get('tx', {}).get('hash')
-            
-            if tx_hash:
-                print(f"\n   ✅✅✅ TRANSAÇÃO BROADCASTADA COM SUCESSO!")
-                print(f"   Hash: {tx_hash}")
-                print(f"   Explorer: https://blockstream.info/testnet/tx/{tx_hash}")
-                
-                return {
-                    "success": True,
-                    "tx_hash": tx_hash,
-                    "from": from_address,
-                    "to": to_address,
-                    "amount": amount_btc,
-                    "explorer_url": f"https://blockstream.info/testnet/tx/{tx_hash}",
-                    "method": "simple_bitcoin_direct_local_sign",
-                    "note": "✅ Transação criada, assinada LOCALMENTE e broadcastada!"
-                }
-            else:
+            # 1. Converter WIF para endereço
+            try:
+                from_address = self.wif_to_address(from_wif)
+                print(f"   ✅ Endereço: {from_address}")
+            except Exception as e:
                 return {
                     "success": False,
-                    "error": "No transaction hash in response",
-                    "response": str(signed_tx)[:500]
+                    "error": f"Erro ao derivar endereço: {e}"
                 }
-        else:
-            # Se BlockCypher falhar, tentar broadcast direto via Blockstream usando raw transaction
-            print(f"   ⚠️  BlockCypher falhou, tentando obter raw transaction...")
             
-            # Tentar obter raw transaction do BlockCypher
-            if 'tx' in unsigned_tx:
-                # Construir raw transaction manualmente (método alternativo)
-                print(f"   🔄 Tentando método alternativo de broadcast...")
+            print(f"   De: {from_address}")
+            print(f"   Para: {to_address}")
+            print(f"   Valor: {amount_btc} BTC")
+            
+            # 2. Buscar UTXOs
+            print(f"\n   🔍 Buscando UTXOs...")
+            utxos = self.get_utxos(from_address)
+            print(f"   UTXOs confirmados: {len(utxos)}")
+            
+            if not utxos:
+                return {
+                    "success": False,
+                    "error": "Nenhum UTXO confirmado encontrado"
+                }
+            
+            # 3. Selecionar UTXO
+            utxo = utxos[0]  # Usar primeiro UTXO
+            amount_sats = int(amount_btc * 100000000)
+            fee_sats = 500
+            change_sats = utxo['value'] - amount_sats - fee_sats
+            
+            if change_sats < 0:
+                return {
+                    "success": False,
+                    "error": f"UTXO insuficiente. Necessário: {amount_sats + fee_sats}, Disponível: {utxo['value']}"
+                }
+            
+            print(f"   UTXO selecionado: {utxo['txid'][:16]}...:{utxo['vout']} = {utxo['value']} sats")
+            print(f"   Amount: {amount_sats} sats, Fee: {fee_sats} sats, Change: {change_sats} sats")
+            
+            # 4. Usar BlockCypher para criar transação NÃO ASSINADA
+            print(f"\n   📡 Criando transação não assinada via BlockCypher...")
+            
+            token = os.getenv('BLOCKCYPHER_API_TOKEN', '17766314e49c439e85cec883969614ac')
+            
+            tx_data = {
+                "inputs": [{
+                    "prev_hash": utxo['txid'],
+                    "output_index": utxo['vout']
+                }],
+                "outputs": [{
+                    "addresses": [to_address],
+                    "value": amount_sats
+                }],
+                "fees": fee_sats
+            }
+            
+            if change_sats > 546:
+                tx_data["outputs"].append({
+                    "addresses": [from_address],
+                    "value": change_sats
+                })
+            
+            create_url = f"https://api.blockcypher.com/v1/btc/test3/txs/new?token={token}"
+            create_response = requests.post(create_url, json=tx_data, timeout=30)
+            
+            if create_response.status_code not in [200, 201]:
+                return {
+                    "success": False,
+                    "error": f"BlockCypher create error: {create_response.status_code}",
+                    "response": create_response.text[:200]
+                }
+            
+            unsigned_tx = create_response.json()
+            tosign = unsigned_tx.get('tosign', [])
+            
+            if not tosign:
+                return {
+                    "success": False,
+                    "error": "No 'tosign' data from BlockCypher"
+                }
+            
+            print(f"   ✅ Transação criada: {len(tosign)} hash(es) para assinar")
+            
+            # 5. ASSINAR LOCALMENTE usando ecdsa
+            print(f"\n   🔐 Assinando LOCALMENTE com ecdsa...")
+            
+            try:
+                # Converter WIF para chave privada
+                private_key_bytes = self.wif_to_private_key_bytes(from_wif)
+                print(f"   ✅ Chave privada obtida: {len(private_key_bytes)} bytes")
                 
-                # Usar Blockstream para broadcast direto
-                # Primeiro, precisamos construir a raw transaction completa
-                # Isso é complexo, então vamos tentar uma abordagem mais simples
+                # Criar SigningKey
+                sk = SigningKey.from_string(private_key_bytes, curve=SECP256k1)
+                
+                # Assinar cada hash em tosign
+                signatures = []
+                for i, hash_to_sign in enumerate(tosign):
+                    print(f"   Assinando hash {i+1}/{len(tosign)}...")
+                    hash_bytes = bytes.fromhex(hash_to_sign)
+                    signature = sk.sign_digest(hash_bytes, sigencode=sigencode_der)
+                    signatures.append(signature.hex())
+                    print(f"   ✅ Assinado: {signature.hex()[:30]}...")
+                
+                print(f"   ✅ Todas as assinaturas criadas localmente!")
+                
+            except Exception as e:
+                print(f"   ❌ Erro ao assinar: {e}")
+                import traceback
+                traceback.print_exc()
+                return {
+                    "success": False,
+                    "error": f"Erro ao assinar localmente: {e}"
+                }
+            
+            # 6. Enviar transação assinada para BlockCypher para broadcast
+            print(f"\n   📡 Enviando transação assinada para BlockCypher...")
+            
+            sign_data = {
+                "tx": unsigned_tx,
+                "tosign": tosign,
+                "signatures": signatures
+            }
+            
+            sign_url = f"https://api.blockcypher.com/v1/btc/test3/txs/send?token={token}"
+            sign_response = requests.post(sign_url, json=sign_data, timeout=30)
+            
+            print(f"   📊 Status: {sign_response.status_code}")
+            print(f"   📋 Response: {sign_response.text[:500]}")
+            
+            if sign_response.status_code in [200, 201]:
+                signed_tx = sign_response.json()
+                tx_hash = signed_tx.get('tx', {}).get('hash')
+                
+                if tx_hash:
+                    print(f"\n   ✅✅✅ TRANSAÇÃO BROADCASTADA COM SUCESSO!")
+                    print(f"   Hash: {tx_hash}")
+                    print(f"   Explorer: https://blockstream.info/testnet/tx/{tx_hash}")
+                    
+                    return {
+                        "success": True,
+                        "tx_hash": tx_hash,
+                        "from": from_address,
+                        "to": to_address,
+                        "amount": amount_btc,
+                        "explorer_url": f"https://blockstream.info/testnet/tx/{tx_hash}",
+                        "method": "simple_bitcoin_direct_local_sign",
+                        "note": "✅ Transação criada, assinada LOCALMENTE e broadcastada!"
+                    }
+                else:
+                    return {
+                        "success": False,
+                        "error": "No transaction hash in response",
+                        "response": str(signed_tx)[:500]
+                    }
+            else:
+                # Se BlockCypher falhar, tentar broadcast direto via Blockstream usando raw transaction
+                print(f"   ⚠️  BlockCypher falhou, tentando obter raw transaction...")
+                
+                # Tentar obter raw transaction do BlockCypher
+                if 'tx' in unsigned_tx:
+                    # Construir raw transaction manualmente (método alternativo)
+                    print(f"   🔄 Tentando método alternativo de broadcast...")
+                    
+                    # Usar Blockstream para broadcast direto
+                    # Primeiro, precisamos construir a raw transaction completa
+                    # Isso é complexo, então vamos tentar uma abordagem mais simples
+                    
+                    return {
+                        "success": False,
+                        "error": f"BlockCypher sign error: {sign_response.status_code}",
+                        "response": sign_response.text[:200],
+                        "note": "Transação foi assinada localmente, mas broadcast falhou. Tente novamente."
+                    }
                 
                 return {
                     "success": False,
                     "error": f"BlockCypher sign error: {sign_response.status_code}",
-                    "response": sign_response.text[:200],
-                    "note": "Transação foi assinada localmente, mas broadcast falhou. Tente novamente."
+                    "response": sign_response.text[:200]
                 }
-            
-            return {
-                "success": False,
-                "error": f"BlockCypher sign error: {sign_response.status_code}",
-                "response": sign_response.text[:200]
-            }
-            
-    except Exception as e:
+                
+        except Exception as e:
         print(f"   ❌ Exceção: {e}")
         import traceback
         traceback.print_exc()
