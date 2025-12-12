@@ -2898,6 +2898,16 @@ class RealCrossChainBridge:
         SOLUÇÃO PRÓPRIA - Sem depender de bibliotecas Bitcoin complexas
         Usa apenas requests + BlockCypher API + bibliotecas Python padrão
         """
+        # ✅ LOG IMEDIATO - ANTES DE QUALQUER COISA
+        print(f"\n\n\n{'='*80}")
+        print(f"🚀🚀🚀🚀🚀 send_bitcoin_our_way() FOI CHAMADO! 🚀🚀🚀🚀🚀")
+        print(f"{'='*80}")
+        print(f"📋 Parâmetros:")
+        print(f"   from_private_key: {from_private_key[:30]}... (len: {len(from_private_key)})")
+        print(f"   to_address: {to_address}")
+        print(f"   amount_btc: {amount_btc}")
+        print(f"{'='*80}\n\n")
+        
         import requests
         import time
         import json
