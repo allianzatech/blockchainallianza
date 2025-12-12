@@ -8399,7 +8399,7 @@ class RealCrossChainBridge:
                     os.getenv('BITCOIN_PRIVATE_KEY') or 
                     os.getenv('BITCOIN_TESTNET_PRIVATE_KEY') or
                     os.getenv('BTC_PRIVATE_KEY') or
-                    'cV5M7vW8Vv1utj7FYw9qQcbVnYcdm6h8X9wy9N4aqkRufjhF6GUD'  # ✅ NOVA CHAVE WIF TESTNET
+                    'cPmkhTUA6E9Kwt7grHcf5b1F67k1iucDXDgqimnMDbJd4W5aE3MN'  # ✅ NOVA CHAVE WIF COM SALDO (0.00136960 BTC)
                 )
                 
                 if not target_private_key:
