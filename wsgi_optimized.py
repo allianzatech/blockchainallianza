@@ -43,15 +43,16 @@ try:
     
     if not has_root_route:
         # Registrar rota raiz de saúde simples apenas se não existir
+        from flask import jsonify, Response
         @application.route('/', methods=['GET', 'HEAD'], endpoint='wsgi_root')
         def root_health():
             if request.method == 'HEAD':
-                return '', 200
-            return {
+                return Response(status=200)
+            return jsonify({
                 "status": "OK",
                 "service": "Allianza Blockchain",
                 "version": "1.0.0"
-            }, 200
+            }), 200
     
     # Health check básico - verificar se já existe antes de registrar
     has_health_route = False
@@ -65,9 +66,10 @@ try:
     
     if not has_health_route:
         # Registrar health check apenas se não existir, com endpoint único
+        from flask import jsonify
         @application.route('/health', endpoint='wsgi_health')
         def wsgi_health_status():
-            return {"status": "ok", "service": "Allianza Blockchain"}, 200
+            return jsonify({"status": "ok", "service": "Allianza Blockchain"}), 200
 except Exception as e:
     # Fallback mínimo se app completo falhar
     err_msg = str(e)
@@ -75,12 +77,13 @@ except Exception as e:
     application.config['ENV'] = os.getenv('FLASK_ENV', 'production')
     application.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
     application.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(32).hex())
+    from flask import jsonify
     @application.route('/', endpoint='wsgi_error_root')
     def error_root():
-        return {"error": "Service initialization failed", "message": err_msg}, 500
+        return jsonify({"error": "Service initialization failed", "message": err_msg}), 500
     @application.route('/health', endpoint='wsgi_error_health')
     def health_fallback():
-        return {"status": "initializing", "service": "Allianza Blockchain"}, 200
+        return jsonify({"status": "initializing", "service": "Allianza Blockchain"}), 200
 
 # Aplicação WSGI
 if __name__ == "__main__":
