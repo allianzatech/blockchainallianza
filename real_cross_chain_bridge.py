@@ -7700,11 +7700,28 @@ class RealCrossChainBridge:
             address = address.strip()
             
             # Se target é EVM (Polygon, Ethereum, Base) ou Solana
-            if target_chain in ["polygon", "ethereum", "base", "solana"]:
+            if target_chain in ["polygon", "ethereum", "base"]:
                 # Validar se é endereço EVM válido
                 w3 = self.get_web3_for_chain(target_chain)
                 if w3 and w3.is_address(address):
                     return w3.to_checksum_address(address)
+                return None
+            
+            if target_chain == "solana":
+                # Validar endereço Solana (Base58, 32-44 caracteres)
+                if hasattr(self, 'solana_bridge') and self.solana_bridge:
+                    is_valid, error = self.solana_bridge.validate_address(address)
+                    if is_valid:
+                        return address
+                    return None
+                # Fallback: validação básica
+                if len(address) >= 32 and len(address) <= 44:
+                    try:
+                        import base58
+                        base58.b58decode(address)
+                        return address
+                    except:
+                        return None
                 return None
             
             # Se target é Bitcoin
@@ -8354,12 +8371,70 @@ class RealCrossChainBridge:
             
             # 4. Enviar transação na chain de destino (unlock/mint)
             target_tx_result = None
-            if target_chain in ["polygon", "ethereum", "base", "solana"]:
+            
+            # ✅ CORREÇÃO: Solana precisa de tratamento especial (não é EVM)
+            if target_chain == "solana":
+                print(f"⚡ Enviando SOL REAL para {target_address}...")
+                
+                # Obter private key Solana
+                target_private_key = os.getenv('SOLANA_BRIDGE_PRIVATE_KEY') or os.getenv('SOLANA_PRIVATE_KEY')
+                
+                if not target_private_key:
+                    return {
+                        "success": False,
+                        "error": "Private key Solana não configurada",
+                        "note": "Configure SOLANA_PRIVATE_KEY ou SOLANA_BRIDGE_PRIVATE_KEY no .env",
+                        "source_tx": source_tx_result,
+                        "source_tx_success": True if source_tx_result else False,
+                        "explorer_source": source_tx_result.get("explorer_url") if source_tx_result else None
+                    }
+                
+                # Verificar se SolanaBridge está disponível
+                if not hasattr(self, 'solana_bridge') or not self.solana_bridge:
+                    return {
+                        "success": False,
+                        "error": "Solana Bridge não disponível",
+                        "note": "Instale bibliotecas Solana: pip install solana solders",
+                        "source_tx": source_tx_result,
+                        "source_tx_success": True if source_tx_result else False,
+                        "explorer_source": source_tx_result.get("explorer_url") if source_tx_result else None
+                    }
+                
+                # Converter amount para SOL se necessário
+                if target_token_symbol != "SOL":
+                    self.update_exchange_rates()
+                    if target_token_symbol in self.exchange_rates_usd:
+                        source_price = self.get_exchange_rate(target_token_symbol)
+                        sol_price = self.get_exchange_rate("SOL")
+                        amount_sol = (amount * source_price) / sol_price
+                    else:
+                        amount_sol = amount / 1000  # Fallback conservador
+                else:
+                    amount_sol = amount
+                
+                print(f"   💰 Enviando {amount_sol:.9f} SOL para {target_address}")
+                
+                # Enviar transação Solana
+                target_tx_result = self.solana_bridge.send_transaction(
+                    from_private_key=target_private_key,
+                    to_address=target_address,
+                    amount_sol=amount_sol
+                )
+                
+                if not target_tx_result.get("success"):
+                    return {
+                        "success": False,
+                        "error": f"Transação Solana falhou: {target_tx_result.get('error')}",
+                        "source_tx": source_tx_result,
+                        "source_tx_success": True if source_tx_result else False,
+                        "explorer_source": source_tx_result.get("explorer_url") if source_tx_result else None,
+                        "note": f"A transação na {source_chain} foi enviada com sucesso, mas falhou na Solana"
+                    }
+            
+            elif target_chain in ["polygon", "ethereum", "base"]:
                 # Obter private key da bridge na chain de destino
                 if target_chain == "polygon":
                     target_private_key = os.getenv('POLYGON_BRIDGE_PRIVATE_KEY')
-                elif target_chain == "solana":
-                    target_private_key = os.getenv('SOLANA_BRIDGE_PRIVATE_KEY')
                 elif target_chain == "ethereum":
                     target_private_key = os.getenv('ETH_BRIDGE_PRIVATE_KEY')
                 elif target_chain == "base":
@@ -8369,9 +8444,6 @@ class RealCrossChainBridge:
                     # Se não tem bridge key, usar a mesma key (para teste)
                     if target_chain == "polygon":
                         target_private_key = os.getenv('POLYGON_PRIVATE_KEY') or os.getenv('POLYGON_MASTER_PRIVATE_KEY')
-                    elif target_chain == "solana":
-                        # Para Solana, usar POLYGON_PRIVATE_KEY como fallback (mesma key para teste)
-                        target_private_key = os.getenv('SOLANA_PRIVATE_KEY') or os.getenv('POLYGON_PRIVATE_KEY') or os.getenv('POLYGON_MASTER_PRIVATE_KEY')
                     elif target_chain == "ethereum":
                         # Para Ethereum, usar POLYGON_PRIVATE_KEY como fallback (mesma key para teste)
                         target_private_key = os.getenv('ETH_PRIVATE_KEY') or os.getenv('POLYGON_PRIVATE_KEY') or os.getenv('POLYGON_MASTER_PRIVATE_KEY')
