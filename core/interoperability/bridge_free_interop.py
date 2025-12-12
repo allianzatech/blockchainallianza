@@ -1042,11 +1042,32 @@ class BridgeFreeInterop:
                     else:
                         print(f"⚠️  Erro ao verificar UChainID no banco após {max_save_retries} tentativas: {e}")
             
-            # 5. Se send_real=True, enviar transação REAL para blockchain
+            # 5. Se send_real=True, enviar transações REAIS para ambas as blockchains
             # CRÍTICO: Passar o UChainID já gerado para evitar gerar outro
-            real_tx_result = None
+            source_tx_result = None
+            target_tx_result = None
             if send_real:
-                real_tx_result = self.send_real_transaction(
+                # Criar transação na source chain (lock/commitment)
+                # Nota: Esta transação cria o commitment na source chain
+                source_tx_result = self.send_real_transaction(
+                    source_chain=source_chain,
+                    target_chain=source_chain,  # Enviar para a própria source chain
+                    amount=0.00001,  # Valor mínimo para criar commitment
+                    recipient=recipient,  # Mesmo recipient
+                    private_key=private_key,
+                    include_memo=True,  # Incluir memo com UChainID
+                    zk_proof_id=None,  # Ainda não temos ZK proof na source
+                    token_symbol=token_symbol,
+                    uchain_id=uchain_id,
+                    memo_data={
+                        **memo_info["memo_data"],
+                        "type": "source_commitment",
+                        "target_chain": target_chain  # Informar qual será a target
+                    }
+                )
+                
+                # Criar transação na target chain (aplicação do estado com ZK Proof)
+                target_tx_result = self.send_real_transaction(
                     source_chain=source_chain,
                     target_chain=target_chain,
                     amount=amount,
@@ -1058,6 +1079,9 @@ class BridgeFreeInterop:
                     uchain_id=uchain_id,  # CRÍTICO: Passar UChainID já gerado
                     memo_data=memo_info["memo_data"]  # Passar memo já criado
                 )
+                
+                # Usar target_tx_result como principal (compatibilidade)
+                real_tx_result = target_tx_result
             
             result = {
                 "success": True,
