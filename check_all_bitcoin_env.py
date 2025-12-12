@@ -132,7 +132,7 @@ def check_all_bitcoin_env():
     
     if not private_key:
         print(f"1. Configure BITCOIN_PRIVATE_KEY no .env")
-        print(f"   Exemplo: BITCOIN_PRIVATE_KEY=cSamqcRz79BCXe5LWhqVSMhKo1bkxZA3EE6PTpy8hkYVVmofUXfJ")
+        print(f"   Exemplo: BITCOIN_PRIVATE_KEY=cPmkhTUA6E9Kwt7grHcf5b1F67k1iucDXDgqimnMDbJd4W5aE3MN (EXAMPLE - use sua própria chave)")
     
     if private_key and address:
         try:

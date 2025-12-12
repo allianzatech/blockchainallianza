@@ -3,10 +3,22 @@
 
 from bitcoinlib.keys import HDKey
 
-# Dados fornecidos
-private_key_hex = '7a3fcb9e9e1f94dc8c23dba1fc50fa74b8d4e0078a1d66cbec299f7d146f2c36'
-expected_address = 'mkWLvF2x6wzSxGJ4UQ7cJq1KqtmKz9MZ4n'
-provided_wif = 'cV5M7vW8Vv1utj7FYw9qQcbVnYcdm6h8X9wy9N4aqkRufjhF6GUD'
+# ⚠️ SEGURANÇA: Ler de variáveis de ambiente, não hardcoded
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+# Dados fornecidos - ler de env ou usar None
+private_key_hex = os.getenv('BITCOIN_PRIVATE_KEY_HEX') or None
+expected_address = os.getenv('BITCOIN_TESTNET_ADDRESS') or None
+provided_wif = os.getenv('BITCOIN_PRIVATE_KEY') or os.getenv('BITCOIN_TESTNET_PRIVATE_KEY') or None
+
+if not private_key_hex or not expected_address or not provided_wif:
+    print("❌ ERRO: Configure as seguintes variáveis de ambiente:")
+    print("   BITCOIN_PRIVATE_KEY_HEX - chave privada em formato hex")
+    print("   BITCOIN_TESTNET_ADDRESS - endereço Bitcoin testnet esperado")
+    print("   BITCOIN_PRIVATE_KEY - chave privada em formato WIF")
+    exit(1)
 
 print("🔍 TESTANDO NOVA CHAVE BITCOIN")
 print("="*70)
