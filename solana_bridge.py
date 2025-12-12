@@ -307,20 +307,34 @@ class SolanaBridge:
                 skip_confirmation=False
             )
             
+            print(f"   📡 Enviando transação Solana...")
+            print(f"      De: {str(from_pubkey)}")
+            print(f"      Para: {to_address}")
+            print(f"      Valor: {amount_sol} SOL ({amount_lamports} lamports)")
+            
             response = self.client.send_transaction(
                 transaction,
                 opts=opts
             )
             
+            print(f"   📊 Resposta do RPC: {response}")
+            
             if response.value:
                 tx_signature = str(response.value)
+                print(f"   ✅ Transação enviada! Signature: {tx_signature}")
                 
                 # Aguardar confirmação
+                print(f"   ⏳ Aguardando confirmação...")
                 confirmation = self.client.confirm_transaction(
                     tx_signature,
                     commitment=Confirmed,
                     timeout=30
                 )
+                
+                confirmation_status = None
+                if confirmation.value:
+                    confirmation_status = confirmation.value[0].confirmation_status if hasattr(confirmation.value[0], 'confirmation_status') else "confirmed"
+                    print(f"   ✅ Transação confirmada! Status: {confirmation_status}")
                 
                 return {
                     "success": True,
@@ -330,21 +344,30 @@ class SolanaBridge:
                     "amount_sol": amount_sol,
                     "amount_lamports": amount_lamports,
                     "network": self.network,
-                    "confirmed": confirmation.value[0].confirmation_status if confirmation.value else None,
+                    "confirmed": confirmation_status,
                     "explorer_url": f"https://explorer.solana.com/tx/{tx_signature}?cluster={self.network}"
                 }
             else:
+                error_msg = "Transação não foi enviada"
+                if hasattr(response, 'error'):
+                    error_msg = f"Erro do RPC: {response.error}"
+                print(f"   ❌ {error_msg}")
                 return {
                     "success": False,
-                    "error": "Transação não foi enviada"
+                    "error": error_msg,
+                    "response": str(response)
                 }
                 
         except Exception as e:
             import traceback
-            traceback.print_exc()
+            error_trace = traceback.format_exc()
+            print(f"   ❌ Exceção ao enviar transação Solana: {e}")
+            print(f"   📋 Traceback completo:")
+            print(error_trace)
             return {
                 "success": False,
-                "error": f"Erro ao enviar transação Solana: {e}"
+                "error": f"Erro ao enviar transação Solana: {e}",
+                "traceback": error_trace
             }
     
     def get_transaction_status(self, tx_signature: str) -> Dict:
