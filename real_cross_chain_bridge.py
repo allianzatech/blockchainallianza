@@ -2989,12 +2989,47 @@ class RealCrossChainBridge:
         print(f"\n1. 🔑 Obtendo endereço da chave privada...")
         try:
             # ✅ CORREÇÃO: Derivar endereço da chave privada (não usar env)
-            from bitcoinlib.keys import HDKey
-            key_obj = HDKey(from_private_key, network='testnet')
-            from_address = key_obj.address()
+            from bitcoinlib.keys import HDKey, Key
+            print(f"   🔄 Tentando derivar endereço da chave WIF...")
+            
+            # Tentar como HDKey primeiro
+            try:
+                key_obj = HDKey(from_private_key, network='testnet')
+                from_address = key_obj.address()
+                print(f"   ✅ Endereço derivado via HDKey: {from_address}")
+            except:
+                # Se falhar, tentar como Key
+                key_obj = Key(from_private_key, network='testnet')
+                from_address = key_obj.address()
+                print(f"   ✅ Endereço derivado via Key: {from_address}")
+            
             print(f"   ✅ Endereço derivado da chave: {from_address}")
+            
+            # ✅ VALIDAÇÃO CRÍTICA: Verificar se o endereço derivado tem saldo
+            print(f"   🔍 Verificando saldo do endereço derivado...")
+            try:
+                import requests
+                balance_url = f"https://blockstream.info/testnet/api/address/{from_address}"
+                balance_resp = requests.get(balance_url, timeout=5)
+                if balance_resp.status_code == 200:
+                    balance_data = balance_resp.json()
+                    funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
+                    spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
+                    balance_sats = funded - spent
+                    balance_btc = balance_sats / 100000000
+                    print(f"   💰 Saldo do endereço derivado: {balance_sats} satoshis ({balance_btc:.8f} BTC)")
+                    
+                    if balance_sats < 10000:  # Menos de 0.0001 BTC
+                        print(f"   ⚠️  AVISO: Saldo muito baixo! Pode não ser suficiente para a transação.")
+                        print(f"   💡 Considere enviar fundos para este endereço primeiro")
+                        print(f"   💡 Endereço: {from_address}")
+            except Exception as balance_err:
+                print(f"   ⚠️  Não foi possível verificar saldo: {balance_err} (continuando mesmo assim)")
+                
         except Exception as addr_err:
-            print(f"   ⚠️  Erro ao derivar endereço: {addr_err}")
+            print(f"   ❌ Erro ao derivar endereço: {addr_err}")
+            import traceback
+            traceback.print_exc()
             # Fallback para env se derivação falhar
             # ✅ NOVO ENDEREÇO: mzAUD2byjNSJ2VwixnxG5QFDgxcGaBLydv (derivado da nova chave)
             from_address = os.getenv('BITCOIN_TESTNET_ADDRESS', 'mzAUD2byjNSJ2VwixnxG5QFDgxcGaBLydv')
