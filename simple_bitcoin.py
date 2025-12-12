@@ -247,9 +247,11 @@ class SimpleBitcoin:
             # Preparar inputs
             inputs_list = []
             for utxo in selected_utxos:
+                # ✅ CORREÇÃO CRÍTICA: BlockCypher precisa do campo 'value' no input para validação
                 inputs_list.append({
                     "prev_hash": utxo['txid'],
-                    "output_index": utxo['vout']
+                    "output_index": utxo['vout'],
+                    "value": int(utxo['value'])  # ✅ ADICIONAR VALUE - CRÍTICO PARA BLOCKCYPHER
                 })
             
             # Preparar outputs

@@ -3079,13 +3079,81 @@ class RealCrossChainBridge:
         # Preparar inputs
         inputs_list = []
         total_input = 0
-        for utxo in confirmed_utxos[:1]:  # Usar primeiro UTXO confirmado
+        
+        # ✅ CORREÇÃO CRÍTICA: Validar UTXOs ANTES de usar e adicionar 'value' para BlockCypher
+        print(f"\n   🔍 Validando UTXOs antes de usar...")
+        valid_utxos = []
+        
+        for utxo in confirmed_utxos:
+            txid = utxo.get('txid')
+            vout = utxo.get('vout')
+            value = utxo.get('value', 0)
+            
+            # Validar campos básicos
+            if not txid or vout is None or value <= 0:
+                print(f"   ⚠️  UTXO inválido (campos faltando): txid={txid}, vout={vout}, value={value}")
+                continue
+            
+            # ✅ VALIDAÇÃO CRÍTICA: Verificar se o UTXO realmente existe e não foi gasto
+            try:
+                tx_url = f"https://blockstream.info/testnet/api/tx/{txid}"
+                tx_resp = requests.get(tx_url, timeout=10)
+                
+                if tx_resp.status_code != 200:
+                    print(f"   ⚠️  UTXO {txid[:16]}... não encontrado na rede (status {tx_resp.status_code})")
+                    continue
+                
+                tx_data = tx_resp.json()
+                
+                # Verificar se o vout existe
+                if vout >= len(tx_data.get('vout', [])):
+                    print(f"   ⚠️  UTXO {txid[:16]}...:{vout} - vout não existe na transação")
+                    continue
+                
+                vout_data = tx_data['vout'][vout]
+                
+                # Verificar se foi gasto
+                if vout_data.get('spent', False):
+                    print(f"   ⚠️  UTXO {txid[:16]}...:{vout} já foi gasto!")
+                    continue
+                
+                # Verificar se o valor corresponde
+                if vout_data.get('value', 0) != value:
+                    print(f"   ⚠️  UTXO {txid[:16]}...:{vout} - valor não corresponde (esperado {value}, encontrado {vout_data.get('value', 0)})")
+                    # Usar o valor real da transação
+                    value = vout_data.get('value', value)
+                
+                # UTXO válido!
+                valid_utxos.append({
+                    'txid': txid,
+                    'vout': vout,
+                    'value': value
+                })
+                print(f"   ✅ UTXO válido: {txid[:16]}...:{vout} = {value} sats")
+                
+            except Exception as val_err:
+                print(f"   ⚠️  Erro ao validar UTXO {txid[:16]}...: {val_err}")
+                continue
+        
+        if not valid_utxos:
+            return {
+                "success": False,
+                "error": "Nenhum UTXO válido após validação completa",
+                "note": "Todos os UTXOs foram validados e nenhum passou na verificação (podem estar gastos ou inválidos)"
+            }
+        
+        print(f"   ✅ {len(valid_utxos)} UTXO(s) válido(s) após validação completa")
+        
+        # Usar primeiro UTXO válido (ou múltiplos se necessário)
+        for utxo in valid_utxos[:1]:  # Usar primeiro UTXO válido
+            # ✅ CORREÇÃO CRÍTICA: BlockCypher precisa do campo 'value' no input para validação
             inputs_list.append({
                 "prev_hash": utxo['txid'],
-                "output_index": utxo['vout']
+                "output_index": utxo['vout'],
+                "value": int(utxo['value'])  # ✅ ADICIONAR VALUE - CRÍTICO PARA BLOCKCYPHER
             })
             total_input += utxo['value']
-            print(f"   Input: {utxo['txid'][:16]}...:{utxo['vout']} = {utxo['value']} sats")
+            print(f"   ✅ Input preparado: {utxo['txid'][:16]}...:{utxo['vout']} = {utxo['value']} sats (com 'value' incluído)")
         
         if total_input < amount_sats + fee_sats:
             return {
@@ -5167,10 +5235,11 @@ class RealCrossChainBridge:
                                         
                                         print(f"   📥 Input: {txid}:{output_n} = {value} satoshis")
                                         # BlockCypher API formato CORRETO: prev_hash e output_index (não output_n)
-                                        # CORREÇÃO: BlockCypher espera 'output_index', não 'output_n' ou 'vout'
+                                        # ✅ CORREÇÃO CRÍTICA: BlockCypher precisa do campo 'value' no input para validação
                                         inputs_list.append({
                                             "prev_hash": txid,
-                                            "output_index": int(output_n)  # Formato correto para BlockCypher
+                                            "output_index": int(output_n),  # Formato correto para BlockCypher
+                                            "value": int(value)  # ✅ ADICIONAR VALUE - CRÍTICO PARA BLOCKCYPHER
                                         })
                                     
                                     # Preparar outputs para BlockCypher API
@@ -5998,9 +6067,12 @@ class RealCrossChainBridge:
                                         for utxo in utxos:
                                             txid = utxo.get('txid') or utxo.get('tx_hash')
                                             output_n = utxo.get('output_n') or utxo.get('vout') or utxo.get('output_index') or utxo.get('output') or utxo.get('tx_output_n', 0)
+                                            value = utxo.get('value', 0)
+                                            # ✅ CORREÇÃO CRÍTICA: BlockCypher precisa do campo 'value' no input para validação
                                             blockcypher_inputs.append({
                                                 "prev_hash": txid,
-                                                "output_index": int(output_n)
+                                                "output_index": int(output_n),
+                                                "value": int(value)  # ✅ ADICIONAR VALUE - CRÍTICO PARA BLOCKCYPHER
                                             })
                                         
                                         blockcypher_outputs = [
@@ -6060,9 +6132,12 @@ class RealCrossChainBridge:
                                         for utxo in utxos:
                                             txid = utxo.get('txid') or utxo.get('tx_hash')
                                             output_n = utxo.get('output_n') or utxo.get('vout') or utxo.get('output_index') or utxo.get('output') or utxo.get('tx_output_n', 0)
+                                            value = utxo.get('value', 0)
+                                            # ✅ CORREÇÃO CRÍTICA: BlockCypher precisa do campo 'value' no input para validação
                                             blockcypher_inputs.append({
                                                 "prev_hash": txid,
-                                                "output_index": int(output_n)
+                                                "output_index": int(output_n),
+                                                "value": int(value)  # ✅ ADICIONAR VALUE - CRÍTICO PARA BLOCKCYPHER
                                             })
                                         
                                         blockcypher_outputs = [
@@ -6118,9 +6193,12 @@ class RealCrossChainBridge:
                                         for utxo in utxos:
                                             txid = utxo.get('txid') or utxo.get('tx_hash')
                                             output_n = utxo.get('output_n') or utxo.get('vout') or utxo.get('output_index') or utxo.get('output') or utxo.get('tx_output_n', 0)
+                                            value = utxo.get('value', 0)
+                                            # ✅ CORREÇÃO CRÍTICA: BlockCypher precisa do campo 'value' no input para validação
                                             blockcypher_inputs.append({
                                                 "prev_hash": txid,
-                                                "output_index": int(output_n)
+                                                "output_index": int(output_n),
+                                                "value": int(value)  # ✅ ADICIONAR VALUE - CRÍTICO PARA BLOCKCYPHER
                                             })
                                         
                                         blockcypher_outputs = [

@@ -164,7 +164,8 @@ class SimpleBitcoinDirect:
             tx_data = {
                 "inputs": [{
                     "prev_hash": utxo['txid'],
-                    "output_index": utxo['vout']
+                    "output_index": utxo['vout'],
+                    "value": int(utxo['value'])  # ✅ ADICIONAR VALUE - CRÍTICO PARA BLOCKCYPHER
                 }],
                 "outputs": [{
                     "addresses": [to_address],
