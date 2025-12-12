@@ -464,8 +464,31 @@ class BridgeFreeInterop:
                             print(f"   📋 Primeiros 80 chars: {memo_hex_str[:80]}...")
                             print(f"   📋 Memo JSON completo: {memo_info.get('memo_json', '')[:200]}...")
                         
+                        # ✅ CORREÇÃO: Obter chave privada Bitcoin com fallback e validação
+                        bitcoin_private_key = private_key or os.getenv('BITCOIN_PRIVATE_KEY') or os.getenv('BITCOIN_TESTNET_PRIVATE_KEY') or os.getenv('BTC_PRIVATE_KEY')
+                        
+                        if not bitcoin_private_key:
+                            return {
+                                "success": False,
+                                "error": "Chave privada Bitcoin não configurada",
+                                "note": "Configure BITCOIN_PRIVATE_KEY, BITCOIN_TESTNET_PRIVATE_KEY ou BTC_PRIVATE_KEY no .env",
+                                "real_transaction": False
+                            }
+                        
+                        # Validar que não está vazia ou só espaços
+                        bitcoin_private_key = bitcoin_private_key.strip()
+                        if not bitcoin_private_key:
+                            return {
+                                "success": False,
+                                "error": "Chave privada Bitcoin está vazia",
+                                "note": "Verifique se BITCOIN_PRIVATE_KEY no .env não está vazio",
+                                "real_transaction": False
+                            }
+                        
+                        print(f"   🔑 Chave privada Bitcoin obtida: {bitcoin_private_key[:10]}... (tamanho: {len(bitcoin_private_key)})")
+                        
                         result = bridge.send_bitcoin_transaction(
-                            from_private_key=private_key or os.getenv('BITCOIN_PRIVATE_KEY'),
+                            from_private_key=bitcoin_private_key,
                             to_address=recipient,
                             amount_btc=amount_btc,
                             source_tx_hash=memo_hex_str  # Passar memo hex como source_tx_hash para OP_RETURN
@@ -500,9 +523,32 @@ class BridgeFreeInterop:
                             if len(memo_hex_str) > 160:  # 80 bytes = 160 caracteres hex
                                 memo_hex_str = memo_hex_str[:160]
                         
+                        # ✅ CORREÇÃO: Obter chave privada Bitcoin com fallback e validação
+                        bitcoin_private_key = private_key or os.getenv('BITCOIN_PRIVATE_KEY') or os.getenv('BITCOIN_TESTNET_PRIVATE_KEY') or os.getenv('BTC_PRIVATE_KEY')
+                        
+                        if not bitcoin_private_key:
+                            return {
+                                "success": False,
+                                "error": "Chave privada Bitcoin não configurada",
+                                "note": "Configure BITCOIN_PRIVATE_KEY, BITCOIN_TESTNET_PRIVATE_KEY ou BTC_PRIVATE_KEY no .env",
+                                "real_transaction": False
+                            }
+                        
+                        # Validar que não está vazia ou só espaços
+                        bitcoin_private_key = bitcoin_private_key.strip()
+                        if not bitcoin_private_key:
+                            return {
+                                "success": False,
+                                "error": "Chave privada Bitcoin está vazia",
+                                "note": "Verifique se BITCOIN_PRIVATE_KEY no .env não está vazio",
+                                "real_transaction": False
+                            }
+                        
+                        print(f"   🔑 Chave privada Bitcoin obtida: {bitcoin_private_key[:10]}... (tamanho: {len(bitcoin_private_key)})")
+                        
                         # Enviar Bitcoin com OP_RETURN primeiro
                         bitcoin_result = bridge.send_bitcoin_transaction(
-                            from_private_key=private_key or os.getenv('BITCOIN_PRIVATE_KEY'),
+                            from_private_key=bitcoin_private_key,
                             to_address=recipient,  # Endereço Bitcoin intermediário
                             amount_btc=amount_btc,
                             source_tx_hash=memo_hex_str if memo_hex_str else None  # Incluir memo no OP_RETURN

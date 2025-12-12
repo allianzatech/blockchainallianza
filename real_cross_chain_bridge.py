@@ -3546,7 +3546,23 @@ class RealCrossChainBridge:
             try:
                 # ✅ MELHORIA: Conversão automática de chave para WIF
                 original_key = from_private_key
+                
+                # ✅ DEBUG CRÍTICO: Verificar se a chave não é None ou vazia
+                if not from_private_key:
+                    print(f"   ❌ ERRO CRÍTICO: Chave privada está vazia ou None!")
+                    return {
+                        "success": False,
+                        "error": "Chave privada não fornecida (None ou vazia)",
+                        "note": "Verifique se BITCOIN_PRIVATE_KEY está configurado no .env",
+                        "proof_file": self._save_transaction_proof(proof_data)
+                    }
+                
+                # Remover espaços e caracteres especiais ANTES de verificar
+                from_private_key = from_private_key.strip()
+                
                 print(f"   🔍 Verificando formato da chave: {from_private_key[:20]}... (tamanho: {len(from_private_key)})")
+                print(f"   🔍 Primeiro caractere: '{from_private_key[0] if from_private_key else 'N/A'}'")
+                print(f"   🔍 Começa com c/9/5/L/K: {from_private_key.startswith(('c', '9', '5', 'L', 'K'))}")
                 
                 # Verificar se a chave é WIF
                 if not from_private_key.startswith(('c', '9', '5', 'L', 'K')):
