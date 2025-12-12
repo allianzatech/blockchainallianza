@@ -820,10 +820,79 @@ class BridgeFreeInterop:
                 else:
                     raise Exception("Não foi possível encontrar rawTransaction no signed_txn")
             
-            tx_hash = w3.eth.send_raw_transaction(raw_tx)
+            # ✅ CORREÇÃO: Tratar erro "already known" (transação já na mempool)
+            try:
+                tx_hash = w3.eth.send_raw_transaction(raw_tx)
+            except (ValueError, Exception) as e:
+                error_str = str(e)
+                # Verificar se é erro "already known"
+                if "already known" in error_str.lower() or "'message': 'already known'" in error_str or "'code': -32000" in error_str:
+                    print(f"   ⚠️  Transação já está na mempool (already known)")
+                    print(f"   🔍 Calculando hash da transação existente...")
+                    
+                    try:
+                        # Calcular hash keccak256 da transação raw
+                        from eth_utils import keccak
+                        
+                        # Converter raw_tx para bytes se necessário
+                        if isinstance(raw_tx, str):
+                            raw_tx_bytes = bytes.fromhex(raw_tx.replace('0x', ''))
+                        elif isinstance(raw_tx, bytes):
+                            raw_tx_bytes = raw_tx
+                        else:
+                            raw_tx_bytes = bytes(raw_tx)
+                        
+                        # Calcular hash keccak256
+                        tx_hash_bytes = keccak(raw_tx_bytes)
+                        tx_hash = w3.to_hex(tx_hash_bytes)
+                        print(f"   ✅ Hash calculado: {tx_hash}")
+                        
+                        # Verificar se a transação já foi confirmada
+                        try:
+                            tx_data = w3.eth.get_transaction(tx_hash)
+                            if tx_data and tx_data.blockNumber:
+                                print(f"   ✅ Transação já confirmada no bloco {tx_data.blockNumber}")
+                                tx_receipt = w3.eth.get_transaction_receipt(tx_hash)
+                            else:
+                                print(f"   ⏳ Transação pendente na mempool, aguardando confirmação...")
+                                tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
+                        except Exception as check_err:
+                            print(f"   ⚠️  Não foi possível verificar status, aguardando confirmação...")
+                            try:
+                                tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
+                            except:
+                                # Retornar com hash mas sem confirmação
+                                return {
+                                    "success": False,
+                                    "error": f"Transação já na mempool. Hash: {tx_hash}",
+                                    "tx_hash": tx_hash,
+                                    "note": "Transação pode estar pendente. Verifique no explorer.",
+                                    "real_transaction": False
+                                }
+                    except ImportError:
+                        # Se eth_utils não estiver disponível, retornar erro informativo
+                        print(f"   ⚠️  eth_utils não disponível, não foi possível calcular hash")
+                        return {
+                            "success": False,
+                            "error": f"Transação já está na mempool: {str(e)}",
+                            "note": "A transação pode ter sido enviada anteriormente. Aguarde alguns segundos e verifique o explorer ou tente novamente.",
+                            "real_transaction": False
+                        }
+                    except Exception as hash_err:
+                        print(f"   ❌ Erro ao calcular hash: {hash_err}")
+                        return {
+                            "success": False,
+                            "error": f"Transação já na mempool: {str(e)}",
+                            "note": "A transação pode ter sido enviada anteriormente. Aguarde alguns segundos e verifique o explorer.",
+                            "real_transaction": False
+                        }
+                else:
+                    # Outro erro, re-raise
+                    raise
             
-            # Aguardar confirmação
-            tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
+            # Aguardar confirmação (se ainda não foi obtido)
+            if 'tx_receipt' not in locals():
+                tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
             
             # URL do explorer
             # ✅ CORREÇÃO: Garantir que hash tenha prefixo 0x para explorers EVM
