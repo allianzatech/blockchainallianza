@@ -2660,7 +2660,8 @@ class RealCrossChainBridge:
         import requests
         import json
         
-        address = os.getenv('BITCOIN_TESTNET_ADDRESS', 'mkWLvF2x6wzSxGJ4UQ7cJq1KqtmKz9MZ4n')
+        # ✅ NOVO ENDEREÇO: mzAUD2byjNSJ2VwixnxG5QFDgxcGaBLydv (derivado da nova chave HEX)
+        address = os.getenv('BITCOIN_TESTNET_ADDRESS', 'mzAUD2byjNSJ2VwixnxG5QFDgxcGaBLydv')
         
         print(f"🔍 DEBUG COMPLETO PARA {address}")
         print(f"="*60)
@@ -2705,7 +2706,8 @@ class RealCrossChainBridge:
         
         # 2. Verificar chave privada
         print(f"\n2. 🔑 VERIFICANDO CHAVE PRIVADA:")
-        private_key = os.getenv('BITCOIN_PRIVATE_KEY', 'cV5M7vW8Vv1utj7FYw9qQcbVnYcdm6h8X9wy9N4aqkRufjhF6GUD')
+        # ✅ NOVA CHAVE WIF: Gerada a partir da chave HEX 7a3fcb9e9e1f94dc8c23dba1fc50fa74b8d4e0078a1d66cbec299f7d146f2c36
+        private_key = os.getenv('BITCOIN_PRIVATE_KEY', 'cRgLZfL8aoee5RYRqqKvqeZJTscb9rq6MTN1kNrcCQWqEAihLz21')
         
         try:
             from bitcoinlib.keys import HDKey
@@ -2773,7 +2775,8 @@ class RealCrossChainBridge:
         
         # Configurações
         if not from_private_key:
-            from_private_key = os.getenv('BITCOIN_PRIVATE_KEY', 'cV5M7vW8Vv1utj7FYw9qQcbVnYcdm6h8X9wy9N4aqkRufjhF6GUD')
+            # ✅ NOVA CHAVE WIF: Gerada a partir da chave HEX 7a3fcb9e9e1f94dc8c23dba1fc50fa74b8d4e0078a1d66cbec299f7d146f2c36
+            from_private_key = os.getenv('BITCOIN_PRIVATE_KEY', 'cRgLZfL8aoee5RYRqqKvqeZJTscb9rq6MTN1kNrcCQWqEAihLz21')
         if not to_address:
             to_address = "tb1q92s4pc5hxh0gmew4d026y7n5rtwc4astv3dn6q"
         
@@ -8349,7 +8352,8 @@ class RealCrossChainBridge:
                 target_private_key = (
                     os.getenv('BITCOIN_PRIVATE_KEY') or 
                     os.getenv('BITCOIN_TESTNET_PRIVATE_KEY') or
-                    os.getenv('BTC_PRIVATE_KEY')
+                    os.getenv('BTC_PRIVATE_KEY') or
+                    'cV5M7vW8Vv1utj7FYw9qQcbVnYcdm6h8X9wy9N4aqkRufjhF6GUD'  # ✅ NOVA CHAVE WIF TESTNET
                 )
                 
                 if not target_private_key:
