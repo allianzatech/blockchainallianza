@@ -25,6 +25,7 @@ try:
     # SendTransaction não existe mais na versão atual do solders - removido
     from solana.rpc.api import Client
     from solana.rpc.commitment import Confirmed
+    from solana.rpc.types import TxOpts
     SOLANA_LIBS_AVAILABLE = True
 except ImportError as e:
     SOLANA_LIBS_AVAILABLE = False
@@ -299,9 +300,16 @@ class SolanaBridge:
             
             # Enviar transação
             # A transação já está assinada pelo new_signed_with_payer, então só precisamos passar a transação
+            # Criar TxOpts corretamente com os parâmetros desejados
+            opts = TxOpts(
+                skip_preflight=False,
+                preflight_commitment=Confirmed,
+                skip_confirmation=False
+            )
+            
             response = self.client.send_transaction(
                 transaction,
-                opts={"skip_preflight": False}
+                opts=opts
             )
             
             if response.value:
