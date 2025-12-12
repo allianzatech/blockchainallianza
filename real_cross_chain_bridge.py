@@ -239,6 +239,19 @@ class RealCrossChainBridge:
             print(f"⚠️  Improvement modules not available: {e}")
             self.async_processor_full = None
         
+        # ✅ SOLANA BRIDGE: Inicializar suporte para Solana
+        try:
+            from solana_bridge import SolanaBridge
+            self.solana_bridge = SolanaBridge()
+            print("✅ Solana Bridge: Inicializado!")
+        except ImportError as e:
+            self.solana_bridge = None
+            print(f"⚠️  Solana Bridge não disponível: {e}")
+            print("   💡 Instale: pip install solana solders")
+        except Exception as e:
+            self.solana_bridge = None
+            print(f"⚠️  Erro ao inicializar Solana Bridge: {e}")
+        
         # NOVA MELHORIA: Tokenomics e Governança
         try:
             from tokenomics_system import TokenomicsSystem
