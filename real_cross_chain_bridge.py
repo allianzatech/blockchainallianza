@@ -3526,6 +3526,20 @@ class RealCrossChainBridge:
             print(f"   ✅ SimpleBitcoin está disponível e será usado!")
         else:
             print(f"   ⚠️  SimpleBitcoin NÃO está disponível - usando métodos alternativos")
+        
+        # ✅ DEBUG ULTRA-DETALHADO NO INÍCIO DA FUNÇÃO
+        print(f"\n🔍🔍🔍 DEBUG INICIAL DA CHAVE (ANTES DE QUALQUER PROCESSAMENTO) 🔍🔍🔍")
+        print(f"   Tipo: {type(from_private_key)}")
+        print(f"   É None? {from_private_key is None}")
+        print(f"   É vazio? {not from_private_key}")
+        if from_private_key:
+            print(f"   Tamanho: {len(from_private_key)}")
+            print(f"   Repr (primeiros 50): {repr(from_private_key[:50])}")
+            print(f"   Primeiros 30 chars: '{from_private_key[:30]}'")
+            print(f"   Primeiro char: '{from_private_key[0]}' (ord: {ord(from_private_key[0])})")
+            print(f"   Último char: '{from_private_key[-1]}' (ord: {ord(from_private_key[-1])})")
+            print(f"   Tem espaços? {from_private_key != from_private_key.strip()}")
+            print(f"   Começa com c/9/5/L/K? {from_private_key.startswith(('c', '9', '5', 'L', 'K'))}")
         print(f"{'='*80}\n")
         
         # MELHORIA: Validar endereço Bitcoin antes de tentar enviar
