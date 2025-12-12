@@ -292,32 +292,15 @@ class SolanaBridge:
                 from_pubkey
             )
             
-            # ✅ CORREÇÃO: Nova API do solders - usar new_signed_with_payer ou new_with_payer
-            # new_signed_with_payer assina automaticamente, new_with_payer cria sem assinar
-            try:
-                # Método 1: new_signed_with_payer (assina automaticamente)
-                transaction = Transaction.new_signed_with_payer(
-                    [instruction],
-                    from_pubkey,
-                    [keypair],
-                    recent_blockhash
-                )
-            except (TypeError, AttributeError) as e1:
-                try:
-                    # Método 2: new_with_payer (cria sem assinar, depois assina)
-                    transaction = Transaction.new_with_payer(
-                        [instruction],
-                        from_pubkey
-                    )
-                    transaction.sign([keypair], recent_blockhash)
-                except (TypeError, AttributeError) as e2:
-                    try:
-                        # Método 3: new_unsigned (versão mais antiga)
-                        transaction = Transaction.new_unsigned(message)
-                        transaction.sign([keypair], recent_blockhash)
-                    except (TypeError, AttributeError) as e3:
-                        # Método 4: Construtor direto (última tentativa)
-                        transaction = Transaction([keypair], message, recent_blockhash)
+            # ✅ CORREÇÃO: Nova API do solders - usar new_signed_with_payer
+            # new_signed_with_payer(instructions, payer, signing_keypairs, recent_blockhash)
+            # Este método cria e assina a transação automaticamente
+            transaction = Transaction.new_signed_with_payer(
+                [instruction],      # Lista de instruções
+                from_pubkey,        # Payer (remetente)
+                [keypair],          # Lista de keypairs para assinar
+                recent_blockhash    # Blockhash recente
+            )
             
             # Enviar transação
             response = self.client.send_transaction(
