@@ -197,14 +197,13 @@ class SolanaBridge:
         
         try:
             if not SOLANA_LIBS_AVAILABLE:
-                return {
-                    "success": False,
-                    "error": "Bibliotecas Solana não instaladas no servidor Render",
-                    "note": "As bibliotecas 'solana' e 'solders' estão no requirements.txt, mas não foram instaladas no servidor.",
-                    "solution": "Verifique os logs de build do Render. Pode ser necessário: 1) Verificar se há erros de compilação, 2) Garantir que Python 3.9+ está sendo usado, 3) Verificar se há conflitos de dependências",
-                    "requirements_check": "requirements.txt contém: solana>=0.30.2 e solders>=0.18.0",
-                    "debug": "SOLANA_LIBS_AVAILABLE = False - as bibliotecas não foram importadas com sucesso no servidor"
-                }
+                # ✅ FALLBACK: Tentar usar API RPC direta (sem bibliotecas Python)
+                print("⚠️  Bibliotecas Solana não disponíveis, tentando método alternativo via RPC direto...")
+                return self._send_transaction_via_rpc_direct(
+                    from_private_key=from_private_key,
+                    to_address=to_address,
+                    amount_sol=amount_sol
+                )
             
             # Carregar keypair
             try:
