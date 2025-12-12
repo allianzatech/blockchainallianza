@@ -34,14 +34,22 @@ class SolanaBridge:
     
     def __init__(self):
         # RPC endpoints Solana
+        # ✅ PRIORIDADE: Usar SOLANA_RPC_URL se configurado, senão usar SOLANA_TESTNET_RPC
+        solana_rpc_url = os.getenv('SOLANA_RPC_URL') or os.getenv('SOLANA_TESTNET_RPC')
+        
         self.rpc_endpoints = {
             "mainnet": os.getenv('SOLANA_MAINNET_RPC', 'https://api.mainnet-beta.solana.com'),
-            "testnet": os.getenv('SOLANA_TESTNET_RPC', 'https://api.testnet.solana.com'),
+            "testnet": solana_rpc_url or 'https://api.testnet.solana.com',
             "devnet": os.getenv('SOLANA_DEVNET_RPC', 'https://api.devnet.solana.com')
         }
         
         self.network = os.getenv('SOLANA_NETWORK', 'testnet')
-        self.rpc_url = self.rpc_endpoints.get(self.network, self.rpc_endpoints['testnet'])
+        self.rpc_url = solana_rpc_url or self.rpc_endpoints.get(self.network, self.rpc_endpoints['testnet'])
+        
+        # ✅ Endereço Solana configurado (se disponível)
+        self.solana_address = os.getenv('SOLANA_ADDRESS')
+        if self.solana_address:
+            print(f"✅ Endereço Solana configurado: {self.solana_address}")
         
         # Cliente RPC
         self.client = None
