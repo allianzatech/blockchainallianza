@@ -4636,11 +4636,15 @@ class RealCrossChainBridge:
                                                         print(f"   ⚠️  UTXO [{i+1}] valor inválido: {value}, pulando...")
                                                         continue
                                                     
-                                                    inputs_list.append({
+                                                    # ✅ CORREÇÃO: BlockCypher precisa do 'value' no input para validação
+                                                    input_data = {
                                                         "prev_hash": txid,
-                                                        "output_index": output_n_int
-                                                    })
-                                                    print(f"   ✅ Input [{len(inputs_list)}]: {txid[:16]}...:{output_n_int} = {value} satoshis")
+                                                        "output_index": output_n_int,
+                                                        "value": int(value)  # Incluir value para BlockCypher validar
+                                                    }
+                                                    inputs_list.append(input_data)
+                                                    print(f"   ✅ Input [{len(inputs_list)}]: {txid} (output {output_n_int}) = {value} satoshis")
+                                                    print(f"      📋 Input completo: prev_hash={txid}, output_index={output_n_int}, value={value}")
                                                 
                                                 if len(inputs_list) == 0:
                                                     print(f"   ❌ Nenhum input válido após validação!")
@@ -4766,6 +4770,15 @@ class RealCrossChainBridge:
                                                 print(f"   📡 Enviando para BlockCypher: {create_url}")
                                                 print(f"   📋 Dados: {len(inputs_list)} inputs, {len(outputs_list)} outputs")
                                                 print(f"   💰 Total input: {total_input_value} sats, Output: {output_value} sats, Fee: {estimated_fee_satoshis} sats, Change: {change_value} sats")
+                                                
+                                                # ✅ DEBUG: Logar inputs detalhados
+                                                print(f"   🔍 DEBUG - Inputs sendo enviados:")
+                                                for idx, inp in enumerate(inputs_list):
+                                                    print(f"      Input {idx+1}: prev_hash={inp.get('prev_hash')}, output_index={inp.get('output_index')}, value={inp.get('value')}")
+                                                
+                                                # ✅ DEBUG: Logar payload completo (sem token)
+                                                debug_tx_data = tx_data.copy()
+                                                print(f"   🔍 DEBUG - Payload completo: {json.dumps(debug_tx_data, indent=2)[:1000]}")
                                                 
                                                 create_response = requests.post(create_url, json=tx_data, timeout=30)
                                                 
