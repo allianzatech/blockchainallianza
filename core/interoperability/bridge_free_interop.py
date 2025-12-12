@@ -367,8 +367,22 @@ class BridgeFreeInterop:
         """
         try:
             # Se não tiver private key, usar a do .env
+            # ✅ CORREÇÃO: Quando source_chain é Solana, a transação REAL é enviada na TARGET chain
+            # Então precisamos da private key da TARGET chain, não da source
             if not private_key:
-                if source_chain == "polygon":
+                # Se source é Solana, usar private key da TARGET chain
+                if source_chain == "solana":
+                    if target_chain == "polygon":
+                        private_key = os.getenv('POLYGON_PRIVATE_KEY')
+                    elif target_chain == "bsc":
+                        private_key = os.getenv('BSC_PRIVATE_KEY')
+                    elif target_chain == "ethereum":
+                        private_key = os.getenv('ETH_PRIVATE_KEY')
+                    else:
+                        # Para outras chains, tentar usar a do target
+                        private_key = os.getenv(f'{target_chain.upper()}_PRIVATE_KEY')
+                # Caso normal: source chain é EVM
+                elif source_chain == "polygon":
                     private_key = os.getenv('POLYGON_PRIVATE_KEY')
                 elif source_chain == "bsc":
                     private_key = os.getenv('BSC_PRIVATE_KEY')
@@ -376,8 +390,6 @@ class BridgeFreeInterop:
                     private_key = os.getenv('ETH_PRIVATE_KEY')
                 elif source_chain == "bitcoin":
                     private_key = os.getenv('BITCOIN_PRIVATE_KEY') or os.getenv('BTC_PRIVATE_KEY')
-                elif source_chain == "solana":
-                    private_key = os.getenv('SOLANA_PRIVATE_KEY') or os.getenv('SOLANA_BRIDGE_PRIVATE_KEY')
             
             # Bitcoin requer implementação diferente - usar real_cross_chain_bridge
             if target_chain == "bitcoin" or source_chain == "bitcoin":
@@ -523,8 +535,16 @@ class BridgeFreeInterop:
             
             if not private_key:
                 # Mensagem de erro específica por chain
+                # ✅ CORREÇÃO: Quando source é Solana, precisamos da private key da TARGET chain
                 if source_chain == "solana":
-                    error_note = "Configure no .env: SOLANA_PRIVATE_KEY ou SOLANA_BRIDGE_PRIVATE_KEY"
+                    if target_chain == "polygon":
+                        error_note = "Configure no .env: POLYGON_PRIVATE_KEY (para enviar na target chain Polygon)"
+                    elif target_chain == "ethereum":
+                        error_note = "Configure no .env: ETH_PRIVATE_KEY (para enviar na target chain Ethereum)"
+                    elif target_chain == "bsc":
+                        error_note = "Configure no .env: BSC_PRIVATE_KEY (para enviar na target chain BSC)"
+                    else:
+                        error_note = f"Configure no .env: {target_chain.upper()}_PRIVATE_KEY (para enviar na target chain {target_chain})"
                 elif source_chain == "bitcoin":
                     error_note = "Configure no .env: BITCOIN_PRIVATE_KEY ou BTC_PRIVATE_KEY"
                 else:
@@ -532,7 +552,7 @@ class BridgeFreeInterop:
                 
                 return {
                     "success": False,
-                    "error": f"Private key não configurada para {source_chain}",
+                    "error": f"Private key não configurada para {target_chain if source_chain == 'solana' else source_chain}",
                     "note": error_note
                 }
             
