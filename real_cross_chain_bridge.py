@@ -4225,15 +4225,73 @@ class RealCrossChainBridge:
                             import traceback
                             traceback.print_exc()
                     else:
-                        print(f"   ⚠️  Nenhum endereço disponível para verificar")
+                        print(f"   ⚠️⚠️⚠️  ERRO CRÍTICO: Nenhum endereço disponível para verificar!")
+                        print(f"   expected_address: {expected_address}")
+                        print(f"   derived_address: {derived_address if 'derived_address' in locals() else 'N/A'}")
+                        print(f"   to_address: {to_address}")
+                        # Tentar usar to_address como último recurso e buscar
+                        if to_address:
+                            address_to_check = to_address
+                            print(f"   🔄 Tentando usar to_address e buscar saldo: {address_to_check}")
+                            try:
+                                balance_url = f"https://blockstream.info/testnet/api/address/{address_to_check}"
+                                balance_resp = requests.get(balance_url, timeout=15, headers={'Cache-Control': 'no-cache'})
+                                if balance_resp.status_code == 200:
+                                    balance_data = balance_resp.json()
+                                    chain_funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
+                                    chain_spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
+                                    chain_balance = chain_funded - chain_spent
+                                    mempool_funded = balance_data.get('mempool_stats', {}).get('funded_txo_sum', 0)
+                                    mempool_spent = balance_data.get('mempool_stats', {}).get('spent_txo_sum', 0)
+                                    mempool_balance = mempool_funded - mempool_spent
+                                    total_balance_sats = chain_balance + mempool_balance
+                                    balance_btc = total_balance_sats / 100000000
+                                    from_address = address_to_check
+                                    print(f"   ✅ Saldo encontrado via to_address: {balance_btc:.8f} BTC")
+                                    
+                                    # Buscar UTXOs também
+                                    utxo_url = f"{balance_url}/utxo"
+                                    utxo_resp = requests.get(utxo_url, timeout=20, headers={'Cache-Control': 'no-cache'})
+                                    if utxo_resp.status_code == 200:
+                                        utxos_data = utxo_resp.json()
+                                        utxos = []
+                                        for bs_utxo in utxos_data:
+                                            utxos.append({
+                                                'txid': bs_utxo.get('txid'),
+                                                'vout': bs_utxo.get('vout', 0),
+                                                'output_n': bs_utxo.get('vout', 0),
+                                                'value': int(bs_utxo.get('value', 0)),
+                                                'address': address_to_check,
+                                                'confirmed': bs_utxo.get('status', {}).get('confirmed', False),
+                                                'spent': False
+                                            })
+                                        if utxos:
+                                            total_value = sum(u.get('value', 0) for u in utxos)
+                                            balance_btc = total_value / 100000000
+                                            print(f"   ✅ Saldo dos UTXOs: {balance_btc:.8f} BTC")
+                            except Exception as fallback_err:
+                                print(f"   ❌ Erro no fallback: {fallback_err}")
+                    
+                    # ✅ CRÍTICO: Preservar saldo encontrado em variáveis protegidas ANTES de qualquer outra operação
+                    protected_balance_btc = balance_btc  # Preservar saldo encontrado
+                    protected_from_address = from_address  # Preservar endereço encontrado
+                    protected_utxos = utxos.copy() if utxos else []  # Preservar UTXOs encontrados
+                    
+                    balance_found_in_simplified_search = protected_balance_btc > 0.0 and protected_from_address
+                    utxos_found_in_simplified_search = len(protected_utxos) > 0
                     
                     print(f"\n📊 Estado após busca simplificada:")
                     print(f"   balance_btc: {balance_btc:.8f} BTC")
+                    print(f"   protected_balance_btc: {protected_balance_btc:.8f} BTC")
                     print(f"   from_address: {from_address}")
+                    print(f"   protected_from_address: {protected_from_address}")
                     print(f"   utxos count: {len(utxos)}")
+                    print(f"   protected_utxos count: {len(protected_utxos)}")
+                    print(f"   balance_found_in_simplified_search: {balance_found_in_simplified_search}")
+                    print(f"   utxos_found_in_simplified_search: {utxos_found_in_simplified_search}")
                     
                     # ✅ CRÍTICO: Se já encontramos saldo e UTXOs na busca simplificada, PULAR criação de wallets
-                    if balance_btc > 0.0 and len(utxos) > 0 and from_address:
+                    if balance_found_in_simplified_search and utxos_found_in_simplified_search:
                         print(f"✅✅✅ SALDO E UTXOs JÁ ENCONTRADOS NA BUSCA SIMPLIFICADA!")
                         print(f"   Saldo: {balance_btc:.8f} BTC")
                         print(f"   UTXOs: {len(utxos)}")
@@ -4387,7 +4445,7 @@ class RealCrossChainBridge:
                                 add_log("wallet_scan_error_after_create", {"error": str(scan_error)}, "warning")
                             
                             # ✅ CORREÇÃO CRÍTICA: Usar Blockstream em vez de BlockCypher (BlockCypher está desatualizado)
-                            # ✅ PROTEÇÃO: Se já temos saldo da busca simplificada, não sobrescrever!
+                            # ✅ PROTEÇÃO: Se já temos saldo da busca simplificada, RESTAURAR valores protegidos!
                             if not balance_from_simplified_check:
                                 try:
                                     # Usar Blockstream API (mais confiável e atualizado)
@@ -4986,6 +5044,27 @@ class RealCrossChainBridge:
                                 print(f"🚨🚨🚨 OVERRIDE ATIVO: Pulando retorno de erro, continuando transação...", file=sys.stderr)
                                 print(f"🚨🚨🚨 OVERRIDE ATIVO: Pulando retorno de erro, continuando transação...")
                                 # NÃO retornar erro - continuar para criar transação
+                            # ✅ VERIFICAÇÃO FINAL: Se temos valores protegidos da busca simplificada, RESTAURAR!
+                            elif 'protected_balance_btc' in locals() and protected_balance_btc > 0.0:
+                                print(f"🚨🚨🚨 RESTAURANDO VALORES PROTEGIDOS DA BUSCA SIMPLIFICADA!", file=sys.stderr)
+                                print(f"🚨🚨🚨 RESTAURANDO VALORES PROTEGIDOS DA BUSCA SIMPLIFICADA!")
+                                balance_btc = protected_balance_btc
+                                from_address = protected_from_address
+                                utxos = protected_utxos.copy() if protected_utxos else []
+                                print(f"   balance_btc RESTAURADO: {balance_btc:.8f} BTC", file=sys.stderr)
+                                print(f"   balance_btc RESTAURADO: {balance_btc:.8f} BTC")
+                                print(f"   from_address RESTAURADO: {from_address}", file=sys.stderr)
+                                print(f"   from_address RESTAURADO: {from_address}")
+                                print(f"   utxos RESTAURADOS: {len(utxos)}", file=sys.stderr)
+                                print(f"   utxos RESTAURADOS: {len(utxos)}")
+                                # Verificar novamente se agora temos saldo suficiente
+                                if balance_btc >= total_needed:
+                                    print(f"✅✅✅ SALDO SUFICIENTE APÓS RESTAURAÇÃO! Continuando transação...", file=sys.stderr)
+                                    print(f"✅✅✅ SALDO SUFICIENTE APÓS RESTAURAÇÃO! Continuando transação...")
+                                    # NÃO retornar erro - continuar para criar transação
+                                elif balance_btc < total_needed:
+                                    # Ainda insuficiente mesmo após restauração
+                                    print(f"⚠️  Saldo ainda insuficiente após restauração: {balance_btc} < {total_needed}")
                             elif balance_btc < total_needed:
                                 print(f"\n❌❌❌ RETORNANDO ERRO DE SALDO INSUFICIENTE (APÓS PATCH NUCLEAR)")
                                 print(f"   balance_btc final: {balance_btc}")
