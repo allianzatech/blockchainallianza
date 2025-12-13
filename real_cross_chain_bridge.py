@@ -4034,6 +4034,55 @@ class RealCrossChainBridge:
                 # bitcoinlib precisa de um nome de wallet único
                 
                 try:
+                    # ✅ CRÍTICO: Primeiro validar e converter chave privada para obter o endereço
+                    # ✅ CORREÇÃO: Validar e converter chave privada para formato WIF se necessário
+                    key = None
+                    try:
+                        # Tentar validar se é WIF válido
+                        from bitcoinlib.keys import Key
+                        test_key = Key(from_private_key, network='testnet')
+                        # Se chegou aqui, é WIF válido
+                        key = HDKey(from_private_key, network='testnet')
+                        
+                        # ✅ DERIVAR ENDEREÇO DA CHAVE PRIVADA (SEGWIT - mais comum)
+                        derived_address = key.address()
+                        print(f"✅ Endereço derivado da chave privada: {derived_address}")
+                    except Exception as wif_err:
+                        print(f"⚠️  Chave não é WIF válido: {wif_err}")
+                        # Tentar converter de hex para WIF
+                        try:
+                            # Se a chave começa com 0x ou é hex puro, converter para WIF
+                            if from_private_key.startswith('0x'):
+                                priv_key_hex = from_private_key[2:]
+                            elif len(from_private_key) == 64:
+                                priv_key_hex = from_private_key
+                            else:
+                                raise ValueError("Formato de chave não reconhecido")
+                            
+                            # Converter hex para bytes e depois para WIF
+                            from bitcoinlib.keys import HDKey
+                            priv_key_bytes = bytes.fromhex(priv_key_hex)
+                            # Criar HDKey a partir de bytes (bitcoinlib aceita isso)
+                            key = HDKey(priv_key_bytes, network='testnet')
+                            # Obter WIF da chave criada
+                            wif_key = key.wif()
+                            print(f"✅ Chave convertida para WIF: {wif_key[:15]}...")
+                            from_private_key = wif_key  # Usar WIF daqui em diante
+                            
+                            # ✅ DERIVAR ENDEREÇO DA CHAVE CONVERTIDA
+                            derived_address = key.address()
+                            print(f"✅ Endereço derivado da chave convertida: {derived_address}")
+                        except Exception as conv_err:
+                            print(f"❌ Não foi possível converter chave para WIF: {conv_err}")
+                            return {
+                                "success": False,
+                                "error": f"Chave privada em formato inválido: {str(wif_err)}",
+                                "error_type": "BKeyError",
+                                "note": "A chave deve estar em formato WIF (começa com 'c' ou '9' para testnet) ou hex (64 caracteres)",
+                                "bitcoinlib_installed": True
+                            }
+                    
+                    # ✅ CRÍTICO: Usar endereço derivado como fallback se não estiver no .env
                     # MELHORIA: Tentar usar endereço do .env primeiro (se disponível)
                     expected_address = (
                         os.getenv('BITCOIN_TESTNET_ADDRESS') or
@@ -4041,15 +4090,17 @@ class RealCrossChainBridge:
                         os.getenv('BTC_ADDRESS')
                     )
                     
+                    # ✅ FALLBACK: Se não tiver no .env, usar o endereço derivado da chave
+                    if not expected_address and key:
+                        expected_address = derived_address
+                        print(f"✅ Usando endereço derivado da chave como expected_address: {expected_address}")
+                    elif expected_address:
+                        print(f"✅ Usando expected_address do .env: {expected_address}")
+                    else:
+                        print(f"⚠️⚠️⚠️  NENHUM ENDEREÇO DISPONÍVEL! expected_address=None, derived_address={'N/A' if not key else 'N/A'}")
+                    
                     # Tentar criar wallet com a chave WIF
                     # MELHORIA: Tentar todos os tipos de witness_type para encontrar o que tem saldo
-                    # ✅ CORREÇÃO: Validar e converter chave privada para formato WIF se necessário
-                    try:
-                        # Tentar validar se é WIF válido
-                        from bitcoinlib.keys import Key
-                        test_key = Key(from_private_key, network='testnet')
-                        # Se chegou aqui, é WIF válido
-                        key = HDKey(from_private_key, network='testnet')
                     except Exception as wif_err:
                         print(f"⚠️  Chave não é WIF válido: {wif_err}")
                         # Tentar converter de hex para WIF
