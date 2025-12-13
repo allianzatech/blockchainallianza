@@ -3084,14 +3084,34 @@ class RealCrossChainBridge:
                 try:
                     import requests
                     balance_url = f"https://blockstream.info/testnet/api/address/{from_address}"
+                    print(f"   🔍 CHECK BALANCE: URL: {balance_url}")
                     balance_resp = requests.get(balance_url, timeout=10)
+                    print(f"   🔍 CHECK BALANCE: Status HTTP: {balance_resp.status_code}")
+                    
                     if balance_resp.status_code == 200:
                         balance_data = balance_resp.json()
+                        print(f"   🔍 CHECK BALANCE: Dados crus (primeiros 500 chars): {json.dumps(balance_data)[:500]}...")
+                        
                         funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
                         spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
                         balance_sats = funded - spent
                         balance_btc = balance_sats / 100000000
+                        
+                        print(f"   🔍 CHECK BALANCE: funded={funded}, spent={spent}, balance={balance_sats}")
                         print(f"   💰 Saldo do endereço derivado: {balance_sats} satoshis ({balance_btc:.8f} BTC)")
+                        
+                        # ✅ LOG CRÍTICO: Verificar UTXOs também
+                        utxo_check_url = f"{balance_url}/utxo"
+                        print(f"   🔍 CHECK UTXOs: URL: {utxo_check_url}")
+                        utxo_check_resp = requests.get(utxo_check_url, timeout=10)
+                        print(f"   🔍 CHECK UTXOs: Status HTTP: {utxo_check_resp.status_code}")
+                        if utxo_check_resp.status_code == 200:
+                            utxos_check = utxo_check_resp.json()
+                            print(f"   🔍 CHECK UTXOs: Total encontrados: {len(utxos_check)}")
+                            if utxos_check:
+                                total_utxo_value = sum(u.get('value', 0) for u in utxos_check)
+                                print(f"   🔍 CHECK UTXOs: Valor total: {total_utxo_value} satoshis ({total_utxo_value/100000000:.8f} BTC)")
+                                print(f"   🔍 CHECK UTXOs: Primeiro UTXO: {utxos_check[0].get('txid', 'N/A')[:16]}...:{utxos_check[0].get('vout', 'N/A')} = {utxos_check[0].get('value', 0)} sats")
                         
                         if balance_sats < 10000:  # Menos de 0.0001 BTC
                             print(f"   ⚠️  AVISO: Saldo muito baixo! Tentando endereço do .env...")
@@ -3169,16 +3189,28 @@ class RealCrossChainBridge:
                     "key_preview": from_private_key[:20] + "..." if len(from_private_key) > 20 else from_private_key
                 }
         
-        # 2. Buscar UTXOs via Blockstream
-        print(f"\n2. 🔍 Buscando UTXOs confirmados...")
+        # 2. Buscar UTXOs via Blockstream (PRIORIDADE - mais confiável e atualizado)
+        print(f"\n2. 🔍 Buscando UTXOs confirmados via Blockstream API...")
+        print(f"   🔍 CHECK UTXOs: Endereço sendo verificado: {from_address}")
         utxo_url = f"https://blockstream.info/testnet/api/address/{from_address}/utxo"
+        print(f"   🔍 CHECK UTXOs: URL: {utxo_url}")
         response = requests.get(utxo_url, timeout=20)
+        print(f"   🔍 CHECK UTXOs: Status HTTP: {response.status_code}")
         
         if response.status_code != 200:
-            return {"success": False, "error": f"Erro ao buscar UTXOs: {response.status_code}"}
+            print(f"   ❌ Erro ao buscar UTXOs: {response.status_code}")
+            print(f"   🔍 CHECK UTXOs: Resposta: {response.text[:200]}")
+            return {"success": False, "error": f"Erro ao buscar UTXOs: {response.status_code}", "response": response.text[:200]}
         
         all_utxos = response.json()
+        print(f"   🔍 CHECK UTXOs: Total UTXOs retornados: {len(all_utxos)}")
         print(f"   Total UTXOs: {len(all_utxos)}")
+        
+        # ✅ LOG CRÍTICO: Mostrar detalhes dos UTXOs
+        if all_utxos:
+            total_value = sum(u.get('value', 0) for u in all_utxos)
+            print(f"   🔍 CHECK UTXOs: Valor total dos UTXOs: {total_value:,} satoshis ({total_value/100000000:.8f} BTC)")
+            print(f"   🔍 CHECK UTXOs: Primeiro UTXO: txid={all_utxos[0].get('txid', 'N/A')[:16]}..., vout={all_utxos[0].get('vout', 'N/A')}, value={all_utxos[0].get('value', 0)}")
         
         # Filtrar apenas confirmados
         confirmed_utxos = []
