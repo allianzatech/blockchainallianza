@@ -4217,8 +4217,7 @@ class RealCrossChainBridge:
                     if not skip_wallet_creation:
                         for witness_type in witness_types_to_try:
                             try:
-                        try:
-                            # Criar wallet temporário para este tipo
+                                # Criar wallet temporário para este tipo
                             test_wallet_name = f"{wallet_name}_{witness_type}"
                             test_wallet = Wallet.create(
                                 test_wallet_name,
