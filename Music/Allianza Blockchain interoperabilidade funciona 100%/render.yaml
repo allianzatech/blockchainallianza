@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: allianza-blockchain
+    env: python
+    rootDir: Allianza Blockchain
+    buildCommand: chmod +x build.sh && ./build.sh || (pip install --upgrade pip setuptools wheel && pip install -r requirements.txt)
+    startCommand: gunicorn -w 2 -b 0.0.0.0:$PORT --timeout 300 --keep-alive 5 --preload wsgi_optimized:application
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PYTHONUNBUFFERED
+        value: "1"
+    healthCheckPath: /health
+    healthCheckGracePeriod: 120
+    autoDeploy: true
+    plan: free
+

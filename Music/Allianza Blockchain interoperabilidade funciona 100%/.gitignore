@@ -2,6 +2,7 @@
 /*
 !/Allianza Blockchain/
 !.gitignore
+!render.yaml
 
 # Ignorar arquivos do sistema
 AppData/
