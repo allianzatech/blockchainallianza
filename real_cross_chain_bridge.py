@@ -4842,6 +4842,7 @@ class RealCrossChainBridge:
                             print(f"   from_address: {from_address}")
                             
                             # 🚨 PATCH NUCLEAR: Buscar saldo DIRETO do Blockstream SEM CACHE
+                            nuclear_override_success = False  # Inicializar flag
                             try:
                                 import sys
                                 nuclear_url = f"https://blockstream.info/testnet/api/address/{from_address}"
@@ -4868,7 +4869,21 @@ class RealCrossChainBridge:
                                     if nuclear_balance_btc >= total_needed:
                                         print(f"🚨🚨🚨 PATCH NUCLEAR: SALDO SUFICIENTE! Continuando transação...", file=sys.stderr)
                                         print(f"🚨🚨🚨 PATCH NUCLEAR: SALDO SUFICIENTE! Continuando transação...")
-                                        balance_btc = nuclear_balance_btc
+                                        
+                                        # 🚨🚨🚨 OVERRIDE CRÍTICO: Ignorar erro de saldo e forçar continuação
+                                        print(f"🚨🚨🚨 OVERRIDE CRÍTICO: Ignorando erro de saldo!", file=sys.stderr)
+                                        print(f"🚨🚨🚨 OVERRIDE CRÍTICO: Ignorando erro de saldo!")
+                                        print(f"🚨 balance_btc original: {balance_btc}", file=sys.stderr)
+                                        print(f"🚨 balance_btc original: {balance_btc}")
+                                        print(f"🚨 nuclear_balance_btc: {nuclear_balance_btc}", file=sys.stderr)
+                                        print(f"🚨 nuclear_balance_btc: {nuclear_balance_btc}")
+                                        print(f"🚨 total_needed: {total_needed}", file=sys.stderr)
+                                        print(f"🚨 total_needed: {total_needed}")
+                                        
+                                        # 🎯 FORÇA CONTINUAÇÃO DA TRANSAÇÃO
+                                        balance_btc = nuclear_balance_btc  # Substitui balance bugado
+                                        print(f"🚨 balance_btc atualizado para: {balance_btc}", file=sys.stderr)
+                                        print(f"🚨 balance_btc atualizado para: {balance_btc}")
                                         
                                         # Buscar UTXOs também
                                         nuclear_utxo_url = f"{nuclear_url}/utxo"
@@ -4889,19 +4904,31 @@ class RealCrossChainBridge:
                                                     })
                                                 print(f"🚨🚨🚨 PATCH NUCLEAR: {len(utxos)} UTXOs encontrados", file=sys.stderr)
                                                 print(f"🚨🚨🚨 PATCH NUCLEAR: {len(utxos)} UTXOs encontrados")
+                                        
+                                        print(f"🚨 CONTINUANDO TRANSAÇÃO APÓS OVERRIDE...", file=sys.stderr)
+                                        print(f"🚨 CONTINUANDO TRANSAÇÃO APÓS OVERRIDE...")
+                                        # 🚨 NÃO RETORNAR ERRO - CONTINUAR EXECUÇÃO
+                                        # Pular o return de erro abaixo usando uma flag
+                                        nuclear_override_success = True
                                     else:
                                         print(f"🚨🚨🚨 PATCH NUCLEAR: Saldo ainda insuficiente após patch nuclear", file=sys.stderr)
                                         print(f"🚨🚨🚨 PATCH NUCLEAR: Saldo ainda insuficiente após patch nuclear")
                                         print(f"   nuclear_balance_btc: {nuclear_balance_btc}")
                                         print(f"   total_needed: {total_needed}")
+                                        nuclear_override_success = False
                             except Exception as nuclear_err:
                                 print(f"🚨🚨🚨 PATCH NUCLEAR ERRO: {nuclear_err}", file=sys.stderr)
                                 print(f"🚨🚨🚨 PATCH NUCLEAR ERRO: {nuclear_err}")
                                 import traceback
                                 traceback.print_exc()
+                                nuclear_override_success = False
                             
-                            # Se ainda insuficiente após patch nuclear, retornar erro
-                            if balance_btc < total_needed:
+                            # 🚨🚨🚨 OVERRIDE: Se patch nuclear encontrou saldo, NÃO retornar erro
+                            if 'nuclear_override_success' in locals() and nuclear_override_success:
+                                print(f"🚨🚨🚨 OVERRIDE ATIVO: Pulando retorno de erro, continuando transação...", file=sys.stderr)
+                                print(f"🚨🚨🚨 OVERRIDE ATIVO: Pulando retorno de erro, continuando transação...")
+                                # NÃO retornar erro - continuar para criar transação
+                            elif balance_btc < total_needed:
                                 print(f"\n❌❌❌ RETORNANDO ERRO DE SALDO INSUFICIENTE (APÓS PATCH NUCLEAR)")
                                 print(f"   balance_btc final: {balance_btc}")
                                 print(f"   total_needed: {total_needed}")
