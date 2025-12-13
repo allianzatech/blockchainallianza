@@ -4131,19 +4131,32 @@ class RealCrossChainBridge:
                     print(f"🚨 amount_btc: {amount_btc}")
                     
                     # ✅ MÉTODO SIMPLES E DIRETO: Buscar saldo e UTXOs via Blockstream (como simple_bitcoin_direct.py)
-                    # Sempre usar o endereço esperado do .env primeiro
+                    # CRÍTICO: SEMPRE garantir que temos um endereço para buscar
                     address_to_check = expected_address
                     
+                    # ✅ FALLBACK 1: Se não tem no .env, usar endereço derivado (já calculado acima)
+                    if not address_to_check and derived_address:
+                        address_to_check = derived_address
+                        print(f"   📍 Usando endereço derivado da chave: {address_to_check}")
+                    
+                    # ✅ FALLBACK 2: Se ainda não tem, derivar novamente (método do simple_bitcoin_direct)
                     if not address_to_check:
-                        # Se não tem endereço esperado, tentar derivar da chave privada
                         try:
                             from bitcoinlib.keys import HDKey
                             key_obj = HDKey(from_private_key, network='testnet')
                             address_to_check = key_obj.address()
-                            print(f"   📍 Endereço derivado da chave: {address_to_check}")
-                        except:
-                            pass
+                            print(f"   📍 Endereço derivado diretamente da chave: {address_to_check}")
+                        except Exception as deriv_err:
+                            print(f"   ❌ Erro ao derivar endereço: {deriv_err}")
+                            import traceback
+                            traceback.print_exc()
                     
+                    # ✅ CRÍTICO: Se ainda não temos endereço, usar o recipient (to_address) como último recurso
+                    if not address_to_check:
+                        address_to_check = to_address
+                        print(f"   ⚠️  Usando to_address como fallback: {address_to_check}")
+                    
+                    # ✅ AGORA SEMPRE TEMOS UM ENDEREÇO - BUSCAR SALDO
                     if address_to_check:
                         print(f"\n🔍 Buscando saldo e UTXOs via Blockstream para: {address_to_check}")
                         try:
