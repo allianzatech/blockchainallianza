@@ -4273,11 +4273,18 @@ class RealCrossChainBridge:
                                     if balance_response.status_code == 200:
                                         balance_data = balance_response.json()
                                         print(f"   🔍 CHECK BALANCE: Dados: {json.dumps(balance_data)[:300]}...")
-                                        funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
-                                        spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
-                                        balance_satoshis = funded - spent
+                                        # ✅ CRÍTICO: Somar saldo confirmado + não confirmado (mempool)
+                                        chain_funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
+                                        chain_spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
+                                        chain_balance = chain_funded - chain_spent
+                                        
+                                        mempool_funded = balance_data.get('mempool_stats', {}).get('funded_txo_sum', 0)
+                                        mempool_spent = balance_data.get('mempool_stats', {}).get('spent_txo_sum', 0)
+                                        mempool_balance = mempool_funded - mempool_spent
+                                        
+                                        balance_satoshis = chain_balance + mempool_balance
                                         test_balance_btc = balance_satoshis / 100000000
-                                        print(f"   🔍 CHECK BALANCE: funded={funded}, spent={spent}, balance={balance_satoshis} sats ({test_balance_btc:.8f} BTC)")
+                                        print(f"   🔍 CHECK BALANCE: chain={chain_balance} sats, mempool={mempool_balance} sats, total={balance_satoshis} sats ({test_balance_btc:.8f} BTC)")
                                         
                                         if test_balance_btc > 0:
                                             print(f"   ✅ Saldo encontrado: {test_balance_btc} BTC em {test_address}")
@@ -4378,11 +4385,18 @@ class RealCrossChainBridge:
                                     if balance_response.status_code == 200:
                                         balance_data = balance_response.json()
                                         print(f"   🔍 CHECK BALANCE: Dados: {json.dumps(balance_data)[:300]}...")
-                                        funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
-                                        spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
-                                        balance_satoshis = funded - spent
+                                        # ✅ CRÍTICO: Somar saldo confirmado + não confirmado (mempool)
+                                        chain_funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
+                                        chain_spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
+                                        chain_balance = chain_funded - chain_spent
+                                        
+                                        mempool_funded = balance_data.get('mempool_stats', {}).get('funded_txo_sum', 0)
+                                        mempool_spent = balance_data.get('mempool_stats', {}).get('spent_txo_sum', 0)
+                                        mempool_balance = mempool_funded - mempool_spent
+                                        
+                                        balance_satoshis = chain_balance + mempool_balance
                                         balance_btc = balance_satoshis / 100000000
-                                        print(f"   🔍 CHECK BALANCE: funded={funded}, spent={spent}, balance={balance_satoshis} sats ({balance_btc:.8f} BTC)")
+                                        print(f"   🔍 CHECK BALANCE: chain={chain_balance} sats, mempool={mempool_balance} sats, total={balance_satoshis} sats ({balance_btc:.8f} BTC)")
                                         print(f"✅ Saldo do endereço esperado: {balance_btc} BTC")
                                 except Exception as balance_error:
                                     print(f"⚠️  Erro ao verificar saldo: {balance_error}")
