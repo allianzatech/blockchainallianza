@@ -4516,35 +4516,59 @@ class RealCrossChainBridge:
                     total_needed = amount_btc + estimated_fee_btc
                     
                     # ✅ CORREÇÃO CRÍTICA: Se balance_btc ainda é 0, fazer verificação FINAL via Blockstream
+                    print(f"\n🚨🚨🚨 DEBUG CRÍTICO: Verificando saldo antes da validação final")
+                    print(f"   balance_btc atual: {balance_btc}")
+                    print(f"   from_address: {from_address}")
+                    print(f"   utxos count: {len(utxos) if utxos else 0}")
+                    
                     if balance_btc == 0.0 and from_address:
-                        print(f"   ⚠️  Saldo ainda é 0, fazendo verificação FINAL via Blockstream API...")
+                        print(f"\n   ⚠️⚠️⚠️  SALDO É 0.0 - EXECUTANDO VERIFICAÇÃO FINAL VIA BLOCKSTREAM...")
                         try:
                             final_balance_url = f"https://blockstream.info/testnet/api/address/{from_address}"
-                            print(f"   🔍 CHECK BALANCE FINAL: {final_balance_url}")
+                            print(f"   🔍🔍🔍 CHECK BALANCE FINAL URL: {final_balance_url}")
+                            print(f"   🔍🔍🔍 Fazendo request GET para Blockstream...")
+                            
                             final_balance_resp = requests.get(final_balance_url, timeout=10)
-                            print(f"   🔍 CHECK BALANCE FINAL: Status: {final_balance_resp.status_code}")
+                            
+                            print(f"   🔍🔍🔍 CHECK BALANCE FINAL: Status Code: {final_balance_resp.status_code}")
+                            print(f"   🔍🔍🔍 CHECK BALANCE FINAL: Response Headers: {dict(final_balance_resp.headers)}")
+                            
                             if final_balance_resp.status_code == 200:
                                 final_balance_data = final_balance_resp.json()
-                                print(f"   🔍 CHECK BALANCE FINAL: Dados: {json.dumps(final_balance_data)[:500]}...")
+                                print(f"   🔍🔍🔍 CHECK BALANCE FINAL: Response JSON completo:")
+                                print(f"      {json.dumps(final_balance_data, indent=2)}")
+                                
                                 final_funded = final_balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
                                 final_spent = final_balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
                                 final_balance_sats = final_funded - final_spent
                                 final_balance_btc = final_balance_sats / 100000000
-                                print(f"   🔍 CHECK BALANCE FINAL: funded={final_funded}, spent={final_spent}, balance={final_balance_sats} sats ({final_balance_btc:.8f} BTC)")
+                                
+                                print(f"   🔍🔍🔍 CHECK BALANCE FINAL: funded={final_funded}, spent={final_spent}")
+                                print(f"   🔍🔍🔍 CHECK BALANCE FINAL: balance={final_balance_sats} satoshis ({final_balance_btc:.8f} BTC)")
                                 
                                 if final_balance_btc > 0:
                                     print(f"   ✅✅✅ SALDO ENCONTRADO VIA BLOCKSTREAM: {final_balance_btc} BTC")
+                                    print(f"   ✅✅✅ ATUALIZANDO balance_btc de {balance_btc} para {final_balance_btc}")
                                     balance_btc = final_balance_btc
+                                    print(f"   ✅✅✅ balance_btc ATUALIZADO: {balance_btc}")
                                     
                                     # ✅ CRÍTICO: Buscar UTXOs via Blockstream também
-                                    print(f"   🔍 Buscando UTXOs via Blockstream...")
+                                    print(f"   🔍🔍🔍 Buscando UTXOs via Blockstream...")
                                     final_utxo_url = f"{final_balance_url}/utxo"
-                                    final_utxo_resp = requests.get(final_utxo_url, timeout=10)
+                                    print(f"   🔍🔍🔍 UTXO URL: {final_utxo_url}")
+                                    final_utxo_resp = requests.get(final_utxo_url, timeout=20)
+                                    print(f"   🔍🔍🔍 UTXO Response Status: {final_utxo_resp.status_code}")
+                                    
                                     if final_utxo_resp.status_code == 200:
                                         final_utxos = final_utxo_resp.json()
-                                        print(f"   ✅ UTXOs encontrados via Blockstream: {len(final_utxos)}")
+                                        print(f"   ✅✅✅ UTXOs encontrados via Blockstream: {len(final_utxos)}")
+                                        print(f"   🔍🔍🔍 Primeiros 3 UTXOs:")
+                                        for i, u in enumerate(final_utxos[:3]):
+                                            print(f"      UTXO {i+1}: txid={u.get('txid', 'N/A')[:20]}..., vout={u.get('vout', 'N/A')}, value={u.get('value', 'N/A')}, confirmed={u.get('status', {}).get('confirmed', False)}")
+                                        
                                         if final_utxos and not utxos:
                                             # Converter formato Blockstream para formato esperado
+                                            print(f"   🔍🔍🔍 Convertendo UTXOs do formato Blockstream...")
                                             utxos = []
                                             for bs_utxo in final_utxos:
                                                 if bs_utxo.get('status', {}).get('confirmed', False):
@@ -4557,13 +4581,31 @@ class RealCrossChainBridge:
                                                         'confirmed': True,
                                                         'spent': False
                                                     })
-                                            print(f"   ✅ UTXOs convertidos: {len(utxos)} confirmados")
+                                            print(f"   ✅✅✅ UTXOs convertidos: {len(utxos)} confirmados")
+                                        elif utxos:
+                                            print(f"   ⚠️  UTXOs já existiam, não substituindo")
+                                    else:
+                                        print(f"   ⚠️⚠️⚠️  Erro ao buscar UTXOs: Status {final_utxo_resp.status_code}")
+                                        print(f"   Response: {final_utxo_resp.text[:500]}")
                                 else:
-                                    print(f"   ⚠️  Blockstream também mostra saldo 0")
+                                    print(f"   ⚠️⚠️⚠️  Blockstream também mostra saldo 0")
+                                    print(f"   ⚠️⚠️⚠️  funded={final_funded}, spent={final_spent}, balance={final_balance_sats}")
+                            else:
+                                print(f"   ⚠️⚠️⚠️  Erro HTTP na verificação final: {final_balance_resp.status_code}")
+                                print(f"   Response: {final_balance_resp.text[:500]}")
                         except Exception as final_balance_err:
-                            print(f"   ⚠️  Erro na verificação final: {final_balance_err}")
+                            print(f"   ❌❌❌ ERRO NA VERIFICAÇÃO FINAL: {final_balance_err}")
                             import traceback
                             traceback.print_exc()
+                    else:
+                        print(f"   ✅ balance_btc não é 0.0, pulando verificação final")
+                        print(f"   balance_btc = {balance_btc}")
+                    
+                    print(f"\n🚨🚨🚨 DEBUG CRÍTICO: Estado APÓS verificação final")
+                    print(f"   balance_btc: {balance_btc}")
+                    print(f"   total_needed: {total_needed}")
+                    print(f"   utxos count: {len(utxos) if utxos else 0}")
+                    print(f"   balance_btc < total_needed? {balance_btc < total_needed}")
                     
                     print(f"💰 Verificação de saldo:")
                     print(f"   Saldo disponível: {balance_btc} BTC")
@@ -4583,20 +4625,68 @@ class RealCrossChainBridge:
                             "note": "O valor convertido é menor que o dust limit do Bitcoin. Considere enviar um valor maior."
                         }
                     
+                    # 🚨🚨🚨 DEBUG CRÍTICO ANTES DA VERIFICAÇÃO FINAL
+                    print(f"\n🚨🚨🚨 VERIFICAÇÃO FINAL DE SALDO:")
+                    print(f"   balance_btc: {balance_btc}")
+                    print(f"   total_needed: {total_needed}")
+                    print(f"   amount_btc: {amount_btc}")
+                    print(f"   estimated_fee_btc: {estimated_fee_btc}")
+                    print(f"   from_address: {from_address}")
+                    print(f"   utxos_count: {len(utxos) if utxos else 0}")
+                    print(f"   balance_btc < total_needed? {balance_btc < total_needed}")
+                    
                     if balance_btc < total_needed:
-                        # Não deletar wallet aqui - pode ser usado para debug
-                        return {
-                            "success": False,
-                            "error": f"Saldo insuficiente. Disponível: {balance_btc} BTC, Necessário: {total_needed} BTC (amount: {amount_btc} + fee: {estimated_fee_btc})",
-                            "balance": balance_btc,
-                            "required": total_needed,
-                            "amount": amount_btc,
-                            "fee_estimated": estimated_fee_btc,
-                            "from_address": from_address,
-                            "utxos_count": len(utxos) if utxos else 0,
-                            "wallet_name": wallet_name,  # Para debug se necessário
-                            "note": f"Verifique se o endereço {from_address} tem saldo suficiente. Use BlockCypher explorer para verificar."
-                        }
+                        # 🚨🚨🚨 ÚLTIMA TENTATIVA: Verificar Blockstream UMA VEZ MAIS
+                        print(f"\n🚨🚨🚨 SALDO INSUFICIENTE DETECTADO - ÚLTIMA VERIFICAÇÃO DE EMERGÊNCIA")
+                        print(f"   Tentando Blockstream UMA VEZ MAIS antes de retornar erro...")
+                        try:
+                            emergency_url = f"https://blockstream.info/testnet/api/address/{from_address}"
+                            print(f"   🔍🔍🔍 EMERGENCY CHECK: {emergency_url}")
+                            emergency_resp = requests.get(emergency_url, timeout=10)
+                            print(f"   🔍🔍🔍 EMERGENCY CHECK Status: {emergency_resp.status_code}")
+                            
+                            if emergency_resp.status_code == 200:
+                                emergency_data = emergency_resp.json()
+                                emergency_funded = emergency_data.get('chain_stats', {}).get('funded_txo_sum', 0)
+                                emergency_spent = emergency_data.get('chain_stats', {}).get('spent_txo_sum', 0)
+                                emergency_balance_sats = emergency_funded - emergency_spent
+                                emergency_balance_btc = emergency_balance_sats / 100000000
+                                
+                                print(f"   🔍🔍🔍 EMERGENCY CHECK: balance={emergency_balance_sats} sats ({emergency_balance_btc:.8f} BTC)")
+                                
+                                if emergency_balance_btc >= total_needed:
+                                    print(f"   ✅✅✅ SALDO ENCONTRADO NA VERIFICAÇÃO DE EMERGÊNCIA!")
+                                    print(f"   ✅✅✅ Atualizando balance_btc de {balance_btc} para {emergency_balance_btc}")
+                                    balance_btc = emergency_balance_btc
+                                    print(f"   ✅✅✅ Continuando com a transação...")
+                                else:
+                                    print(f"   ⚠️⚠️⚠️  Verificação de emergência também mostra saldo insuficiente")
+                                    print(f"   ⚠️⚠️⚠️  emergency_balance_btc={emergency_balance_btc}, total_needed={total_needed}")
+                        except Exception as emergency_err:
+                            print(f"   ❌❌❌ Erro na verificação de emergência: {emergency_err}")
+                            import traceback
+                            traceback.print_exc()
+                        
+                        # Se ainda insuficiente após verificação de emergência, retornar erro
+                        if balance_btc < total_needed:
+                            print(f"\n❌❌❌ RETORNANDO ERRO DE SALDO INSUFICIENTE")
+                            print(f"   balance_btc final: {balance_btc}")
+                            print(f"   total_needed: {total_needed}")
+                            print(f"   from_address: {from_address}")
+                            
+                            # Não deletar wallet aqui - pode ser usado para debug
+                            return {
+                                "success": False,
+                                "error": f"Saldo insuficiente. Disponível: {balance_btc} BTC, Necessário: {total_needed} BTC (amount: {amount_btc} + fee: {estimated_fee_btc})",
+                                "balance": balance_btc,
+                                "required": total_needed,
+                                "amount": amount_btc,
+                                "fee_estimated": estimated_fee_btc,
+                                "from_address": from_address,
+                                "utxos_count": len(utxos) if utxos else 0,
+                                "wallet_name": wallet_name,  # Para debug se necessário
+                                "note": f"Verifique se o endereço {from_address} tem saldo suficiente. Use Blockstream explorer: https://blockstream.info/testnet/address/{from_address}"
+                            }
                     
                     # Enviar transação com fee rate adequado (5 sat/vB para garantir confirmação)
                     print(f"🚀 Enviando transação com fee rate: 5 sat/vB...")
