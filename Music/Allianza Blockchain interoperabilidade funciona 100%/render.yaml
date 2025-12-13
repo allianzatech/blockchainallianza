@@ -3,8 +3,8 @@ services:
     name: allianza-blockchain
     env: python
     rootDir: Allianza Blockchain
-    buildCommand: chmod +x build.sh && ./build.sh || (pip install --upgrade pip setuptools wheel && pip install -r requirements.txt)
-    startCommand: gunicorn -w 2 -b 0.0.0.0:$PORT --timeout 300 --keep-alive 5 --preload wsgi_optimized:application
+    buildCommand: cd "Allianza Blockchain" && (chmod +x build.sh && ./build.sh || (pip install --upgrade pip setuptools wheel && pip install -r requirements.txt))
+    startCommand: cd "Allianza Blockchain" && gunicorn -w 2 -b 0.0.0.0:$PORT --timeout 300 --keep-alive 5 --preload wsgi_optimized:application
     envVars:
       - key: FLASK_ENV
         value: production
