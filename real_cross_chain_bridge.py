@@ -4218,32 +4218,32 @@ class RealCrossChainBridge:
                         for witness_type in witness_types_to_try:
                             try:
                                 # Criar wallet temporário para este tipo
-                            test_wallet_name = f"{wallet_name}_{witness_type}"
-                            test_wallet = Wallet.create(
-                                test_wallet_name,
-                                keys=from_private_key,
-                                network='testnet',
-                                witness_type=witness_type
-                            )
+                                test_wallet_name = f"{wallet_name}_{witness_type}"
+                                test_wallet = Wallet.create(
+                                    test_wallet_name,
+                                    keys=from_private_key,
+                                    network='testnet',
+                                    witness_type=witness_type
+                                )
                             
-                            # Obter endereço deste tipo
-                            # Criar wallet primeiro para obter o endereço correto
-                            # ✅ CORREÇÃO: Usar a chave já validada/convertida acima
-                            test_key = key  # Reutilizar key já criada e validada acima
-                            
-                            # Obter endereço do wallet criado (mais confiável)
-                            test_wallet_keys = test_wallet.keys()
-                            if test_wallet_keys:
-                                test_address = test_wallet_keys[0].address
-                            else:
-                                # Fallback: usar método padrão do HDKey
-                                test_address = test_key.address()
-                            
-                            print(f"   Testando {witness_type}: {test_address}")
-                            
-                            # ✅ CORREÇÃO CRÍTICA: Usar Blockstream em vez de BlockCypher (BlockCypher está desatualizado)
-                            test_balance_btc = 0.0  # Inicializar antes do try
-                            try:
+                                # Obter endereço deste tipo
+                                # Criar wallet primeiro para obter o endereço correto
+                                # ✅ CORREÇÃO: Usar a chave já validada/convertida acima
+                                test_key = key  # Reutilizar key já criada e validada acima
+                                
+                                # Obter endereço do wallet criado (mais confiável)
+                                test_wallet_keys = test_wallet.keys()
+                                if test_wallet_keys:
+                                    test_address = test_wallet_keys[0].address
+                                else:
+                                    # Fallback: usar método padrão do HDKey
+                                    test_address = test_key.address()
+                                
+                                print(f"   Testando {witness_type}: {test_address}")
+                                
+                                # ✅ CORREÇÃO CRÍTICA: Usar Blockstream em vez de BlockCypher (BlockCypher está desatualizado)
+                                test_balance_btc = 0.0  # Inicializar antes do try
+                                try:
                                 # Usar Blockstream API (mais confiável e atualizado)
                                 balance_url = f"https://blockstream.info/testnet/api/address/{test_address}"
                                 print(f"   🔍 CHECK BALANCE (Blockstream): {balance_url}")
