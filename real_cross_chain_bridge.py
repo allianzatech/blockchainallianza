@@ -4121,15 +4121,22 @@ class RealCrossChainBridge:
                             
                             print(f"   Testando {witness_type}: {test_address}")
                             
-                            # Verificar saldo via API BlockCypher
+                            # ✅ CORREÇÃO CRÍTICA: Usar Blockstream em vez de BlockCypher (BlockCypher está desatualizado)
                             test_balance_btc = 0.0  # Inicializar antes do try
                             try:
-                                balance_url = f"{self.btc_api_base}/addrs/{test_address}/balance"
+                                # Usar Blockstream API (mais confiável e atualizado)
+                                balance_url = f"https://blockstream.info/testnet/api/address/{test_address}"
+                                print(f"   🔍 CHECK BALANCE (Blockstream): {balance_url}")
                                 balance_response = requests.get(balance_url, timeout=10)
+                                print(f"   🔍 CHECK BALANCE: Status: {balance_response.status_code}")
                                 if balance_response.status_code == 200:
                                     balance_data = balance_response.json()
-                                    balance_satoshis = balance_data.get('balance', 0)
+                                    print(f"   🔍 CHECK BALANCE: Dados: {json.dumps(balance_data)[:300]}...")
+                                    funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
+                                    spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
+                                    balance_satoshis = funded - spent
                                     test_balance_btc = balance_satoshis / 100000000
+                                    print(f"   🔍 CHECK BALANCE: funded={funded}, spent={spent}, balance={balance_satoshis} sats ({test_balance_btc:.8f} BTC)")
                                     
                                     if test_balance_btc > 0:
                                         print(f"   ✅ Saldo encontrado: {test_balance_btc} BTC em {test_address}")
@@ -4194,14 +4201,21 @@ class RealCrossChainBridge:
                                 print(f"⚠️  Erro ao sincronizar wallet: {scan_error}")
                                 add_log("wallet_scan_error_after_create", {"error": str(scan_error)}, "warning")
                             
-                            # Verificar saldo do endereço esperado
+                            # ✅ CORREÇÃO CRÍTICA: Usar Blockstream em vez de BlockCypher (BlockCypher está desatualizado)
                             try:
-                                balance_url = f"{self.btc_api_base}/addrs/{expected_address}/balance"
+                                # Usar Blockstream API (mais confiável e atualizado)
+                                balance_url = f"https://blockstream.info/testnet/api/address/{expected_address}"
+                                print(f"   🔍 CHECK BALANCE (Blockstream): {balance_url}")
                                 balance_response = requests.get(balance_url, timeout=10)
+                                print(f"   🔍 CHECK BALANCE: Status: {balance_response.status_code}")
                                 if balance_response.status_code == 200:
                                     balance_data = balance_response.json()
-                                    balance_satoshis = balance_data.get('balance', 0)
+                                    print(f"   🔍 CHECK BALANCE: Dados: {json.dumps(balance_data)[:300]}...")
+                                    funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
+                                    spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
+                                    balance_satoshis = funded - spent
                                     balance_btc = balance_satoshis / 100000000
+                                    print(f"   🔍 CHECK BALANCE: funded={funded}, spent={spent}, balance={balance_satoshis} sats ({balance_btc:.8f} BTC)")
                                     print(f"✅ Saldo do endereço esperado: {balance_btc} BTC")
                             except Exception as balance_error:
                                 print(f"⚠️  Erro ao verificar saldo: {balance_error}")
