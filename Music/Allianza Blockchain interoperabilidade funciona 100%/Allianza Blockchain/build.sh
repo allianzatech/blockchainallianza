@@ -33,6 +33,10 @@ pip install solana>=0.30.2 || {
 echo "📦 Instalando outras dependências do requirements.txt..."
 pip install -r requirements.txt
 
+# Garantir que cryptography está instalado (pode precisar de dependências de sistema)
+echo "🔐 Instalando cryptography..."
+pip install cryptography==41.0.7 || pip install cryptography
+
 # Verificar se as bibliotecas foram instaladas
 echo "✅ Verificando instalação..."
 python -c "import solders; print('✅ solders instalado:', solders.__version__)" || echo "❌ solders não instalado"
