@@ -4515,11 +4515,62 @@ class RealCrossChainBridge:
                     
                     total_needed = amount_btc + estimated_fee_btc
                     
+                    # ✅ CORREÇÃO CRÍTICA: Se balance_btc ainda é 0, fazer verificação FINAL via Blockstream
+                    if balance_btc == 0.0 and from_address:
+                        print(f"   ⚠️  Saldo ainda é 0, fazendo verificação FINAL via Blockstream API...")
+                        try:
+                            final_balance_url = f"https://blockstream.info/testnet/api/address/{from_address}"
+                            print(f"   🔍 CHECK BALANCE FINAL: {final_balance_url}")
+                            final_balance_resp = requests.get(final_balance_url, timeout=10)
+                            print(f"   🔍 CHECK BALANCE FINAL: Status: {final_balance_resp.status_code}")
+                            if final_balance_resp.status_code == 200:
+                                final_balance_data = final_balance_resp.json()
+                                print(f"   🔍 CHECK BALANCE FINAL: Dados: {json.dumps(final_balance_data)[:500]}...")
+                                final_funded = final_balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
+                                final_spent = final_balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
+                                final_balance_sats = final_funded - final_spent
+                                final_balance_btc = final_balance_sats / 100000000
+                                print(f"   🔍 CHECK BALANCE FINAL: funded={final_funded}, spent={final_spent}, balance={final_balance_sats} sats ({final_balance_btc:.8f} BTC)")
+                                
+                                if final_balance_btc > 0:
+                                    print(f"   ✅✅✅ SALDO ENCONTRADO VIA BLOCKSTREAM: {final_balance_btc} BTC")
+                                    balance_btc = final_balance_btc
+                                    
+                                    # ✅ CRÍTICO: Buscar UTXOs via Blockstream também
+                                    print(f"   🔍 Buscando UTXOs via Blockstream...")
+                                    final_utxo_url = f"{final_balance_url}/utxo"
+                                    final_utxo_resp = requests.get(final_utxo_url, timeout=10)
+                                    if final_utxo_resp.status_code == 200:
+                                        final_utxos = final_utxo_resp.json()
+                                        print(f"   ✅ UTXOs encontrados via Blockstream: {len(final_utxos)}")
+                                        if final_utxos and not utxos:
+                                            # Converter formato Blockstream para formato esperado
+                                            utxos = []
+                                            for bs_utxo in final_utxos:
+                                                if bs_utxo.get('status', {}).get('confirmed', False):
+                                                    utxos.append({
+                                                        'txid': bs_utxo.get('txid'),
+                                                        'vout': bs_utxo.get('vout', 0),
+                                                        'output_n': bs_utxo.get('vout', 0),
+                                                        'value': int(bs_utxo.get('value', 0)),
+                                                        'address': from_address,
+                                                        'confirmed': True,
+                                                        'spent': False
+                                                    })
+                                            print(f"   ✅ UTXOs convertidos: {len(utxos)} confirmados")
+                                else:
+                                    print(f"   ⚠️  Blockstream também mostra saldo 0")
+                        except Exception as final_balance_err:
+                            print(f"   ⚠️  Erro na verificação final: {final_balance_err}")
+                            import traceback
+                            traceback.print_exc()
+                    
                     print(f"💰 Verificação de saldo:")
                     print(f"   Saldo disponível: {balance_btc} BTC")
                     print(f"   Valor a enviar: {amount_btc} BTC")
                     print(f"   Fee estimado: {estimated_fee_btc} BTC")
                     print(f"   Total necessário: {total_needed} BTC")
+                    print(f"   UTXOs disponíveis: {len(utxos) if utxos else 0}")
                     
                     # CORREÇÃO: Validar se o valor é muito pequeno (menor que dust limit + fee)
                     min_btc_with_fee = 0.00000546 + estimated_fee_btc  # Dust limit (546 sats) + fee
