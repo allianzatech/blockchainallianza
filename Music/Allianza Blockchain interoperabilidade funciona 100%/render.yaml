@@ -3,7 +3,7 @@ services:
     name: allianza-blockchain
     env: python
     buildCommand: find . -type d -name "Allianza Blockchain" -exec sh -c 'cd "$1" && chmod +x build.sh start.sh start_render.sh && (./build.sh || (pip install --upgrade pip setuptools wheel && pip install -r requirements.txt))' _ {} \;
-    startCommand: find . -name "start_render.sh" -type f -executable | head -1 | xargs bash
+    startCommand: find . -name "start_render.sh" -type f -executable -print0 | head -z -n 1 | xargs -0 bash
     envVars:
       - key: FLASK_ENV
         value: production
