@@ -4101,36 +4101,6 @@ class RealCrossChainBridge:
                     
                     # Tentar criar wallet com a chave WIF
                     # MELHORIA: Tentar todos os tipos de witness_type para encontrar o que tem saldo
-                    except Exception as wif_err:
-                        print(f"⚠️  Chave não é WIF válido: {wif_err}")
-                        # Tentar converter de hex para WIF
-                        try:
-                            # Se a chave começa com 0x ou é hex puro, converter para WIF
-                            if from_private_key.startswith('0x'):
-                                priv_key_hex = from_private_key[2:]
-                            elif len(from_private_key) == 64:
-                                priv_key_hex = from_private_key
-                            else:
-                                raise ValueError("Formato de chave não reconhecido")
-                            
-                            # Converter hex para bytes e depois para WIF
-                            from bitcoinlib.keys import HDKey
-                            priv_key_bytes = bytes.fromhex(priv_key_hex)
-                            # Criar HDKey a partir de bytes (bitcoinlib aceita isso)
-                            key = HDKey(priv_key_bytes, network='testnet')
-                            # Obter WIF da chave criada
-                            wif_key = key.wif()
-                            print(f"✅ Chave convertida para WIF: {wif_key[:15]}...")
-                            from_private_key = wif_key  # Usar WIF daqui em diante
-                        except Exception as conv_err:
-                            print(f"❌ Não foi possível converter chave para WIF: {conv_err}")
-                            return {
-                                "success": False,
-                                "error": f"Chave privada em formato inválido: {str(wif_err)}",
-                                "error_type": "BKeyError",
-                                "note": "A chave deve estar em formato WIF (começa com 'c' ou '9' para testnet) ou hex (64 caracteres)",
-                                "bitcoinlib_installed": True
-                            }
                     
                     # Lista de witness_types para tentar (na ordem mais comum)
                     witness_types_to_try = ['legacy', 'segwit', 'p2sh-segwit']
