@@ -4111,6 +4111,17 @@ class RealCrossChainBridge:
                     best_witness_type = None
                     utxos = []
                     
+                    # 🚨🚨🚨 DEBUG CRÍTICO NO INÍCIO
+                    import sys
+                    print(f"\n🚨🚨🚨 DEBUG INICIAL DA FUNÇÃO send_bitcoin_our_way", file=sys.stderr)
+                    print(f"🚨🚨🚨 DEBUG INICIAL DA FUNÇÃO send_bitcoin_our_way")
+                    print(f"🚨 from_private_key recebido: {from_private_key[:30] if from_private_key else 'None'}...", file=sys.stderr)
+                    print(f"🚨 from_private_key recebido: {from_private_key[:30] if from_private_key else 'None'}...")
+                    print(f"🚨 to_address: {to_address}", file=sys.stderr)
+                    print(f"🚨 to_address: {to_address}")
+                    print(f"🚨 amount_btc: {amount_btc}", file=sys.stderr)
+                    print(f"🚨 amount_btc: {amount_btc}")
+                    
                     # 🚨🚨🚨 PATCH CRÍTICO: FORÇAR BUSCA DE SALDO VIA BLOCKSTREAM ANTES DE QUALQUER COISA
                     # Isso garante que sempre temos o saldo correto, mesmo se a wallet não encontrar
                     # ✅ CORREÇÃO DEFINITIVA: SEMPRE buscar saldo do endereço esperado, SEM EXCEÇÕES
@@ -4775,6 +4786,21 @@ class RealCrossChainBridge:
                         balance_btc = balance_from_utxos
                         print(f"   ✅✅✅ balance_btc PROTEGIDO: {balance_btc} BTC")
                     
+                    # 🚨🚨🚨 LOG CRÍTICO ANTES DA VERIFICAÇÃO DE SALDO
+                    import sys
+                    print(f"\n🚨🚨🚨 VERIFICAÇÃO DE SALDO FALHOU!", file=sys.stderr)
+                    print(f"🚨🚨🚨 VERIFICAÇÃO DE SALDO FALHOU!")
+                    print(f"🚨 balance_btc calculado: {balance_btc}", file=sys.stderr)
+                    print(f"🚨 balance_btc calculado: {balance_btc}")
+                    print(f"🚨 required (total_needed): {total_needed}", file=sys.stderr)
+                    print(f"🚨 required (total_needed): {total_needed}")
+                    print(f"🚨 balance_btc < total_needed? {balance_btc < total_needed}", file=sys.stderr)
+                    print(f"🚨 balance_btc < total_needed? {balance_btc < total_needed}")
+                    print(f"🚨 from_address: {from_address}", file=sys.stderr)
+                    print(f"🚨 from_address: {from_address}")
+                    print(f"🚨 utxos_count: {len(utxos) if utxos else 0}", file=sys.stderr)
+                    print(f"🚨 utxos_count: {len(utxos) if utxos else 0}")
+                    
                     if balance_btc < total_needed:
                         # 🚨🚨🚨 ÚLTIMA TENTATIVA: Verificar Blockstream UMA VEZ MAIS
                         print(f"\n🚨🚨🚨 SALDO INSUFICIENTE DETECTADO - ÚLTIMA VERIFICAÇÃO DE EMERGÊNCIA")
@@ -4807,26 +4833,95 @@ class RealCrossChainBridge:
                             import traceback
                             traceback.print_exc()
                         
-                        # Se ainda insuficiente após verificação de emergência, retornar erro
+                        # 🚨🚨🚨 PATCH NUCLEAR: ÚLTIMA VERIFICAÇÃO ANTES DE RETORNAR ERRO
+                        # Se ainda insuficiente após verificação de emergência, fazer UMA ÚLTIMA tentativa nuclear
                         if balance_btc < total_needed:
-                            print(f"\n❌❌❌ RETORNANDO ERRO DE SALDO INSUFICIENTE")
-                            print(f"   balance_btc final: {balance_btc}")
+                            print(f"\n🚨🚨🚨 PATCH NUCLEAR ATIVADO - ÚLTIMA TENTATIVA!")
+                            print(f"   balance_btc antes do patch: {balance_btc}")
                             print(f"   total_needed: {total_needed}")
                             print(f"   from_address: {from_address}")
                             
-                            # Não deletar wallet aqui - pode ser usado para debug
-                            return {
-                                "success": False,
-                                "error": f"Saldo insuficiente. Disponível: {balance_btc} BTC, Necessário: {total_needed} BTC (amount: {amount_btc} + fee: {estimated_fee_btc})",
-                                "balance": balance_btc,
-                                "required": total_needed,
-                                "amount": amount_btc,
-                                "fee_estimated": estimated_fee_btc,
-                                "from_address": from_address,
-                                "utxos_count": len(utxos) if utxos else 0,
-                                "wallet_name": wallet_name,  # Para debug se necessário
-                                "note": f"Verifique se o endereço {from_address} tem saldo suficiente. Use Blockstream explorer: https://blockstream.info/testnet/address/{from_address}"
-                            }
+                            # 🚨 PATCH NUCLEAR: Buscar saldo DIRETO do Blockstream SEM CACHE
+                            try:
+                                import sys
+                                nuclear_url = f"https://blockstream.info/testnet/api/address/{from_address}"
+                                print(f"🚨🚨🚨 PATCH NUCLEAR URL: {nuclear_url}", file=sys.stderr)
+                                print(f"🚨🚨🚨 PATCH NUCLEAR URL: {nuclear_url}")
+                                
+                                nuclear_resp = requests.get(nuclear_url, timeout=15, headers={'Cache-Control': 'no-cache', 'Pragma': 'no-cache'})
+                                print(f"🚨🚨🚨 PATCH NUCLEAR Status: {nuclear_resp.status_code}", file=sys.stderr)
+                                print(f"🚨🚨🚨 PATCH NUCLEAR Status: {nuclear_resp.status_code}")
+                                
+                                if nuclear_resp.status_code == 200:
+                                    nuclear_data = nuclear_resp.json()
+                                    print(f"🚨🚨🚨 PATCH NUCLEAR Response: {json.dumps(nuclear_data)[:300]}...", file=sys.stderr)
+                                    
+                                    nuclear_funded = nuclear_data.get('chain_stats', {}).get('funded_txo_sum', 0)
+                                    nuclear_spent = nuclear_data.get('chain_stats', {}).get('spent_txo_sum', 0)
+                                    nuclear_balance_sats = nuclear_funded - nuclear_spent
+                                    nuclear_balance_btc = nuclear_balance_sats / 100000000
+                                    
+                                    print(f"🚨🚨🚨 PATCH NUCLEAR SALDO: {nuclear_balance_btc:.8f} BTC ({nuclear_balance_sats:,} satoshis)", file=sys.stderr)
+                                    print(f"🚨🚨🚨 PATCH NUCLEAR SALDO: {nuclear_balance_btc:.8f} BTC ({nuclear_balance_sats:,} satoshis)")
+                                    
+                                    # 🚨 FORÇAR: Usar saldo nuclear encontrado
+                                    if nuclear_balance_btc >= total_needed:
+                                        print(f"🚨🚨🚨 PATCH NUCLEAR: SALDO SUFICIENTE! Continuando transação...", file=sys.stderr)
+                                        print(f"🚨🚨🚨 PATCH NUCLEAR: SALDO SUFICIENTE! Continuando transação...")
+                                        balance_btc = nuclear_balance_btc
+                                        
+                                        # Buscar UTXOs também
+                                        nuclear_utxo_url = f"{nuclear_url}/utxo"
+                                        nuclear_utxo_resp = requests.get(nuclear_utxo_url, timeout=15, headers={'Cache-Control': 'no-cache'})
+                                        if nuclear_utxo_resp.status_code == 200:
+                                            nuclear_utxos = nuclear_utxo_resp.json()
+                                            if nuclear_utxos:
+                                                utxos = []
+                                                for bs_utxo in nuclear_utxos:
+                                                    utxos.append({
+                                                        'txid': bs_utxo.get('txid'),
+                                                        'vout': bs_utxo.get('vout', 0),
+                                                        'output_n': bs_utxo.get('vout', 0),
+                                                        'value': int(bs_utxo.get('value', 0)),
+                                                        'address': from_address,
+                                                        'confirmed': bs_utxo.get('status', {}).get('confirmed', False),
+                                                        'spent': False
+                                                    })
+                                                print(f"🚨🚨🚨 PATCH NUCLEAR: {len(utxos)} UTXOs encontrados", file=sys.stderr)
+                                                print(f"🚨🚨🚨 PATCH NUCLEAR: {len(utxos)} UTXOs encontrados")
+                                    else:
+                                        print(f"🚨🚨🚨 PATCH NUCLEAR: Saldo ainda insuficiente após patch nuclear", file=sys.stderr)
+                                        print(f"🚨🚨🚨 PATCH NUCLEAR: Saldo ainda insuficiente após patch nuclear")
+                                        print(f"   nuclear_balance_btc: {nuclear_balance_btc}")
+                                        print(f"   total_needed: {total_needed}")
+                            except Exception as nuclear_err:
+                                print(f"🚨🚨🚨 PATCH NUCLEAR ERRO: {nuclear_err}", file=sys.stderr)
+                                print(f"🚨🚨🚨 PATCH NUCLEAR ERRO: {nuclear_err}")
+                                import traceback
+                                traceback.print_exc()
+                            
+                            # Se ainda insuficiente após patch nuclear, retornar erro
+                            if balance_btc < total_needed:
+                                print(f"\n❌❌❌ RETORNANDO ERRO DE SALDO INSUFICIENTE (APÓS PATCH NUCLEAR)")
+                                print(f"   balance_btc final: {balance_btc}")
+                                print(f"   total_needed: {total_needed}")
+                                print(f"   from_address: {from_address}")
+                                print(f"   utxos_count: {len(utxos) if utxos else 0}")
+                                
+                                # Não deletar wallet aqui - pode ser usado para debug
+                                return {
+                                    "success": False,
+                                    "error": f"Saldo insuficiente. Disponível: {balance_btc} BTC, Necessário: {total_needed} BTC (amount: {amount_btc} + fee: {estimated_fee_btc})",
+                                    "balance": balance_btc,
+                                    "required": total_needed,
+                                    "amount": amount_btc,
+                                    "fee_estimated": estimated_fee_btc,
+                                    "from_address": from_address,
+                                    "utxos_count": len(utxos) if utxos else 0,
+                                    "wallet_name": wallet_name,  # Para debug se necessário
+                                    "note": f"Verifique se o endereço {from_address} tem saldo suficiente. Use Blockstream explorer: https://blockstream.info/testnet/address/{from_address}",
+                                    "patch_nuclear_applied": True
+                                }
                     
                     # Enviar transação com fee rate adequado (5 sat/vB para garantir confirmação)
                     print(f"🚀 Enviando transação com fee rate: 5 sat/vB...")
