@@ -4353,6 +4353,23 @@ try:
     logger.info("🌐 ALLIANZA TESTNET: Rotas inicializadas!")
     print("🌐 ALLIANZA TESTNET: Testnet profissional carregada!")
     
+    # ✅ FALLBACK: Garantir que /interoperability está acessível mesmo se blueprint falhar
+    @app.route('/interoperability', methods=['GET'])
+    def interoperability_fallback():
+        """Fallback para rota de interoperabilidade se blueprint não funcionar"""
+        try:
+            from flask import render_template
+            return render_template('testnet/interoperability.html',
+                                 alz_niev_available=False,
+                                 error_message="Carregando..."), 200
+        except Exception as e:
+            from flask import jsonify
+            return jsonify({
+                "error": "Interoperability route not available",
+                "message": str(e),
+                "note": "Blueprint may not be registered yet"
+            }), 200
+    
     # Registrar rota health check DEPOIS do blueprint para garantir prioridade
     # NOTA: A rota do blueprint testnet_bp já trata HEAD corretamente
     # Esta rota serve como fallback caso o blueprint não esteja disponível
