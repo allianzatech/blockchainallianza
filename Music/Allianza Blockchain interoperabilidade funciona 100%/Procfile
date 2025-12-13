@@ -1,2 +1,2 @@
-web: bash -c "cd 'Allianza Blockchain' && export PYTHONPATH='$PWD' && gunicorn -w 2 -b 0.0.0.0:$PORT --timeout 300 --keep-alive 5 --preload wsgi_optimized:application"
+web: bash -c "cd 'Music/Allianza Blockchain interoperabilidade funciona 100%/Allianza Blockchain' && export PYTHONPATH='$PWD' && gunicorn -w 2 -b 0.0.0.0:$PORT --timeout 300 --keep-alive 5 --preload wsgi_optimized:application"
 
