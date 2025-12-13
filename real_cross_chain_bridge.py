@@ -4291,7 +4291,8 @@ class RealCrossChainBridge:
                                         pass
                             except Exception as e:
                                 print(f"   ⚠️  Erro ao testar {witness_type}: {e}")
-                                continue
+                                # Continue para próximo witness_type
+                                pass
                     else:
                         print(f"   ⚠️  Loop de criação de wallets PULADO - usando dados da busca simplificada")
                     
