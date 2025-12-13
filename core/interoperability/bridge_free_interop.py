@@ -37,7 +37,7 @@ class BridgeFreeInterop:
         # 🚨🚨🚨 CACHE DE SALDO BITCOIN - Conecta com faucet manager
         # Saldo conhecido do endereço principal (atualizado pelo faucet manager)
         self.bitcoin_balance_cache = {
-            "tb1q92s4pc5hxh0gmew4d026y7n5rtwc4astv3dn6q": 0.00313350  # Saldo conhecido do faucet manager
+            "tb1q92s4pc5hxh0gmew4d026y7n5rtwc4astv3dn6q": 0.00314350  # Saldo verificado via Blockstream (atualizado)
         }
         
         # Carregar dados do banco
