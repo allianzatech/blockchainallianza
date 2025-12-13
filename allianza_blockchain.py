@@ -4349,24 +4349,6 @@ try:
     except:
         pass
     
-    # ✅ FALLBACK: Garantir que /interoperability está acessível (registrar ANTES do blueprint)
-    # Esta rota será sobrescrita pelo blueprint se ele for registrado com sucesso
-    @app.route('/interoperability', methods=['GET'])
-    def interoperability_fallback():
-        """Fallback para rota de interoperabilidade se blueprint não funcionar"""
-        try:
-            from flask import render_template
-            return render_template('testnet/interoperability.html',
-                                 alz_niev_available=False,
-                                 error_message="Carregando..."), 200
-        except Exception as e:
-            from flask import jsonify
-            return jsonify({
-                "error": "Interoperability route not available",
-                "message": str(e),
-                "note": "Blueprint may not be registered yet"
-            }), 200
-    
     init_testnet_routes(app, allianza_blockchain, quantum_sys, bridge_instance)
     logger.info("🌐 ALLIANZA TESTNET: Rotas inicializadas!")
     print("🌐 ALLIANZA TESTNET: Testnet profissional carregada!")
