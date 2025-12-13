@@ -3084,42 +3084,14 @@ class RealCrossChainBridge:
                 try:
                     import requests
                     balance_url = f"https://blockstream.info/testnet/api/address/{from_address}"
-                    print(f"   🔍 CHECK BALANCE: URL: {balance_url}")
                     balance_resp = requests.get(balance_url, timeout=10)
-                    print(f"   🔍 CHECK BALANCE: Status HTTP: {balance_resp.status_code}")
-                    
                     if balance_resp.status_code == 200:
                         balance_data = balance_resp.json()
-                        print(f"   🔍 CHECK BALANCE: Dados crus (primeiros 500 chars): {json.dumps(balance_data)[:500]}...")
-                        
-                        # ✅ CRÍTICO: Somar saldo confirmado + não confirmado (mempool)
-                        chain_funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
-                        chain_spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
-                        chain_balance_sats = chain_funded - chain_spent
-                        
-                        mempool_funded = balance_data.get('mempool_stats', {}).get('funded_txo_sum', 0)
-                        mempool_spent = balance_data.get('mempool_stats', {}).get('spent_txo_sum', 0)
-                        mempool_balance_sats = mempool_funded - mempool_spent
-                        
-                        total_balance_sats = chain_balance_sats + mempool_balance_sats
-                        balance_btc = total_balance_sats / 100000000
-                        
-                        print(f"   🔍 CHECK BALANCE: chain_funded={chain_funded}, chain_spent={chain_spent}, chain_balance={chain_balance_sats}")
-                        print(f"   🔍 CHECK BALANCE: mempool_funded={mempool_funded}, mempool_spent={mempool_spent}, mempool_balance={mempool_balance_sats}")
-                        print(f"   💰 Saldo TOTAL do endereço derivado: {total_balance_sats} satoshis ({balance_btc:.8f} BTC)")
-                        
-                        # ✅ LOG CRÍTICO: Verificar UTXOs também
-                        utxo_check_url = f"{balance_url}/utxo"
-                        print(f"   🔍 CHECK UTXOs: URL: {utxo_check_url}")
-                        utxo_check_resp = requests.get(utxo_check_url, timeout=10)
-                        print(f"   🔍 CHECK UTXOs: Status HTTP: {utxo_check_resp.status_code}")
-                        if utxo_check_resp.status_code == 200:
-                            utxos_check = utxo_check_resp.json()
-                            print(f"   🔍 CHECK UTXOs: Total encontrados: {len(utxos_check)}")
-                            if utxos_check:
-                                total_utxo_value = sum(u.get('value', 0) for u in utxos_check)
-                                print(f"   🔍 CHECK UTXOs: Valor total: {total_utxo_value} satoshis ({total_utxo_value/100000000:.8f} BTC)")
-                                print(f"   🔍 CHECK UTXOs: Primeiro UTXO: {utxos_check[0].get('txid', 'N/A')[:16]}...:{utxos_check[0].get('vout', 'N/A')} = {utxos_check[0].get('value', 0)} sats")
+                        funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
+                        spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
+                        balance_sats = funded - spent
+                        balance_btc = balance_sats / 100000000
+                        print(f"   💰 Saldo do endereço derivado: {balance_sats} satoshis ({balance_btc:.8f} BTC)")
                         
                         if balance_sats < 10000:  # Menos de 0.0001 BTC
                             print(f"   ⚠️  AVISO: Saldo muito baixo! Tentando endereço do .env...")
@@ -3147,78 +3119,49 @@ class RealCrossChainBridge:
             import traceback
             traceback.print_exc()
         
-        # Fallback final: tentar derivar endereço novamente
+        # Fallback final: tentar derivar endereço novamente ou usar do .env
         if not from_address or not wif_valid:
-            # ✅ CORREÇÃO CRÍTICA: Sempre derivar endereço da chave privada, NUNCA usar endereço do .env se a chave não corresponder
+            # ✅ CORREÇÃO: Sempre derivar endereço da chave privada, nunca usar hardcoded
             print(f"   ⚠️  Tentando derivar endereço da chave privada novamente...")
             try:
                 from bitcoinlib.keys import HDKey, Key
                 # Tentar como HDKey primeiro
                 try:
                     key_obj = HDKey(from_private_key, network='testnet')
-                    derived_address = key_obj.address()
+                    from_address = key_obj.address()
                     wif_valid = True
-                    print(f"   ✅ Endereço derivado via HDKey: {derived_address}")
-                    
-                    # ✅ VALIDAÇÃO CRÍTICA: Verificar se o endereço derivado corresponde ao do .env
-                    env_address = os.getenv('BITCOIN_TESTNET_ADDRESS') or os.getenv('BITCOIN_ADDRESS') or os.getenv('BTC_ADDRESS')
-                    if env_address and env_address != derived_address:
-                        print(f"   ⚠️  AVISO CRÍTICO: Endereço derivado ({derived_address}) NÃO corresponde ao do .env ({env_address})!")
-                        print(f"   ⚠️  Isso significa que a chave privada NÃO corresponde ao endereço configurado!")
-                        print(f"   ⚠️  Usando endereço derivado da chave (não o do .env) para evitar erro de assinatura!")
-                        print(f"   💡 SOLUÇÃO: Atualize BITCOIN_PRIVATE_KEY no Render para a chave que gera {env_address}")
-                    
-                    from_address = derived_address
+                    print(f"   ✅ Endereço derivado via HDKey: {from_address}")
                 except:
                     # Tentar como Key simples
                     key_obj = Key(from_private_key, network='testnet')
-                    derived_address = key_obj.address()
+                    from_address = key_obj.address()
                     wif_valid = True
-                    print(f"   ✅ Endereço derivado via Key: {derived_address}")
-                    
-                    # ✅ VALIDAÇÃO CRÍTICA: Verificar se o endereço derivado corresponde ao do .env
-                    env_address = os.getenv('BITCOIN_TESTNET_ADDRESS') or os.getenv('BITCOIN_ADDRESS') or os.getenv('BTC_ADDRESS')
-                    if env_address and env_address != derived_address:
-                        print(f"   ⚠️  AVISO CRÍTICO: Endereço derivado ({derived_address}) NÃO corresponde ao do .env ({env_address})!")
-                        print(f"   ⚠️  Isso significa que a chave privada NÃO corresponde ao endereço configurado!")
-                        print(f"   ⚠️  Usando endereço derivado da chave (não o do .env) para evitar erro de assinatura!")
-                        print(f"   💡 SOLUÇÃO: Atualize BITCOIN_PRIVATE_KEY no Render para a chave que gera {env_address}")
-                    
-                    from_address = derived_address
+                    print(f"   ✅ Endereço derivado via Key: {from_address}")
             except Exception as deriv_err:
                 print(f"   ❌ Erro ao derivar endereço: {deriv_err}")
-                import traceback
-                traceback.print_exc()
-                return {
-                    "success": False,
-                    "error": f"Não foi possível derivar endereço da chave privada: {str(deriv_err)}",
-                    "note": "A chave privada deve estar em formato WIF válido e corresponder ao endereço configurado",
-                    "key_format": "WIF" if from_private_key.startswith(('c', '9', '5', 'K', 'L')) else "HEX" if len(from_private_key) == 64 or from_private_key.startswith('0x') else "UNKNOWN",
-                    "key_preview": from_private_key[:20] + "..." if len(from_private_key) > 20 else from_private_key
-                }
+                # Último recurso: usar do .env (mas nunca hardcoded)
+                env_address = os.getenv('BITCOIN_TESTNET_ADDRESS') or os.getenv('BITCOIN_ADDRESS') or os.getenv('BTC_ADDRESS')
+                if env_address:
+                    from_address = env_address
+                    print(f"   ⚠️  Usando endereço do .env: {from_address}")
+                else:
+                    return {
+                        "success": False,
+                        "error": f"Não foi possível derivar endereço da chave privada e nenhum endereço configurado no .env",
+                        "note": "Configure BITCOIN_TESTNET_ADDRESS no .env OU use uma chave privada WIF válida",
+                        "key_format": "WIF" if from_private_key.startswith(('c', '9', '5', 'K', 'L')) else "HEX" if len(from_private_key) == 64 or from_private_key.startswith('0x') else "UNKNOWN"
+                    }
         
-        # 2. Buscar UTXOs via Blockstream (PRIORIDADE - mais confiável e atualizado)
-        print(f"\n2. 🔍 Buscando UTXOs confirmados via Blockstream API...")
-        print(f"   🔍 CHECK UTXOs: Endereço sendo verificado: {from_address}")
+        # 2. Buscar UTXOs via Blockstream
+        print(f"\n2. 🔍 Buscando UTXOs confirmados...")
         utxo_url = f"https://blockstream.info/testnet/api/address/{from_address}/utxo"
-        print(f"   🔍 CHECK UTXOs: URL: {utxo_url}")
         response = requests.get(utxo_url, timeout=20)
-        print(f"   🔍 CHECK UTXOs: Status HTTP: {response.status_code}")
         
         if response.status_code != 200:
-            print(f"   ❌ Erro ao buscar UTXOs: {response.status_code}")
-            print(f"   🔍 CHECK UTXOs: Resposta: {response.text[:200]}")
-            return {"success": False, "error": f"Erro ao buscar UTXOs: {response.status_code}", "response": response.text[:200]}
+            return {"success": False, "error": f"Erro ao buscar UTXOs: {response.status_code}"}
         
         all_utxos = response.json()
-        print(f"   🔍 CHECK UTXOs: Total UTXOs retornados: {len(all_utxos)}")
         print(f"   Total UTXOs: {len(all_utxos)}")
-        
-        # ✅ LOG CRÍTICO: Mostrar detalhes dos UTXOs
-        if all_utxos:
-            total_value = sum(u.get('value', 0) for u in all_utxos)
-            print(f"   🔍 CHECK UTXOs: Valor total dos UTXOs: {total_value:,} satoshis ({total_value/100000000:.8f} BTC)")
-            print(f"   🔍 CHECK UTXOs: Primeiro UTXO: txid={all_utxos[0].get('txid', 'N/A')[:16]}..., vout={all_utxos[0].get('vout', 'N/A')}, value={all_utxos[0].get('value', 0)}")
         
         # Filtrar apenas confirmados
         confirmed_utxos = []
@@ -4042,19 +3985,22 @@ class RealCrossChainBridge:
                 # bitcoinlib precisa de um nome de wallet único
                 
                 try:
-                    # ✅ CRÍTICO: Primeiro validar e converter chave privada para obter o endereço
+                    # MELHORIA: Tentar usar endereço do .env primeiro (se disponível)
+                    expected_address = (
+                        os.getenv('BITCOIN_TESTNET_ADDRESS') or
+                        os.getenv('BITCOIN_ADDRESS') or
+                        os.getenv('BTC_ADDRESS')
+                    )
+                    
+                    # Tentar criar wallet com a chave WIF
+                    # MELHORIA: Tentar todos os tipos de witness_type para encontrar o que tem saldo
                     # ✅ CORREÇÃO: Validar e converter chave privada para formato WIF se necessário
-                    key = None
                     try:
                         # Tentar validar se é WIF válido
                         from bitcoinlib.keys import Key
                         test_key = Key(from_private_key, network='testnet')
                         # Se chegou aqui, é WIF válido
                         key = HDKey(from_private_key, network='testnet')
-                        
-                        # ✅ DERIVAR ENDEREÇO DA CHAVE PRIVADA (SEGWIT - mais comum)
-                        derived_address = key.address()
-                        print(f"✅ Endereço derivado da chave privada: {derived_address}")
                     except Exception as wif_err:
                         print(f"⚠️  Chave não é WIF válido: {wif_err}")
                         # Tentar converter de hex para WIF
@@ -4076,10 +4022,6 @@ class RealCrossChainBridge:
                             wif_key = key.wif()
                             print(f"✅ Chave convertida para WIF: {wif_key[:15]}...")
                             from_private_key = wif_key  # Usar WIF daqui em diante
-                            
-                            # ✅ DERIVAR ENDEREÇO DA CHAVE CONVERTIDA
-                            derived_address = key.address()
-                            print(f"✅ Endereço derivado da chave convertida: {derived_address}")
                         except Exception as conv_err:
                             print(f"❌ Não foi possível converter chave para WIF: {conv_err}")
                             return {
@@ -4090,26 +4032,6 @@ class RealCrossChainBridge:
                                 "bitcoinlib_installed": True
                             }
                     
-                    # ✅ CRÍTICO: Usar endereço derivado como fallback se não estiver no .env
-                    # MELHORIA: Tentar usar endereço do .env primeiro (se disponível)
-                    expected_address = (
-                        os.getenv('BITCOIN_TESTNET_ADDRESS') or
-                        os.getenv('BITCOIN_ADDRESS') or
-                        os.getenv('BTC_ADDRESS')
-                    )
-                    
-                    # ✅ FALLBACK: Se não tiver no .env, usar o endereço derivado da chave
-                    if not expected_address and key:
-                        expected_address = derived_address
-                        print(f"✅ Usando endereço derivado da chave como expected_address: {expected_address}")
-                    elif expected_address:
-                        print(f"✅ Usando expected_address do .env: {expected_address}")
-                    else:
-                        print(f"⚠️⚠️⚠️  NENHUM ENDEREÇO DISPONÍVEL! expected_address=None, derived_address={'N/A' if not key else 'N/A'}")
-                    
-                    # Tentar criar wallet com a chave WIF
-                    # MELHORIA: Tentar todos os tipos de witness_type para encontrar o que tem saldo
-                    
                     # Lista de witness_types para tentar (na ordem mais comum)
                     witness_types_to_try = ['legacy', 'segwit', 'p2sh-segwit']
                     
@@ -4119,306 +4041,87 @@ class RealCrossChainBridge:
                     best_witness_type = None
                     utxos = []
                     
-                    # 🚨🚨🚨 DEBUG CRÍTICO NO INÍCIO
-                    import sys
-                    print(f"\n🚨🚨🚨 DEBUG INICIAL DA FUNÇÃO send_bitcoin_our_way", file=sys.stderr)
-                    print(f"🚨🚨🚨 DEBUG INICIAL DA FUNÇÃO send_bitcoin_our_way")
-                    print(f"🚨 from_private_key recebido: {from_private_key[:30] if from_private_key else 'None'}...", file=sys.stderr)
-                    print(f"🚨 from_private_key recebido: {from_private_key[:30] if from_private_key else 'None'}...")
-                    print(f"🚨 to_address: {to_address}", file=sys.stderr)
-                    print(f"🚨 to_address: {to_address}")
-                    print(f"🚨 amount_btc: {amount_btc}", file=sys.stderr)
-                    print(f"🚨 amount_btc: {amount_btc}")
+                    print(f"🔍 Procurando endereço com saldo...")
+                    if expected_address:
+                        print(f"   Endereço esperado do .env: {expected_address}")
                     
-                    # ✅ MÉTODO SIMPLES E DIRETO: Buscar saldo e UTXOs via Blockstream (como simple_bitcoin_direct.py)
-                    # CRÍTICO: SEMPRE garantir que temos um endereço para buscar
-                    address_to_check = expected_address
-                    
-                    # ✅ FALLBACK 1: Se não tem no .env, usar endereço derivado (já calculado acima)
-                    if not address_to_check and derived_address:
-                        address_to_check = derived_address
-                        print(f"   📍 Usando endereço derivado da chave: {address_to_check}")
-                    
-                    # ✅ FALLBACK 2: Se ainda não tem, derivar novamente (método do simple_bitcoin_direct)
-                    if not address_to_check:
+                    # Tentar cada tipo de witness_type
+                    for witness_type in witness_types_to_try:
                         try:
-                            from bitcoinlib.keys import HDKey
-                            key_obj = HDKey(from_private_key, network='testnet')
-                            address_to_check = key_obj.address()
-                            print(f"   📍 Endereço derivado diretamente da chave: {address_to_check}")
-                        except Exception as deriv_err:
-                            print(f"   ❌ Erro ao derivar endereço: {deriv_err}")
-                            import traceback
-                            traceback.print_exc()
-                    
-                    # ✅ CRÍTICO: Se ainda não temos endereço, usar o recipient (to_address) como último recurso
-                    if not address_to_check:
-                        address_to_check = to_address
-                        print(f"   ⚠️  Usando to_address como fallback: {address_to_check}")
-                    
-                    # ✅ AGORA SEMPRE TEMOS UM ENDEREÇO - BUSCAR SALDO
-                    if address_to_check:
-                        print(f"\n🔍 Buscando saldo e UTXOs via Blockstream para: {address_to_check}")
-                        try:
-                            # 1. Buscar saldo
-                            balance_url = f"https://blockstream.info/testnet/api/address/{address_to_check}"
-                            balance_resp = requests.get(balance_url, timeout=15, headers={'Cache-Control': 'no-cache'})
+                            # Criar wallet temporário para este tipo
+                            test_wallet_name = f"{wallet_name}_{witness_type}"
+                            test_wallet = Wallet.create(
+                                test_wallet_name,
+                                keys=from_private_key,
+                                network='testnet',
+                                witness_type=witness_type
+                            )
                             
-                            if balance_resp.status_code == 200:
-                                balance_data = balance_resp.json()
-                                
-                                # ✅ CRÍTICO: Somar saldo confirmado + não confirmado (mempool)
-                                # chain_stats = saldo confirmado na blockchain
-                                chain_funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
-                                chain_spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
-                                chain_balance_sats = chain_funded - chain_spent
-                                
-                                # mempool_stats = saldo não confirmado (na mempool)
-                                mempool_funded = balance_data.get('mempool_stats', {}).get('funded_txo_sum', 0)
-                                mempool_spent = balance_data.get('mempool_stats', {}).get('spent_txo_sum', 0)
-                                mempool_balance_sats = mempool_funded - mempool_spent
-                                
-                                # Saldo total = confirmado + não confirmado
-                                total_balance_sats = chain_balance_sats + mempool_balance_sats
-                                balance_btc = total_balance_sats / 100000000
-                                
-                                print(f"   ✅ Saldo confirmado: {chain_balance_sats / 100000000:.8f} BTC ({chain_balance_sats} sats)")
-                                print(f"   ⏳ Saldo não confirmado: {mempool_balance_sats / 100000000:.8f} BTC ({mempool_balance_sats} sats)")
-                                print(f"   📊 Saldo TOTAL encontrado: {balance_btc:.8f} BTC ({total_balance_sats} sats)")
-                                from_address = address_to_check
-                                
-                                # 2. Buscar UTXOs
-                                utxo_url = f"{balance_url}/utxo"
-                                utxo_resp = requests.get(utxo_url, timeout=20, headers={'Cache-Control': 'no-cache'})
-                                
-                                if utxo_resp.status_code == 200:
-                                    utxos_data = utxo_resp.json()
-                                    print(f"   ✅ UTXOs encontrados: {len(utxos_data)}")
-                                    
-                                    # Converter UTXOs para formato esperado
-                                    utxos = []
-                                    for bs_utxo in utxos_data:
-                                        # Aceitar UTXOs confirmados (para testnet, aceitar todos)
-                                        confirmed = bs_utxo.get('status', {}).get('confirmed', False)
-                                        if confirmed or True:  # Aceitar todos para testnet
-                                            utxos.append({
-                                                'txid': bs_utxo.get('txid'),
-                                                'vout': bs_utxo.get('vout', 0),
-                                                'output_n': bs_utxo.get('vout', 0),
-                                                'value': int(bs_utxo.get('value', 0)),
-                                                'address': address_to_check,
-                                                'confirmed': confirmed,
-                                                'spent': False
-                                            })
-                                    
-                                    if utxos:
-                                        # Usar valor total dos UTXOs (mais confiável)
-                                        total_value = sum(u.get('value', 0) for u in utxos)
-                                        balance_btc = total_value / 100000000
-                                        print(f"   ✅ Saldo calculado dos UTXOs: {balance_btc:.8f} BTC")
-                                else:
-                                    print(f"   ⚠️  Erro ao buscar UTXOs: {utxo_resp.status_code}")
+                            # Obter endereço deste tipo
+                            # Criar wallet primeiro para obter o endereço correto
+                            # ✅ CORREÇÃO: Usar a chave já validada/convertida acima
+                            test_key = key  # Reutilizar key já criada e validada acima
+                            
+                            # Obter endereço do wallet criado (mais confiável)
+                            test_wallet_keys = test_wallet.keys()
+                            if test_wallet_keys:
+                                test_address = test_wallet_keys[0].address
                             else:
-                                print(f"   ⚠️  Erro ao buscar saldo: {balance_resp.status_code}")
-                        except Exception as e:
-                            print(f"   ❌ Erro na busca: {e}")
-                            import traceback
-                            traceback.print_exc()
-                    else:
-                        print(f"   ⚠️⚠️⚠️  ERRO CRÍTICO: Nenhum endereço disponível para verificar!")
-                        print(f"   expected_address: {expected_address}")
-                        print(f"   derived_address: {derived_address if 'derived_address' in locals() else 'N/A'}")
-                        print(f"   to_address: {to_address}")
-                        # Tentar usar to_address como último recurso e buscar
-                        if to_address:
-                            address_to_check = to_address
-                            print(f"   🔄 Tentando usar to_address e buscar saldo: {address_to_check}")
-                            try:
-                                balance_url = f"https://blockstream.info/testnet/api/address/{address_to_check}"
-                                balance_resp = requests.get(balance_url, timeout=15, headers={'Cache-Control': 'no-cache'})
-                                if balance_resp.status_code == 200:
-                                    balance_data = balance_resp.json()
-                                    chain_funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
-                                    chain_spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
-                                    chain_balance = chain_funded - chain_spent
-                                    mempool_funded = balance_data.get('mempool_stats', {}).get('funded_txo_sum', 0)
-                                    mempool_spent = balance_data.get('mempool_stats', {}).get('spent_txo_sum', 0)
-                                    mempool_balance = mempool_funded - mempool_spent
-                                    total_balance_sats = chain_balance + mempool_balance
-                                    balance_btc = total_balance_sats / 100000000
-                                    from_address = address_to_check
-                                    print(f"   ✅ Saldo encontrado via to_address: {balance_btc:.8f} BTC")
-                                    
-                                    # Buscar UTXOs também
-                                    utxo_url = f"{balance_url}/utxo"
-                                    utxo_resp = requests.get(utxo_url, timeout=20, headers={'Cache-Control': 'no-cache'})
-                                    if utxo_resp.status_code == 200:
-                                        utxos_data = utxo_resp.json()
-                                        utxos = []
-                                        for bs_utxo in utxos_data:
-                                            utxos.append({
-                                                'txid': bs_utxo.get('txid'),
-                                                'vout': bs_utxo.get('vout', 0),
-                                                'output_n': bs_utxo.get('vout', 0),
-                                                'value': int(bs_utxo.get('value', 0)),
-                                                'address': address_to_check,
-                                                'confirmed': bs_utxo.get('status', {}).get('confirmed', False),
-                                                'spent': False
-                                            })
-                                        if utxos:
-                                            total_value = sum(u.get('value', 0) for u in utxos)
-                                            balance_btc = total_value / 100000000
-                                            print(f"   ✅ Saldo dos UTXOs: {balance_btc:.8f} BTC")
-                            except Exception as fallback_err:
-                                print(f"   ❌ Erro no fallback: {fallback_err}")
-                    
-                    # ✅ CRÍTICO: Preservar saldo encontrado em variáveis protegidas ANTES de qualquer outra operação
-                    protected_balance_btc = balance_btc  # Preservar saldo encontrado
-                    protected_from_address = from_address  # Preservar endereço encontrado
-                    protected_utxos = utxos.copy() if utxos else []  # Preservar UTXOs encontrados
-                    
-                    balance_found_in_simplified_search = protected_balance_btc > 0.0 and protected_from_address
-                    utxos_found_in_simplified_search = len(protected_utxos) > 0
-                    
-                    print(f"\n📊 Estado após busca simplificada:")
-                    print(f"   balance_btc: {balance_btc:.8f} BTC")
-                    print(f"   protected_balance_btc: {protected_balance_btc:.8f} BTC")
-                    print(f"   from_address: {from_address}")
-                    print(f"   protected_from_address: {protected_from_address}")
-                    print(f"   utxos count: {len(utxos)}")
-                    print(f"   protected_utxos count: {len(protected_utxos)}")
-                    print(f"   balance_found_in_simplified_search: {balance_found_in_simplified_search}")
-                    print(f"   utxos_found_in_simplified_search: {utxos_found_in_simplified_search}")
-                    
-                    # ✅ CRÍTICO: Se já encontramos saldo e UTXOs na busca simplificada, PULAR criação de wallets
-                    if balance_found_in_simplified_search and utxos_found_in_simplified_search:
-                        print(f"✅✅✅ SALDO E UTXOs JÁ ENCONTRADOS NA BUSCA SIMPLIFICADA!")
-                        print(f"   Saldo: {balance_btc:.8f} BTC")
-                        print(f"   UTXOs: {len(utxos)}")
-                        print(f"   Endereço: {from_address}")
-                        print(f"   ⚠️  PULANDO criação de wallets - usando dados da busca simplificada")
-                        # Pular todo o loop de criação de wallets
-                        skip_wallet_creation = True
-                    else:
-                        skip_wallet_creation = False
-                        print(f"🔍 Procurando endereço com saldo...")
-                        if expected_address:
-                            print(f"   Endereço esperado do .env: {expected_address}")
-                    
-                    # Tentar cada tipo de witness_type (APENAS se não encontramos saldo na busca simplificada)
-                    if not skip_wallet_creation:
-                        for witness_type in witness_types_to_try:
-                            try:
-                                # Criar wallet temporário para este tipo
-                                test_wallet_name = f"{wallet_name}_{witness_type}"
-                                test_wallet = Wallet.create(
-                                    test_wallet_name,
-                                    keys=from_private_key,
-                                    network='testnet',
-                                    witness_type=witness_type
-                                )
+                                # Fallback: usar método padrão do HDKey
+                                test_address = test_key.address()
                             
-                                # Obter endereço deste tipo
-                                # Criar wallet primeiro para obter o endereço correto
-                                # ✅ CORREÇÃO: Usar a chave já validada/convertida acima
-                                test_key = key  # Reutilizar key já criada e validada acima
-                                
-                                # Obter endereço do wallet criado (mais confiável)
-                                test_wallet_keys = test_wallet.keys()
-                                if test_wallet_keys:
-                                    test_address = test_wallet_keys[0].address
-                                else:
-                                    # Fallback: usar método padrão do HDKey
-                                    test_address = test_key.address()
-                                
-                                print(f"   Testando {witness_type}: {test_address}")
-                                
-                                # ✅ CORREÇÃO CRÍTICA: Usar Blockstream em vez de BlockCypher (BlockCypher está desatualizado)
-                                test_balance_btc = 0.0  # Inicializar antes do try
+                            print(f"   Testando {witness_type}: {test_address}")
+                            
+                            # Verificar saldo via API BlockCypher
+                            test_balance_btc = 0.0  # Inicializar antes do try
+                            try:
+                                balance_url = f"{self.btc_api_base}/addrs/{test_address}/balance"
+                                balance_response = requests.get(balance_url, timeout=10)
+                                if balance_response.status_code == 200:
+                                    balance_data = balance_response.json()
+                                    balance_satoshis = balance_data.get('balance', 0)
+                                    test_balance_btc = balance_satoshis / 100000000
+                                    
+                                    if test_balance_btc > 0:
+                                        print(f"   ✅ Saldo encontrado: {test_balance_btc} BTC em {test_address}")
+                                        from_address = test_address
+                                        balance_btc = test_balance_btc
+                                        best_witness_type = witness_type
+                                        wallet = test_wallet
+                                        wallet_name = test_wallet_name
+                                        
+                                        # Atualizar UTXOs
+                                        wallet.utxos_update()
+                                        utxos = wallet.utxos()
+                                        
+                                        # Verificar se o endereço do wallet corresponde ao endereço esperado
+                                        wallet_keys = wallet.keys()
+                                        if wallet_keys:
+                                            wallet_address = wallet_keys[0].address
+                                            if wallet_address != test_address:
+                                                print(f"   ⚠️  Endereço do wallet ({wallet_address}) diferente do esperado ({test_address})")
+                                        
+                                        break
+                                    else:
+                                        print(f"   ⚠️  Sem saldo neste endereço")
+                            except Exception as api_error:
+                                print(f"   ⚠️  Erro ao verificar via API: {api_error}")
+                            
+                            # Se não encontrou saldo, deletar wallet de teste
+                            if test_balance_btc == 0.0:
                                 try:
-                                    # Usar Blockstream API (mais confiável e atualizado)
-                                    balance_url = f"https://blockstream.info/testnet/api/address/{test_address}"
-                                    print(f"   🔍 CHECK BALANCE (Blockstream): {balance_url}")
-                                    balance_response = requests.get(balance_url, timeout=10)
-                                    print(f"   🔍 CHECK BALANCE: Status: {balance_response.status_code}")
-                                    if balance_response.status_code == 200:
-                                        balance_data = balance_response.json()
-                                        print(f"   🔍 CHECK BALANCE: Dados: {json.dumps(balance_data)[:300]}...")
-                                        # ✅ CRÍTICO: Somar saldo confirmado + não confirmado (mempool)
-                                        chain_funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
-                                        chain_spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
-                                        chain_balance = chain_funded - chain_spent
-                                        
-                                        mempool_funded = balance_data.get('mempool_stats', {}).get('funded_txo_sum', 0)
-                                        mempool_spent = balance_data.get('mempool_stats', {}).get('spent_txo_sum', 0)
-                                        mempool_balance = mempool_funded - mempool_spent
-                                        
-                                        balance_satoshis = chain_balance + mempool_balance
-                                        test_balance_btc = balance_satoshis / 100000000
-                                        print(f"   🔍 CHECK BALANCE: chain={chain_balance} sats, mempool={mempool_balance} sats, total={balance_satoshis} sats ({test_balance_btc:.8f} BTC)")
-                                        
-                                        if test_balance_btc > 0:
-                                            print(f"   ✅ Saldo encontrado: {test_balance_btc} BTC em {test_address}")
-                                            from_address = test_address
-                                            balance_btc = test_balance_btc
-                                            best_witness_type = witness_type
-                                            wallet = test_wallet
-                                            wallet_name = test_wallet_name
-                                            
-                                            # Atualizar UTXOs
-                                            wallet.utxos_update()
-                                            utxos = wallet.utxos()
-                                            
-                                            # Verificar se o endereço do wallet corresponde ao endereço esperado
-                                            wallet_keys = wallet.keys()
-                                            if wallet_keys:
-                                                wallet_address = wallet_keys[0].address
-                                                if wallet_address != test_address:
-                                                    print(f"   ⚠️  Endereço do wallet ({wallet_address}) diferente do esperado ({test_address})")
-                                            
-                                            break
-                                        else:
-                                            print(f"   ⚠️  Sem saldo neste endereço")
-                                except Exception as api_error:
-                                    print(f"   ⚠️  Erro ao verificar via API: {api_error}")
+                                    test_wallet.delete()
+                                except:
+                                    pass
                                 
-                                # Se não encontrou saldo, deletar wallet de teste
-                                if test_balance_btc == 0.0:
-                                    try:
-                                        test_wallet.delete()
-                                    except:
-                                        pass
-                            except Exception as e:
-                                print(f"   ⚠️  Erro ao testar {witness_type}: {e}")
-                                # Continue para próximo witness_type
-                                pass
-                    else:
-                        print(f"   ⚠️  Loop de criação de wallets PULADO - usando dados da busca simplificada")
+                        except Exception as e:
+                            print(f"   ⚠️  Erro ao testar {witness_type}: {e}")
+                            continue
                     
-                    # ✅ CORREÇÃO CRÍTICA: Se já encontramos saldo na busca simplificada, NÃO resetar!
                     # Se não encontrou saldo em nenhum tipo, usar o esperado do .env ou o primeiro
-                    # MAS: Se já temos saldo da busca simplificada, usar esse saldo e não resetar!
-                    balance_from_simplified_check = balance_btc > 0.0 and len(utxos) > 0 and from_address
-                    
-                    # ✅ CRÍTICO: Se já temos saldo da busca simplificada, NÃO tentar criar wallet ou resetar!
-                    if skip_wallet_creation and balance_from_simplified_check:
-                        print(f"✅✅✅ USANDO SALDO DA BUSCA SIMPLIFICADA - NÃO CRIANDO WALLET")
-                        print(f"   balance_btc: {balance_btc:.8f} BTC")
-                        print(f"   from_address: {from_address}")
-                        print(f"   utxos: {len(utxos)}")
-                        # Pular criação de wallet e continuar direto para criação de transação
-                        wallet = None  # Não precisamos de wallet se já temos UTXOs
-                    elif not wallet or (balance_btc == 0.0 and not balance_from_simplified_check):
+                    if not wallet or balance_btc == 0.0:
                         if expected_address:
-                            print(f"⚠️  Nenhum saldo encontrado nos witness_types testados.")
-                            if balance_from_simplified_check:
-                                print(f"✅ MAS: Saldo encontrado na busca simplificada: {balance_btc} BTC em {from_address}")
-                                print(f"   Usando saldo da busca simplificada - NÃO criando wallet (já temos UTXOs)")
-                                # Não criar wallet se já temos saldo e UTXOs da busca simplificada
-                                pass  # Não fazer nada, já temos saldo
-                            else:
-                                print(f"⚠️  Usando endereço do .env: {expected_address}")
-                            
+                            print(f"⚠️  Nenhum saldo encontrado. Usando endereço do .env: {expected_address}")
                             # Tentar criar wallet com legacy (P2PKH) que é o mais comum
                             wallet = Wallet.create(
                                 wallet_name,
@@ -4426,9 +4129,7 @@ class RealCrossChainBridge:
                                 network='testnet',
                                 witness_type='legacy'
                             )
-                            # ✅ CORREÇÃO: Se já temos from_address da busca forçada, não sobrescrever!
-                            if not from_address or not balance_from_forced_check:
-                                from_address = expected_address
+                            from_address = expected_address
                             
                             # SOLUÇÃO CRÍTICA: Fazer scan IMEDIATAMENTE após criar wallet
                             # Isso sincroniza a wallet com a blockchain e faz ela reconhecer UTXOs
@@ -4444,35 +4145,17 @@ class RealCrossChainBridge:
                                 print(f"⚠️  Erro ao sincronizar wallet: {scan_error}")
                                 add_log("wallet_scan_error_after_create", {"error": str(scan_error)}, "warning")
                             
-                            # ✅ CORREÇÃO CRÍTICA: Usar Blockstream em vez de BlockCypher (BlockCypher está desatualizado)
-                            # ✅ PROTEÇÃO: Se já temos saldo da busca simplificada, RESTAURAR valores protegidos!
-                            if not balance_from_simplified_check:
-                                try:
-                                    # Usar Blockstream API (mais confiável e atualizado)
-                                    balance_url = f"https://blockstream.info/testnet/api/address/{expected_address}"
-                                    print(f"   🔍 CHECK BALANCE (Blockstream): {balance_url}")
-                                    balance_response = requests.get(balance_url, timeout=10)
-                                    print(f"   🔍 CHECK BALANCE: Status: {balance_response.status_code}")
-                                    if balance_response.status_code == 200:
-                                        balance_data = balance_response.json()
-                                        print(f"   🔍 CHECK BALANCE: Dados: {json.dumps(balance_data)[:300]}...")
-                                        # ✅ CRÍTICO: Somar saldo confirmado + não confirmado (mempool)
-                                        chain_funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
-                                        chain_spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
-                                        chain_balance = chain_funded - chain_spent
-                                        
-                                        mempool_funded = balance_data.get('mempool_stats', {}).get('funded_txo_sum', 0)
-                                        mempool_spent = balance_data.get('mempool_stats', {}).get('spent_txo_sum', 0)
-                                        mempool_balance = mempool_funded - mempool_spent
-                                        
-                                        balance_satoshis = chain_balance + mempool_balance
-                                        balance_btc = balance_satoshis / 100000000
-                                        print(f"   🔍 CHECK BALANCE: chain={chain_balance} sats, mempool={mempool_balance} sats, total={balance_satoshis} sats ({balance_btc:.8f} BTC)")
-                                        print(f"✅ Saldo do endereço esperado: {balance_btc} BTC")
-                                except Exception as balance_error:
-                                    print(f"⚠️  Erro ao verificar saldo: {balance_error}")
-                            else:
-                                print(f"   ✅✅✅ Usando saldo da busca forçada: {balance_btc} BTC (NÃO sobrescrever!)")
+                            # Verificar saldo do endereço esperado
+                            try:
+                                balance_url = f"{self.btc_api_base}/addrs/{expected_address}/balance"
+                                balance_response = requests.get(balance_url, timeout=10)
+                                if balance_response.status_code == 200:
+                                    balance_data = balance_response.json()
+                                    balance_satoshis = balance_data.get('balance', 0)
+                                    balance_btc = balance_satoshis / 100000000
+                                    print(f"✅ Saldo do endereço esperado: {balance_btc} BTC")
+                            except Exception as balance_error:
+                                print(f"⚠️  Erro ao verificar saldo: {balance_error}")
                         else:
                             # Usar o primeiro tipo como padrão
                             wallet = Wallet.create(
@@ -4723,44 +4406,19 @@ class RealCrossChainBridge:
                                 import traceback
                                 traceback.print_exc()
                     
-                    # ✅ CORREÇÃO CRÍTICA: SEMPRE recalcular saldo a partir dos UTXOs (mais confiável que API)
+                    # CORREÇÃO CRÍTICA: Calcular saldo a partir dos UTXOs se balance_btc for 0
                     if utxos:
                         total_utxo_value_satoshis = sum(utxo.get('value', 0) for utxo in utxos)
                         total_utxo_value_btc = total_utxo_value_satoshis / 100000000
-                        print(f"\n📦📦📦 UTXOs encontrados: {len(utxos)} (Total: {total_utxo_value_btc} BTC = {total_utxo_value_satoshis} satoshis)")
+                        print(f"📦 UTXOs encontrados: {len(utxos)} (Total: {total_utxo_value_btc} BTC = {total_utxo_value_satoshis} satoshis)")
                         
-                        # ✅ SEMPRE usar o valor dos UTXOs (mais preciso que API que pode ter cache)
-                        if total_utxo_value_btc > 0:
-                            if balance_btc != total_utxo_value_btc:
-                                print(f"   ⚠️⚠️⚠️  balance_btc da API ({balance_btc} BTC) difere dos UTXOs ({total_utxo_value_btc} BTC)")
-                                print(f"   ✅✅✅ Usando saldo calculado dos UTXOs: {total_utxo_value_btc} BTC (mais confiável)")
+                        # Se balance_btc é 0 mas temos UTXOs, usar o valor dos UTXOs
+                        if balance_btc == 0.0 and total_utxo_value_btc > 0:
+                            print(f"   ⚠️  balance_btc era 0.0, mas UTXOs têm {total_utxo_value_btc} BTC")
+                            print(f"   ✅ Atualizando balance_btc para {total_utxo_value_btc} BTC baseado nos UTXOs")
                             balance_btc = total_utxo_value_btc
-                            print(f"   ✅✅✅ balance_btc DEFINITIVO: {balance_btc} BTC (calculado dos UTXOs)")
-                        else:
-                            print(f"   ⚠️⚠️⚠️  UTXOs encontrados mas valor total é 0")
-                            print(f"   🔍🔍🔍 Detalhes dos UTXOs:")
-                            for i, u in enumerate(utxos[:5]):
-                                print(f"      UTXO {i+1}: value={u.get('value', 0)}, txid={u.get('txid', 'N/A')[:20]}...")
                     else:
                         print(f"⚠️  Nenhum UTXO encontrado no wallet nem via API")
-                        # Se não tem UTXOs mas balance_btc > 0, pode ser cache da API
-                        if balance_btc > 0:
-                            print(f"   ⚠️  balance_btc da API é {balance_btc} BTC mas nenhum UTXO encontrado")
-                            print(f"   💡 Tentando refresh do saldo via Blockstream...")
-                            try:
-                                import requests
-                                refresh_url = f"https://blockstream.info/testnet/api/address/{from_address}"
-                                refresh_resp = requests.get(refresh_url, timeout=10)
-                                if refresh_resp.status_code == 200:
-                                    refresh_data = refresh_resp.json()
-                                    refresh_funded = refresh_data.get('chain_stats', {}).get('funded_txo_sum', 0)
-                                    refresh_spent = refresh_data.get('chain_stats', {}).get('spent_txo_sum', 0)
-                                    refresh_balance_sats = refresh_funded - refresh_spent
-                                    refresh_balance_btc = refresh_balance_sats / 100000000
-                                    print(f"   🔄 Saldo atualizado via Blockstream: {refresh_balance_btc} BTC")
-                                    balance_btc = refresh_balance_btc
-                            except Exception as refresh_err:
-                                print(f"   ⚠️  Erro ao fazer refresh: {refresh_err}")
                     
                     # MELHORIA: Calcular fee mais preciso baseado em UTXOs
                     # CORREÇÃO: Taxa fixa e baixa para testnet (500 satoshis = 0.000005 BTC)
@@ -4773,104 +4431,11 @@ class RealCrossChainBridge:
                     
                     total_needed = amount_btc + estimated_fee_btc
                     
-                    # ✅ CORREÇÃO CRÍTICA: Se balance_btc ainda é 0, fazer verificação FINAL via Blockstream
-                    print(f"\n🚨🚨🚨 DEBUG CRÍTICO: Verificando saldo antes da validação final")
-                    print(f"   balance_btc atual: {balance_btc}")
-                    print(f"   from_address: {from_address}")
-                    print(f"   utxos count: {len(utxos) if utxos else 0}")
-                    
-                    if balance_btc == 0.0 and from_address:
-                        print(f"\n   ⚠️⚠️⚠️  SALDO É 0.0 - EXECUTANDO VERIFICAÇÃO FINAL VIA BLOCKSTREAM...")
-                        try:
-                            final_balance_url = f"https://blockstream.info/testnet/api/address/{from_address}"
-                            print(f"   🔍🔍🔍 CHECK BALANCE FINAL URL: {final_balance_url}")
-                            print(f"   🔍🔍🔍 Fazendo request GET para Blockstream...")
-                            
-                            final_balance_resp = requests.get(final_balance_url, timeout=10)
-                            
-                            print(f"   🔍🔍🔍 CHECK BALANCE FINAL: Status Code: {final_balance_resp.status_code}")
-                            print(f"   🔍🔍🔍 CHECK BALANCE FINAL: Response Headers: {dict(final_balance_resp.headers)}")
-                            
-                            if final_balance_resp.status_code == 200:
-                                final_balance_data = final_balance_resp.json()
-                                print(f"   🔍🔍🔍 CHECK BALANCE FINAL: Response JSON completo:")
-                                print(f"      {json.dumps(final_balance_data, indent=2)}")
-                                
-                                final_funded = final_balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
-                                final_spent = final_balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
-                                final_balance_sats = final_funded - final_spent
-                                final_balance_btc = final_balance_sats / 100000000
-                                
-                                print(f"   🔍🔍🔍 CHECK BALANCE FINAL: funded={final_funded}, spent={final_spent}")
-                                print(f"   🔍🔍🔍 CHECK BALANCE FINAL: balance={final_balance_sats} satoshis ({final_balance_btc:.8f} BTC)")
-                                
-                                if final_balance_btc > 0:
-                                    print(f"   ✅✅✅ SALDO ENCONTRADO VIA BLOCKSTREAM: {final_balance_btc} BTC")
-                                    print(f"   ✅✅✅ ATUALIZANDO balance_btc de {balance_btc} para {final_balance_btc}")
-                                    balance_btc = final_balance_btc
-                                    print(f"   ✅✅✅ balance_btc ATUALIZADO: {balance_btc}")
-                                    
-                                    # ✅ CRÍTICO: Buscar UTXOs via Blockstream também
-                                    print(f"   🔍🔍🔍 Buscando UTXOs via Blockstream...")
-                                    final_utxo_url = f"{final_balance_url}/utxo"
-                                    print(f"   🔍🔍🔍 UTXO URL: {final_utxo_url}")
-                                    final_utxo_resp = requests.get(final_utxo_url, timeout=20)
-                                    print(f"   🔍🔍🔍 UTXO Response Status: {final_utxo_resp.status_code}")
-                                    
-                                    if final_utxo_resp.status_code == 200:
-                                        final_utxos = final_utxo_resp.json()
-                                        print(f"   ✅✅✅ UTXOs encontrados via Blockstream: {len(final_utxos)}")
-                                        print(f"   🔍🔍🔍 Primeiros 3 UTXOs:")
-                                        for i, u in enumerate(final_utxos[:3]):
-                                            print(f"      UTXO {i+1}: txid={u.get('txid', 'N/A')[:20]}..., vout={u.get('vout', 'N/A')}, value={u.get('value', 'N/A')}, confirmed={u.get('status', {}).get('confirmed', False)}")
-                                        
-                                        if final_utxos and not utxos:
-                                            # Converter formato Blockstream para formato esperado
-                                            print(f"   🔍🔍🔍 Convertendo UTXOs do formato Blockstream...")
-                                            utxos = []
-                                            for bs_utxo in final_utxos:
-                                                if bs_utxo.get('status', {}).get('confirmed', False):
-                                                    utxos.append({
-                                                        'txid': bs_utxo.get('txid'),
-                                                        'vout': bs_utxo.get('vout', 0),
-                                                        'output_n': bs_utxo.get('vout', 0),
-                                                        'value': int(bs_utxo.get('value', 0)),
-                                                        'address': from_address,
-                                                        'confirmed': True,
-                                                        'spent': False
-                                                    })
-                                            print(f"   ✅✅✅ UTXOs convertidos: {len(utxos)} confirmados")
-                                        elif utxos:
-                                            print(f"   ⚠️  UTXOs já existiam, não substituindo")
-                                    else:
-                                        print(f"   ⚠️⚠️⚠️  Erro ao buscar UTXOs: Status {final_utxo_resp.status_code}")
-                                        print(f"   Response: {final_utxo_resp.text[:500]}")
-                                else:
-                                    print(f"   ⚠️⚠️⚠️  Blockstream também mostra saldo 0")
-                                    print(f"   ⚠️⚠️⚠️  funded={final_funded}, spent={final_spent}, balance={final_balance_sats}")
-                            else:
-                                print(f"   ⚠️⚠️⚠️  Erro HTTP na verificação final: {final_balance_resp.status_code}")
-                                print(f"   Response: {final_balance_resp.text[:500]}")
-                        except Exception as final_balance_err:
-                            print(f"   ❌❌❌ ERRO NA VERIFICAÇÃO FINAL: {final_balance_err}")
-                            import traceback
-                            traceback.print_exc()
-                    else:
-                        print(f"   ✅ balance_btc não é 0.0, pulando verificação final")
-                        print(f"   balance_btc = {balance_btc}")
-                    
-                    print(f"\n🚨🚨🚨 DEBUG CRÍTICO: Estado APÓS verificação final")
-                    print(f"   balance_btc: {balance_btc}")
-                    print(f"   total_needed: {total_needed}")
-                    print(f"   utxos count: {len(utxos) if utxos else 0}")
-                    print(f"   balance_btc < total_needed? {balance_btc < total_needed}")
-                    
                     print(f"💰 Verificação de saldo:")
                     print(f"   Saldo disponível: {balance_btc} BTC")
                     print(f"   Valor a enviar: {amount_btc} BTC")
                     print(f"   Fee estimado: {estimated_fee_btc} BTC")
                     print(f"   Total necessário: {total_needed} BTC")
-                    print(f"   UTXOs disponíveis: {len(utxos) if utxos else 0}")
                     
                     # CORREÇÃO: Validar se o valor é muito pequeno (menor que dust limit + fee)
                     min_btc_with_fee = 0.00000546 + estimated_fee_btc  # Dust limit (546 sats) + fee
@@ -4883,209 +4448,20 @@ class RealCrossChainBridge:
                             "note": "O valor convertido é menor que o dust limit do Bitcoin. Considere enviar um valor maior."
                         }
                     
-                    # 🚨🚨🚨 DEBUG CRÍTICO ANTES DA VERIFICAÇÃO FINAL
-                    print(f"\n🚨🚨🚨 VERIFICAÇÃO FINAL DE SALDO:")
-                    print(f"   balance_btc: {balance_btc}")
-                    print(f"   total_needed: {total_needed}")
-                    print(f"   amount_btc: {amount_btc}")
-                    print(f"   estimated_fee_btc: {estimated_fee_btc}")
-                    print(f"   from_address: {from_address}")
-                    print(f"   utxos_count: {len(utxos) if utxos else 0}")
-                    print(f"   balance_btc < total_needed? {balance_btc < total_needed}")
-                    
-                    # ✅ PROTEÇÃO FINAL: Se balance_btc ainda for 0 mas temos UTXOs, recalcular
-                    if balance_btc == 0.0 and utxos and len(utxos) > 0:
-                        print(f"\n   ⚠️⚠️⚠️  PROTEÇÃO FINAL: balance_btc é 0 mas temos UTXOs!")
-                        total_utxo_value = sum(u.get('value', 0) for u in utxos)
-                        balance_from_utxos = total_utxo_value / 100000000
-                        print(f"   ✅✅✅ Recalculando balance_btc dos UTXOs: {balance_from_utxos} BTC")
-                        balance_btc = balance_from_utxos
-                        print(f"   ✅✅✅ balance_btc PROTEGIDO: {balance_btc} BTC")
-                    
-                    # 🚨🚨🚨 LOG CRÍTICO ANTES DA VERIFICAÇÃO DE SALDO
-                    import sys
-                    print(f"\n🚨🚨🚨 VERIFICAÇÃO DE SALDO FALHOU!", file=sys.stderr)
-                    print(f"🚨🚨🚨 VERIFICAÇÃO DE SALDO FALHOU!")
-                    print(f"🚨 balance_btc calculado: {balance_btc}", file=sys.stderr)
-                    print(f"🚨 balance_btc calculado: {balance_btc}")
-                    print(f"🚨 required (total_needed): {total_needed}", file=sys.stderr)
-                    print(f"🚨 required (total_needed): {total_needed}")
-                    print(f"🚨 balance_btc < total_needed? {balance_btc < total_needed}", file=sys.stderr)
-                    print(f"🚨 balance_btc < total_needed? {balance_btc < total_needed}")
-                    print(f"🚨 from_address: {from_address}", file=sys.stderr)
-                    print(f"🚨 from_address: {from_address}")
-                    print(f"🚨 utxos_count: {len(utxos) if utxos else 0}", file=sys.stderr)
-                    print(f"🚨 utxos_count: {len(utxos) if utxos else 0}")
-                    
                     if balance_btc < total_needed:
-                        # 🚨🚨🚨 ÚLTIMA TENTATIVA: Verificar Blockstream UMA VEZ MAIS
-                        print(f"\n🚨🚨🚨 SALDO INSUFICIENTE DETECTADO - ÚLTIMA VERIFICAÇÃO DE EMERGÊNCIA")
-                        print(f"   Tentando Blockstream UMA VEZ MAIS antes de retornar erro...")
-                        try:
-                            emergency_url = f"https://blockstream.info/testnet/api/address/{from_address}"
-                            print(f"   🔍🔍🔍 EMERGENCY CHECK: {emergency_url}")
-                            emergency_resp = requests.get(emergency_url, timeout=10)
-                            print(f"   🔍🔍🔍 EMERGENCY CHECK Status: {emergency_resp.status_code}")
-                            
-                            if emergency_resp.status_code == 200:
-                                emergency_data = emergency_resp.json()
-                                emergency_funded = emergency_data.get('chain_stats', {}).get('funded_txo_sum', 0)
-                                emergency_spent = emergency_data.get('chain_stats', {}).get('spent_txo_sum', 0)
-                                emergency_balance_sats = emergency_funded - emergency_spent
-                                emergency_balance_btc = emergency_balance_sats / 100000000
-                                
-                                print(f"   🔍🔍🔍 EMERGENCY CHECK: balance={emergency_balance_sats} sats ({emergency_balance_btc:.8f} BTC)")
-                                
-                                if emergency_balance_btc >= total_needed:
-                                    print(f"   ✅✅✅ SALDO ENCONTRADO NA VERIFICAÇÃO DE EMERGÊNCIA!")
-                                    print(f"   ✅✅✅ Atualizando balance_btc de {balance_btc} para {emergency_balance_btc}")
-                                    balance_btc = emergency_balance_btc
-                                    print(f"   ✅✅✅ Continuando com a transação...")
-                                else:
-                                    print(f"   ⚠️⚠️⚠️  Verificação de emergência também mostra saldo insuficiente")
-                                    print(f"   ⚠️⚠️⚠️  emergency_balance_btc={emergency_balance_btc}, total_needed={total_needed}")
-                        except Exception as emergency_err:
-                            print(f"   ❌❌❌ Erro na verificação de emergência: {emergency_err}")
-                            import traceback
-                            traceback.print_exc()
-                        
-                        # 🚨🚨🚨 PATCH NUCLEAR: ÚLTIMA VERIFICAÇÃO ANTES DE RETORNAR ERRO
-                        # Se ainda insuficiente após verificação de emergência, fazer UMA ÚLTIMA tentativa nuclear
-                        if balance_btc < total_needed:
-                            print(f"\n🚨🚨🚨 PATCH NUCLEAR ATIVADO - ÚLTIMA TENTATIVA!")
-                            print(f"   balance_btc antes do patch: {balance_btc}")
-                            print(f"   total_needed: {total_needed}")
-                            print(f"   from_address: {from_address}")
-                            
-                            # 🚨 PATCH NUCLEAR: Buscar saldo DIRETO do Blockstream SEM CACHE
-                            nuclear_override_success = False  # Inicializar flag
-                            try:
-                                import sys
-                                nuclear_url = f"https://blockstream.info/testnet/api/address/{from_address}"
-                                print(f"🚨🚨🚨 PATCH NUCLEAR URL: {nuclear_url}", file=sys.stderr)
-                                print(f"🚨🚨🚨 PATCH NUCLEAR URL: {nuclear_url}")
-                                
-                                nuclear_resp = requests.get(nuclear_url, timeout=15, headers={'Cache-Control': 'no-cache', 'Pragma': 'no-cache'})
-                                print(f"🚨🚨🚨 PATCH NUCLEAR Status: {nuclear_resp.status_code}", file=sys.stderr)
-                                print(f"🚨🚨🚨 PATCH NUCLEAR Status: {nuclear_resp.status_code}")
-                                
-                                if nuclear_resp.status_code == 200:
-                                    nuclear_data = nuclear_resp.json()
-                                    print(f"🚨🚨🚨 PATCH NUCLEAR Response: {json.dumps(nuclear_data)[:300]}...", file=sys.stderr)
-                                    
-                                    nuclear_funded = nuclear_data.get('chain_stats', {}).get('funded_txo_sum', 0)
-                                    nuclear_spent = nuclear_data.get('chain_stats', {}).get('spent_txo_sum', 0)
-                                    nuclear_balance_sats = nuclear_funded - nuclear_spent
-                                    nuclear_balance_btc = nuclear_balance_sats / 100000000
-                                    
-                                    print(f"🚨🚨🚨 PATCH NUCLEAR SALDO: {nuclear_balance_btc:.8f} BTC ({nuclear_balance_sats:,} satoshis)", file=sys.stderr)
-                                    print(f"🚨🚨🚨 PATCH NUCLEAR SALDO: {nuclear_balance_btc:.8f} BTC ({nuclear_balance_sats:,} satoshis)")
-                                    
-                                    # 🚨 FORÇAR: Usar saldo nuclear encontrado
-                                    if nuclear_balance_btc >= total_needed:
-                                        print(f"🚨🚨🚨 PATCH NUCLEAR: SALDO SUFICIENTE! Continuando transação...", file=sys.stderr)
-                                        print(f"🚨🚨🚨 PATCH NUCLEAR: SALDO SUFICIENTE! Continuando transação...")
-                                        
-                                        # 🚨🚨🚨 OVERRIDE CRÍTICO: Ignorar erro de saldo e forçar continuação
-                                        print(f"🚨🚨🚨 OVERRIDE CRÍTICO: Ignorando erro de saldo!", file=sys.stderr)
-                                        print(f"🚨🚨🚨 OVERRIDE CRÍTICO: Ignorando erro de saldo!")
-                                        print(f"🚨 balance_btc original: {balance_btc}", file=sys.stderr)
-                                        print(f"🚨 balance_btc original: {balance_btc}")
-                                        print(f"🚨 nuclear_balance_btc: {nuclear_balance_btc}", file=sys.stderr)
-                                        print(f"🚨 nuclear_balance_btc: {nuclear_balance_btc}")
-                                        print(f"🚨 total_needed: {total_needed}", file=sys.stderr)
-                                        print(f"🚨 total_needed: {total_needed}")
-                                        
-                                        # 🎯 FORÇA CONTINUAÇÃO DA TRANSAÇÃO
-                                        balance_btc = nuclear_balance_btc  # Substitui balance bugado
-                                        print(f"🚨 balance_btc atualizado para: {balance_btc}", file=sys.stderr)
-                                        print(f"🚨 balance_btc atualizado para: {balance_btc}")
-                                        
-                                        # Buscar UTXOs também
-                                        nuclear_utxo_url = f"{nuclear_url}/utxo"
-                                        nuclear_utxo_resp = requests.get(nuclear_utxo_url, timeout=15, headers={'Cache-Control': 'no-cache'})
-                                        if nuclear_utxo_resp.status_code == 200:
-                                            nuclear_utxos = nuclear_utxo_resp.json()
-                                            if nuclear_utxos:
-                                                utxos = []
-                                                for bs_utxo in nuclear_utxos:
-                                                    utxos.append({
-                                                        'txid': bs_utxo.get('txid'),
-                                                        'vout': bs_utxo.get('vout', 0),
-                                                        'output_n': bs_utxo.get('vout', 0),
-                                                        'value': int(bs_utxo.get('value', 0)),
-                                                        'address': from_address,
-                                                        'confirmed': bs_utxo.get('status', {}).get('confirmed', False),
-                                                        'spent': False
-                                                    })
-                                                print(f"🚨🚨🚨 PATCH NUCLEAR: {len(utxos)} UTXOs encontrados", file=sys.stderr)
-                                                print(f"🚨🚨🚨 PATCH NUCLEAR: {len(utxos)} UTXOs encontrados")
-                                        
-                                        print(f"🚨 CONTINUANDO TRANSAÇÃO APÓS OVERRIDE...", file=sys.stderr)
-                                        print(f"🚨 CONTINUANDO TRANSAÇÃO APÓS OVERRIDE...")
-                                        # 🚨 NÃO RETORNAR ERRO - CONTINUAR EXECUÇÃO
-                                        # Pular o return de erro abaixo usando uma flag
-                                        nuclear_override_success = True
-                                    else:
-                                        print(f"🚨🚨🚨 PATCH NUCLEAR: Saldo ainda insuficiente após patch nuclear", file=sys.stderr)
-                                        print(f"🚨🚨🚨 PATCH NUCLEAR: Saldo ainda insuficiente após patch nuclear")
-                                        print(f"   nuclear_balance_btc: {nuclear_balance_btc}")
-                                        print(f"   total_needed: {total_needed}")
-                                        nuclear_override_success = False
-                            except Exception as nuclear_err:
-                                print(f"🚨🚨🚨 PATCH NUCLEAR ERRO: {nuclear_err}", file=sys.stderr)
-                                print(f"🚨🚨🚨 PATCH NUCLEAR ERRO: {nuclear_err}")
-                                import traceback
-                                traceback.print_exc()
-                                nuclear_override_success = False
-                            
-                            # 🚨🚨🚨 OVERRIDE: Se patch nuclear encontrou saldo, NÃO retornar erro
-                            if 'nuclear_override_success' in locals() and nuclear_override_success:
-                                print(f"🚨🚨🚨 OVERRIDE ATIVO: Pulando retorno de erro, continuando transação...", file=sys.stderr)
-                                print(f"🚨🚨🚨 OVERRIDE ATIVO: Pulando retorno de erro, continuando transação...")
-                                # NÃO retornar erro - continuar para criar transação
-                            # ✅ VERIFICAÇÃO FINAL: Se temos valores protegidos da busca simplificada, RESTAURAR!
-                            elif 'protected_balance_btc' in locals() and protected_balance_btc > 0.0:
-                                print(f"🚨🚨🚨 RESTAURANDO VALORES PROTEGIDOS DA BUSCA SIMPLIFICADA!", file=sys.stderr)
-                                print(f"🚨🚨🚨 RESTAURANDO VALORES PROTEGIDOS DA BUSCA SIMPLIFICADA!")
-                                balance_btc = protected_balance_btc
-                                from_address = protected_from_address
-                                utxos = protected_utxos.copy() if protected_utxos else []
-                                print(f"   balance_btc RESTAURADO: {balance_btc:.8f} BTC", file=sys.stderr)
-                                print(f"   balance_btc RESTAURADO: {balance_btc:.8f} BTC")
-                                print(f"   from_address RESTAURADO: {from_address}", file=sys.stderr)
-                                print(f"   from_address RESTAURADO: {from_address}")
-                                print(f"   utxos RESTAURADOS: {len(utxos)}", file=sys.stderr)
-                                print(f"   utxos RESTAURADOS: {len(utxos)}")
-                                # Verificar novamente se agora temos saldo suficiente
-                                if balance_btc >= total_needed:
-                                    print(f"✅✅✅ SALDO SUFICIENTE APÓS RESTAURAÇÃO! Continuando transação...", file=sys.stderr)
-                                    print(f"✅✅✅ SALDO SUFICIENTE APÓS RESTAURAÇÃO! Continuando transação...")
-                                    # NÃO retornar erro - continuar para criar transação
-                                elif balance_btc < total_needed:
-                                    # Ainda insuficiente mesmo após restauração
-                                    print(f"⚠️  Saldo ainda insuficiente após restauração: {balance_btc} < {total_needed}")
-                            elif balance_btc < total_needed:
-                                print(f"\n❌❌❌ RETORNANDO ERRO DE SALDO INSUFICIENTE (APÓS PATCH NUCLEAR)")
-                                print(f"   balance_btc final: {balance_btc}")
-                                print(f"   total_needed: {total_needed}")
-                                print(f"   from_address: {from_address}")
-                                print(f"   utxos_count: {len(utxos) if utxos else 0}")
-                                
-                                # Não deletar wallet aqui - pode ser usado para debug
-                                return {
-                                    "success": False,
-                                    "error": f"Saldo insuficiente. Disponível: {balance_btc} BTC, Necessário: {total_needed} BTC (amount: {amount_btc} + fee: {estimated_fee_btc})",
-                                    "balance": balance_btc,
-                                    "required": total_needed,
-                                    "amount": amount_btc,
-                                    "fee_estimated": estimated_fee_btc,
-                                    "from_address": from_address,
-                                    "utxos_count": len(utxos) if utxos else 0,
-                                    "wallet_name": wallet_name,  # Para debug se necessário
-                                    "note": f"Verifique se o endereço {from_address} tem saldo suficiente. Use Blockstream explorer: https://blockstream.info/testnet/address/{from_address}",
-                                    "patch_nuclear_applied": True
-                                }
+                        # Não deletar wallet aqui - pode ser usado para debug
+                        return {
+                            "success": False,
+                            "error": f"Saldo insuficiente. Disponível: {balance_btc} BTC, Necessário: {total_needed} BTC (amount: {amount_btc} + fee: {estimated_fee_btc})",
+                            "balance": balance_btc,
+                            "required": total_needed,
+                            "amount": amount_btc,
+                            "fee_estimated": estimated_fee_btc,
+                            "from_address": from_address,
+                            "utxos_count": len(utxos) if utxos else 0,
+                            "wallet_name": wallet_name,  # Para debug se necessário
+                            "note": f"Verifique se o endereço {from_address} tem saldo suficiente. Use BlockCypher explorer para verificar."
+                        }
                     
                     # Enviar transação com fee rate adequado (5 sat/vB para garantir confirmação)
                     print(f"🚀 Enviando transação com fee rate: 5 sat/vB...")
@@ -5416,202 +4792,199 @@ class RealCrossChainBridge:
                             if not wallet_send_to_success:
                                 print(f"⚠️  wallet.send_to() falhou - buscando UTXOs da Blockstream e tentando métodos alternativos...")
                                 
-                                # ✅ PRIORIDADE MÁXIMA: Usar Blockstream PRIMEIRO (mais atualizado, sem cache)
-                                # BlockCypher pode ter cache/atraso, então Blockstream é mais confiável
+                                # ✅ PRIORIDADE: Buscar UTXOs via BlockCypher API (mais confiável com token)
+                                # Se tiver token, usar BlockCypher primeiro (mais preciso)
                                 utxos = []
-                                print(f"🔄 Buscando UTXOs via Blockstream API PRIMEIRO (mais atualizado) para {from_address}...")
-                                print(f"   ⚠️  IMPORTANTE: Usando apenas UTXOs CONFIRMADOS (ignorando pendentes no mempool)")
-                                # Usar método que filtra apenas UTXOs confirmados
-                                utxos = self._fetch_confirmed_utxos_only(from_address)
-                                
-                                # ✅ FALLBACK: Se Blockstream não retornou UTXOs, tentar BlockCypher
-                                if not utxos or len(utxos) == 0:
-                                    print(f"🔄 Blockstream não retornou UTXOs, tentando BlockCypher API (pode ter cache)...")
-                                    if self.blockcypher_token:
-                                        print(f"🔄 Buscando UTXOs via BlockCypher API (com token) para {from_address}...")
-                                        try:
-                                            btc_addr_url = f"{self.btc_api_base}/addrs/{from_address}?token={self.blockcypher_token}&unspentOnly=true"
-                                            print(f"   📡 URL: {btc_addr_url}")
-                                            addr_response = requests.get(btc_addr_url, timeout=15)
-                                            print(f"   📊 Status: {addr_response.status_code}")
-                                            
-                                            if addr_response.status_code == 200:
-                                                addr_data = addr_response.json()
-                                                txrefs = addr_data.get('txrefs', [])
-                                                print(f"   📦 BlockCypher retornou {len(txrefs)} UTXOs")
-                                                
-                                                for txref in txrefs:
-                                                    try:
-                                                        txid = txref.get('tx_hash')
-                                                        output_n = txref.get('tx_output_n', 0)
-                                                        value = txref.get('value', 0)
-                                                        spent = txref.get('spent', False)
-                                                        
-                                                        # ✅ BlockCypher já retorna apenas UTXOs não gastos se unspentOnly=true
-                                                        if spent:
-                                                            print(f"      ⚠️  UTXO {txid[:16]}...:{output_n} marcado como gasto, pulando...")
-                                                            continue
-                                                        
-                                                        if not txid or value <= 0:
-                                                            print(f"      ⚠️  UTXO inválido ignorado: txid={txid}, value={value}")
-                                                            continue
-                                                        
-                                                        utxos.append({
-                                                            'txid': txid,
-                                                            'vout': output_n,
-                                                            'output_n': output_n,
-                                                            'value': int(value),
-                                                            'address': from_address,
-                                                            'confirmed': True,
-                                                            'spent': False,
-                                                            'source': 'blockcypher'
-                                                        })
-                                                        print(f"      ✅ UTXO BlockCypher: {txid[:16]}...:{output_n} = {value} satoshis")
-                                                    except Exception as txref_err:
-                                                        print(f"      ⚠️  Erro ao processar UTXO BlockCypher: {txref_err}")
-                                                        continue
-                                                
-                                                if utxos:
-                                                    total_value = sum(utxo.get('value', 0) for utxo in utxos)
-                                                    print(f"✅ {len(utxos)} UTXOs válidos encontrados via BlockCypher API!")
-                                                    print(f"   💰 Valor total: {total_value / 100000000:.8f} BTC")
-                                                    add_log("blockcypher_utxos_fetched", {"count": len(utxos), "total_sats": total_value}, "info")
-                                            else:
-                                                print(f"⚠️  BlockCypher API retornou status {addr_response.status_code}: {addr_response.text[:200]}")
-                                                add_log("blockcypher_api_error", {"status": addr_response.status_code, "error": addr_response.text[:200]}, "warning")
-                                        except Exception as bc_err:
-                                            print(f"⚠️  Erro ao buscar UTXOs da BlockCypher: {bc_err}")
-                                            import traceback
-                                            traceback.print_exc()
-                                            add_log("blockcypher_fetch_error", {"error": str(bc_err)}, "error")
-                                    else:
-                                        print(f"⚠️  BlockCypher token não configurado, usando apenas Blockstream")
-                                
-                                # ✅ FALLBACK FINAL: Se nem Blockstream nem BlockCypher retornaram, tentar método direto
-                                if not utxos or len(utxos) == 0:
-                                    print(f"🔄 Nem Blockstream nem BlockCypher retornaram UTXOs, tentando método direto...")
+                                if self.blockcypher_token:
+                                    print(f"🔄 Buscando UTXOs via BlockCypher API (com token) para {from_address}...")
                                     try:
-                                        utxos_url = f"https://blockstream.info/testnet/api/address/{from_address}/utxo"
-                                        print(f"   📡 URL: {utxos_url}")
-                                        utxos_response = requests.get(utxos_url, timeout=15)
-                                        print(f"   📊 Status: {utxos_response.status_code}")
+                                        btc_addr_url = f"{self.btc_api_base}/addrs/{from_address}?token={self.blockcypher_token}&unspentOnly=true"
+                                        print(f"   📡 URL: {btc_addr_url}")
+                                        addr_response = requests.get(btc_addr_url, timeout=15)
+                                        print(f"   📊 Status: {addr_response.status_code}")
                                         
-                                        if utxos_response.status_code == 200:
-                                            blockstream_utxos = utxos_response.json()
-                                            print(f"   📦 Resposta JSON: {len(blockstream_utxos) if blockstream_utxos else 0} UTXOs")
+                                        if addr_response.status_code == 200:
+                                            addr_data = addr_response.json()
+                                            txrefs = addr_data.get('txrefs', [])
+                                            print(f"   📦 BlockCypher retornou {len(txrefs)} UTXOs")
                                             
-                                            if blockstream_utxos:
-                                                # ✅ CORREÇÃO: Converter formato Blockstream para formato esperado
-                                                # Garantir que value e vout são sempre inteiros
-                                                # ✅ CRÍTICO: Verificar se UTXO não foi gasto e se output existe
-                                                utxos = []
-                                                for bs_utxo in blockstream_utxos:
-                                                    try:
-                                                        txid = bs_utxo.get('txid')
-                                                        vout = int(bs_utxo.get('vout', 0))
-                                                        value = int(bs_utxo.get('value', 0))
+                                            for txref in txrefs:
+                                                try:
+                                                    txid = txref.get('tx_hash')
+                                                    output_n = txref.get('tx_output_n', 0)
+                                                    value = txref.get('value', 0)
+                                                    spent = txref.get('spent', False)
                                                     
-                                                        if not txid or value <= 0:
-                                                            print(f"   ⚠️  UTXO inválido ignorado: txid={txid}, value={value}")
-                                                            continue
-                                                        
-                                                        # ✅ VALIDAÇÃO CRÍTICA: Verificar se o output realmente existe e não foi gasto
-                                                        # Esta verificação é OBRIGATÓRIA para evitar usar UTXOs gastos
-                                                        try:
-                                                            print(f"      🔍 Verificando UTXO {txid[:16]}...:{vout}...")
-                                                            tx_url = f"https://blockstream.info/testnet/api/tx/{txid}"
-                                                            tx_response = requests.get(tx_url, timeout=10)
-                                                            if tx_response.status_code == 200:
-                                                                tx_data = tx_response.json()
-                                                                vouts = tx_data.get('vout', [])
-                                                                
-                                                                # Verificar se o output existe
-                                                                if vout >= len(vouts):
-                                                                    print(f"   ❌ Output {vout} não existe na transação {txid[:16]}... (tem apenas {len(vouts)} outputs)")
-                                                                    continue
-                                                                
-                                                                vout_data = vouts[vout]
-                                                                
-                                                                # ✅ CRÍTICO: Verificar se o output foi gasto
-                                                                spent = vout_data.get('spent', False)
-                                                                spent_txid = vout_data.get('spent_txid')
-                                                                
-                                                                if spent:
-                                                                    print(f"   ❌ Output {vout} já foi gasto na transação {txid[:16]}... (gasto em: {spent_txid[:16] if spent_txid else 'N/A'}...)")
-                                                                    continue
-                                                                
-                                                                # Verificar se o valor corresponde
-                                                                vout_value = vout_data.get('value', 0)
-                                                                if vout_value != value:
-                                                                    print(f"   ⚠️  Valor do output {vout} não corresponde: esperado {value}, encontrado {vout_value}, usando valor real")
-                                                                    # Usar o valor real do output
-                                                                    value = vout_value
-                                                                
-                                                                # ✅ VERIFICAÇÃO ADICIONAL: Verificar se o output está realmente disponível
-                                                                # Verificar status da transação
-                                                                tx_status = tx_data.get('status', {})
-                                                                if isinstance(tx_status, dict):
-                                                                    confirmed = tx_status.get('confirmed', False)
-                                                                    if not confirmed:
-                                                                        print(f"   ⚠️  Transação {txid[:16]}... não está confirmada, pulando...")
-                                                                        continue
-                                                                
-                                                                print(f"      ✅ UTXO verificado e válido: {txid[:16]}...:{vout} = {value} satoshis (não gasto, confirmado)")
-                                                            else:
-                                                                print(f"   ❌ Não foi possível verificar transação {txid[:16]}... (status: {tx_response.status_code})")
-                                                                # NÃO continuar se não conseguir verificar - é muito arriscado
-                                                                continue
-                                                        except Exception as tx_check_err:
-                                                            print(f"   ❌ Erro ao verificar transação {txid[:16]}...: {tx_check_err}")
-                                                            # NÃO continuar se houver erro na verificação - é muito arriscado
-                                                            continue
-                                                        
-                                                        utxos.append({
-                                                            'txid': txid,
-                                                            'vout': vout,
-                                                            'output_n': vout,  # Mesmo valor que vout
-                                                            'value': value,    # Garantido como int
-                                                            'address': from_address,
-                                                            'confirmed': True,
-                                                            'spent': False
-                                                        })
-                                                        print(f"      ✅ UTXO adicionado: {txid[:16]}...:{vout} = {value} satoshis")
-                                                    except (ValueError, TypeError) as conv_err:
-                                                        print(f"   ⚠️  Erro ao processar UTXO: {conv_err}")
-                                                        print(f"      UTXO: {bs_utxo}")
+                                                    # ✅ BlockCypher já retorna apenas UTXOs não gastos se unspentOnly=true
+                                                    if spent:
+                                                        print(f"      ⚠️  UTXO {txid[:16]}...:{output_n} marcado como gasto, pulando...")
                                                         continue
+                                                    
+                                                    if not txid or value <= 0:
+                                                        print(f"      ⚠️  UTXO inválido ignorado: txid={txid}, value={value}")
+                                                        continue
+                                                    
+                                                    utxos.append({
+                                                        'txid': txid,
+                                                        'vout': output_n,
+                                                        'output_n': output_n,
+                                                        'value': int(value),
+                                                        'address': from_address,
+                                                        'confirmed': True,
+                                                        'spent': False,
+                                                        'source': 'blockcypher'
+                                                    })
+                                                    print(f"      ✅ UTXO BlockCypher: {txid[:16]}...:{output_n} = {value} satoshis")
+                                                except Exception as txref_err:
+                                                    print(f"      ⚠️  Erro ao processar UTXO BlockCypher: {txref_err}")
+                                                    continue
                                             
-                                                if utxos:
-                                                    # ✅ ORDENAR UTXOs: Usar sempre o MAIS RECENTE primeiro
-                                                    # Ordenar por confirmações (mais confirmações = mais antigo, mas mais seguro)
-                                                    # Mas preferir UTXOs com valor suficiente
-                                                    def sort_utxos(utxo):
-                                                        # Priorizar UTXOs com valor suficiente para a transação
-                                                        value = utxo.get('value', 0)
-                                                        if value >= amount_satoshis + 500:  # Valor suficiente
-                                                            return (0, -value)  # Prioridade alta, maior valor primeiro
-                                                        else:
-                                                            return (1, -value)  # Prioridade baixa, maior valor primeiro
-                                                    
-                                                    utxos.sort(key=sort_utxos)
-                                                    print(f"   📊 UTXOs ordenados: usando o mais adequado primeiro")
-                                                    
-                                                    # ✅ DEBUG: Logar UTXOs encontrados
-                                                    total_value = self._debug_print_utxos(utxos, "UTXOs da Blockstream API")
-                                                    print(f"✅ {len(utxos)} UTXOs válidos encontrados via Blockstream API!")
-                                                    print(f"   💰 Valor total: {total_value / 100000000:.8f} BTC")
-                                                    print(f"   🎯 UTXO selecionado (primeiro): {utxos[0].get('txid', 'N/A')[:16]}...:{utxos[0].get('vout', 'N/A')} = {utxos[0].get('value', 0)} sats")
-                                                    add_log("blockstream_utxos_fetched", {"count": len(utxos), "total_sats": total_value}, "info")
-                                                else:
-                                                    print(f"⚠️  Nenhum UTXO válido após processamento")
-                                                    add_log("blockstream_no_valid_utxos", {"address": from_address}, "warning")
-                                            else:
-                                                print(f"⚠️  Blockstream retornou lista vazia de UTXOs")
-                                                add_log("blockstream_no_utxos", {"address": from_address}, "warning")
+                                            if utxos:
+                                                total_value = sum(utxo.get('value', 0) for utxo in utxos)
+                                                print(f"✅ {len(utxos)} UTXOs válidos encontrados via BlockCypher API!")
+                                                print(f"   💰 Valor total: {total_value / 100000000:.8f} BTC")
+                                                add_log("blockcypher_utxos_fetched", {"count": len(utxos), "total_sats": total_value}, "info")
                                         else:
-                                            print(f"⚠️  Blockstream API retornou status {utxos_response.status_code}: {utxos_response.text[:200]}")
-                                            add_log("blockstream_api_error", {"status": utxos_response.status_code, "error": utxos_response.text[:200]}, "error")
-                                    except Exception as bs_err:
+                                            print(f"⚠️  BlockCypher API retornou status {addr_response.status_code}: {addr_response.text[:200]}")
+                                            add_log("blockcypher_api_error", {"status": addr_response.status_code, "error": addr_response.text[:200]}, "warning")
+                                    except Exception as bc_err:
+                                        print(f"⚠️  Erro ao buscar UTXOs da BlockCypher: {bc_err}")
+                                        import traceback
+                                        traceback.print_exc()
+                                        add_log("blockcypher_fetch_error", {"error": str(bc_err)}, "error")
+                                
+                                # ✅ FALLBACK: Se BlockCypher não retornou UTXOs, tentar Blockstream
+                                # ✅ CORREÇÃO CRÍTICA: Usar APENAS UTXOs confirmados (ignorar pendentes no mempool)
+                                if not utxos or len(utxos) == 0:
+                                    print(f"🔄 BlockCypher não retornou UTXOs, tentando Blockstream API para {from_address}...")
+                                    print(f"   ⚠️  IMPORTANTE: Usando apenas UTXOs CONFIRMADOS (ignorando pendentes no mempool)")
+                                    # Usar método que filtra apenas UTXOs confirmados
+                                    utxos = self._fetch_confirmed_utxos_only(from_address)
+                                    
+                                    # Se ainda não encontrou, tentar método antigo como fallback
+                                    if not utxos or len(utxos) == 0:
+                                        try:
+                                            utxos_url = f"https://blockstream.info/testnet/api/address/{from_address}/utxo"
+                                            print(f"   📡 URL: {utxos_url}")
+                                            utxos_response = requests.get(utxos_url, timeout=15)
+                                            print(f"   📊 Status: {utxos_response.status_code}")
+                                            
+                                            if utxos_response.status_code == 200:
+                                                blockstream_utxos = utxos_response.json()
+                                                print(f"   📦 Resposta JSON: {len(blockstream_utxos) if blockstream_utxos else 0} UTXOs")
+                                                
+                                                if blockstream_utxos:
+                                                    # ✅ CORREÇÃO: Converter formato Blockstream para formato esperado
+                                                    # Garantir que value e vout são sempre inteiros
+                                                    # ✅ CRÍTICO: Verificar se UTXO não foi gasto e se output existe
+                                                    utxos = []
+                                                    for bs_utxo in blockstream_utxos:
+                                                        try:
+                                                            txid = bs_utxo.get('txid')
+                                                            vout = int(bs_utxo.get('vout', 0))
+                                                            value = int(bs_utxo.get('value', 0))
+                                                        
+                                                            if not txid or value <= 0:
+                                                                print(f"   ⚠️  UTXO inválido ignorado: txid={txid}, value={value}")
+                                                                continue
+                                                            
+                                                            # ✅ VALIDAÇÃO CRÍTICA: Verificar se o output realmente existe e não foi gasto
+                                                            # Esta verificação é OBRIGATÓRIA para evitar usar UTXOs gastos
+                                                            try:
+                                                                print(f"      🔍 Verificando UTXO {txid[:16]}...:{vout}...")
+                                                                tx_url = f"https://blockstream.info/testnet/api/tx/{txid}"
+                                                                tx_response = requests.get(tx_url, timeout=10)
+                                                                if tx_response.status_code == 200:
+                                                                    tx_data = tx_response.json()
+                                                                    vouts = tx_data.get('vout', [])
+                                                                    
+                                                                    # Verificar se o output existe
+                                                                    if vout >= len(vouts):
+                                                                        print(f"   ❌ Output {vout} não existe na transação {txid[:16]}... (tem apenas {len(vouts)} outputs)")
+                                                                        continue
+                                                                    
+                                                                    vout_data = vouts[vout]
+                                                                    
+                                                                    # ✅ CRÍTICO: Verificar se o output foi gasto
+                                                                    spent = vout_data.get('spent', False)
+                                                                    spent_txid = vout_data.get('spent_txid')
+                                                                    
+                                                                    if spent:
+                                                                        print(f"   ❌ Output {vout} já foi gasto na transação {txid[:16]}... (gasto em: {spent_txid[:16] if spent_txid else 'N/A'}...)")
+                                                                        continue
+                                                                    
+                                                                    # Verificar se o valor corresponde
+                                                                    vout_value = vout_data.get('value', 0)
+                                                                    if vout_value != value:
+                                                                        print(f"   ⚠️  Valor do output {vout} não corresponde: esperado {value}, encontrado {vout_value}, usando valor real")
+                                                                        # Usar o valor real do output
+                                                                        value = vout_value
+                                                                    
+                                                                    # ✅ VERIFICAÇÃO ADICIONAL: Verificar se o output está realmente disponível
+                                                                    # Verificar status da transação
+                                                                    tx_status = tx_data.get('status', {})
+                                                                    if isinstance(tx_status, dict):
+                                                                        confirmed = tx_status.get('confirmed', False)
+                                                                        if not confirmed:
+                                                                            print(f"   ⚠️  Transação {txid[:16]}... não está confirmada, pulando...")
+                                                                            continue
+                                                                    
+                                                                    print(f"      ✅ UTXO verificado e válido: {txid[:16]}...:{vout} = {value} satoshis (não gasto, confirmado)")
+                                                                else:
+                                                                    print(f"   ❌ Não foi possível verificar transação {txid[:16]}... (status: {tx_response.status_code})")
+                                                                    # NÃO continuar se não conseguir verificar - é muito arriscado
+                                                                    continue
+                                                            except Exception as tx_check_err:
+                                                                print(f"   ❌ Erro ao verificar transação {txid[:16]}...: {tx_check_err}")
+                                                                # NÃO continuar se houver erro na verificação - é muito arriscado
+                                                                continue
+                                                            
+                                                            utxos.append({
+                                                                'txid': txid,
+                                                                'vout': vout,
+                                                                'output_n': vout,  # Mesmo valor que vout
+                                                                'value': value,    # Garantido como int
+                                                                'address': from_address,
+                                                                'confirmed': True,
+                                                                'spent': False
+                                                            })
+                                                            print(f"      ✅ UTXO adicionado: {txid[:16]}...:{vout} = {value} satoshis")
+                                                        except (ValueError, TypeError) as conv_err:
+                                                            print(f"   ⚠️  Erro ao processar UTXO: {conv_err}")
+                                                            print(f"      UTXO: {bs_utxo}")
+                                                            continue
+                                            
+                                                    if utxos:
+                                                        # ✅ ORDENAR UTXOs: Usar sempre o MAIS RECENTE primeiro
+                                                        # Ordenar por confirmações (mais confirmações = mais antigo, mas mais seguro)
+                                                        # Mas preferir UTXOs com valor suficiente
+                                                        def sort_utxos(utxo):
+                                                            # Priorizar UTXOs com valor suficiente para a transação
+                                                            value = utxo.get('value', 0)
+                                                            if value >= amount_satoshis + 500:  # Valor suficiente
+                                                                return (0, -value)  # Prioridade alta, maior valor primeiro
+                                                            else:
+                                                                return (1, -value)  # Prioridade baixa, maior valor primeiro
+                                                        
+                                                        utxos.sort(key=sort_utxos)
+                                                        print(f"   📊 UTXOs ordenados: usando o mais adequado primeiro")
+                                                        
+                                                        # ✅ DEBUG: Logar UTXOs encontrados
+                                                        total_value = self._debug_print_utxos(utxos, "UTXOs da Blockstream API")
+                                                        print(f"✅ {len(utxos)} UTXOs válidos encontrados via Blockstream API!")
+                                                        print(f"   💰 Valor total: {total_value / 100000000:.8f} BTC")
+                                                        print(f"   🎯 UTXO selecionado (primeiro): {utxos[0].get('txid', 'N/A')[:16]}...:{utxos[0].get('vout', 'N/A')} = {utxos[0].get('value', 0)} sats")
+                                                        add_log("blockstream_utxos_fetched", {"count": len(utxos), "total_sats": total_value}, "info")
+                                                    else:
+                                                        print(f"⚠️  Nenhum UTXO válido após processamento")
+                                                        add_log("blockstream_no_valid_utxos", {"address": from_address}, "warning")
+                                                else:
+                                                    print(f"⚠️  Blockstream retornou lista vazia de UTXOs")
+                                                    add_log("blockstream_no_utxos", {"address": from_address}, "warning")
+                                            else:
+                                                print(f"⚠️  Blockstream API retornou status {utxos_response.status_code}: {utxos_response.text[:200]}")
+                                                add_log("blockstream_api_error", {"status": utxos_response.status_code, "error": utxos_response.text[:200]}, "error")
+                                        except Exception as bs_err:
                                             print(f"⚠️  Erro ao buscar UTXOs da Blockstream: {bs_err}")
                                             import traceback
                                             traceback.print_exc()

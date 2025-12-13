@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>{{ t('interoperability') or 'Interoperability - Allianza Testnet' }}</title>
-    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <title>🌉 {{ t('interoperability') or 'Interoperability - Allianza Testnet' }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -488,58 +486,12 @@
                 return;
             }
             
-            // ✅ CONSTRUIR TEXTO COMPLETO: Incluir campos formatados + JSON completo
-            let textToCopy = '';
-            
-            // Adicionar cabeçalho
-            textToCopy += '✅ transfer_created_success\n\n';
-            
-            // Adicionar campos individuais formatados
-            if (resultToCopy.uchain_id) {
-                textToCopy += `UChainID: ${resultToCopy.uchain_id} 📋 Copy\n\n`;
-            }
-            
-            if (resultToCopy.has_zk_proof && resultToCopy.proof_id) {
-                textToCopy += `✅ ZK Proof: Yes (Proof ID: ${resultToCopy.proof_id} 📋 Copy)\n\n`;
-            } else if (resultToCopy.has_zk_proof) {
-                textToCopy += `✅ ZK Proof: Yes\n\n`;
-            }
-            
-            if (resultToCopy.commitment_id) {
-                textToCopy += `Commitment ID: ${resultToCopy.commitment_id} 📋 Copy\n\n`;
-            }
-            
-            if (resultToCopy.state_id) {
-                textToCopy += `State ID: ${resultToCopy.state_id} 📋 Copy\n\n`;
-            }
-            
-            if (resultToCopy.transfer_id) {
-                textToCopy += `Transfer ID: ${resultToCopy.transfer_id} 📋 Copy\n\n`;
-            }
-            
-            if (resultToCopy.memo && resultToCopy.memo.zk_proof && resultToCopy.memo.zk_proof.state_hash) {
-                textToCopy += `State Hash: ${resultToCopy.memo.zk_proof.state_hash} 📋 Copy\n\n`;
-            }
-            
-            if (resultToCopy.tx_hash) {
-                textToCopy += `TX Hash: ${resultToCopy.tx_hash} 📋 Copy\n\n`;
-            }
-            
-            if (resultToCopy.real_transaction && resultToCopy.real_transaction.tx_hash) {
-                textToCopy += `Real TX Hash: ${resultToCopy.real_transaction.tx_hash} 📋 Copy\n\n`;
-            }
-            
-            // Adicionar linha separadora
-            textToCopy += '\n';
-            
-            // ✅ GARANTIR: Adicionar o objeto JSON COMPLETO, incluindo todas as propriedades
+            // ✅ GARANTIR: Copiar o objeto COMPLETO, incluindo todas as propriedades
             // Usar JSON.stringify com replacer para garantir que tudo seja incluído
-            const jsonText = JSON.stringify(resultToCopy, (key, value) => {
+            const textToCopy = JSON.stringify(resultToCopy, (key, value) => {
                 // Incluir todas as propriedades, mesmo undefined/null
                 return value;
             }, 2);
-            
-            textToCopy += jsonText;
             
             navigator.clipboard.writeText(textToCopy).then(() => {
                 const button = document.getElementById('copyAllTransferBtn');
