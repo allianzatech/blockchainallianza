@@ -4145,12 +4145,25 @@ class RealCrossChainBridge:
                             
                             if balance_resp.status_code == 200:
                                 balance_data = balance_resp.json()
-                                funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
-                                spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
-                                balance_sats = funded - spent
-                                balance_btc = balance_sats / 100000000
                                 
-                                print(f"   ✅ Saldo encontrado: {balance_btc:.8f} BTC ({balance_sats} sats)")
+                                # ✅ CRÍTICO: Somar saldo confirmado + não confirmado (mempool)
+                                # chain_stats = saldo confirmado na blockchain
+                                chain_funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
+                                chain_spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
+                                chain_balance_sats = chain_funded - chain_spent
+                                
+                                # mempool_stats = saldo não confirmado (na mempool)
+                                mempool_funded = balance_data.get('mempool_stats', {}).get('funded_txo_sum', 0)
+                                mempool_spent = balance_data.get('mempool_stats', {}).get('spent_txo_sum', 0)
+                                mempool_balance_sats = mempool_funded - mempool_spent
+                                
+                                # Saldo total = confirmado + não confirmado
+                                total_balance_sats = chain_balance_sats + mempool_balance_sats
+                                balance_btc = total_balance_sats / 100000000
+                                
+                                print(f"   ✅ Saldo confirmado: {chain_balance_sats / 100000000:.8f} BTC ({chain_balance_sats} sats)")
+                                print(f"   ⏳ Saldo não confirmado: {mempool_balance_sats / 100000000:.8f} BTC ({mempool_balance_sats} sats)")
+                                print(f"   📊 Saldo TOTAL encontrado: {balance_btc:.8f} BTC ({total_balance_sats} sats)")
                                 from_address = address_to_check
                                 
                                 # 2. Buscar UTXOs
