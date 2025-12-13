@@ -4342,10 +4342,10 @@ class RealCrossChainBridge:
                                         balance_btc = balance_satoshis / 100000000
                                         print(f"   🔍 CHECK BALANCE: funded={funded}, spent={spent}, balance={balance_satoshis} sats ({balance_btc:.8f} BTC)")
                                         print(f"✅ Saldo do endereço esperado: {balance_btc} BTC")
+                                except Exception as balance_error:
+                                    print(f"⚠️  Erro ao verificar saldo: {balance_error}")
                             else:
                                 print(f"   ✅✅✅ Usando saldo da busca forçada: {balance_btc} BTC (NÃO sobrescrever!)")
-                            except Exception as balance_error:
-                                print(f"⚠️  Erro ao verificar saldo: {balance_error}")
                         else:
                             # Usar o primeiro tipo como padrão
                             wallet = Wallet.create(
