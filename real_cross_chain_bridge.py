@@ -3119,38 +3119,55 @@ class RealCrossChainBridge:
             import traceback
             traceback.print_exc()
         
-        # Fallback final: tentar derivar endereço novamente ou usar do .env
+        # Fallback final: tentar derivar endereço novamente
         if not from_address or not wif_valid:
-            # ✅ CORREÇÃO: Sempre derivar endereço da chave privada, nunca usar hardcoded
+            # ✅ CORREÇÃO CRÍTICA: Sempre derivar endereço da chave privada, NUNCA usar endereço do .env se a chave não corresponder
             print(f"   ⚠️  Tentando derivar endereço da chave privada novamente...")
             try:
                 from bitcoinlib.keys import HDKey, Key
                 # Tentar como HDKey primeiro
                 try:
                     key_obj = HDKey(from_private_key, network='testnet')
-                    from_address = key_obj.address()
+                    derived_address = key_obj.address()
                     wif_valid = True
-                    print(f"   ✅ Endereço derivado via HDKey: {from_address}")
+                    print(f"   ✅ Endereço derivado via HDKey: {derived_address}")
+                    
+                    # ✅ VALIDAÇÃO CRÍTICA: Verificar se o endereço derivado corresponde ao do .env
+                    env_address = os.getenv('BITCOIN_TESTNET_ADDRESS') or os.getenv('BITCOIN_ADDRESS') or os.getenv('BTC_ADDRESS')
+                    if env_address and env_address != derived_address:
+                        print(f"   ⚠️  AVISO CRÍTICO: Endereço derivado ({derived_address}) NÃO corresponde ao do .env ({env_address})!")
+                        print(f"   ⚠️  Isso significa que a chave privada NÃO corresponde ao endereço configurado!")
+                        print(f"   ⚠️  Usando endereço derivado da chave (não o do .env) para evitar erro de assinatura!")
+                        print(f"   💡 SOLUÇÃO: Atualize BITCOIN_PRIVATE_KEY no Render para a chave que gera {env_address}")
+                    
+                    from_address = derived_address
                 except:
                     # Tentar como Key simples
                     key_obj = Key(from_private_key, network='testnet')
-                    from_address = key_obj.address()
+                    derived_address = key_obj.address()
                     wif_valid = True
-                    print(f"   ✅ Endereço derivado via Key: {from_address}")
+                    print(f"   ✅ Endereço derivado via Key: {derived_address}")
+                    
+                    # ✅ VALIDAÇÃO CRÍTICA: Verificar se o endereço derivado corresponde ao do .env
+                    env_address = os.getenv('BITCOIN_TESTNET_ADDRESS') or os.getenv('BITCOIN_ADDRESS') or os.getenv('BTC_ADDRESS')
+                    if env_address and env_address != derived_address:
+                        print(f"   ⚠️  AVISO CRÍTICO: Endereço derivado ({derived_address}) NÃO corresponde ao do .env ({env_address})!")
+                        print(f"   ⚠️  Isso significa que a chave privada NÃO corresponde ao endereço configurado!")
+                        print(f"   ⚠️  Usando endereço derivado da chave (não o do .env) para evitar erro de assinatura!")
+                        print(f"   💡 SOLUÇÃO: Atualize BITCOIN_PRIVATE_KEY no Render para a chave que gera {env_address}")
+                    
+                    from_address = derived_address
             except Exception as deriv_err:
                 print(f"   ❌ Erro ao derivar endereço: {deriv_err}")
-                # Último recurso: usar do .env (mas nunca hardcoded)
-                env_address = os.getenv('BITCOIN_TESTNET_ADDRESS') or os.getenv('BITCOIN_ADDRESS') or os.getenv('BTC_ADDRESS')
-                if env_address:
-                    from_address = env_address
-                    print(f"   ⚠️  Usando endereço do .env: {from_address}")
-                else:
-                    return {
-                        "success": False,
-                        "error": f"Não foi possível derivar endereço da chave privada e nenhum endereço configurado no .env",
-                        "note": "Configure BITCOIN_TESTNET_ADDRESS no .env OU use uma chave privada WIF válida",
-                        "key_format": "WIF" if from_private_key.startswith(('c', '9', '5', 'K', 'L')) else "HEX" if len(from_private_key) == 64 or from_private_key.startswith('0x') else "UNKNOWN"
-                    }
+                import traceback
+                traceback.print_exc()
+                return {
+                    "success": False,
+                    "error": f"Não foi possível derivar endereço da chave privada: {str(deriv_err)}",
+                    "note": "A chave privada deve estar em formato WIF válido e corresponder ao endereço configurado",
+                    "key_format": "WIF" if from_private_key.startswith(('c', '9', '5', 'K', 'L')) else "HEX" if len(from_private_key) == 64 or from_private_key.startswith('0x') else "UNKNOWN",
+                    "key_preview": from_private_key[:20] + "..." if len(from_private_key) > 20 else from_private_key
+                }
         
         # 2. Buscar UTXOs via Blockstream
         print(f"\n2. 🔍 Buscando UTXOs confirmados...")
