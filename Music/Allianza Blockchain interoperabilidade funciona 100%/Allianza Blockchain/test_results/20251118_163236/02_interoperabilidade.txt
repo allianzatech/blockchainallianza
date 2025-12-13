@@ -1,0 +1,175 @@
+C:\Users\notebook\AppData\Local\Programs\Python\Python313\Lib\site-packages\web3\__init__.py:2: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+
+======================================================================
+  🔗 CONFIGURAÇÃO DE CONEXÕES REAIS
+======================================================================
+[2025-11-18 16:32:39] 
+======================================================================
+[2025-11-18 16:32:39]   🔗 CONFIGURAÇÃO DE CONEXÕES REAIS
+[2025-11-18 16:32:39] ======================================================================
+[2025-11-18 16:32:40] ✅ Ethereum Sepolia: Conectado
+[2025-11-18 16:32:40]    Block atual: 9657103
+[2025-11-18 16:32:40] ✅ Polygon Amoy: Conectado
+[2025-11-18 16:32:41]    Block atual: 29218203
+[2025-11-18 16:32:41] ✅ Bitcoin Testnet: BlockCypher API configurada
+[2025-11-18 16:32:41] ✅ Solana Testnet: RPC configurado (https://api.testnet.solana.com...)
+
+======================================================================
+  ₿ PROVA 1: VALIDAÇÃO BITCOIN REAL (UTXO/ECDSA)
+======================================================================
+[2025-11-18 16:32:41] 
+======================================================================
+[2025-11-18 16:32:41]   ₿ PROVA 1: VALIDAÇÃO BITCOIN REAL (UTXO/ECDSA)
+[2025-11-18 16:32:41] ======================================================================
+[2025-11-18 16:32:41] 
+📡 Buscando transação REAL do Bitcoin Testnet...
+[2025-11-18 16:32:41] ✅ Transação REAL encontrada: dc33e66c848b1152c1949da3d9fc2b6d58907b7a8770575a72753d8d56af8a9b
+[2025-11-18 16:32:41]    Confirmations: 0
+[2025-11-18 16:32:41]    Block height: -1
+[2025-11-18 16:32:41] 
+🔐 Validando com Universal Signature Validator...
+🔐 UNIVERSAL SIGNATURE VALIDATOR: Inicializado!
+✅ Bitcoin (ECDSA secp256k1)
+✅ Ethereum (ECDSA EVM)
+✅ Solana (Ed25519)
+✅ BSC/Polygon/Base (ECDSA EVM)
+🔐 UNIVERSAL SIGNATURE VALIDATOR: Inicializado!
+✅ Bitcoin (ECDSA secp256k1)
+✅ Ethereum (ECDSA EVM)
+✅ Solana (Ed25519)
+✅ BSC/Polygon/Base (ECDSA EVM)
+[2025-11-18 16:32:42] 
+📊 RESULTADO DA VALIDAÇÃO REAL:
+[2025-11-18 16:32:42]    Hash da transação: dc33e66c848b1152c1949da3d9fc2b6d58907b7a8770575a72753d8d56af8a9b
+[2025-11-18 16:32:42]    Válida: True
+[2025-11-18 16:32:42]    Chain: bitcoin
+[2025-11-18 16:32:42]    Algorithm: N/A
+[2025-11-18 16:32:42]    Message: N/A
+[2025-11-18 16:32:42] 
+✅✅✅ PROVA REAL: Bitcoin validado com sucesso!
+[2025-11-18 16:32:42]    → Transação REAL consultada na blockchain
+[2025-11-18 16:32:42]    → Validação REAL realizada
+[2025-11-18 16:32:42]    → Sem bridges, sem wrapped tokens
+[2025-11-18 16:32:42] 
+💾 Prova salva em: proofs\pilar_1_interoperabilidade\bitcoin_validation_proof.json
+[2025-11-18 16:32:42] 🔗 Verificar no explorer: https://live.blockcypher.com/btc-testnet/tx/dc33e66c848b1152c1949da3d9fc2b6d58907b7a8770575a72753d8d56af8a9b/
+
+======================================================================
+  🔷 PROVA 2: VALIDAÇÃO ETHEREUM REAL (ECDSA EVM)
+======================================================================
+[2025-11-18 16:32:42] 
+======================================================================
+[2025-11-18 16:32:42]   🔷 PROVA 2: VALIDAÇÃO ETHEREUM REAL (ECDSA EVM)
+[2025-11-18 16:32:42] ======================================================================
+[2025-11-18 16:32:42] 
+📡 Buscando transação REAL do Ethereum Sepolia...
+[2025-11-18 16:32:42] ✅ Block atual: 9657103
+[2025-11-18 16:32:42] ✅ Transação REAL encontrada: 77ab3db297d98db2114826e6c31b1b610f2fb4df5c772bd68ec783647f59d485
+[2025-11-18 16:32:42]    From: 0x2ceA8A0bE84DA475C67adE106093FbD72fCCB6B6
+[2025-11-18 16:32:42]    To: 0x9Ff880Cec05Bc6fEe49D9e5Dac5617a0071ABe7A
+[2025-11-18 16:32:42]    Value: 0.0165 ETH
+[2025-11-18 16:32:42]    Block: 9657103
+[2025-11-18 16:32:42] 
+🔐 Validando com Universal Signature Validator...
+🔐 UNIVERSAL SIGNATURE VALIDATOR: Inicializado!
+✅ Bitcoin (ECDSA secp256k1)
+✅ Ethereum (ECDSA EVM)
+✅ Solana (Ed25519)
+✅ BSC/Polygon/Base (ECDSA EVM)
+[2025-11-18 16:32:43] 
+📊 RESULTADO DA VALIDAÇÃO REAL:
+[2025-11-18 16:32:43]    Hash da transação: 77ab3db297d98db2114826e6c31b1b610f2fb4df5c772bd68ec783647f59d485
+[2025-11-18 16:32:43]    Válida: True
+[2025-11-18 16:32:43]    Chain: ethereum
+[2025-11-18 16:32:43]    Algorithm: ECDSA EVM
+[2025-11-18 16:32:43]    Signer: 0x2ceA8A0bE84DA475C67adE106093FbD72fCCB6B6
+[2025-11-18 16:32:43]    Message: ✅ Assinatura ethereum validada - Consulta blockchain REAL via Web3.py
+[2025-11-18 16:32:43] 
+✅✅✅ PROVA REAL: Ethereum validado com sucesso!
+[2025-11-18 16:32:43]    → Transação REAL consultada na blockchain
+[2025-11-18 16:32:43]    → Validação REAL realizada
+[2025-11-18 16:32:43]    → Sem bridges, sem wrapped tokens
+[2025-11-18 16:32:43] 
+💾 Prova salva em: proofs\pilar_1_interoperabilidade\ethereum_validation_proof.json
+[2025-11-18 16:32:43] 🔗 Verificar no explorer: https://sepolia.etherscan.io/tx/77ab3db297d98db2114826e6c31b1b610f2fb4df5c772bd68ec783647f59d485
+
+======================================================================
+  🔷 PROVA 3: VALIDAÇÃO POLYGON REAL (ECDSA EVM)
+======================================================================
+[2025-11-18 16:32:43] 
+======================================================================
+[2025-11-18 16:32:43]   🔷 PROVA 3: VALIDAÇÃO POLYGON REAL (ECDSA EVM)
+[2025-11-18 16:32:43] ======================================================================
+[2025-11-18 16:32:43] 
+📡 Buscando transação REAL do Polygon Amoy...
+[2025-11-18 16:32:43]    Buscando em 20 blocks recentes...
+[2025-11-18 16:32:43]    Verificando block 29218204...
+[2025-11-18 16:32:44]    ✅ Transação encontrada no block 29218204!
+[2025-11-18 16:32:44] ✅ Transação REAL encontrada: 82ae909a253ae8a2f6ee0e0152a61348d39c11111c37da86550c31b879eec9b9
+[2025-11-18 16:32:44]    From: 0x6a29aeb50989654d3bf5fd549BfFb7cFe2643AdB
+[2025-11-18 16:32:44]    To: 0x368AA2F27b0C8289be88bfC53FA8002A9e22f848
+[2025-11-18 16:32:44]    Value: 0 MATIC
+[2025-11-18 16:32:44]    Block: 29218204
+[2025-11-18 16:32:44] 
+🔐 Validando com Universal Signature Validator...
+🔐 UNIVERSAL SIGNATURE VALIDATOR: Inicializado!
+✅ Bitcoin (ECDSA secp256k1)
+✅ Ethereum (ECDSA EVM)
+✅ Solana (Ed25519)
+✅ BSC/Polygon/Base (ECDSA EVM)
+[2025-11-18 16:32:44] 
+📊 RESULTADO DA VALIDAÇÃO REAL:
+[2025-11-18 16:32:44]    Hash da transação: 82ae909a253ae8a2f6ee0e0152a61348d39c11111c37da86550c31b879eec9b9
+[2025-11-18 16:32:44]    Válida: True
+[2025-11-18 16:32:44]    Chain: polygon
+[2025-11-18 16:32:44]    Algorithm: ECDSA EVM
+[2025-11-18 16:32:44]    Signer: 0x6a29aeb50989654d3bf5fd549BfFb7cFe2643AdB
+[2025-11-18 16:32:44]    Message: ✅ Assinatura polygon validada - Consulta blockchain REAL via Web3.py
+[2025-11-18 16:32:44] 
+✅✅✅ PROVA REAL: Polygon validado com sucesso!
+[2025-11-18 16:32:44]    → Transação REAL consultada na blockchain
+[2025-11-18 16:32:45]    → Validação REAL realizada
+[2025-11-18 16:32:45]    → Sem bridges, sem wrapped tokens
+[2025-11-18 16:32:45] 
+💾 Prova salva em: proofs\pilar_1_interoperabilidade\polygon_validation_proof.json
+[2025-11-18 16:32:45] 🔗 Verificar no explorer: https://amoy.polygonscan.com/tx/82ae909a253ae8a2f6ee0e0152a61348d39c11111c37da86550c31b879eec9b9
+
+======================================================================
+  📊 RESUMO FINAL - PROVA DE INTEROPERABILIDADE REAL
+======================================================================
+[2025-11-18 16:32:45] 
+======================================================================
+[2025-11-18 16:32:45]   📊 RESUMO FINAL - PROVA DE INTEROPERABILIDADE REAL
+[2025-11-18 16:32:45] ======================================================================
+[2025-11-18 16:32:45] 
+✅ PROVAS GERADAS:
+[2025-11-18 16:32:45]    1. Bitcoin Real Transaction Validation
+[2025-11-18 16:32:45]    2. Ethereum Real Transaction Validation
+[2025-11-18 16:32:45]    3. Polygon Real Transaction Validation
+[2025-11-18 16:32:45] 
+📁 ARQUIVOS GERADOS:
+[2025-11-18 16:32:45]    • Log completo: proofs\pilar_1_interoperabilidade\PROVA_INTEROPERABILIDADE_REAL_20251118_163239.log
+[2025-11-18 16:32:45]    • Bitcoin proof: proofs\pilar_1_interoperabilidade\bitcoin_validation_proof.json
+[2025-11-18 16:32:45]    • Ethereum proof: proofs\pilar_1_interoperabilidade\ethereum_validation_proof.json
+[2025-11-18 16:32:45]    • Polygon proof: proofs\pilar_1_interoperabilidade\polygon_validation_proof.json
+[2025-11-18 16:32:45] 
+🔗 EXPLORERS PARA VERIFICAÇÃO:
+[2025-11-18 16:32:45]    • Bitcoin: https://live.blockcypher.com/btc-testnet/
+[2025-11-18 16:32:45]    • Ethereum: https://sepolia.etherscan.io/
+[2025-11-18 16:32:45]    • Polygon: https://amoy.polygonscan.com/
+[2025-11-18 16:32:45] 
+✅ PROVA COMPLETA:
+[2025-11-18 16:32:45]    → Transações REAIS consultadas
+[2025-11-18 16:32:45]    → Validação REAL realizada
+[2025-11-18 16:32:45]    → Sem bridges, sem wrapped tokens
+[2025-11-18 16:32:45]    → Interoperabilidade Universal FUNCIONANDO!
+
+======================================================================
+  ✅ PROVA DO PILAR 1 COMPLETA!
+======================================================================
+
+📄 Log completo: proofs\pilar_1_interoperabilidade\PROVA_INTEROPERABILIDADE_REAL_20251118_163239.log
+📂 Diretório: proofs\pilar_1_interoperabilidade
+
+✅ Use este log para provar interoperabilidade REAL!

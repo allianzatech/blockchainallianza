@@ -1,0 +1,28 @@
+# CODEOWNERS - Define code owners for different parts of the repository
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Core blockchain implementation
+/core/ @allianzatech/allianza-team
+/core/consensus/ @allianzatech/allianza-team
+/core/crypto/ @allianzatech/allianza-team
+/core/interoperability/ @allianzatech/allianza-team
+
+# Smart contracts
+/contracts/ @allianzatech/allianza-team
+
+# Public tests
+/tests/public/ @allianzatech/allianza-team
+
+# Documentation
+/docs/ @allianzatech/allianza-team
+*.md @allianzatech/allianza-team
+
+# Configuration files
+/.github/ @allianzatech/allianza-team
+/requirements.txt @allianzatech/allianza-team
+/package.json @allianzatech/allianza-team
+
+# Security-related
+/SECURITY.md @allianzatech/allianza-team
+/.gitignore @allianzatech/allianza-team
+

@@ -1,0 +1,12 @@
+{
+  "block_header": {
+    "hash": "0xblock123",
+    "number": 12345,
+    "timestamp": 1764070400
+  },
+  "confirmations": 12,
+  "consensus_type": "pos",
+  "finality_proof": null,
+  "merkle_root": "merkle_root_abc123",
+  "validator_signatures": null
+}

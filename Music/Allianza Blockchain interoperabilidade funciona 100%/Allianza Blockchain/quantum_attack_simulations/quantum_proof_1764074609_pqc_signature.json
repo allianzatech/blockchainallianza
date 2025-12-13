@@ -1,0 +1,8 @@
+{
+  "algorithm": "ML-DSA-128",
+  "note": "Signature structure may vary",
+  "public_key": null,
+  "signature": "unknown",
+  "signed_hash": "f3d0ecb8914756e98907cbbfb2a84f763bb49bebd74c8553065550f81eb5ef48",
+  "timestamp": "2025-11-25T12:43:29.382674Z"
+}

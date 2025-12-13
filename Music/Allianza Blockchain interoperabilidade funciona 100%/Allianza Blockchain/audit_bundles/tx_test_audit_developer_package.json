@@ -1,0 +1,28 @@
+{
+  "bundle_directory": "proof_bundles",
+  "bundle_id": "tx_test_audit",
+  "contents": {
+    "documentation": "PROOF_BUNDLE_SPEC.md",
+    "examples": "examples/",
+    "proof_bundle": "proof_bundles/tx_test_audit_*",
+    "verification_script": "verify_bundle.py"
+  },
+  "generated_at": "2025-11-25T11:33:21.022510Z",
+  "package_id": "dev_package_tx_test_audit",
+  "support": {
+    "api_reference": "https://api.allianza-blockchain.com/docs",
+    "contact": "support@allianza-blockchain.com",
+    "documentation": "https://github.com/allianza-blockchain/docs"
+  },
+  "technical_specs": {
+    "encoding": "UTF-8",
+    "hash_algorithm": "SHA-256",
+    "json_format": "Canonical (sort_keys=True)",
+    "signature_algorithm": "ML-DSA-128 (FIPS 204)"
+  },
+  "verification_instructions": {
+    "api_integration": "Use ProofBundleGenerator.verify_bundle() method",
+    "manual_verification": "See PROOF_BUNDLE_SPEC.md for detailed steps",
+    "quick_start": "Run: python verify_bundle.py --bundle-dir <dir> --bundle-id <id>"
+  }
+}

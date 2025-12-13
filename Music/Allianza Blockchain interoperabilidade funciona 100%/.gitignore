@@ -1,0 +1,69 @@
+# Ignorar tudo exceto o diretório do projeto
+/*
+!/Allianza Blockchain/
+!.gitignore
+
+# Ignorar arquivos do sistema
+AppData/
+Downloads/
+.vscode/
+.cursor/
+.rustup/
+.cargo/
+.bitcoinlib/
+.ssh/
+.env
+.gitconfig
+*.log
+node_modules/
+NTUSER.*
+ntuser.*
+desktop.ini
+Favorites/
+Links/
+OneDrive/
+Pictures/
+Videos/
+Saved Games/
+Searches/
+Contacts/
+Desktop/
+Documents/
+Music/
+*.zip
+*.exe
+*.msi
+*.pdf
+*.docx
+*.wpress
+*.jpeg
+*.jpg
+*.webp
+*.png
+*.crdownload
+*.wpress
+*.txt
+*.html
+*.json
+*.db
+*.dat
+*.LOG*
+*.ini
+*.regtrans-ms
+*.blf
+*.cdp
+*.cdpresource
+_oqs/
+secrets/
+proofs/
+allianza-token/
+battery-report.html
+bitcoin_keys_temp.txt
+package-lock.json
+package.json
+test_results_complete.json
+TEST_RESULTS_COMPLETE.md
+
+# Manter apenas o diretório do projeto
+!Allianza Blockchain/**
+

@@ -1,0 +1,25 @@
+name: Testnet Status Check
+
+on:
+  schedule:
+    # Check every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  testnet-status:
+    name: Check Testnet Status
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check testnet availability
+      run: |
+        response=$(curl -s -o /dev/null -w "%{http_code}" https://testnet.allianza.tech/health || echo "000")
+        if [ "$response" = "200" ]; then
+          echo "✅ Testnet is online"
+          exit 0
+        else
+          echo "⚠️ Testnet may be offline (HTTP $response)"
+          exit 0  # Don't fail, just warn
+        fi
+

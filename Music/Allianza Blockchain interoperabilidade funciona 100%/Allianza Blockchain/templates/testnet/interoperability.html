@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="{{ lang or 'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>🌉 {{ t('interoperability') or 'Interoperability - Allianza Testnet' }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .tab-button {
+            background: #374151;
+            border: 1px solid #4b5563;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-button.active {
+            background: #1f2937;
+            border-bottom-color: #1f2937;
+            color: #60a5fa;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .result-box {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            position: relative;
+            transition: all 0.2s;
+        }
+        .result-box:hover {
+            border-color: #4b5563;
+            background: #1f1f1f;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #374151;
+            border: 1px solid #4b5563;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            z-index: 10;
+        }
+        .copy-btn:hover {
+            background: #4b5563;
+        }
+        .copy-btn-small {
+            background: #374151;
+            border: 1px solid #4b5563;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+            margin-left: 8px;
+        }
+        .copy-btn-small:hover {
+            background: #4b5563;
+            border-color: #60a5fa;
+        }
+        .copy-btn-small:active {
+            background: #1f2937;
+        }
+        .copy-btn-large {
+            background: #2563eb;
+            border: 1px solid #3b82f6;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .copy-btn-large:hover {
+            background: #1d4ed8;
+            border-color: #2563eb;
+        }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .info { color: #60a5fa; }
+        
+        /* Loading overlay animation */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="/" class="text-blue-400 hover:text-blue-300 mb-4 inline-flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i> {{ t('back_to_dashboard') or 'Back to Dashboard' }}
+            </a>
+            <h1 class="text-4xl font-bold mb-2">
+                <i class="fas fa-project-diagram text-blue-400"></i> 
+                {{ t('interoperability') or 'Interoperability' }}
+            </h1>
+            <p class="text-gray-400">{{ t('bridge_free_interoperability_complete') or 'Bridge-free cross-chain interoperability with UChainID and ZK Proofs' }}</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="mb-6 flex gap-2 overflow-x-auto">
+            <button class="tab-button active" onclick="showTab('about')">
+                <i class="fas fa-book"></i> {{ t('about') or 'About' }}
+            </button>
+            <button class="tab-button" onclick="showTab('transfer')">
+                <i class="fas fa-exchange-alt"></i> {{ t('cross_chain_transfer') or 'Cross-Chain Transfer' }}
+            </button>
+            <button class="tab-button" onclick="showTab('decoder')">
+                <i class="fas fa-code"></i> {{ t('decoder') or 'Decoder' }}
+            </button>
+            <button class="tab-button" onclick="showTab('proofs')">
+                <i class="fas fa-list"></i> {{ t('proofs') or 'Proofs' }}
+            </button>
+            <button class="tab-button" onclick="showTab('verifier')">
+                <i class="fas fa-shield-alt"></i> {{ t('zk_verifier') or 'ZK Verifier' }}
+            </button>
+        </div>
+
+        <!-- Tab: About -->
+        <div id="tab-about" class="tab-content active">
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4">🧬 ALZ-NIEV Protocol</h2>
+                <p class="text-gray-300 mb-4">
+                    {{ t('alz_niev_description') or 'The ALZ-NIEV system provides bridge-free cross-chain interoperability with 5 layers of security and cryptographic proofs.' }}
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+                    <div class="bg-blue-500/20 border border-blue-500 rounded-lg p-4">
+                        <h3 class="font-bold mb-1 text-blue-300">🔵 ELNI</h3>
+                        <p class="text-xs text-gray-300">Execution-Level Native Interop</p>
+                    </div>
+                    <div class="bg-purple-500/20 border border-purple-500 rounded-lg p-4">
+                        <h3 class="font-bold mb-1 text-purple-300">🟣 ZKEF</h3>
+                        <p class="text-xs text-gray-300">Zero-Knowledge External Functions</p>
+                    </div>
+                    <div class="bg-green-500/20 border border-green-500 rounded-lg p-4">
+                        <h3 class="font-bold mb-1 text-green-300">🟢 UP-NMT</h3>
+                        <p class="text-xs text-gray-300">Universal Proof Normalized Merkle Tunneling</p>
+                    </div>
+                    <div class="bg-yellow-500/20 border border-yellow-500 rounded-lg p-4">
+                        <h3 class="font-bold mb-1 text-yellow-300">🟡 MCL</h3>
+                        <p class="text-xs text-gray-300">Multi-Consensus Layer</p>
+                    </div>
+                    <div class="bg-red-500/20 border border-red-500 rounded-lg p-4">
+                        <h3 class="font-bold mb-1 text-red-300">🔴 AES</h3>
+                        <p class="text-xs text-gray-300">Atomic Execution Sync</p>
+                    </div>
+                </div>
+                <div class="bg-green-900/20 border border-green-500 rounded-lg p-4">
+                    <h3 class="font-bold mb-2 text-green-300">✅ Benefits</h3>
+                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                        <li>{{ t('no_custody') or 'No custody: no need to hold reserve funds' }}</li>
+                        <li>{{ t('no_hackable_bridge') or 'No hackable bridge: no bridge to hack' }}</li>
+                        <li>{{ t('no_wrapped_tokens') or 'No wrapped tokens: no need to create synthetic tokens' }}</li>
+                        <li>{{ t('mathematical_security') or 'Mathematical security: ZK proof guarantees validity' }}</li>
+                        <li>{{ t('privacy') or 'Privacy: does not reveal sensitive data' }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Cross-Chain Transfer (Unified - Always Real) -->
+        <div id="tab-transfer" class="tab-content">
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4">
+                    <i class="fas fa-exchange-alt text-blue-400"></i> {{ t('cross_chain_transfer') or 'Cross-Chain Transfer' }}
+                </h2>
+                <p class="text-sm text-gray-400 mb-6">
+                    {{ t('real_transfer_description') or 'Send REAL tokens between different blockchains (EVM and Bitcoin). All transfers include UChainID and ZK Proofs on-chain.' }}
+                </p>
+                <form id="transferForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">{{ t('source_chain') or 'Source Chain' }}</label>
+                            <select name="source_chain" id="sourceChain" class="w-full bg-gray-700 text-white p-2 rounded" required>
+                                <option value="polygon">Polygon (Amoy Testnet)</option>
+                                <option value="ethereum">Ethereum (Sepolia Testnet)</option>
+                                <option value="solana">Solana (Testnet)</option>
+                                <option value="bitcoin">Bitcoin (Testnet)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">{{ t('target_chain') or 'Target Chain' }}</label>
+                            <select name="target_chain" id="targetChain" class="w-full bg-gray-700 text-white p-2 rounded" required>
+                                <option value="ethereum">Ethereum (Sepolia Testnet)</option>
+                                <option value="polygon">Polygon (Amoy Testnet)</option>
+                                <option value="solana">Solana (Testnet)</option>
+                                <option value="bitcoin">Bitcoin (Testnet)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">{{ t('amount') or 'Amount' }}</label>
+                            <input type="number" name="amount" id="amount" step="0.0001" value="0.1" class="w-full bg-gray-700 text-white p-2 rounded" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">{{ t('token_symbol') or 'Token Symbol' }}</label>
+                            <select name="token_symbol" id="tokenSymbol" class="w-full bg-gray-700 text-white p-2 rounded" required>
+                                <option value="ETH">ETH</option>
+                                <option value="MATIC">MATIC</option>
+                                <option value="SOL">SOL</option>
+                                <option value="BTC">BTC</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">{{ t('recipient_address') or 'Recipient Address' }}</label>
+                        <input type="text" name="recipient" id="recipient" placeholder="0x... ou mjQMvYHE5Bpqze4ifq6NLP9BthNJgxWRud" class="w-full bg-gray-700 text-white p-2 rounded font-mono" required>
+                        <p class="text-xs text-gray-400 mt-1">{{ t('recipient_hint') or 'EVM address (0x...) or Bitcoin address' }}</p>
+                    </div>
+                    <button type="submit" id="executeTransferBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition relative">
+                        <span id="btnText">
+                            <i class="fas fa-rocket mr-2"></i> 🚀 {{ t('execute_real_transfer') or 'Execute REAL Transfer' }}
+                        </span>
+                        <span id="btnLoader" class="hidden">
+                            <i class="fas fa-spinner fa-spin mr-2"></i> {{ t('processing') or 'Processing...' }}
+                        </span>
+                    </button>
+                    <p class="text-xs text-gray-400 text-center mt-2">
+                        {{ t('all_transfers_real') or '⚠️ All transfers are REAL and will appear on-chain with UChainID and ZK Proofs' }}
+                    </p>
+                </form>
+            </div>
+            <div id="transferResults" class="hidden">
+                <!-- Botão FORA da caixa para copiar tudo -->
+                <div class="text-center mb-4">
+                    <button id="copyAllTransferBtn" class="copy-btn-large hidden" onclick="copyAllTransferInfo()" title="{{ t('copy_all_information') or 'Copy All Information' }}">
+                        <i class="fas fa-copy"></i> {{ t('copy_all_information') or 'Copy All Information' }}
+                    </button>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg mb-6">
+                    <h2 class="text-2xl font-bold mb-4">{{ t('result') or 'Result' }}</h2>
+                    <div id="transferResultContent" class="result-box">
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg mb-6">
+                <h2 class="text-2xl font-bold mb-4">{{ t('search_proof_by_uchainid') or 'Search Proof by UChainID' }}</h2>
+                <form id="searchForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">UChainID</label>
+                        <input type="text" id="uchainId" placeholder="UCHAIN-..." 
+                               class="w-full bg-gray-700 text-white p-2 rounded font-mono" required>
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                        <i class="fas fa-search mr-2"></i> {{ t('search_proof') or 'Search Proof' }}
+                    </button>
+                </form>
+                <div id="searchResults" class="hidden mt-4">
+                    <div id="searchContent" class="result-box">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Decoder -->
+        <div id="tab-decoder" class="tab-content">
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4">
+                    <i class="fas fa-code text-blue-400"></i> {{ t('memo_decoder') or 'Memo Decoder' }}
+                </h2>
+                <p class="text-sm text-gray-400 mb-4">{{ t('decode_uchainid_memo') or 'Decode UChainID memo from on-chain transaction' }}</p>
+                <form id="decoderForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">UChainID</label>
+                        <input type="text" id="decoderUChainID" placeholder="UCHAIN-..." 
+                               class="w-full bg-gray-700 text-white p-2 rounded font-mono" required>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                        <i class="fas fa-search mr-2"></i> {{ t('decode') or 'Decode' }}
+                    </button>
+                </form>
+                <div id="decoderResults" class="hidden mt-4">
+                    <div id="decoderContent" class="result-box">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Proofs -->
+        <div id="tab-proofs" class="tab-content">
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4">
+                    <i class="fas fa-list text-purple-400"></i> {{ t('public_proofs') or 'Public Proofs' }}
+                </h2>
+                <p class="text-sm text-gray-400 mb-4">{{ t('all_cross_chain_transfers') or 'All cross-chain transfers with UChainID and ZK Proofs' }}</p>
+                <button onclick="loadAllProofs()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                    <i class="fas fa-list mr-2"></i> {{ t('load_all_proofs') or 'Load All Proofs (last 50)' }}
+                </button>
+                <div id="proofsResults" class="hidden mt-4">
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <div class="text-center mb-4">
+                            <button id="copyAllProofsBtn" class="copy-btn-large hidden" onclick="copyAllProofsInfo()" title="{{ t('copy_all_information') or 'Copy All Information' }}">
+                                <i class="fas fa-copy"></i> {{ t('copy_all_information') or 'Copy All Information' }}
+                            </button>
+                        </div>
+                        <div id="proofsContent" class="result-box">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: ZK Verifier -->
+        <div id="tab-verifier" class="tab-content">
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4">
+                    <i class="fas fa-shield-alt text-green-400"></i> {{ t('zk_proof_verifier') or 'ZK Proof Verifier' }}
+                </h2>
+                <p class="text-sm text-gray-400 mb-4">{{ t('verify_zk_proofs') or 'Verify Zero-Knowledge proofs from cross-chain transfers' }}</p>
+                
+                <!-- Quick Load UChainID - Topo da aba ZK Verifier -->
+                <div class="bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-lg p-4 mb-6 border border-blue-500/30">
+                    <div class="flex items-center gap-2 mb-3">
+                        <i class="fas fa-bolt text-yellow-400"></i>
+                        <h3 class="text-lg font-semibold">{{ t('quick_load') or 'Quick Load UChainID' }}</h3>
+                    </div>
+                    <div class="flex gap-2 flex-wrap">
+                        <select id="recentUChainIDs" class="flex-1 min-w-[200px] bg-gray-700 text-white p-2 rounded font-mono text-sm border border-gray-600" onchange="selectUChainID()">
+                            <option value="">{{ t('select_recent_uchainid') or 'Select recent UChainID...' }}</option>
+                        </select>
+                        <input type="text" id="quickUChainID" placeholder="UCHAIN-..." 
+                               class="flex-1 min-w-[250px] bg-gray-700 text-white p-2 rounded font-mono border border-gray-600"
+                               onkeypress="if(event.key==='Enter') loadFromUChainID()">
+                        <button onclick="loadFromUChainID()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded transition font-semibold whitespace-nowrap">
+                            <i class="fas fa-search"></i> {{ t('load') or 'Load' }}
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">{{ t('quick_load_hint') or 'Select from recent transfers or paste a UChainID manually' }}</p>
+                    <div id="quickLoadResults" class="hidden mt-3">
+                        <div id="quickLoadContent" class="bg-gray-800 rounded p-3 border border-gray-600"></div>
+                    </div>
+                </div>
+                
+                <form id="verifierForm" class="space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-medium">Proof (hex string)</label>
+                            <button type="button" onclick="copyFieldValue('verifierProof', event)" 
+                                    class="copy-btn-small text-xs px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded transition"
+                                    title="{{ t('copy') or 'Copy' }}">
+                                <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
+                            </button>
+                        </div>
+                        <textarea id="verifierProof" rows="3" 
+                                  placeholder="{{ t('paste_zk_proof') or 'Paste the ZK proof hex string here...' }}"
+                                  class="w-full bg-gray-700 text-white p-2 rounded font-mono"></textarea>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-medium">Verification Key (hex string)</label>
+                            <button type="button" onclick="copyFieldValue('verifierKey', event)" 
+                                    class="copy-btn-small text-xs px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded transition"
+                                    title="{{ t('copy') or 'Copy' }}">
+                                <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
+                            </button>
+                        </div>
+                        <textarea id="verifierKey" rows="3" 
+                                  placeholder="{{ t('paste_verification_key') or 'Paste the verification key hex string here...' }}"
+                                  class="w-full bg-gray-700 text-white p-2 rounded font-mono"></textarea>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-medium">Public Inputs / State Hash (optional)</label>
+                            <button type="button" onclick="copyFieldValue('verifierInputs', event)" 
+                                    class="copy-btn-small text-xs px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded transition"
+                                    title="{{ t('copy') or 'Copy' }}">
+                                <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
+                            </button>
+                        </div>
+                        <input type="text" id="verifierInputs" 
+                               placeholder="{{ t('state_transition_hash') or 'State transition hash (optional)' }}"
+                               class="w-full bg-gray-700 text-white p-2 rounded font-mono">
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                        <i class="fas fa-check-circle mr-2"></i> {{ t('verify_proof') or 'Verify Proof' }}
+                    </button>
+                </form>
+                <div id="verifierResults" class="hidden mt-4">
+                    <div id="verifierContent" class="result-box">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Copy to clipboard
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.innerText || element.textContent;
+            const textWithoutButton = text.replace(/Copy.*?Copy/g, '').trim();
+            
+            navigator.clipboard.writeText(textWithoutButton).then(() => {
+                const btn = element.querySelector('.copy-btn');
+                if (btn) {
+                    const originalHTML = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check"></i> {{ t("copied") or "Copied!" }}';
+                    setTimeout(() => {
+                        btn.innerHTML = originalHTML;
+                    }, 2000);
+                }
+            });
+        }
+        
+        // Copy specific text
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Visual feedback
+                const event = window.event || {};
+                const button = event.target || event.srcElement;
+                if (button && button.classList && button.classList.contains('copy-btn-small')) {
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '✅ {{ t("copied") or "Copied!" }}';
+                    button.style.background = '#10b981';
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.style.background = '';
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                alert('Erro ao copiar. Tente selecionar e copiar manualmente.');
+            });
+        }
+        
+        // Copy field value (for ZK Verifier fields)
+        function copyFieldValue(fieldId, event) {
+            const field = document.getElementById(fieldId);
+            if (!field) {
+                alert('{{ t("field_not_found") or "Field not found" }}');
+                return;
+            }
+            
+            const textToCopy = field.value || field.textContent || '';
+            if (!textToCopy.trim()) {
+                alert('{{ t("no_data_to_copy") or "No data to copy" }}');
+                return;
+            }
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                // Visual feedback
+                const button = event ? event.target.closest('button') : document.querySelector(`button[onclick*="${fieldId}"]`);
+                if (button) {
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-check"></i> {{ t("copied") or "Copied!" }}';
+                    button.style.background = '#10b981';
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.style.background = '';
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                alert('Erro ao copiar. Tente selecionar e copiar manualmente.');
+            });
+        }
+        
+        // Copy all transfer information
+        function copyAllTransferInfo() {
+            // Prioridade 1: Tentar usar window.lastTransferResult (objeto completo da API)
+            let resultToCopy = window.lastTransferResult;
+            
+            // Prioridade 2: Se não tiver, tentar extrair do pre tag com JSON completo
+            if (!resultToCopy) {
+                const preElement = document.getElementById('fullResultJson');
+                if (preElement) {
+                    try {
+                        resultToCopy = JSON.parse(preElement.textContent);
+                    } catch (e) {
+                        console.warn('Erro ao parsear JSON do pre tag:', e);
+                    }
+                }
+            }
+            
+            // Prioridade 3: Tentar qualquer pre tag dentro do resultContent
+            if (!resultToCopy) {
+                const preElement = document.querySelector('#transferResultContent pre');
+                if (preElement) {
+                    try {
+                        resultToCopy = JSON.parse(preElement.textContent);
+                    } catch (e) {
+                        console.warn('Erro ao parsear JSON do pre tag genérico:', e);
+                    }
+                }
+            }
+            
+            if (!resultToCopy) {
+                alert('{{ t("no_data_to_copy") or "No data to copy" }}');
+                return;
+            }
+            
+            // ✅ GARANTIR: Copiar o objeto COMPLETO, incluindo todas as propriedades
+            // Usar JSON.stringify com replacer para garantir que tudo seja incluído
+            const textToCopy = JSON.stringify(resultToCopy, (key, value) => {
+                // Incluir todas as propriedades, mesmo undefined/null
+                return value;
+            }, 2);
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const button = document.getElementById('copyAllTransferBtn');
+                if (button) {
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-check"></i> {{ t("all_information_copied") or "All Information Copied!" }}';
+                    button.style.background = '#10b981';
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.style.background = '';
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                alert('Erro ao copiar. Tente selecionar e copiar manualmente.');
+            });
+        }
+
+        // Create Transfer (Unified - Always Real)
+        document.getElementById('transferForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Obter elementos
+            const submitBtn = document.getElementById('executeTransferBtn');
+            const btnText = document.getElementById('btnText');
+            const btnLoader = document.getElementById('btnLoader');
+            const form = e.target;
+            
+            // Mostrar loader e desabilitar botão
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+            btnText.classList.add('hidden');
+            btnLoader.classList.remove('hidden');
+            
+            // Criar overlay de loading
+            const loadingOverlay = document.createElement('div');
+            loadingOverlay.id = 'loadingOverlay';
+            loadingOverlay.className = 'fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center';
+            loadingOverlay.innerHTML = `
+                <div class="bg-gray-800 rounded-lg p-8 max-w-md w-full mx-4 border border-green-500">
+                    <div class="text-center">
+                        <div class="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500 mb-4"></div>
+                        <h3 class="text-xl font-bold text-white mb-2">{{ t("executing_real_transfer") or "Executing REAL Transfer" }}</h3>
+                        <p class="text-gray-300 mb-4">{{ t("please_wait") or "Please wait while we process your cross-chain transfer..." }}</p>
+                        <div class="flex items-center justify-center space-x-2 text-green-400">
+                            <i class="fas fa-rocket animate-pulse"></i>
+                            <span class="text-sm">{{ t("creating_transaction") or "Creating transaction..." }}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(loadingOverlay);
+            
+            const formData = new FormData(form);
+            const data = {
+                source_chain: formData.get('source_chain'),
+                target_chain: formData.get('target_chain'),
+                amount: parseFloat(formData.get('amount')),
+                recipient: formData.get('recipient'),
+                token_symbol: formData.get('token_symbol'),
+                send_real: true  // Sempre real
+            };
+
+            const resultsDiv = document.getElementById('transferResults');
+            const resultContent = document.getElementById('transferResultContent');
+            resultsDiv.classList.remove('hidden');
+            resultContent.innerHTML = '<p class="info">⏳ {{ t("executing_real_transfer") or "Executing REAL transfer..." }}</p>';
+
+            try {
+                const response = await fetch('/api/cross-chain/transfer', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                
+                // Remover overlay de loading
+                const overlay = document.getElementById('loadingOverlay');
+                if (overlay) {
+                    overlay.remove();
+                }
+                
+                // Restaurar botão
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                btnText.classList.remove('hidden');
+                btnLoader.classList.add('hidden');
+                
+                if (result.success) {
+                    // Mostrar botão de copiar tudo
+                    const copyAllBtn = document.getElementById('copyAllTransferBtn');
+                    if (copyAllBtn) {
+                        copyAllBtn.classList.remove('hidden');
+                        // Armazenar resultado globalmente para função de copiar
+                        window.lastTransferResult = result;
+                    }
+                    
+                    let txInfo = '';
+                    if (result.real_transaction && result.real_transaction.success) {
+                        txInfo = `
+                            <div class="bg-green-900/20 border border-green-500 rounded p-3 mt-3">
+                                <p class="success font-bold mb-2">🎉 Transação REAL Enviada!</p>
+                                <p class="info"><strong>TX Hash:</strong> <a href="${result.real_transaction.explorer_url || '#'}" target="_blank" class="font-mono text-blue-400 hover:underline">${result.real_transaction.tx_hash}</a> <button class="copy-btn-small" onclick="copyText('${result.real_transaction.tx_hash}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>
+                                <p class="info"><strong>Chain:</strong> ${result.real_transaction.source_chain} → ${result.real_transaction.target_chain}</p>
+                                <p class="info"><strong>Amount:</strong> ${result.real_transaction.amount} ${result.real_transaction.token || result.token}</p>
+                                ${result.real_transaction.memo_hex ? `<p class="info text-xs mt-1"><strong>Memo (hex):</strong> <span class="font-mono">${result.real_transaction.memo_hex.substring(0, 50)}...</span> <button class="copy-btn-small" onclick="copyText('${result.real_transaction.memo_hex}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>` : ''}
+                            </div>
+                        `;
+                    }
+                    resultContent.innerHTML = `
+                        <p class="success">✅ {{ t("transfer_created_success") or "Transfer created successfully!" }}</p>
+                        ${result.uchain_id ? `<p class="info mt-2"><strong>UChainID:</strong> <span class="font-mono text-cyan-400">${result.uchain_id}</span> <button class="copy-btn-small" onclick="copyText('${result.uchain_id}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>` : ''}
+                        ${result.tx_hash ? `<p class="info mt-2"><strong>TX Hash:</strong> <a href="${result.explorer_url || '#'}" target="_blank" class="font-mono text-blue-400 hover:underline">${result.tx_hash}</a> <button class="copy-btn-small" onclick="copyText('${result.tx_hash}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>` : ''}
+                        ${result.has_zk_proof && result.proof_id ? `<p class="success mt-2">✅ ZK Proof: Yes (Proof ID: <span class="font-mono text-xs">${result.proof_id}</span> <button class="copy-btn-small" onclick="copyText('${result.proof_id}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button>)</p>` : result.has_zk_proof ? `<p class="success mt-2">✅ ZK Proof: Yes</p>` : ''}
+                        ${result.commitment_id ? `<p class="info mt-2"><strong>Commitment ID:</strong> <span class="font-mono text-xs">${result.commitment_id}</span> <button class="copy-btn-small" onclick="copyText('${result.commitment_id}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>` : ''}
+                        ${result.state_id ? `<p class="info mt-2"><strong>State ID:</strong> <span class="font-mono text-xs">${result.state_id}</span> <button class="copy-btn-small" onclick="copyText('${result.state_id}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>` : ''}
+                        ${result.transfer_id ? `<p class="info mt-2"><strong>Transfer ID:</strong> <span class="font-mono text-xs">${result.transfer_id}</span> <button class="copy-btn-small" onclick="copyText('${result.transfer_id}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>` : ''}
+                        ${result.memo && result.memo.zk_proof && result.memo.zk_proof.state_hash ? `<p class="info mt-2"><strong>State Hash:</strong> <span class="font-mono text-xs break-all">${result.memo.zk_proof.state_hash}</span> <button class="copy-btn-small" onclick="copyText('${result.memo.zk_proof.state_hash}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>` : ''}
+                        ${txInfo}
+                        <pre id="fullResultJson" class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    resultContent.innerHTML = `
+                        <p class="error">❌ ${result.error || '{{ t("transfer_error") or "Transfer error" }}'}</p>
+                        ${result.note ? `<p class="info mt-2">ℹ️ ${result.note}</p>` : ''}
+                        <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                // Remover overlay de loading em caso de erro
+                const overlay = document.getElementById('loadingOverlay');
+                if (overlay) {
+                    overlay.remove();
+                }
+                
+                // Restaurar botão
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                btnText.classList.remove('hidden');
+                btnLoader.classList.add('hidden');
+                
+                resultContent.innerHTML = `<p class="error">❌ {{ t("error") or "Error" }}: ${error.message}</p>`;
+            }
+        });
+
+        // Search Proof (Test Tab) - Com retry automático e loading contínuo
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const uchainId = document.getElementById('uchainId').value.trim();
+            if (!uchainId) {
+                alert('{{ t("please_enter_uchainid") or "Please enter a UChainID" }}');
+                return;
+            }
+
+            const searchResults = document.getElementById('searchResults');
+            const searchContent = document.getElementById('searchContent');
+            searchResults.classList.remove('hidden');
+            
+            // Mostrar loading desde o início (nunca mostrar erro nas primeiras tentativas)
+            let loadingDots = 0;
+            const loadingInterval = setInterval(() => {
+                loadingDots = (loadingDots + 1) % 4;
+                const dots = '.'.repeat(loadingDots);
+                searchContent.innerHTML = `<p class="info">⏳ {{ t("searching_proof") or "Searching proof..." }}${dots}</p>`;
+            }, 300);
+
+            // Retry automático no frontend (silencioso, sem mostrar erro)
+            let result = null;
+            let lastError = null;
+            const maxRetries = 8; // Aumentar para 8 tentativas
+            const retryDelay = 300; // Reduzir delay para 300ms (mais rápido)
+
+            for (let attempt = 0; attempt < maxRetries; attempt++) {
+                try {
+                    if (attempt > 0) {
+                        await new Promise(resolve => setTimeout(resolve, retryDelay));
+                    }
+
+                    const response = await fetch(`/api/cross-chain/proof/${encodeURIComponent(uchainId)}`);
+                    result = await response.json();
+
+                    if (result.success) {
+                        clearInterval(loadingInterval);
+                        searchContent.innerHTML = `
+                            <p class="success">✅ {{ t('proof_found') or 'Proof found!' }}</p>
+                            <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                        `;
+                        return; // Sucesso, sair do loop
+                    } else {
+                        lastError = result.error || '{{ t("proof_not_found") or "Proof not found" }}';
+                        // Continuar para próxima tentativa (não mostrar erro ainda)
+                    }
+                } catch (error) {
+                    lastError = error.message;
+                    // Continuar para próxima tentativa
+                }
+            }
+
+            // Só mostrar erro após todas as tentativas falharem
+            clearInterval(loadingInterval);
+            searchContent.innerHTML = `
+                <p class="error">❌ ${lastError || '{{ t("proof_not_found") or "Proof not found" }}'}</p>
+                <p class="info mt-2 text-xs">ℹ️ Tentou ${maxRetries} vezes. O UChainID pode estar sendo salvo ainda. Tente novamente em alguns segundos.</p>
+            `;
+        });
+
+
+        // Decoder
+        document.getElementById('decoderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const uchainId = document.getElementById('decoderUChainID').value;
+            
+            // Redirect to decoder page
+            window.location.href = `/decode/${encodeURIComponent(uchainId)}`;
+        });
+
+        // Load All Proofs
+        // Função para copiar todas as provas
+        function copyAllProofsInfo() {
+            let textToCopy = '';
+            // Priorizar o objeto JSON armazenado globalmente
+            if (window.lastProofsResult) {
+                textToCopy = JSON.stringify(window.lastProofsResult, null, 2);
+            } else {
+                // Fallback: tentar obter do pre tag
+                const preTag = document.querySelector('#proofsContent pre');
+                if (preTag) {
+                    textToCopy = preTag.textContent;
+                }
+            }
+
+            if (!textToCopy) {
+                alert('{{ t("no_data_to_copy") or "No data to copy" }}');
+                return;
+            }
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const button = document.getElementById('copyAllProofsBtn');
+                if (button) {
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-check"></i> {{ t("all_information_copied") or "All Information Copied!" }}';
+                    button.style.background = '#10b981';
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.style.background = '';
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                alert('Erro ao copiar. Tente selecionar e copiar manualmente.');
+            });
+        }
+
+        async function loadAllProofs() {
+            const resultsDiv = document.getElementById('proofsResults');
+            const resultContent = document.getElementById('proofsContent');
+            const copyAllBtn = document.getElementById('copyAllProofsBtn');
+            resultsDiv.classList.remove('hidden');
+            copyAllBtn.classList.add('hidden'); // Esconder botão enquanto carrega
+            resultContent.innerHTML = '<p class="info">⏳ {{ t("loading_proofs") or "Loading proofs..." }}</p>';
+
+            try {
+                const response = await fetch('/api/cross-chain/proofs?limit=50');
+                const result = await response.json();
+
+                if (result.success) {
+                    // Armazenar resultado globalmente para copiar depois
+                    window.lastProofsResult = result;
+                    
+                    if (result.total === 0) {
+                        copyAllBtn.classList.add('hidden'); // Esconder se não há provas
+                        resultContent.innerHTML = `
+                            <p class="info">ℹ️ {{ t('no_proofs_yet') or 'No cross-chain proofs found yet.' }}</p>
+                            <p class="text-xs text-gray-400 mt-2">{{ t('create_first_transfer') or 'Create your first cross-chain transfer to generate proofs.' }}</p>
+                        `;
+                    } else {
+                        copyAllBtn.classList.remove('hidden'); // Mostrar botão quando há provas
+                        resultContent.innerHTML = `
+                            <p class="success">✅ ${result.total} {{ t('proofs_found_showing') or 'proofs found (showing' }} ${result.returned})</p>
+                            <pre id="allProofsJson" class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                        `;
+                    }
+                } else {
+                    // Armazenar resultado mesmo em caso de erro
+                    window.lastProofsResult = result;
+                    copyAllBtn.classList.remove('hidden'); // Mostrar botão mesmo em erro
+                    resultContent.innerHTML = `
+                        <p class="error">❌ ${result.error || '{{ t("error_listing_proofs") or "Error listing proofs" }}'}</p>
+                        <pre id="allProofsJson" class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                copyAllBtn.classList.add('hidden'); // Esconder em caso de exceção
+                resultContent.innerHTML = `<p class="error">❌ {{ t('error') or 'Error' }}: ${error.message}</p>`;
+            }
+        }
+
+        // ZK Verifier
+        document.getElementById('verifierForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const proof = document.getElementById('verifierProof').value.trim();
+            const verificationKey = document.getElementById('verifierKey').value.trim();
+            const publicInputs = document.getElementById('verifierInputs').value.trim();
+
+            if (!proof || !verificationKey) {
+                alert('{{ t("please_enter_proof_and_key") or "Please enter both proof and verification key" }}');
+                return;
+            }
+
+            const resultsDiv = document.getElementById('verifierResults');
+            const resultContent = document.getElementById('verifierContent');
+            resultsDiv.classList.remove('hidden');
+            resultContent.innerHTML = '<p class="info">⏳ {{ t("verifying_proof") or "Verifying..." }}</p>';
+
+            try {
+                // Garantir que public_inputs é um objeto, não string
+                let publicInputsObj = {};
+                if (publicInputs && publicInputs.trim()) {
+                    // Se for uma string (state_hash), converter para objeto
+                    if (publicInputs.trim().length === 64 && !publicInputs.trim().startsWith('{')) {
+                        publicInputsObj = {state_hash: publicInputs.trim()};
+                    } else {
+                        try {
+                            publicInputsObj = JSON.parse(publicInputs);
+                        } catch {
+                            publicInputsObj = {state_hash: publicInputs.trim()};
+                        }
+                    }
+                }
+                
+                const response = await fetch('/api/cross-chain/verify-zk', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({proof, verification_key: verificationKey, public_inputs: publicInputsObj})
+                });
+
+                const data = await response.json();
+                resultContent.innerHTML = `
+                    <p class="${data.success && data.valid ? 'success' : 'error'}">
+                        ${data.success && data.valid ? '✅' : '❌'} ${data.message || data.error}
+                    </p>
+                    <pre class="mt-4 text-xs">${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultContent.innerHTML = `<p class="error">❌ {{ t('error') or 'Error' }}: ${error.message}</p>`;
+            }
+        });
+
+        // Load recent UChainIDs on page load (Otimizado)
+        async function loadRecentUChainIDs() {
+            try {
+                // Carregar em paralelo sem bloquear
+                const response = await fetch('/api/cross-chain/proofs?limit=20');
+                const data = await response.json();
+                
+                const select = document.getElementById('recentUChainIDs');
+                if (!select) return;
+                
+                if (data.success && data.proofs && data.proofs.length > 0) {
+                    // Limpar opções existentes (exceto a primeira)
+                    while (select.options.length > 1) {
+                        select.remove(1);
+                    }
+                    
+                    // Adicionar UChainIDs recentes
+                    data.proofs.forEach(proof => {
+                        const option = document.createElement('option');
+                        option.value = proof.uchain_id;
+                        const date = proof.timestamp ? new Date(proof.timestamp * 1000).toLocaleString() : 'Recent';
+                        const shortId = proof.uchain_id.length > 20 ? proof.uchain_id.substring(0, 20) + '...' : proof.uchain_id;
+                        option.textContent = `${shortId} (${proof.source_chain} → ${proof.target_chain})`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading recent UChainIDs:', error);
+            }
+        }
+
+        // Select UChainID from dropdown
+        function selectUChainID() {
+            const select = document.getElementById('recentUChainIDs');
+            const uchainId = select.value;
+            if (uchainId) {
+                document.getElementById('quickUChainID').value = uchainId;
+                loadFromUChainID();
+            }
+        }
+
+        // Cache para resultados recentes
+        const uchainIdCache = new Map();
+        const CACHE_TTL = 30000; // 30 segundos
+
+        // Load from UChainID (Otimizado - mais rápido)
+        async function loadFromUChainID() {
+            const uchainId = document.getElementById('quickUChainID').value.trim();
+            if (!uchainId) {
+                alert('{{ t("please_enter_uchainid") or "Please enter a UChainID" }}');
+                return;
+            }
+
+            // Verificar cache primeiro
+            const cached = uchainIdCache.get(uchainId);
+            if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+                displayQuickLoadResult(cached.data, uchainId);
+                return;
+            }
+
+            // Mostrar loading no topo
+            const resultsDiv = document.getElementById('quickLoadResults');
+            const resultContent = document.getElementById('quickLoadContent');
+            resultsDiv.classList.remove('hidden');
+            let loadingDots = 0;
+            const loadingInterval = setInterval(() => {
+                loadingDots = (loadingDots + 1) % 4;
+                const dots = '.'.repeat(loadingDots);
+                resultContent.innerHTML = `<p class="info">⏳ {{ t("loading") or "Loading..." }}${dots}</p>`;
+            }, 200);
+
+            try {
+                // Busca otimizada: menos tentativas, delay menor
+                let data = null;
+                let attempts = 0;
+                const maxAttempts = 5; // Reduzido de 30 para 5
+                const delayMs = 500; // Reduzido de 3000ms para 500ms
+                
+                while (attempts < maxAttempts) {
+                    attempts++;
+                    const response = await fetch(`/api/cross-chain/proof/${encodeURIComponent(uchainId)}`);
+                    data = await response.json();
+                    
+                    if (data.success && data.zk_proof) {
+                        // Salvar no cache
+                        uchainIdCache.set(uchainId, { data, timestamp: Date.now() });
+                        break; // Encontrou, sair do loop
+                    }
+                    
+                    // Se não encontrou e ainda há tentativas, aguardar um pouco
+                    if (attempts < maxAttempts) {
+                        await new Promise(resolve => setTimeout(resolve, delayMs));
+                    }
+                }
+
+                // Exibir resultado
+                displayQuickLoadResult(data, uchainId);
+            } catch (error) {
+                resultContent.innerHTML = `<p class="error">❌ {{ t("error_loading_proof") or "Error loading proof" }}: ${error.message}</p>`;
+            } finally {
+                clearInterval(loadingInterval);
+            }
+        }
+
+        // Função auxiliar para exibir resultado do quick load
+        function displayQuickLoadResult(data, uchainId) {
+            const resultsDiv = document.getElementById('quickLoadResults');
+            const resultContent = document.getElementById('quickLoadContent');
+            resultsDiv.classList.remove('hidden');
+
+            if (data && data.success) {
+                if (data.zk_proof) {
+                    // Garantir que zk_proof é um objeto, não string
+                    let zkProof = data.zk_proof;
+                    if (typeof zkProof === 'string') {
+                        try {
+                            zkProof = JSON.parse(zkProof);
+                        } catch {
+                            zkProof = {};
+                        }
+                    }
+                    
+                    if (zkProof && typeof zkProof === 'object') {
+                        // Preencher campos do verifier com os dados corretos (se existirem)
+                        const verifierProof = document.getElementById('verifierProof');
+                        const verifierKey = document.getElementById('verifierKey');
+                        const verifierInputs = document.getElementById('verifierInputs');
+                        
+                        if (verifierProof) verifierProof.value = zkProof.proof || '';
+                        if (verifierKey) verifierKey.value = zkProof.verification_key || '';
+                        if (verifierInputs) verifierInputs.value = zkProof.state_transition_hash || zkProof.state_hash || '';
+                        
+                        // Determinar status verified
+                        let verifiedStatus = false;
+                        if (zkProof.verified !== undefined && zkProof.verified !== null) {
+                            if (typeof zkProof.verified === 'boolean') {
+                                verifiedStatus = zkProof.verified;
+                            } else if (typeof zkProof.verified === 'string') {
+                                verifiedStatus = ['true', '1', 'yes'].includes(zkProof.verified.toLowerCase());
+                            } else if (typeof zkProof.verified === 'number') {
+                                verifiedStatus = zkProof.verified !== 0;
+                            }
+                        } else if (zkProof.valid !== undefined) {
+                            verifiedStatus = zkProof.valid === true || zkProof.valid === 1 || zkProof.valid === 'true';
+                        }
+                        
+                        // Mostrar feedback visual no topo
+                        resultContent.innerHTML = `
+                            <p class="success">✅ {{ t("proof_data_loaded") or "Proof data loaded successfully!" }}</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 text-sm">
+                                <p class="info"><strong>UChainID:</strong> <span class="font-mono text-xs">${uchainId}</span></p>
+                                <p class="info"><strong>Proof ID:</strong> <span class="font-mono text-xs">${zkProof.proof_id || 'N/A'}</span></p>
+                                <p class="info"><strong>State Hash:</strong> <span class="font-mono text-xs break-all">${zkProof.state_transition_hash || zkProof.state_hash || 'N/A'}</span></p>
+                                <p class="info"><strong>Verified:</strong> ${verifiedStatus ? '✅ Yes' : '❌ No'}</p>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2">{{ t("fields_auto_filled") or "All fields have been automatically filled. Go to 'ZK Verifier' tab to verify." }}</p>
+                        `;
+                        
+                        // Scroll suave para o resultado
+                        resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    } else {
+                        resultContent.innerHTML = `<p class="error">❌ {{ t("zk_proof_invalid_format") or "ZK Proof data is in invalid format" }}</p>`;
+                    }
+                } else {
+                    resultContent.innerHTML = `<p class="error">❌ {{ t("no_zk_proof_available") or "No ZK Proof available for this UChainID" }}</p>`;
+                }
+            } else {
+                resultContent.innerHTML = `<p class="error">❌ ${data ? (data.error || '{{ t("uchainid_not_found") or "UChainID not found" }}') : '{{ t("error_loading_proof") or "Error loading proof" }}'}</p>`;
+            }
+        }
+
+        // Load recent UChainIDs on page load (Otimizado - carregar imediatamente)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Carregar UChainIDs recentes imediatamente ao carregar a página (campo está no topo)
+            loadRecentUChainIDs();
+            
+            // Também recarregar quando mudar de aba (caso novos proofs sejam criados)
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    setTimeout(loadRecentUChainIDs, 200);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+

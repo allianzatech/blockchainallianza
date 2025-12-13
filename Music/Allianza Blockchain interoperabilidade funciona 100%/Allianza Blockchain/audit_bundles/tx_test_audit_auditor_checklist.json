@@ -1,0 +1,65 @@
+{
+  "checklist_version": "1.0",
+  "generated_at": "2025-11-25T11:33:20.999108Z",
+  "references": [
+    "NIST FIPS 204 (ML-DSA)",
+    "NIST FIPS 205 (SLH-DSA)",
+    "Proof Bundle Specification v1.0"
+  ],
+  "steps": [
+    {
+      "action": "Calculate SHA-256 of all JSON files in canonical order and compare with bundle.sha256",
+      "description": "Verify bundle hash",
+      "expected_result": "Hash matches",
+      "step": 1
+    },
+    {
+      "action": "Use public_key from bundle.signed.json to verify signature on bundle hash",
+      "description": "Verify PQC signature",
+      "expected_result": "Signature valid",
+      "step": 2
+    },
+    {
+      "action": "Check transaction_manifest.json for required fields and consistency",
+      "description": "Validate transaction manifest",
+      "expected_result": "All fields present and valid",
+      "step": 3
+    },
+    {
+      "action": "Validate merkle path and root match expected values",
+      "description": "Verify merkle proof (if available)",
+      "expected_result": "Merkle proof valid",
+      "step": 4
+    },
+    {
+      "action": "Run ZK verifier with public inputs and proof",
+      "description": "Verify ZK proof (if available)",
+      "expected_result": "ZK proof valid",
+      "step": 5
+    },
+    {
+      "action": "Review execution_log.log for errors or anomalies",
+      "description": "Check execution log",
+      "expected_result": "No critical errors",
+      "step": 6
+    },
+    {
+      "action": "Check parameters.json matches expected assumptions",
+      "description": "Verify parameters",
+      "expected_result": "Parameters consistent",
+      "step": 7
+    },
+    {
+      "action": "Re-run simulation with same seed and verify hash matches",
+      "description": "Reproducibility test",
+      "expected_result": "Same hash generated",
+      "step": 8
+    }
+  ],
+  "tools_required": [
+    "SHA-256 calculator",
+    "PQC signature verifier (ML-DSA-128)",
+    "Merkle proof verifier",
+    "ZK proof verifier (if applicable)"
+  ]
+}

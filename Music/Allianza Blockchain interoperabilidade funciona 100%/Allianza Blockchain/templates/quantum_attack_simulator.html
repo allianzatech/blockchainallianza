@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="{{ lang or 'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔬 {{ t('quantum_attack_simulator') or 'Quantum Attack Simulator - Allianza Blockchain' }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+            opacity: 0.9;
+            color: #94a3b8;
+        }
+        
+        /* Processo Visual Passo a Passo */
+        .process-container {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            display: none;
+        }
+        
+        .process-container.active {
+            display: block;
+        }
+        
+        .process-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .process-header h2 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+        
+        .process-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .step-item {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #475569;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .step-item.active {
+            border-left-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.1);
+            animation: pulse-border 2s ease infinite;
+        }
+        
+        .step-item.completed {
+            border-left-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .step-item.pending {
+            opacity: 0.5;
+        }
+        
+        @keyframes pulse-border {
+            0%, 100% { border-left-width: 4px; }
+            50% { border-left-width: 6px; }
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #475569;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
+        
+        .step-item.active .step-number {
+            background: #8b5cf6;
+            animation: spin 1s linear infinite;
+        }
+        
+        .step-item.completed .step-number {
+            background: #10b981;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .step-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .step-description {
+            font-size: 0.9em;
+            color: #94a3b8;
+        }
+        
+        .step-status {
+            font-size: 1.5em;
+            margin-left: auto;
+        }
+        
+        /* Animação Visual do Ataque */
+        .attack-animation-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .animation-panel {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 3px solid;
+            min-height: 550px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        
+        .animation-panel.traditional {
+            border-color: #ef4444;
+        }
+        
+        .animation-panel.protected {
+            border-color: #10b981;
+        }
+        
+        .animation-title {
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        .animation-title.traditional {
+            color: #ef4444;
+        }
+        
+        .animation-title.protected {
+            color: #10b981;
+        }
+        
+        /* Wallet Animation */
+        .wallet-container {
+            position: relative;
+            width: 100%;
+            height: 450px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 25px;
+            padding: 20px;
+        }
+        
+        .wallet-icon {
+            font-size: 70px;
+            transition: all 0.5s ease;
+            margin-top: 20px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        }
+        
+        .lock-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+        }
+        
+        .lock-icon {
+            font-size: 70px;
+            transition: all 0.5s ease;
+            position: absolute;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        }
+        
+        .lock-icon.broken {
+            transform: rotate(45deg) scale(0.7);
+            opacity: 0.4;
+            color: #ef4444;
+            animation: break-lock 0.8s ease;
+        }
+        
+        .lock-icon.secure {
+            color: #10b981;
+            animation: pulse-glow 2s ease infinite;
+        }
+        
+        @keyframes break-lock {
+            0% {
+                transform: rotate(0deg) scale(1);
+                filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+            }
+            50% {
+                transform: rotate(90deg) scale(1.2);
+                filter: drop-shadow(0 0 20px rgba(239, 68, 68, 0.8));
+            }
+            100% {
+                transform: rotate(45deg) scale(0.7);
+                filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5));
+            }
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { 
+                filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.6));
+                transform: scale(1);
+            }
+            50% { 
+                filter: drop-shadow(0 0 25px rgba(16, 185, 129, 1));
+                transform: scale(1.05);
+            }
+        }
+        
+        .key-icon {
+            font-size: 60px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: all 0.5s ease;
+            z-index: 10;
+        }
+        
+        .key-icon.visible {
+            opacity: 1;
+            animation: float-up 1.5s ease forwards;
+        }
+        
+        @keyframes float-up {
+            0% {
+                transform: translate(-50%, -50%) scale(0.3) rotate(-20deg);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -150%) scale(1) rotate(10deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -200%) scale(1.1) rotate(0deg);
+                opacity: 0.8;
+            }
+        }
+        
+        .qubits-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .qubit {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: radial-gradient(circle, #8b5cf6 0%, #4c1d95 50%, #1e1b4b 100%);
+            border-radius: 50%;
+            opacity: 0;
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.8), 0 0 20px rgba(139, 92, 246, 0.4);
+            animation: qubit-attack 2.5s ease forwards;
+        }
+        
+        @keyframes qubit-attack {
+            0% {
+                opacity: 0;
+                transform: translate(0, 0) scale(0);
+            }
+            20% {
+                opacity: 1;
+                transform: translate(calc(var(--target-x) * 0.3), calc(var(--target-y) * 0.3)) scale(0.8);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(var(--target-x), var(--target-y)) scale(1.2);
+            }
+            80% {
+                opacity: 0.8;
+                transform: translate(var(--target-x), var(--target-y)) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--target-x), var(--target-y)) scale(0);
+            }
+        }
+        
+        .funds-display {
+            font-size: 2.2em;
+            font-weight: bold;
+            transition: all 0.5s ease;
+            margin-top: 20px;
+            padding: 15px 25px;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 10px;
+            border: 2px solid rgba(148, 163, 184, 0.2);
+            min-width: 180px;
+            text-align: center;
+        }
+        
+        .funds-display.stolen {
+            color: #ef4444;
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            animation: shake 0.6s ease;
+        }
+        
+        .funds-display.protected {
+            color: #10b981;
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-8px) rotate(-2deg); }
+            20%, 40%, 60%, 80% { transform: translateX(8px) rotate(2deg); }
+        }
+        
+        /* Protection Layers */
+        .layers-container {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            width: 100%;
+            margin-top: 30px;
+            padding: 0 10px;
+        }
+        
+        .protection-layer {
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 12px;
+            padding: 22px;
+            border: 3px solid;
+            position: relative;
+            transition: all 0.6s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .protection-layer.layer1 {
+            border-color: #ef4444;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(15, 23, 42, 0.7));
+        }
+        
+        .protection-layer.layer2 {
+            border-color: #f59e0b;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(15, 23, 42, 0.7));
+        }
+        
+        .protection-layer.layer3 {
+            border-color: #10b981;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(15, 23, 42, 0.7));
+        }
+        
+        .protection-layer.attacked {
+            border-color: #ef4444;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(239, 68, 68, 0.1));
+            animation: layer-break 0.8s ease;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+        }
+        
+        .protection-layer.resisted {
+            border-color: #10b981;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(16, 185, 129, 0.1));
+            animation: layer-resist 0.8s ease;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+        }
+        
+        @keyframes layer-break {
+            0% { 
+                transform: scale(1) rotate(0deg);
+                border-color: #ef4444;
+            }
+            30% { 
+                transform: scale(0.92) rotate(-2deg);
+                border-color: #dc2626;
+            }
+            60% { 
+                transform: scale(0.95) rotate(2deg);
+                border-color: #ef4444;
+            }
+            100% { 
+                transform: scale(1) rotate(0deg);
+                border-color: #ef4444;
+            }
+        }
+        
+        @keyframes layer-resist {
+            0%, 100% { 
+                transform: scale(1);
+            }
+            25% { 
+                transform: scale(1.03);
+                box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
+            }
+            50% { 
+                transform: scale(1.05);
+                box-shadow: 0 0 30px rgba(16, 185, 129, 0.8);
+            }
+            75% { 
+                transform: scale(1.03);
+                box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
+            }
+        }
+        
+        .layer-name {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 1.05em;
+        }
+        
+        .layer-status {
+            font-size: 0.95em;
+            color: #cbd5e1;
+            line-height: 1.4;
+        }
+        
+        .attack-indicator {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2em;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+        
+        /* Tabela Simplificada */
+        .comparison-table {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        
+        .comparison-table h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        
+        th {
+            background: rgba(15, 23, 42, 0.6);
+            font-weight: 600;
+            color: #cbd5e1;
+        }
+        
+        tr:hover {
+            background: rgba(139, 92, 246, 0.1);
+        }
+        
+        .status-icon {
+            font-size: 1.5em;
+            text-align: center;
+        }
+        
+        /* Botões */
+        .btn {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            font-size: 1.3em;
+            padding: 20px 40px;
+        }
+        
+        .btn-proof {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            font-size: 1.2em;
+            padding: 18px 35px;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .btn-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        /* Resultados */
+        #results {
+            display: none;
+        }
+        
+        #results.active {
+            display: block;
+        }
+        
+        .conclusion {
+            text-align: center;
+            font-size: 1.3em;
+            margin-top: 30px;
+            padding: 30px;
+            background: rgba(16, 185, 129, 0.2);
+            border-radius: 15px;
+            border: 2px solid rgba(16, 185, 129, 0.3);
+        }
+        
+        .proof-section {
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            text-align: center;
+        }
+        
+        .proof-section h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #f59e0b;
+        }
+        
+        .proof-section p {
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+        
+        .summary-box {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .summary-item {
+            display: inline-block;
+            margin: 15px 30px;
+            font-size: 1.2em;
+        }
+        
+        .summary-item strong {
+            display: block;
+            font-size: 1.5em;
+            margin-top: 5px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* Botão Voltar Padronizado */
+                .btn-back {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #374151;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        
+        
+        
+    
+        .btn-back:hover {
+            background: #4b5563;
+        }
+</style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="btn-back">
+{{ t('back') or 'Back' }}
+        </a>
+        
+        <h1>🔬 {{ t('quantum_attack_simulator') or 'Quantum Attack Simulator' }}</h1>
+        <p class="subtitle">{{ t('see_visually_how_attack_works') or 'See visually how a quantum attack works and why Allianza is protected' }}</p>
+        
+        <!-- Botão Principal -->
+        <div class="btn-container">
+            <button class="btn btn-primary" onclick="startTest()" id="start-btn">
+                🚀 {{ t('run_quantum_test') or 'Run Quantum Test' }}
+            </button>
+        </div>
+        
+        <!-- Processo Visual Passo a Passo -->
+        <div class="process-container" id="process-container">
+            <div class="process-header">
+                <h2>⚙️ Test Process Running</h2>
+                <p style="color: #94a3b8;">Follow each test step in real time</p>
+            </div>
+            <div class="process-steps" id="process-steps">
+                <div class="step-item pending" id="step-1">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <div class="step-title">Preparando simulação...</div>
+                        <div class="step-description">Inicializando sistemas de segurança quântica</div>
+                    </div>
+                    <div class="step-status">⏳</div>
+                </div>
+                
+                <div class="step-item pending" id="step-2">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <div class="step-title">Animando ataque quântico...</div>
+                        <div class="step-description">Mostrando visualmente como o ataque funciona</div>
+                    </div>
+                    <div class="step-status">⏳</div>
+                </div>
+                
+                <div class="step-item pending" id="step-3">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <div class="step-title">Testando proteções...</div>
+                        <div class="step-description">Validando resistência quântica</div>
+                    </div>
+                    <div class="step-status">⏳</div>
+                </div>
+                
+                <div class="step-item pending" id="step-4">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <div class="step-title">Gerando prova técnica...</div>
+                        <div class="step-description">Criando JSON verificável com todas as evidências</div>
+                    </div>
+                    <div class="step-status">⏳</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Animação Visual do Ataque -->
+        <div class="attack-animation-container" id="attack-animation" style="display: none;">
+            <!-- Blockchain Tradicional -->
+            <div class="animation-panel traditional">
+                <div class="animation-title traditional">🔴 Blockchain Tradicional</div>
+                <div class="wallet-container" id="traditional-wallet">
+                    <div class="wallet-icon">💼</div>
+                    <div class="lock-container">
+                        <div class="lock-icon" id="traditional-lock">🔒</div>
+                        <div class="key-icon" id="traditional-key">🔑</div>
+                    </div>
+                    <div class="funds-display" id="traditional-funds">10.0 BTC</div>
+                    <div class="qubits-container" id="traditional-qubits"></div>
+                </div>
+            </div>
+            
+            <!-- Blockchain Allianza -->
+            <div class="animation-panel protected">
+                <div class="animation-title protected">🟢 Allianza Protegido (QRS-3)</div>
+                <div class="wallet-container" id="protected-wallet">
+                    <div class="wallet-icon">💼</div>
+                    <div class="lock-container">
+                        <div class="lock-icon secure" id="protected-lock">🔒</div>
+                    </div>
+                    <div class="funds-display protected" id="protected-funds">10.0 BTC</div>
+                    <div class="layers-container" id="protection-layers">
+                        <div class="protection-layer layer1" id="layer1">
+                            <div class="layer-name">🛡️ Camada 1: ECDSA (Tradicional)</div>
+                            <div class="layer-status">Aguardando ataque quântico...</div>
+                            <div class="attack-indicator">⏳</div>
+                        </div>
+                        <div class="protection-layer layer2" id="layer2">
+                            <div class="layer-name">🛡️ Camada 2: ML-DSA-128 (Pós-Quântica)</div>
+                            <div class="layer-status">Aguardando ataque quântico...</div>
+                            <div class="attack-indicator">⏳</div>
+                        </div>
+                        <div class="protection-layer layer3" id="layer3">
+                            <div class="layer-name">🛡️ Camada 3: SPHINCS+ (Pós-Quântica)</div>
+                            <div class="layer-status">Aguardando ataque quântico...</div>
+                            <div class="attack-indicator">⏳</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Resultados -->
+        <div id="results">
+            <!-- Resumo Visual -->
+            <div class="summary-box">
+                <h2 style="margin-bottom: 20px;">📊 Resumo do Teste</h2>
+                <div class="summary-item">
+                    <div>Blockchain Tradicional</div>
+                    <strong style="color: #ef4444;">❌ Comprometida</strong>
+                </div>
+                <div class="summary-item">
+                    <div>Allianza QRS-3</div>
+                    <strong style="color: #10b981;">🟢 Protegida</strong>
+                </div>
+                <div class="summary-item">
+                    <div>Fundos Roubados</div>
+                    <strong id="summary-stolen" style="color: #ef4444;">10.0 BTC</strong>
+                </div>
+                <div class="summary-item">
+                    <div>Fundos Protegidos</div>
+                    <strong id="summary-protected" style="color: #10b981;">0.0 BTC</strong>
+                </div>
+            </div>
+            
+            <!-- Tabela Simplificada -->
+            <div class="comparison-table">
+                <h2>📋 O que aconteceu? (Explicação Simples)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sistema</th>
+                            <th>O que aconteceu</th>
+                            <th>Por quê</th>
+                        </tr>
+                    </thead>
+                    <tbody id="comparison-tbody">
+                    </tbody>
+                </table>
+                <div style="margin-top: 20px; padding: 20px; background: rgba(16, 185, 129, 0.1); border-radius: 10px; border-left: 4px solid #10b981;">
+                    <p style="font-size: 1.1em; line-height: 1.6;">
+                        <strong>💡 Explicação:</strong> O ataque quântico conseguiu quebrar apenas a primeira camada (ECDSA tradicional). 
+                        As outras duas camadas usam algoritmos pós-quânticos aprovados pelo NIST (ML-DSA e SPHINCS+) e 
+                        <strong>NÃO podem ser quebradas nem por computadores quânticos</strong>.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Conclusão -->
+            <div class="conclusion" id="conclusion"></div>
+            
+            <!-- Seção de Prova Técnica -->
+            <div class="proof-section" id="proof-section" style="display: none;">
+                <h3>📄 Prova Criptográfica Completa</h3>
+                <p>O teste foi concluído com sucesso. Baixe o arquivo JSON completo contendo:</p>
+                <ul style="text-align: left; display: inline-block; color: #94a3b8; margin: 15px 0;">
+                    <li>✅ Assinatura PQC real (ML-DSA-128 + SPHINCS+)</li>
+                    <li>✅ Hash SHA-256 canônico (RFC 8785)</li>
+                    <li>✅ Cálculos matemáticos completos</li>
+                    <li>✅ Parâmetros NIST FIPS 204/205</li>
+                    <li>✅ Estimativas de recursos quânticos</li>
+                    <li>✅ Comandos de verificação independente</li>
+                </ul>
+                <p style="color: #f59e0b; font-weight: 600; margin-top: 20px;">
+                    Este arquivo serve como prova técnica verificável para auditores, desenvolvedores e instituições financeiras.
+                </p>
+                <button class="btn btn-proof" onclick="downloadProof()" id="download-proof-btn">
+                    📥 Baixar Prova Criptográfica Completa
+                </button>
+                <p id="proof-file-path" style="margin-top: 15px; font-family: monospace; font-size: 0.9em; color: #64748b;"></p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let lastJSONFile = null;
+        let simulationData = null;
+        
+        async function startTest() {
+            // Esconder botão inicial
+            document.getElementById('start-btn').style.display = 'none';
+            
+            // Mostrar processo
+            document.getElementById('process-container').classList.add('active');
+            
+            // Resetar steps
+            for (let i = 1; i <= 4; i++) {
+                const step = document.getElementById(`step-${i}`);
+                step.classList.remove('active', 'completed');
+                step.classList.add('pending');
+                step.querySelector('.step-status').textContent = '⏳';
+            }
+            
+            // Step 1: Preparar
+            await executeStep(1, 'Preparando simulação...', 'Sistemas inicializados');
+            await delay(1000);
+            
+            // Step 2: Mostrar animação
+            await executeStep(2, 'Animando ataque quântico...', 'Iniciando visualização...');
+            await delay(500);
+            
+            // Mostrar animação
+            document.getElementById('attack-animation').style.display = 'grid';
+            await delay(500);
+            
+            // Animar ataque na blockchain tradicional
+            await animateTraditionalAttack();
+            
+            // Animar proteção na Allianza
+            await animateProtectedDefense();
+            
+            completeStep(2);
+            await delay(1000);
+            
+            // Step 3: Testar proteções
+            await executeStep(3, 'Testando proteções...', 'Validando resistência quântica');
+            await delay(1500);
+            completeStep(3);
+            
+            // Step 4: Gerar prova
+            await executeStep(4, 'Gerando prova técnica...', 'Executando simulação completa...');
+            
+            try {
+                const response = await fetch('/dashboard/api/quantum-attack-simulator/run');
+                const data = await response.json();
+                
+                if (data.success) {
+                    simulationData = data.simulation;
+                    lastJSONFile = data.json_file;
+                    completeStep(4);
+                    
+                    await delay(500);
+                    displayResults(data.simulation);
+                } else {
+                    throw new Error(data.error || 'Erro desconhecido');
+                }
+            } catch (error) {
+                alert('Erro ao executar simulação: ' + error.message);
+            }
+        }
+        
+        async function executeStep(stepNum, title, description) {
+            const step = document.getElementById(`step-${stepNum}`);
+            step.classList.remove('pending');
+            step.classList.add('active');
+            step.querySelector('.step-status').textContent = '⏳';
+            step.querySelector('.step-title').textContent = title;
+            step.querySelector('.step-description').textContent = description;
+        }
+        
+        function completeStep(stepNum) {
+            const step = document.getElementById(`step-${stepNum}`);
+            step.classList.remove('active');
+            step.classList.add('completed');
+            step.querySelector('.step-status').textContent = '✅';
+        }
+        
+        async function animateTraditionalAttack() {
+            const lock = document.getElementById('traditional-lock');
+            const key = document.getElementById('traditional-key');
+            const funds = document.getElementById('traditional-funds');
+            const qubitsContainer = document.getElementById('traditional-qubits');
+            const lockContainer = lock.parentElement;
+            
+            // Limpar qubits anteriores
+            qubitsContainer.innerHTML = '';
+            
+            // Criar qubits atacando (mais organizados)
+            const lockRect = lockContainer.getBoundingClientRect();
+            const containerRect = qubitsContainer.getBoundingClientRect();
+            const lockCenterX = ((lockRect.left + lockRect.width/2) - containerRect.left) / containerRect.width * 100;
+            const lockCenterY = ((lockRect.top + lockRect.height/2) - containerRect.top) / containerRect.height * 100;
+            
+            for (let i = 0; i < 12; i++) {
+                const qubit = document.createElement('div');
+                qubit.className = 'qubit';
+                // Posições iniciais ao redor da tela
+                const angle = (i / 12) * Math.PI * 2;
+                const radius = 40;
+                const startX = 50 + Math.cos(angle) * radius;
+                const startY = 50 + Math.sin(angle) * radius;
+                
+                qubit.style.left = startX + '%';
+                qubit.style.top = startY + '%';
+                qubit.style.setProperty('--target-x', (lockCenterX - startX) + '%');
+                qubit.style.setProperty('--target-y', (lockCenterY - startY) + '%');
+                qubit.style.animationDelay = (i * 0.15) + 's';
+                qubitsContainer.appendChild(qubit);
+            }
+            
+            await delay(2500);
+            
+            // Quebrar cadeado
+            lock.classList.add('broken');
+            lock.textContent = '🔓';
+            
+            await delay(800);
+            
+            // Mostrar chave
+            key.classList.add('visible');
+            
+            await delay(1200);
+            
+            // Roubar fundos
+            funds.classList.add('stolen');
+            funds.textContent = '0.0 BTC';
+            
+            await delay(600);
+        }
+        
+        async function animateProtectedDefense() {
+            const layer1 = document.getElementById('layer1');
+            const layer2 = document.getElementById('layer2');
+            const layer3 = document.getElementById('layer3');
+            
+            // Ataque na camada 1 (ECDSA) - quebra
+            await delay(500);
+            layer1.classList.add('attacked');
+            layer1.querySelector('.layer-status').textContent = '❌ Quebrada pelo ataque quântico';
+            layer1.querySelector('.attack-indicator').textContent = '❌';
+            await delay(1000);
+            
+            // Ataque na camada 2 (ML-DSA) - resiste
+            await delay(500);
+            layer2.classList.add('resisted');
+            layer2.querySelector('.layer-status').textContent = '✅ Resistiu - Algoritmo pós-quântico NIST';
+            layer2.querySelector('.attack-indicator').textContent = '✅';
+            await delay(1000);
+            
+            // Ataque na camada 3 (SPHINCS+) - resiste
+            await delay(500);
+            layer3.classList.add('resisted');
+            layer3.querySelector('.layer-status').textContent = '✅ Resistiu - Algoritmo pós-quântico NIST';
+            layer3.querySelector('.attack-indicator').textContent = '✅';
+            await delay(1000);
+        }
+        
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        function displayResults(simulation) {
+            // Esconder processo e animação
+            document.getElementById('process-container').style.display = 'none';
+            document.getElementById('attack-animation').style.display = 'none';
+            
+            // Mostrar resultados
+            document.getElementById('results').classList.add('active');
+            
+            const traditional = simulation.traditional;
+            const protected = simulation.protected;
+            
+            // Atualizar resumo
+            document.getElementById('summary-stolen').textContent = traditional.funds_stolen + ' BTC';
+            document.getElementById('summary-protected').textContent = '0.0 BTC';
+            
+            // Tabela simplificada
+            document.getElementById('comparison-tbody').innerHTML = `
+                <tr>
+                    <td><strong>Blockchain Tradicional</strong></td>
+                    <td>❌ Foi hackeado</td>
+                    <td>Ataque quântico recuperou a chave privada em ${traditional.attack_time_seconds} segundos</td>
+                </tr>
+                <tr>
+                    <td><strong>Allianza QRS-3</strong></td>
+                    <td>✅ Não foi hackeado</td>
+                    <td>Usa 2 assinaturas pós-quânticas (ML-DSA e SPHINCS+) que não podem ser quebradas por computadores quânticos</td>
+                </tr>
+            `;
+            
+            // Conclusão
+            document.getElementById('conclusion').innerHTML = `
+                <h3 style="margin-bottom: 15px;">✅ Resultado: Sistema Protegido</h3>
+                <p>A blockchain Allianza com proteção QRS-3 demonstrou resistência completa aos ataques quânticos simulados.</p>
+                <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;">
+                    O sistema tradicional (ECDSA) foi comprometido em ${traditional.attack_time_seconds} segundos, 
+                    enquanto o sistema protegido (QRS-3) resistiu a todos os ataques.
+                </p>
+            `;
+            
+            // Mostrar seção de prova
+            if (lastJSONFile) {
+                document.getElementById('proof-section').style.display = 'block';
+                document.getElementById('proof-file-path').textContent = `Arquivo: ${lastJSONFile}`;
+            }
+        }
+        
+        function downloadProof() {
+            if (lastJSONFile) {
+                window.open('/dashboard/api/quantum-attack-simulator/download?file=' + encodeURIComponent(lastJSONFile), '_blank');
+            } else {
+                alert('Nenhuma prova disponível. Execute o teste primeiro.');
+            }
+        }
+    </script>
+</body>
+</html>

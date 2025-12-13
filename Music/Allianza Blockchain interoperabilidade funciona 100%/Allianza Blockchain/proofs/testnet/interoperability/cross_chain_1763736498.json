@@ -1,0 +1,47 @@
+{
+  "success": true,
+  "test_id": "cross_chain_1763736498",
+  "test_name": "Transferência Cross-Chain Real",
+  "results": {
+    "source_chain": "solana",
+    "target_chain": "polygon",
+    "amount": 0.1,
+    "recipient": "0x48Ec8b17B7af735AB329fA07075247FAf3a09599",
+    "source_tx_hash": "0xcb77c43bb65b025bc720814be68adb10206a1c1ca771cc1198ddc6d8f407d363",
+    "target_tx_hash": "0x3fdc96ad783e3d3aa3522b45da047acf78f622b06ef7b53a8db6a7e12c822129",
+    "source_block_number": null,
+    "target_block_number": null,
+    "source_confirmations": null,
+    "target_confirmations": null,
+    "transfer_real": null,
+    "total_time_ms": 2350.87
+  },
+  "proofs": {
+    "transfer_proof": {
+      "source_tx_hash": "0xcb77c43bb65b025bc720814be68adb10206a1c1ca771cc1198ddc6d8f407d363",
+      "target_tx_hash": "0x3fdc96ad783e3d3aa3522b45da047acf78f622b06ef7b53a8db6a7e12c822129",
+      "source_block_number": null,
+      "target_block_number": null,
+      "source_confirmations": null,
+      "target_confirmations": null,
+      "merkle_proof": {
+        "merkle_root": "0x907153cd466346fe6a1f8744707ed09dc1c19bdb179d901e686362235d6fa99d",
+        "proof_path": [
+          "0xf253012ec1cada39e967b03ff204a5bfafb10fc3e05b20f9f0af8d2aadfebf9e",
+          "0xfb17360b26a3258744cad2b6596a967396985dbe9ea95f1638c21dd85787083e",
+          "0x93cfe912007a3e6aa781f41f1f4648945a508b20bdc5e3dfc20921d4077b8697",
+          "0x837ffff5c239febde2f5b89ab62bf16ec5b36951cae4eb87e2e300d2e1a78b7a",
+          "0x8df32077fb0a56da731398ad3293ba2ea7d581c6b7a4a1fba22fc6cc05b81af4"
+        ],
+        "leaf_index": 0,
+        "tree_depth": 5
+      },
+      "spv_proof": null,
+      "source_explorer": "https://explorer.solana.com/tx/0xcb77c43bb65b025bc720814be68adb10206a1c1ca771cc1198ddc6d8f407d363?cluster=testnet",
+      "target_explorer": "https://amoy.polygonscan.com/tx/0x3fdc96ad783e3d3aa3522b45da047acf78f622b06ef7b53a8db6a7e12c822129",
+      "verification_command": "python verify_allianza_proofs.py proofs/testnet/interoperability/cross_chain_1763736498.json",
+      "note": "⚠️ Transferência simulada. Para transferência real, configure chaves privadas e reservas de liquidez."
+    }
+  },
+  "timestamp": "2025-11-21T14:48:20.560329Z"
+}

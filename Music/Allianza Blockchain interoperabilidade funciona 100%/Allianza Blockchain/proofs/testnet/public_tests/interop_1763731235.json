@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "test_id": "interop_1763731235",
+  "test_name": "Interoperabilidade",
+  "results": {
+    "lock_created": true,
+    "lock_id": "lock_89f7c27f036be0a64ae849f332e4f54d",
+    "tx_hash": "0x9c4e3f4858e04e5ac5b24197512da1eb6ec2d6c96fae61014de11fda3169618f",
+    "lock_verified": true,
+    "total_time_ms": 0.01430511474609375
+  },
+  "timestamp": "2025-11-21T13:20:35.016681Z"
+}

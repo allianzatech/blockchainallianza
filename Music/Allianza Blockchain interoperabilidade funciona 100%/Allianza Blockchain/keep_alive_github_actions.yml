@@ -1,0 +1,24 @@
+name: Keep-Alive Allianza Testnet
+
+on:
+  schedule:
+    # Executa a cada 14 minutos
+    - cron: '*/14 * * * *'
+  workflow_dispatch:  # Permite execução manual
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Testnet
+        run: |
+          echo "🔄 Enviando ping para Allianza Testnet..."
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://testnet.allianza.tech/health)
+          if [ "$response" = "200" ]; then
+            echo "✅ Ping bem-sucedido! Status: 200"
+          else
+            echo "⚠️  Ping retornou status: $response"
+          fi
+
+
+

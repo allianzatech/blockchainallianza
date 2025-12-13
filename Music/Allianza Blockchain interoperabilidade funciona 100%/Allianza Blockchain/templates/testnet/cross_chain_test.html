@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="{{ lang or 'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ t('cross_chain_test_title') or 'Cross-Chain Transfer Test' }} - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .result-box {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .result-box:hover {
+            border-color: #4b5563;
+            background: #1f1f1f;
+        }
+        .result-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(59, 130, 246, 0.05);
+            opacity: 0;
+            transition: opacity 0.2s;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+        .result-box:hover::before {
+            opacity: 1;
+        }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .info { color: #60a5fa; }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #374151;
+            border: 1px solid #4b5563;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .copy-btn:hover {
+            background: #4b5563;
+            transform: scale(1.05);
+        }
+        .copy-btn.copied {
+            background: #10b981;
+            border-color: #059669;
+        }
+        .result-box-copy-hint {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 10px;
+            color: #6b7280;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+        .result-box:hover .result-box-copy-hint {
+            opacity: 1;
+        }
+        .copy-btn-small {
+            background: #374151;
+            border: 1px solid #4b5563;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 10px;
+            transition: all 0.2s;
+        }
+        .copy-btn-small:hover {
+            background: #4b5563;
+        }
+        .copy-btn-large {
+            background: #2563eb;
+            border: 1px solid #3b82f6;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .copy-btn-large:hover {
+            background: #1d4ed8;
+            border-color: #2563eb;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold mb-2">🌉 {{ t('cross_chain_test_title') or 'Cross-Chain Transfer Test' }}</h1>
+            <p class="text-gray-400">{{ t('cross_chain_test_subtitle') or 'Test cross-chain transfers with UChainID and ZK Proofs' }}</p>
+            <div class="mt-4 flex gap-4">
+                <a href="/" class="text-blue-400 hover:text-blue-300">← {{ t('back_to_dashboard') or 'Back to Dashboard' }}</a>
+                <span class="text-gray-500">|</span>
+                <a href="/interoperability" class="text-blue-400 hover:text-blue-300">{{ t('interoperability_guide') or 'Interoperability Guide' }}</a>
+            </div>
+            <div class="mt-2 text-sm text-yellow-400">
+                <i class="fas fa-info-circle mr-1"></i>
+                {{ t('cross_chain_test_note') or 'This is a test interface for cross-chain transfers. For the full interoperability guide, see Interoperability.' }}
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-bold mb-4">{{ t('create_cross_chain_transfer') or 'Create Cross-Chain Transfer' }}</h2>
+            
+            <form id="transferForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">{{ t('source_chain') or 'Source Chain' }}</label>
+                        <select id="sourceChain" name="source_chain" class="w-full bg-gray-700 text-white p-2 rounded" required>
+                            <option value="polygon">Polygon</option>
+                            <option value="ethereum">Ethereum</option>
+                            <option value="bsc">BSC</option>
+                            <option value="bitcoin">Bitcoin</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">{{ t('target_chain') or 'Target Chain' }}</label>
+                        <select id="targetChain" name="target_chain" class="w-full bg-gray-700 text-white p-2 rounded" required>
+                            <option value="ethereum">Ethereum</option>
+                            <option value="polygon">Polygon</option>
+                            <option value="bsc">BSC</option>
+                            <option value="bitcoin">Bitcoin</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">{{ t('amount') or 'Amount' }}</label>
+                    <input type="number" id="amount" name="amount" step="0.001" value="0.1" 
+                           class="w-full bg-gray-700 text-white p-2 rounded" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">{{ t('recipient_address') or 'Recipient Address' }}</label>
+                    <input type="text" id="recipient" name="recipient" 
+                           value="0x86AE40869EB6ACb9477b42BfC9150c0A2Cc21f5E"
+                           class="w-full bg-gray-700 text-white p-2 rounded font-mono" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">{{ t('token_symbol') or 'Token Symbol' }}</label>
+                    <input type="text" id="tokenSymbol" name="token_symbol" value="ETH" 
+                           class="w-full bg-gray-700 text-white p-2 rounded">
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="sendReal" name="send_real">
+                    <label for="sendReal" class="text-sm">{{ t('send_real_transaction') or 'Send REAL transaction (requires private key configured)' }}</label>
+                </div>
+
+                <button type="submit" 
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                    <i class="fas fa-paper-plane mr-2"></i>
+                    {{ t('create_transfer') or 'Create Cross-Chain Transfer' }}
+                </button>
+            </form>
+        </div>
+
+        <!-- Results -->
+        <div id="results" class="hidden">
+            <div class="bg-gray-800 p-6 rounded-lg mb-6">
+                <h2 class="text-2xl font-bold mb-4">{{ t('result') or 'Result' }}</h2>
+                <div id="resultContent" class="result-box" onclick="copyToClipboard('resultContent')" title="{{ t('click_to_copy') or 'Click to copy entire result' }}">
+                    <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('resultContent')" title="{{ t('copy') or 'Copy' }}">
+                        <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
+                    </button>
+                    <div class="result-box-copy-hint">
+                        <i class="fas fa-hand-pointer mr-1"></i>{{ t('click_to_copy') or 'Click to copy' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Proof -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-bold mb-4">{{ t('search_proof_by_uchainid') or 'Search Proof by UChainID' }}</h2>
+            <form id="searchForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">UChainID</label>
+                    <input type="text" id="uchainId" name="uchain_id" 
+                           placeholder="UCHAIN-abc123..."
+                           class="w-full bg-gray-700 text-white p-2 rounded font-mono" required>
+                </div>
+                <button type="submit" 
+                        class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                    <i class="fas fa-search mr-2"></i>
+                    {{ t('search_proof') or 'Search Proof' }}
+                </button>
+            </form>
+            <!-- Search Results (separada) -->
+            <div id="searchResults" class="hidden mt-4">
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-xl font-bold mb-4">{{ t('search_result') or 'Search Result' }}</h3>
+                    <div class="text-center mb-4">
+                        <button id="copyAllProofBtn" class="copy-btn-large hidden" onclick="copyAllProofInfo()" title="{{ t('copy_all_information') or 'Copy All Information' }}">
+                            <i class="fas fa-copy"></i> {{ t('copy_all_information') or 'Copy All Information' }}
+                        </button>
+                    </div>
+                    <div id="searchContent" class="result-box" onclick="copyToClipboard('searchContent')" title="{{ t('click_to_copy') or 'Click to copy entire result' }}">
+                        <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('searchContent')" title="{{ t('copy') or 'Copy' }}">
+                            <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
+                        </button>
+                        <div class="result-box-copy-hint">
+                            <i class="fas fa-hand-pointer mr-1"></i>{{ t('click_to_copy') or 'Click to copy' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- List All Proofs -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-bold mb-4">{{ t('list_all_proofs') or 'List All Proofs' }}</h2>
+            <button id="listProofsBtn" 
+                    class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                <i class="fas fa-list mr-2"></i>
+                {{ t('list_proofs_last_50') or 'List Proofs (last 50)' }}
+            </button>
+            <div id="listResults" class="hidden mt-4">
+                <div id="listContent" class="result-box" onclick="copyToClipboard('listContent')" title="{{ t('click_to_copy') or 'Click to copy entire result' }}">
+                    <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('listContent')" title="{{ t('copy') or 'Copy' }}">
+                        <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
+                    </button>
+                    <div class="result-box-copy-hint">
+                        <i class="fas fa-hand-pointer mr-1"></i>{{ t('click_to_copy') or 'Click to copy' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div class="bg-gray-800 p-6 rounded-lg">
+            <h2 class="text-2xl font-bold mb-4">{{ t('system_status') or 'System Status' }}</h2>
+            <button id="statusBtn" 
+                    class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                <i class="fas fa-info-circle mr-2"></i>
+                {{ t('view_status') or 'View Status' }}
+            </button>
+            <div id="statusResults" class="hidden mt-4">
+                <div id="statusContent" class="result-box" onclick="copyToClipboard('statusContent')" title="{{ t('click_to_copy') or 'Click to copy entire result' }}">
+                    <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('statusContent')" title="{{ t('copy') or 'Copy' }}">
+                        <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
+                    </button>
+                    <div class="result-box-copy-hint">
+                        <i class="fas fa-hand-pointer mr-1"></i>{{ t('click_to_copy') or 'Click to copy' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Função para copiar texto específico
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Mostrar feedback visual
+                const event = new CustomEvent('copied', { detail: text });
+                document.dispatchEvent(event);
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+            });
+        }
+
+        // Função para copiar toda a informação da prova
+        function copyAllProofInfo() {
+            let textToCopy = '';
+            // Priorizar o objeto JSON armazenado globalmente
+            if (window.lastProofResult) {
+                textToCopy = JSON.stringify(window.lastProofResult, null, 2);
+            } else {
+                // Fallback: tentar obter do pre tag
+                const preTag = document.getElementById('fullProofJson');
+                if (preTag) {
+                    textToCopy = preTag.textContent;
+                } else {
+                    // Último recurso: tentar encontrar qualquer pre tag dentro dos resultados
+                    const searchContent = document.getElementById('searchContent');
+                    const fallbackPre = searchContent ? searchContent.querySelector('pre') : null;
+                    if (fallbackPre) {
+                        textToCopy = fallbackPre.textContent;
+                    }
+                }
+            }
+
+            if (!textToCopy) {
+                alert('{{ t("no_data_to_copy") or "No data to copy" }}');
+                return;
+            }
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const button = document.getElementById('copyAllProofBtn');
+                if (button) {
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-check"></i> {{ t("all_information_copied") or "All Information Copied!" }}';
+                    button.style.background = '#10b981';
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.style.background = '';
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                alert('Erro ao copiar. Tente selecionar e copiar manualmente.');
+            });
+        }
+        
+        // Função para copiar para clipboard (resultado completo)
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.innerText || element.textContent;
+            
+            // Remover botão de copiar do texto
+            const textWithoutButton = text.replace(/Copy.*?Copy/g, '').trim();
+            
+            navigator.clipboard.writeText(textWithoutButton).then(() => {
+                const btn = element.querySelector('.copy-btn');
+                if (btn) {
+                    const originalHTML = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check mr-1"></i>{{ t("copied") or "Copied!" }}';
+                    btn.classList.add('copied');
+                    setTimeout(() => {
+                        btn.innerHTML = originalHTML;
+                        btn.classList.remove('copied');
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+            });
+        }
+        
+        // Listener para feedback de cópia
+        document.addEventListener('copied', (e) => {
+            // Feedback visual pode ser adicionado aqui
+            console.log('Copiado:', e.detail);
+        });
+        
+        // Criar Transferência
+        document.getElementById('transferForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = {
+                source_chain: formData.get('source_chain'),
+                target_chain: formData.get('target_chain'),
+                amount: parseFloat(formData.get('amount')),
+                recipient: formData.get('recipient'),
+                token_symbol: formData.get('token_symbol'),
+                send_real: document.getElementById('sendReal').checked
+            };
+
+            const resultsDiv = document.getElementById('results');
+            const resultContent = document.getElementById('resultContent');
+            resultsDiv.classList.remove('hidden');
+            resultContent.innerHTML = '<p class="info">⏳ {{ t("sending_request") or "Sending request..." }}</p>';
+
+            try {
+                const response = await fetch('/api/cross-chain/transfer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    const uchainId = result.uchain_id || 'N/A';
+                    const transferId = result.transfer_id || 'N/A';
+                    resultContent.innerHTML = `
+                        <p class="success">✅ {{ t('transfer_created_success') or 'Transfer created successfully!' }}</p>
+                        <p class="info"><strong>{{ t('uchain_id') or 'UChainID' }}:</strong> <span id="transferUchainId">${uchainId}</span> <button onclick="copyText('${uchainId}')" class="copy-btn-small ml-2" title="{{ t('copy') or 'Copy' }}"><i class="fas fa-copy"></i></button></p>
+                        <p class="info"><strong>{{ t('transfer_id') or 'Transfer ID' }}:</strong> <span id="transferId">${transferId}</span> <button onclick="copyText('${transferId}')" class="copy-btn-small ml-2" title="{{ t('copy') or 'Copy' }}"><i class="fas fa-copy"></i></button></p>
+                        ${result.tx_hash ? `<p class="info"><strong>{{ t('tx_hash') or 'TX Hash' }}:</strong> <span id="txHash">${result.tx_hash}</span> <button onclick="copyText('${result.tx_hash}')" class="copy-btn-small ml-2" title="{{ t('copy') or 'Copy' }}"><i class="fas fa-copy"></i></button></p>` : ''}
+                        ${result.explorer_url ? `<p class="info"><strong>{{ t('explorer') or 'Explorer' }}:</strong> <a href="${result.explorer_url}" target="_blank" class="text-blue-400">${result.explorer_url}</a></p>` : ''}
+                        <p class="info"><strong>{{ t('has_zk_proof') or 'Has ZK Proof' }}:</strong> ${result.has_zk_proof ? '✅ {{ t("yes") or "Yes" }}' : '❌ {{ t("no") or "No" }}'}</p>
+                        <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    resultContent.innerHTML = `
+                        <p class="error">❌ {{ t('error') or 'Error' }}: ${result.error || '{{ t("unknown_error") or "Unknown error" }}'}</p>
+                        <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultContent.innerHTML = `<p class="error">❌ Erro na requisição: ${error.message}</p>`;
+            }
+        });
+
+        // Buscar Prova (caixa separada)
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const uchainId = document.getElementById('uchainId').value;
+
+            const searchResults = document.getElementById('searchResults');
+            const searchContent = document.getElementById('searchContent');
+            const copyAllBtn = document.getElementById('copyAllProofBtn');
+            searchResults.classList.remove('hidden');
+            copyAllBtn.classList.add('hidden'); // Esconder botão enquanto busca
+            searchContent.innerHTML = '<p class="info">⏳ {{ t("searching_proof") or "Searching proof..." }}</p>';
+
+            try {
+                const response = await fetch(`/api/cross-chain/proof/${encodeURIComponent(uchainId)}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const foundUchainId = result.uchain_id || uchainId;
+                    // Armazenar resultado globalmente para copiar depois
+                    window.lastProofResult = result;
+                    // Mostrar botão "Copy All"
+                    document.getElementById('copyAllProofBtn').classList.remove('hidden');
+                    
+                    searchContent.innerHTML = `
+                        <p class="success">✅ {{ t('proof_found') or 'Proof found!' }}</p>
+                        <p class="info"><strong>{{ t('uchain_id') or 'UChainID' }}:</strong> <span id="searchUchainId">${foundUchainId}</span> <button onclick="copyText('${foundUchainId}')" class="copy-btn-small ml-2" title="{{ t('copy') or 'Copy' }}"><i class="fas fa-copy"></i></button></p>
+                        ${result.proof_id ? `<p class="info"><strong>{{ t('proof_id') or 'Proof ID' }}:</strong> <span id="proofId">${result.proof_id}</span> <button onclick="copyText('${result.proof_id}')" class="copy-btn-small ml-2" title="{{ t('copy') or 'Copy' }}"><i class="fas fa-copy"></i></button></p>` : ''}
+                        ${result.tx_hash ? `<p class="info"><strong>{{ t('tx_hash') or 'TX Hash' }}:</strong> <span id="proofTxHash">${result.tx_hash}</span> <button onclick="copyText('${result.tx_hash}')" class="copy-btn-small ml-2" title="{{ t('copy') or 'Copy' }}"><i class="fas fa-copy"></i></button></p>` : ''}
+                        <pre id="fullProofJson" class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    // Armazenar resultado mesmo em caso de erro
+                    window.lastProofResult = result;
+                    // Mostrar botão "Copy All" mesmo em erro
+                    document.getElementById('copyAllProofBtn').classList.remove('hidden');
+                    
+                    searchContent.innerHTML = `
+                        <p class="error">❌ ${result.error || '{{ t("proof_not_found") or "Proof not found" }}'}</p>
+                        <pre id="fullProofJson" class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                searchContent.innerHTML = `<p class="error">❌ {{ t('error') or 'Error' }}: ${error.message}</p>`;
+            }
+        });
+
+        // Listar Provas
+        document.getElementById('listProofsBtn').addEventListener('click', async () => {
+            const listResults = document.getElementById('listResults');
+            const listContent = document.getElementById('listContent');
+            listResults.classList.remove('hidden');
+            listContent.innerHTML = '<p class="info">⏳ {{ t("loading_proofs") or "Loading proofs..." }}</p>';
+
+            try {
+                const response = await fetch('/api/cross-chain/proofs?limit=50');
+                const result = await response.json();
+
+                if (result.success) {
+                    listContent.innerHTML = `
+                        <p class="success">✅ ${result.total} {{ t('proofs_found_showing') or 'proofs found (showing' }} ${result.returned})</p>
+                        <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    listContent.innerHTML = `<p class="error">❌ ${result.error || '{{ t("error_listing_proofs") or "Error listing proofs" }}'}</p>`;
+                }
+            } catch (error) {
+                listContent.innerHTML = `<p class="error">❌ Erro: ${error.message}</p>`;
+            }
+        });
+
+        // Status
+        document.getElementById('statusBtn').addEventListener('click', async () => {
+            const statusResults = document.getElementById('statusResults');
+            const statusContent = document.getElementById('statusContent');
+            statusResults.classList.remove('hidden');
+            statusContent.innerHTML = '<p class="info">⏳ {{ t("loading_status") or "Loading status..." }}</p>';
+
+            try {
+                const response = await fetch('/api/cross-chain/status');
+                const result = await response.json();
+
+                if (result.success) {
+                    statusContent.innerHTML = `
+                        <p class="success">✅ {{ t('system_status') or 'System Status' }}</p>
+                        <p class="info"><strong>{{ t('state_commitments') or 'State Commitments' }}:</strong> ${result.state_commitments || 0}</p>
+                        <p class="info"><strong>{{ t('zk_proofs') or 'ZK Proofs' }}:</strong> ${result.zk_proofs || 0}</p>
+                        <p class="info"><strong>{{ t('applied_states') or 'Applied States' }}:</strong> ${result.applied_states || 0}</p>
+                        <p class="info"><strong>{{ t('uchain_ids') or 'UChainIDs' }}:</strong> ${result.uchain_ids || 0}</p>
+                        <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    statusContent.innerHTML = `<p class="error">❌ ${result.error || '{{ t("error_getting_status") or "Error getting status" }}'}</p>`;
+                }
+            } catch (error) {
+                statusContent.innerHTML = `<p class="error">❌ Erro: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
+

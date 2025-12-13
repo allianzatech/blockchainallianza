@@ -1,0 +1,20 @@
+{
+  "success": false,
+  "test_id": "sig_validation_1763736308",
+  "test_name": "Validação Universal de Assinaturas",
+  "results": {
+    "chain": "ethereum",
+    "tx_hash": "0xb4f3c8a21928fadee179f9614864dee2332275ed7cf9273ab89bac4ed1ab6a80",
+    "validation_result": {
+      "valid": false,
+      "tx_hash": "0xb4f3c8a21928fadee179f9614864dee2332275ed7cf9273ab89bac4ed1ab6a80",
+      "chain": "ethereum",
+      "method": "ECDSA EVM",
+      "error": "Erro ao validar transação: 'AttributeDict' object has no attribute 'rawTransaction'",
+      "explorer_url": "https://sepolia.etherscan.io/tx/0xb4f3c8a21928fadee179f9614864dee2332275ed7cf9273ab89bac4ed1ab6a80",
+      "help": "Verifique se o hash é de uma transação real da ethereum testnet"
+    },
+    "total_time_ms": 2521.65
+  },
+  "timestamp": "2025-11-21T14:45:10.759812Z"
+}

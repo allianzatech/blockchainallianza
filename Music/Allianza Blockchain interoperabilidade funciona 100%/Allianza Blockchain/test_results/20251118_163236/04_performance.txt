@@ -1,0 +1,90 @@
+🔐 QUANTUM SECURITY SYSTEM: Inicializado!
+🛡️  Algoritmos PQC NIST: ML-DSA, ML-KEM, SLH-DSA
+🌐 Quantum Key Distribution: Ativo
+🔒 Hybrid Cryptography: Clássico + PQC
+🔐 QUANTUM SECURITY SYSTEM: Inicializado!
+🛡️  Algoritmos PQC NIST: ML-DSA, ML-KEM, SLH-DSA
+🌐 Quantum Key Distribution: Ativo
+🔒 Hybrid Cryptography: Clássico + PQC
+======================================================================
+📊 TESTE DE PERFORMANCE E ESCALABILIDADE PQC
+======================================================================
+✅ Comparando ECDSA vs ML-DSA vs QRS-3
+✅ Medindo latência, tamanho de assinaturas e escalabilidade
+======================================================================
+
+🚀 INICIANDO TESTES DE PERFORMANCE
+   Número de testes por algoritmo: 100
+   Total de operações: 600 (3 algoritmos × 2 operações)
+======================================================================
+
+🔷 TESTE 1: ECDSA (Clássico)
+   Executando 100 testes...
+
+🔐 TESTE 2: ML-DSA (Dilithium - PQC)
+   Executando 100 testes...
+
+🔐🔐🔐 TESTE 3: QRS-3 (Tripla Redundância Quântica)
+   Executando 100 testes...
+✅ liboqs-python carregado - Implementação PQC REAL!
+🔐 QUANTUM SECURITY SYSTEM REAL: Inicializado!
+✅ ML-DSA (Dilithium) - Implementação REAL
+✅ ML-KEM (Kyber) - Implementação REAL
+✅ SPHINCS+ - Implementação REAL
+🔐 QUANTUM SECURITY SYSTEM REAL: Inicializado!
+✅ ML-DSA (Dilithium) - Implementação REAL
+✅ ML-KEM (Kyber) - Implementação REAL
+✅ SPHINCS+ - Implementação REAL
+
+📦 CALCULANDO IMPACTO NO TAMANHO DO BLOCO...
+
+💾 Resultados salvos em: proofs\performance_pqc\performance_test_20251118_163304.json
+
+======================================================================
+📊 RESUMO DOS RESULTADOS
+======================================================================
+
+⏱️  LATÊNCIA DE TRANSAÇÃO:
+   ECDSA:
+      • Assinatura: 0.540 ms (média)
+      • Verificação: 0.489 ms (média)
+   ML-DSA (PQC):
+      • Assinatura: 0.017 ms (média)
+      • Verificação: 0.601 ms (média)
+   QRS-3 (Tripla Redundância):
+      • Assinatura: 182.062 ms (média)
+      • Verificação: 1.305 ms (média)
+
+📏 TAMANHO DE ASSINATURAS:
+   ECDSA: 70 bytes
+   ML-DSA: 2420 bytes
+   QRS-3: 38155 bytes
+
+📦 IMPACTO NO TAMANHO DO BLOCO:
+   Bloco com 100 transações:
+      • ECDSA: 27,000 bytes (26.37 KB)
+      • ML-DSA: 262,000 bytes (255.86 KB)
+      • QRS-3: 3,835,500 bytes (3745.61 KB)
+   Aumento percentual vs ECDSA:
+      • ML-DSA: +870.4%
+      • QRS-3: +14105.6%
+
+📈 ESCALABILIDADE:
+   Blocos por GB (100 transações/bloco):
+      • ECDSA: 39768 blocos
+      • ML-DSA: 4098 blocos
+      • QRS-3: 280 blocos
+
+⚡ OVERHEAD DE PERFORMANCE:
+   ML-DSA vs ECDSA:
+      • Assinatura: 0.03x mais lento
+      • Verificação: 1.23x mais lento
+   QRS-3 vs ECDSA:
+      • Assinatura: 336.87x mais lento
+      • Verificação: 2.67x mais lento
+
+======================================================================
+✅ TESTE DE PERFORMANCE CONCLUÍDO!
+======================================================================
+
+✅ Teste completo! Verifique o arquivo JSON para detalhes.

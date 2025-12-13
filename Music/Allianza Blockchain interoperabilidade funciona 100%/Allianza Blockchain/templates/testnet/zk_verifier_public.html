@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="{{ lang or 'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 ZK Proof Verifier - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .input-field {
+            background: #1a1a1a;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            font-family: monospace;
+            font-size: 12px;
+            width: 100%;
+            resize: vertical;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+        }
+        .result-box {
+            background: #1a1a1a;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .result-valid {
+            border-color: #10b981;
+            background: #064e3b/20;
+        }
+        .result-invalid {
+            border-color: #ef4444;
+            background: #7f1d1d/20;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="/" class="text-blue-400 hover:text-blue-300 mb-4 inline-flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Dashboard</span>
+            </a>
+            <h1 class="text-4xl font-bold mb-2">🔐 ZK Proof Verifier</h1>
+            <p class="text-gray-400">Verify Zero-Knowledge proofs from cross-chain transfers</p>
+        </div>
+
+        <!-- Form -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-6">
+            <form id="verifyForm" onsubmit="verifyProof(event)">
+                <div class="mb-6">
+                    <label class="block text-sm font-medium mb-2">
+                        <i class="fas fa-key text-blue-400"></i> Proof String
+                    </label>
+                    <textarea 
+                        id="proof" 
+                        class="input-field" 
+                        rows="4" 
+                        placeholder="Paste the ZK proof string here..."
+                        required
+                    ></textarea>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium mb-2">
+                        <i class="fas fa-lock text-purple-400"></i> Verification Key
+                    </label>
+                    <textarea 
+                        id="verificationKey" 
+                        class="input-field" 
+                        rows="3" 
+                        placeholder="Paste the verification key here..."
+                        required
+                    ></textarea>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium mb-2">
+                        <i class="fas fa-hashtag text-green-400"></i> Public Inputs (State Hash) - Optional
+                    </label>
+                    <input 
+                        type="text" 
+                        id="publicInputs" 
+                        class="input-field" 
+                        placeholder="State transition hash (optional, helps find proof in system)"
+                    >
+                </div>
+
+                <button 
+                    type="submit" 
+                    class="w-full bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition"
+                >
+                    <i class="fas fa-shield-alt"></i> Verify Proof
+                </button>
+            </form>
+        </div>
+
+        <!-- Result -->
+        <div id="result" class="hidden"></div>
+
+        <!-- Info -->
+        <div class="bg-blue-900/30 rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">ℹ️ How to Use</h2>
+            <ol class="list-decimal list-inside space-y-2 text-sm text-gray-300">
+                <li>Get a proof from a cross-chain transfer (use <a href="/cross-chain-proofs" class="text-blue-400 hover:underline">Public Proofs</a>)</li>
+                <li>Copy the proof string and verification key</li>
+                <li>Optionally provide the state hash for automatic lookup</li>
+                <li>Click "Verify Proof" to check validity</li>
+            </ol>
+        </div>
+
+        <!-- Links -->
+        <div class="mt-6 flex gap-4">
+            <a href="/cross-chain-proofs" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded">
+                <i class="fas fa-list"></i> View All Proofs
+            </a>
+            <a href="/interoperability" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded">
+                <i class="fas fa-exchange-alt"></i> Create Transfer
+            </a>
+        </div>
+    </div>
+
+    <script>
+        async function verifyProof(event) {
+            event.preventDefault();
+            
+            const proof = document.getElementById('proof').value.trim();
+            const verificationKey = document.getElementById('verificationKey').value.trim();
+            const publicInputs = document.getElementById('publicInputs').value.trim();
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<div class="result-box"><p class="text-blue-400"><i class="fas fa-spinner fa-spin"></i> Verifying proof...</p></div>';
+            
+            try {
+                const response = await fetch('/zk-verifier', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        proof: proof,
+                        verification_key: verificationKey,
+                        public_inputs: publicInputs
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.valid) {
+                    resultDiv.innerHTML = `
+                        <div class="result-box result-valid">
+                            <div class="flex items-center gap-3 mb-4">
+                                <i class="fas fa-check-circle text-4xl text-green-400"></i>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-green-400">${data.message || 'Proof Valid'}</h3>
+                                    ${data.proof_id ? `<p class="text-sm text-gray-400">Proof ID: ${data.proof_id}</p>` : ''}
+                                </div>
+                            </div>
+                            ${data.details ? `
+                                <div class="mt-4 space-y-2 text-sm">
+                                    <div><span class="text-gray-400">Source Chain:</span> <span class="font-semibold">${data.details.source_chain}</span></div>
+                                    <div><span class="text-gray-400">Target Chain:</span> <span class="font-semibold">${data.details.target_chain}</span></div>
+                                    <div><span class="text-gray-400">Created At:</span> <span class="text-gray-300">${data.details.created_at}</span></div>
+                                    <div><span class="text-gray-400">State Hash:</span> <code class="text-xs bg-gray-900 px-2 py-1 rounded">${data.details.state_transition_hash}</code></div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result-box result-invalid">
+                            <div class="flex items-center gap-3 mb-4">
+                                <i class="fas fa-times-circle text-4xl text-red-400"></i>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-red-400">${data.message || 'Proof Invalid'}</h3>
+                                    ${data.error ? `<p class="text-sm text-gray-400">${data.error}</p>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result-box result-invalid">
+                        <p class="text-red-400"><i class="fas fa-exclamation-triangle"></i> Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

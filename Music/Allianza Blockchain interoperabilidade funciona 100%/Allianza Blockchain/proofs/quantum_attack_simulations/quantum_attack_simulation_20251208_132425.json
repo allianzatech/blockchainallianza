@@ -1,0 +1,124 @@
+{
+  "suite_name": "Advanced Quantum Attack Simulations",
+  "timestamp": "2025-12-08T13:24:24.953788",
+  "tests": [
+    {
+      "attack_type": "Shor's Algorithm on ECDSA",
+      "key_size": 256,
+      "timestamp": "2025-12-08T13:24:24.953849",
+      "status": "simulated",
+      "simulation_success": true,
+      "quantum_circuit_depth": 3,
+      "shots": 1024,
+      "counts": {
+        "11 00": 525,
+        "00 00": 499
+      },
+      "estimated_time_real": "Exponencial (milhões de qubits necessários)",
+      "conclusion": "ECDSA vulnerável a computadores quânticos suficientemente grandes",
+      "qiskit_version": "2.x",
+      "note": "Simulação teórica - Shor real requer milhões de qubits"
+    },
+    {
+      "test_type": "QRS-3 Quantum Resistance",
+      "timestamp": "2025-12-08T13:24:25.053342",
+      "message": "Test message for quantum attack",
+      "keypair_id": "qrs3_1765211065_13b67d43f3439e60",
+      "keypair_result": {
+        "success": true,
+        "keypair_id": "qrs3_1765211065_13b67d43f3439e60",
+        "algorithm": "QRS-3 (Tripla Redundância Quântica)",
+        "quantum_resistant": true,
+        "backward_compatible": true,
+        "classic_public_key": "-----BEGIN PUBLIC KEY-----\nMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEUznp4X3+pbhx3H1nr+2EcE0PEJXEapSG\nYWDMvwinWvyX7gJF4cgP+5Nr9kGj6mtkClnbJ2pPgjFKl/0RTJ8ISw==\n-----END PUBLIC KEY-----\n",
+        "ml_dsa_public_key": "MfmfLb/wBDXP/iA998nPIy0lWmmOZ1vJda9qIKGDjI7wlXf8bQ//dtf5Q49AjQ4tFze5Wi3SSfD9lnR9lf7FzeurhrvfxCJufKUgt0A5a5JGWgEGXzJwOFDT+LwQpBo+Fb1cGPvM+pE5+3h9Q6SKl97t9sW0PORIo5Erx3hnkeum7ktSG5c7jEaF4ju4fbluUTqWVEtEyJTcyMwo1TjhULT8ZcvxdBYowPMW8ue4C2O9mguLsvhb+2hn0j8Qu3cFRVjnGNAkqiw9m5Z2cWfLL1kNYSd4+xIjloJR81prTWE4sB1yOrMG2Lo4G2dn/c2pCaIQzWqCzkonWgLBQ8/Vy/ANLUvRtUjYhlNgKZqkM6F5c9Emkz7tGpwPzwCs1fnYLO4oCFhfeVjvKhshZFmRDjx6uqxU7nHZhUOvRb8q532J8Ikf/4bdhtChqbftosnaFPqbazaeh+GeAYcCa+syMEENzRFvyXHuLuPID2aF2hvCYK5dQ2iruXXkQI5cYfoV8zH7SiIsfV3eKDLz1P/FRhaXaG+NUdt1jtP/SCdsC1eF7UzJDOPt8c84SKbfGjgEsozY86nTUg8kd/V0Kjb7p0xHhz0uilDGO5Yi3yJx5eikNvLsUrr+qDi/hQIrHiGCakU/ceAtEFtDC0GmNOAcw/V4nfeIzNKRJcpruhGWCmSByK5s7N5oWbtWU5osnG8huI/XeYGT6s0i4JTID6ul0BW/BRlQu1wPL6A/pMmp/Xd3gjwxHWzpPYK3xEKlGQZPSNyuaOpESPQl42dVDVrAZF9ym3S9wuExhEDVWr7Z/4E/xBO27iKSSBx8qAvZFA7+e9tXS821GCpYY7aTDr1nIay09fOD+lj11GTxU0KHuJVGoj56six7y2fZxm4nGKvAL3IRdKNfLzDn2jIu4pqwxqEDw3Q7xcsJN91y048DW3TC0yTOTUdtQoEczLnNy8JselXv2iaUzW4udbqba2YQuWx0A9Q4H9+RE0B838CbZiKG39pkrmPEniifWesM01aQW3RF+D8LvlMVSelQAPOkG6GKPlNGT+ai9yuSnwTUd44+ZA5RmPbgaDAzfg8pLved8pg3GkV9D23qqwz8YqXvE3S+SYC+pHUiM6KzvwQ+XJdezuatAuLSZpsxT/whUx+DKUcpSQLGCpoDfQS8GozPoQT5nSoIiVzGKO5HwpbiWj5PU6Tv2zbLMUztnp6K6sX9LhAkZw5fRQAiogi7CtPQLx8GmORmjYyGpVA/nZ9jOy77pszWkU58aVbaFq6I1Lpj1Nhdy9mdgPA0vfAIPk+A/2nQbFBZvxg+QYyxtgl8sMRL7OD0rni+xG2jTmfLJfnkd4H9y6DMQbV2DRdKCGias69HX28Kn7b0daDNvJYyc2sNJGwxavBKtQAtz8mGyAoQ8+lnJkdZpJ1O10Vq/zb5HTx5+kOLbpQU77/pn+l1G7V+UZihK++mkOP90xrSJifBr5mJBkGaY3Cevk6ZJlEe2BS+VVslW02zXzb1nuPDkQjFypOjLvbRsFb+YyzVQRLr0uYF0AoMXXtDm3cwNR8jtyoSacFygbuJDM6V+l6B3s6YMHdGzrSPBjHSPTX6EB9nHzy0R6yMSqPZdM80y7msKpar6VnXKPN7urMs6lvka7aw6I+ceKJyist/Qokk98U1Ru7wsakw+lrRWxigLHSTitB74buUxep7UtKxeCwHhb12s8CNxeb2NpQDLX2Zdo4UX7uEeWh05OgqfNBH/Byouq++8Z4g9hd4XKEntk98gaxiEUylt5NF+66LPCwrfxcwbADK9CE/Aeof87p8SVYgV46+/4MqndnkU9m/h3DUBwJRN1NTA2i/rkDGG1NPOrIJStMCjgGOObdNrxdMszuAIIJ05V4ZmUNok9qfoPQSArly0OYI3/x8D8ugnvG9jwyZKq8amhQDnnfrtE0f2XofLv4A4Fmtv0s76TdkXfvjOwPlaQff6ckePW+S538ebcxj1Jdr4Sw6KyIA+2UitHegLBBAnxb+DgXYBFYdUDFEbkks9aXl/rskgNtMWOTdYfM9eOs38fPb9S7m2FiAZojrRDdy1eB4St+wJJ94IdGSgYRIO2lMZ97aExU83C3VUNobIg26ip6jjA4fOtbb4N49l0U/W68bq8/b02BVIw2PJ/LvXrIYSUCcgzIm9bg38ZkyX/C5Gyd0bgA70wUtI9UZHAV8ncPyChm3R9GUXuBh8StPPNJNG+nBoTJBjTyjIbMnyIvmfQ4FnP2D6ExiRVkgQ/0WqxMVetGE3VPX0Ebq+sEgE/7TJIop+ZB2BQjU6NlV/lIySJF2YRXpvMsjuPZsWirGVcqi262DlWlPTwupT9jH9cuxzKEpwx46MpWM8ClqM3nPVSNjZrZ0s9O8p+E+OOF/owHOSOAkEUK3xuwcqVu2iwFWLV+4YwHSf2s1uV+3GPoMuTfn/zfSJL9bSri9IgwDL0r+JP4HYbY4gfaa0A7evEGuTdIxympyPDaG324WpAjPTOwfcOOK6GUO6E9JSpBSQ14WF6YWPdPHGjdFmnlLZK6wOUkqL1DVFLE8/SUtYiGAvt5bEg8xla35XMfvLfIL+2f74m70AKFWnm46aks=",
+        "sphincs_public_key": "CfWvSqQjeTj3t4gfQ8/bkN8J9fFf0EIklFejc7nDaHWzpwJDgyY0QTcn+fHh4bKL",
+        "sphincs_available": true,
+        "sphincs_implementation": "real",
+        "redundancy_level": 3,
+        "message": "🔐🔐🔐 QRS-3 GERADO - TRIPLA REDUNDÂNCIA QUÂNTICA (REAL)!",
+        "world_first": "🌍 PRIMEIRO NO MUNDO: Tripla assinatura quântica (ECDSA + ML-DSA + SPHINCS+)!",
+        "note": "✅ SPHINCS+ REAL via liboqs-python - Máxima segurança quântica!",
+        "benefits": [
+          "3 camadas de segurança independentes",
+          "ML-DSA: Segurança lattice-based (NIST PQC)",
+          "SPHINCS+: Segurança hash-based (NIST PQC)",
+          "ECDSA: Compatibilidade total",
+          "Máxima segurança quântica garantida"
+        ],
+        "security_guarantee": "Mesmo se 2 algoritmos falharem, o terceiro protege. Segurança máxima garantida."
+      },
+      "has_ecdsa": true,
+      "has_ml_dsa": true,
+      "has_sphincs": true,
+      "signature_components": 3,
+      "signature_structure": [
+        "success",
+        "classic_signature",
+        "ml_dsa_signature",
+        "algorithm",
+        "quantum_resistant",
+        "redundancy_level",
+        "message",
+        "signing_time_ms",
+        "optimized",
+        "world_first",
+        "security_guarantee",
+        "sphincs_signature",
+        "sphincs_implementation",
+        "note"
+      ],
+      "redundancy_level": 3,
+      "redundancy": "3/3",
+      "meets_redundancy_requirement": true,
+      "attack_simulation": [
+        {
+          "algorithm": "ECDSA",
+          "vulnerable_to_shor": true,
+          "protection": "Redundância (ML-DSA + SPHINCS+ ainda válidos)"
+        },
+        {
+          "algorithm": "ML-DSA",
+          "vulnerable_to_shor": false,
+          "protection": "Baseado em lattices (resistente a Shor)"
+        },
+        {
+          "algorithm": "SPHINCS+",
+          "vulnerable_to_shor": false,
+          "protection": "Baseado em hash (resistente a Shor)"
+        }
+      ],
+      "conclusion": "QRS-3 mantém segurança mesmo se ECDSA for quebrado",
+      "status": "PASSED"
+    },
+    {
+      "benchmark_type": "QRS-3 vs ECDSA",
+      "iterations": 50,
+      "timestamp": "2025-12-08T13:24:25.221297",
+      "ecdsa": {
+        "avg_time_ms": 0.0013828277587890625,
+        "min_time_ms": 0.000476837158203125,
+        "max_time_ms": 0.032901763916015625
+      },
+      "qrs3": {
+        "avg_time_ms": 0.0012636184692382812,
+        "min_time_ms": 0.0007152557373046875,
+        "max_time_ms": 0.01049041748046875
+      },
+      "overhead": {
+        "percentage": -8.62068965517241,
+        "absolute_ms": -0.00011920928955078125
+      },
+      "quantum_resistance": {
+        "ecdsa": false,
+        "qrs3": true
+      }
+    }
+  ],
+  "summary": {
+    "total_tests": 3,
+    "passed": 1,
+    "failed": 0,
+    "errors": 0
+  }
+}

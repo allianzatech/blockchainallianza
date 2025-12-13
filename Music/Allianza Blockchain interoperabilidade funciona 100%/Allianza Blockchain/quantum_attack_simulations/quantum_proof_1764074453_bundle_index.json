@@ -1,0 +1,21 @@
+{
+  "canonical_sha256": "93a1b9985e5a5a4d9686cf6448ad5174559fee94367b00c6f4c29ee0c5cee6b8",
+  "files": {
+    "canonical_hash": "quantum_proof_1764074453_canonical.sha256",
+    "mathematical_proof": "quantum_proof_1764074453_mathematical_proof.json",
+    "pqc_signature": "quantum_proof_1764074453_pqc_signature.json",
+    "public_keys": "quantum_proof_1764074453_public_keys.json",
+    "simulation_json": "quantum_proof_1764074453_simulation.json",
+    "verification_commands": "quantum_proof_1764074453_verification_commands.json"
+  },
+  "generated_at": "2025-11-25T12:40:53.397116Z",
+  "proof_id": "quantum_proof_1764074453",
+  "signature_algorithm": "ML-DSA-128",
+  "verification_instructions": {
+    "step_1": "Calcular SHA-256 do simulation.json e comparar com canonical.sha256",
+    "step_2": "Verificar assinatura PQC usando public_keys e signature",
+    "step_3": "Reproduzir simulação com mesmo seed e verificar hash",
+    "step_4": "Validar prova matemática dos cálculos",
+    "step_5": "Executar comandos de verificação fornecidos"
+  }
+}

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Allianza Testnet - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Mobile Responsiveness */
+        @media (max-width: 640px) {
+            body { font-size: 16px; }
+            h1 { font-size: 1.75rem; }
+            h2 { font-size: 1.5rem; }
+            h3 { font-size: 1.25rem; }
+            button, a.button, .btn {
+                min-height: 44px;
+                min-width: 44px;
+                padding: 12px 24px;
+            }
+            .card { padding: 1rem; }
+        }
+        /* Touch-friendly */
+        @media (hover: none) and (pointer: coarse) {
+            button, a, .clickable {
+                -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <!-- Notice banner -->
+    <div id="notice-banner" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+        <div class="bg-gray-800 text-white p-6 rounded-lg shadow-lg max-w-lg w-full mx-4 border border-gray-600">
+            <h3 class="text-xl font-semibold mb-3">{{ t('notice_title') or 'Notice' }}</h3>
+            <p class="text-sm text-gray-200 leading-relaxed mb-4">
+                {{ t('notice_message') or 'We are continuously improving for a better experience. If you see any differences between the site, whitepaper, and testnet, please disregard them — we are evolving fast.' }}
+            </p>
+            <button id="notice-close" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition">
+                {{ t('notice_close') or 'Got it' }}
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Definir lang global para JavaScript
+        window.lang = '{{ lang or "en" }}';
+        window.t = function(key, defaultVal) {
+            // Traduções simples para JavaScript
+            const translations = {
+                'pt': {
+                    'copy': 'Copiar',
+                    'download': 'Baixar',
+                    'total_tests': 'Total de Testes',
+                    'successful_tests': 'Sucessos',
+                    'failed_tests': 'Falhas',
+                    'success_rate': 'Taxa de Sucesso',
+                    'view_details': 'Ver Detalhes',
+                    'executing_tests': 'Executando testes... Isso pode levar alguns minutos.',
+                    'error_executing': 'Erro ao executar testes:',
+                    'unknown_error': 'Erro desconhecido'
+                },
+                'en': {
+                    'copy': 'Copy',
+                    'download': 'Download',
+                    'total_tests': 'Total Tests',
+                    'successful_tests': 'Successful',
+                    'failed_tests': 'Failed',
+                    'success_rate': 'Success Rate',
+                    'view_details': 'View Details',
+                    'executing_tests': 'Executing tests... This may take a few minutes.',
+                    'error_executing': 'Error executing tests:',
+                    'unknown_error': 'Unknown error'
+                }
+            };
+            return translations[window.lang]?.[key] || defaultVal || key;
+        };
+    </script>
+
+    <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold mb-2">🌐 {{ t('dashboard_title') or 'Allianza Testnet' }}</h1>
+            <p class="text-gray-400">{{ t('dashboard_subtitle') or 'World\'s first testnet with native quantum protection' }}</p>
+            <!-- Language Switcher -->
+            <div class="mt-2 flex gap-2">
+                <a href="/set-language/pt" class="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded {{ 'bg-blue-600' if lang == 'pt' else '' }}">🇧🇷 PT</a>
+                <a href="/set-language/en" class="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded {{ 'bg-blue-600' if lang == 'en' else '' }}">🇺🇸 EN</a>
+            </div>
+        </div>
+
+        <!-- Network Info -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-lg font-semibold mb-2">Network ID</h3>
+                <p class="text-2xl font-mono">{{ network_info.network_id }}</p>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-lg font-semibold mb-2">Chain ID</h3>
+                <p class="text-2xl font-mono">{{ network_info.chain_id }}</p>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-lg font-semibold mb-2">{{ t('version') or 'Version' }}</h3>
+                <p class="text-2xl">{{ network_info.version }}</p>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <div class="bg-blue-900 p-6 rounded-lg">
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('total_blocks') or 'Total Blocks' }}</h3>
+                <p class="text-3xl font-bold">{{ stats.total_blocks }}</p>
+            </div>
+            <div class="bg-green-900 p-6 rounded-lg">
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('total_transactions') or 'Total Transactions' }}</h3>
+                <p class="text-3xl font-bold">{{ stats.total_transactions }}</p>
+            </div>
+            <div class="bg-purple-900 p-6 rounded-lg">
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('tps_24h') or 'TPS (24h)' }}</h3>
+                <p class="text-3xl font-bold">{{ stats.tps_24h_avg }}</p>
+            </div>
+            <div class="bg-yellow-900 p-6 rounded-lg">
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('avg_latency') or 'Average Latency' }}</h3>
+                <p class="text-3xl font-bold">{{ stats.latency_avg_ms }}ms</p>
+            </div>
+        </div>
+
+        <!-- Developer Hub & Leaderboard -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <a href="/developer-hub" class="bg-gradient-to-br from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 p-4 sm:p-5 rounded-lg transition transform hover:scale-105 shadow-lg">
+                <div class="flex items-center gap-3 sm:gap-4">
+                    <i class="fas fa-rocket text-3xl sm:text-4xl"></i>
+                    <div>
+                        <h3 class="text-lg sm:text-xl font-semibold mb-1">🚀 {{ t('developer_hub') or 'Developer Hub' }}</h3>
+                        <p class="text-xs sm:text-sm text-gray-200">{{ t('quick_start_guide') or 'Quick Start Guide' }}</p>
+                        <p class="text-xs text-gray-300 mt-1 hidden sm:block">{{ t('start_integrating') or 'Start integrating in minutes' }}</p>
+                    </div>
+                </div>
+            </a>
+            <a href="/leaderboard" class="bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 p-4 sm:p-5 rounded-lg transition transform hover:scale-105 shadow-lg">
+                <div class="flex items-center gap-3 sm:gap-4">
+                    <i class="fas fa-trophy text-3xl sm:text-4xl"></i>
+                    <div>
+                        <h3 class="text-lg sm:text-xl font-semibold mb-1">🏆 {{ t('leaderboard') or 'Leaderboard' }}</h3>
+                        <p class="text-xs sm:text-sm text-gray-200">{{ t('ranking') or 'Ranking' }}</p>
+                        <p class="text-xs text-gray-300 mt-1 hidden sm:block">{{ leaderboard_stats.total_users or 0 }} {{ t('developers') or 'developers' }}</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Atividade Recente -->
+        {% if recent_activities %}
+        <div class="bg-gray-800 rounded-lg p-6 mb-6 sm:mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-semibold">
+                    <i class="fas fa-history text-blue-400 mr-2"></i>
+                    {{ t('recent_activity') or 'Recent Activity' }}
+                </h2>
+                <a href="/leaderboard" class="text-sm text-blue-400 hover:text-blue-300">
+                    {{ t('view_all') or 'View all' }} <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+            <div class="space-y-2 max-h-64 overflow-y-auto">
+                {% for activity in recent_activities[:10] %}
+                <div class="bg-gray-700 rounded-lg p-3 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        {% if activity.type == "test_run" %}
+                        <i class="fas fa-vial text-blue-400"></i>
+                        {% elif activity.type == "proof_generated" %}
+                        <i class="fas fa-shield-alt text-green-400"></i>
+                        {% elif activity.type == "qss_request" %}
+                        <i class="fas fa-bolt text-yellow-400"></i>
+                        {% else %}
+                        <i class="fas fa-circle text-gray-400"></i>
+                        {% endif %}
+                        <div>
+                            <p class="text-sm">
+                                <span class="font-semibold">{{ activity.user_name }}</span>
+                                {% if activity.type == "test_run" %}
+                                {{ t('ran_test') or 'ran a test' }}
+                                {% elif activity.type == "proof_generated" %}
+                                {{ t('generated_proof') or 'generated a quantum proof' }}
+                                {% elif activity.type == "qss_request" %}
+                                {{ t('made_qss_request') or 'made a QSS request' }}
+                                {% endif %}
+                            </p>
+                            <p class="text-xs text-gray-400">
+                                {{ activity.timestamp[:19].replace('T', ' ') }}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm font-semibold text-green-400">+{{ activity.points }}</div>
+                        <div class="text-xs text-gray-400">{{ t('points') or 'points' }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Quick Links -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 mb-6 sm:mb-8">
+            <a href="/faucet" class="bg-green-600 hover:bg-green-700 p-3 sm:p-4 rounded-lg text-center transition transform hover:scale-105">
+                <i class="fas fa-faucet text-2xl sm:text-3xl mb-1"></i>
+                <h3 class="text-sm sm:text-base font-semibold">{{ t('faucet') or 'Faucet' }}</h3>
+                <p class="text-xs text-gray-300 hidden sm:block">{{ t('obtain_tokens') or 'Obtain tokens' }}</p>
+            </a>
+            <a href="/explorer" class="bg-blue-600 hover:bg-blue-700 p-3 sm:p-4 rounded-lg text-center transition transform hover:scale-105">
+                <i class="fas fa-search text-2xl sm:text-3xl mb-1"></i>
+                <h3 class="text-sm sm:text-base font-semibold">{{ t('explorer') or 'Explorer' }}</h3>
+                <p class="text-xs text-gray-300 hidden sm:block">{{ t('explore_blocks') or 'Blocks and transactions' }}</p>
+            </a>
+            <a href="/qrs3-verifier" class="bg-purple-600 hover:bg-purple-700 p-3 sm:p-4 rounded-lg text-center transition transform hover:scale-105">
+                <i class="fas fa-shield-alt text-2xl sm:text-3xl mb-1"></i>
+                <h3 class="text-sm sm:text-base font-semibold">{{ t('qrs3_verifier') or 'QRS-3' }}</h3>
+                <p class="text-xs text-gray-300 hidden sm:block">{{ t('verify_signatures') or 'Verify signatures' }}</p>
+            </a>
+            <a href="/dashboard/quantum-attack-simulator" class="bg-gradient-to-br from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 p-3 sm:p-4 rounded-lg text-center transition transform hover:scale-105 shadow-lg">
+                <i class="fas fa-flask text-2xl sm:text-3xl mb-1"></i>
+                <h3 class="text-sm sm:text-base font-semibold">{{ t('quantum_attack_simulator') or 'Simulator' }}</h3>
+                <p class="text-xs text-gray-300 hidden sm:block">{{ t('test_security') or 'Quantum Attack' }}</p>
+            </a>
+            <a href="/qss" class="bg-gradient-to-br from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 p-3 sm:p-4 rounded-lg text-center transition transform hover:scale-105 shadow-lg">
+                <i class="fas fa-shield-virus text-2xl sm:text-3xl mb-1"></i>
+                <h3 class="text-sm sm:text-base font-semibold">{{ t('quantum_security_service') or 'QSS' }}</h3>
+                <p class="text-xs text-gray-300 hidden sm:block">{{ t('quantum_security_other') or 'Security Service' }}</p>
+            </a>
+        </div>
+
+        <!-- Novas Funcionalidades Profissionais -->
+        <div class="mb-8">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">🔐 {{ t('professional_features') or 'Professional Features' }}</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+                <a href="/status" class="bg-gray-800 hover:bg-gray-700 p-3 sm:p-4 rounded-lg border border-green-500 transition">
+                    <i class="fas fa-chart-line text-2xl sm:text-3xl mb-1 text-green-400"></i>
+                    <h3 class="text-sm sm:text-base font-semibold">{{ t('status') or 'Status' }}</h3>
+                    <p class="text-xs text-gray-300 hidden sm:block">{{ t('monitoring') or 'Monitoring' }}</p>
+                </a>
+                <a href="/quantum-security" class="bg-gray-800 hover:bg-gray-700 p-3 sm:p-4 rounded-lg border border-purple-500 transition">
+                    <i class="fas fa-atom text-2xl sm:text-3xl mb-1 text-purple-400"></i>
+                    <h3 class="text-sm sm:text-base font-semibold">{{ t('qrs3_verifier') or 'QRS-3' }}</h3>
+                    <p class="text-xs text-gray-300 hidden sm:block">{{ t('qrs3_dashboard') or 'Dashboard' }}</p>
+                </a>
+                <a href="/interoperability" class="bg-gray-800 hover:bg-gray-700 p-3 sm:p-4 rounded-lg border border-blue-500 transition">
+                    <i class="fas fa-project-diagram text-2xl sm:text-3xl mb-1 text-blue-400"></i>
+                    <h3 class="text-sm sm:text-base font-semibold">{{ t('interoperability') or 'Interoperability' }}</h3>
+                    <p class="text-xs text-gray-300 hidden sm:block">{{ t('bridge_free_cross_chain') or 'Bridge-Free Cross-Chain' }}</p>
+                </a>
+                <a href="/alz-niev" class="bg-gray-800 hover:bg-gray-700 p-3 sm:p-4 rounded-lg border border-purple-500 transition">
+                    <i class="fas fa-atom text-2xl sm:text-3xl mb-1 text-purple-400"></i>
+                    <h3 class="text-sm sm:text-base font-semibold">{{ t('alz_niev') or 'ALZ-NIEV' }}</h3>
+                    <p class="text-xs text-gray-300 hidden sm:block">{{ t('5_layers') or '5 Layers' }}</p>
+                </a>
+                <a href="/public-tests" class="bg-gray-800 hover:bg-gray-700 p-3 sm:p-4 rounded-lg border border-yellow-500 transition">
+                    <i class="fas fa-vial text-2xl sm:text-3xl mb-1 text-yellow-400"></i>
+                    <h3 class="text-sm sm:text-base font-semibold">{{ t('tests') or 'Tests' }}</h3>
+                    <p class="text-xs text-gray-300 hidden sm:block">{{ t('public') or 'Public' }}</p>
+                </a>
+                <a href="/professional-tests" class="bg-gray-800 hover:bg-gray-700 p-3 sm:p-4 rounded-lg border border-cyan-500 transition">
+                    <i class="fas fa-vial text-2xl sm:text-3xl mb-1 text-cyan-400"></i>
+                    <h3 class="text-sm sm:text-base font-semibold">{{ t('professional') or 'Professional' }}</h3>
+                    <p class="text-xs text-gray-300 hidden sm:block">{{ t('complete_suite_short') or 'Complete suite' }}</p>
+                </a>
+                <a href="/tests/complete" class="bg-gradient-to-br from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 p-3 sm:p-4 rounded-lg border border-green-400 transition shadow-lg">
+                    <i class="fas fa-check-double text-2xl sm:text-3xl mb-1 text-white"></i>
+                    <h3 class="text-sm sm:text-base font-semibold">{{ t('validations_complete') or 'Validations Complete' }}</h3>
+                    <p class="text-xs text-gray-200 hidden sm:block">{{ t('complete') or 'Complete' }}</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div class="bg-gray-800 p-6 rounded-lg">
+            <h3 class="text-xl font-semibold mb-4">{{ t('network_status_title') or 'Network Status' }}</h3>
+            <div class="flex items-center">
+                <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                <span class="text-lg">{{ stats.network_status|upper }}</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<script>
+    // Show notice EVERY TIME user enters dashboard (removed sessionStorage)
+    (function() {
+        const banner = document.getElementById('notice-banner');
+        const closeBtn = document.getElementById('notice-close');
+        if (!banner || !closeBtn) return;
+
+        // Sempre mostrar o aviso (removido sessionStorage)
+        banner.classList.remove('hidden');
+
+        closeBtn.addEventListener('click', () => {
+            banner.classList.add('hidden');
+            // Não salvar no sessionStorage - aviso aparece sempre na próxima vez
+        });
+    })();
+</script>
+

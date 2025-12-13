@@ -1,0 +1,6 @@
+{
+  "quantum_assumptions": {
+    "qubit_quality": "logical_qubits_with_surface_code"
+  },
+  "seed": 12345
+}

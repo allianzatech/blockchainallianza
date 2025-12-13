@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="{{ lang or 'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 {{ t('leaderboard') or 'Leaderboard - Allianza Testnet' }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+                .btn-back {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #374151;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        
+        
+        
+        .btn-back:hover {
+            background: #4b5563;
+        }
+.rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; }
+        .rank-2 { background: linear-gradient(135deg, #C0C0C0, #808080); color: #000; }
+        .rank-3 { background: linear-gradient(135deg, #CD7F32, #8B4513); color: #fff; }
+        .rank-other { background: #374151; color: #fff; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="javascript:history.back()" class="btn-back mb-4">
+{{ t('back') or 'Back' }}
+            </a>
+            <h1 class="text-4xl font-bold mb-2">🏆 {{ t('leaderboard') or 'Leaderboard' }}</h1>
+            <p class="text-gray-400">{{ t('developer_ranking') or 'Ranking of developers and contributions' }}</p>
+        </div>
+
+        <!-- Stats Summary -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-blue-900 rounded-lg p-4">
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('total_users') or 'Total Users' }}</h3>
+                <p class="text-3xl font-bold">{{ stats.total_users or 0 }}</p>
+            </div>
+            <div class="bg-green-900 rounded-lg p-4">
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('total_points') or 'Total Points' }}</h3>
+                <p class="text-3xl font-bold">{{ stats.total_points or 0 }}</p>
+            </div>
+            <div class="bg-purple-900 rounded-lg p-4">
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('tests_executed') or 'Tests Executed' }}</h3>
+                <p class="text-3xl font-bold">{{ stats.total_tests or 0 }}</p>
+            </div>
+            <div class="bg-yellow-900 rounded-lg p-4">
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('proofs_generated') or 'Proofs Generated' }}</h3>
+                <p class="text-3xl font-bold">{{ stats.total_proofs or 0 }}</p>
+            </div>
+        </div>
+
+        <!-- Top Users -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-8">
+            <h2 class="text-2xl font-semibold mb-4">
+                <i class="fas fa-trophy text-yellow-400 mr-2"></i>
+                {{ t('top_developers') or 'Top Developers' }}
+            </h2>
+            
+            {% if top_users %}
+            <div class="space-y-3">
+                {% for user in top_users %}
+                <div class="bg-gray-700 rounded-lg p-4 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        {% set rank = loop.index %}
+                        {% if rank == 1 %}
+                        <div class="rank-badge rank-1">🥇</div>
+                        {% elif rank == 2 %}
+                        <div class="rank-badge rank-2">🥈</div>
+                        {% elif rank == 3 %}
+                        <div class="rank-badge rank-3">🥉</div>
+                        {% else %}
+                        <div class="rank-badge rank-other">#{{ rank }}</div>
+                        {% endif %}
+                        
+                        <div>
+                            <h3 class="text-lg font-semibold">{{ user.name }}</h3>
+                            <div class="flex gap-4 text-sm text-gray-400">
+                                <span><i class="fas fa-vial mr-1"></i>{{ user.tests_run }} testes</span>
+                                <span><i class="fas fa-shield-alt mr-1"></i>{{ user.proofs_generated }} provas</span>
+                                <span><i class="fas fa-bolt mr-1"></i>{{ user.qss_requests }} QSS</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-right">
+                        <div class="text-2xl font-bold text-yellow-400">{{ user.points }}</div>
+                        <div class="text-xs text-gray-400">pontos</div>
+                        {% if user.badges %}
+                        <div class="flex gap-1 mt-2">
+                            {% for badge in user.badges %}
+                            <span class="text-lg" title="{{ badge.name }}">{{ badge.icon }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-8 text-gray-400">
+                <i class="fas fa-trophy text-6xl mb-4 opacity-50"></i>
+                <p>{{ t('no_developers_yet') or 'No developer yet. Be the first!' }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-2xl font-semibold mb-4">
+                <i class="fas fa-history text-blue-400 mr-2"></i>
+                {{ t('recent_activities') or 'Recent Activities' }}
+            </h2>
+            
+            {% if recent_activities %}
+            <div class="space-y-2 max-h-96 overflow-y-auto">
+                {% for activity in recent_activities %}
+                <div class="bg-gray-700 rounded-lg p-3 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        {% if activity.type == "test_run" %}
+                        <i class="fas fa-vial text-blue-400"></i>
+                        {% elif activity.type == "proof_generated" %}
+                        <i class="fas fa-shield-alt text-green-400"></i>
+                        {% elif activity.type == "qss_request" %}
+                        <i class="fas fa-bolt text-yellow-400"></i>
+                        {% else %}
+                        <i class="fas fa-circle text-gray-400"></i>
+                        {% endif %}
+                        
+                        <div>
+                            <p class="text-sm">
+                                <span class="font-semibold">{{ activity.user_name }}</span>
+                                {% if activity.type == "test_run" %}
+                                executou um teste
+                                {% elif activity.type == "proof_generated" %}
+                                gerou uma prova quântica
+                                {% elif activity.type == "qss_request" %}
+                                fez uma requisição QSS
+                                {% else %}
+                                realizou uma atividade
+                                {% endif %}
+                            </p>
+                            <p class="text-xs text-gray-400">
+                                {{ activity.timestamp[:19].replace('T', ' ') }}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-right">
+                        <div class="text-sm font-semibold text-green-400">+{{ activity.points }}</div>
+                        <div class="text-xs text-gray-400">pontos</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-8 text-gray-400">
+                <i class="fas fa-history text-6xl mb-4 opacity-50"></i>
+                <p>Nenhuma atividade recente</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Auto-refresh a cada 30 segundos
+        setInterval(() => {
+            location.reload();
+        }, 30000);
+    </script>
+</body>
+</html>
+

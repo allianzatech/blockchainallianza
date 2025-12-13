@@ -1,0 +1,49 @@
+{
+  "success": true,
+  "test_id": "proof_of_lock_1763768556",
+  "test_name": "Proof-of-Lock com ZK Proofs",
+  "results": {
+    "lock_created": true,
+    "lock_id": "lock_52c2b57d073fd0dfcf254aed06198651",
+    "source_chain": "polygon",
+    "target_chain": "bitcoin",
+    "amount": 0.1,
+    "lock_tx_hash": "0xc79ebd3b3bcf74e65e5d16fbc70f4159f3d0e2e9ab4a542a53f87cc48542d049",
+    "merkle_root": "0x14a81086da4d85ee1d3d11dd04a16f746427ee723c14d6f3765ef5a93368a434",
+    "zk_proof": {
+      "circuit_id": "proof_of_lock_v1",
+      "public_inputs": {
+        "lock_id": "lock_52c2b57d073fd0dfcf254aed06198651",
+        "merkle_root": "0x14a81086da4d85ee1d3d11dd04a16f746427ee723c14d6f3765ef5a93368a434",
+        "source_chain": "polygon",
+        "target_chain": "bitcoin",
+        "amount": 0.1
+      },
+      "proof": "0x566a72cda1d73fc7da33e8089bbf6e0ee7e934fdfbcbd481bb493ef3dca36169aa2e81088766938446f44ad4559b8a91ddbbba88e2f93e98d5d76f3cff236017362bebbd63ea9da167365c20bf1cd7c6ab4b59d3d538ede6c99b2374029e1d8d52cf89486f291674570f86b573246ee2b346752b5bb4e8d92350d18b9de66fe2",
+      "verifier_id": "groth16_verifier_v1"
+    },
+    "total_time_ms": 33703.29
+  },
+  "proofs": {
+    "lock_proof": {
+      "lock_id": "lock_52c2b57d073fd0dfcf254aed06198651",
+      "tx_hash": "0xc79ebd3b3bcf74e65e5d16fbc70f4159f3d0e2e9ab4a542a53f87cc48542d049",
+      "block_number": null,
+      "merkle_root": "0x14a81086da4d85ee1d3d11dd04a16f746427ee723c14d6f3765ef5a93368a434",
+      "zk_proof": {
+        "circuit_id": "proof_of_lock_v1",
+        "public_inputs": {
+          "lock_id": "lock_52c2b57d073fd0dfcf254aed06198651",
+          "merkle_root": "0x14a81086da4d85ee1d3d11dd04a16f746427ee723c14d6f3765ef5a93368a434",
+          "source_chain": "polygon",
+          "target_chain": "bitcoin",
+          "amount": 0.1
+        },
+        "proof": "0x566a72cda1d73fc7da33e8089bbf6e0ee7e934fdfbcbd481bb493ef3dca36169aa2e81088766938446f44ad4559b8a91ddbbba88e2f93e98d5d76f3cff236017362bebbd63ea9da167365c20bf1cd7c6ab4b59d3d538ede6c99b2374029e1d8d52cf89486f291674570f86b573246ee2b346752b5bb4e8d92350d18b9de66fe2",
+        "verifier_id": "groth16_verifier_v1"
+      },
+      "verification_command": "python verify_allianza_proofs.py proofs/testnet/interoperability/proof_of_lock_1763768556.json"
+    }
+  },
+  "timestamp": "2025-11-21T23:43:10.176886Z"
+}
