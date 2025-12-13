@@ -4729,6 +4729,15 @@ class RealCrossChainBridge:
                     print(f"   utxos_count: {len(utxos) if utxos else 0}")
                     print(f"   balance_btc < total_needed? {balance_btc < total_needed}")
                     
+                    # ✅ PROTEÇÃO FINAL: Se balance_btc ainda for 0 mas temos UTXOs, recalcular
+                    if balance_btc == 0.0 and utxos and len(utxos) > 0:
+                        print(f"\n   ⚠️⚠️⚠️  PROTEÇÃO FINAL: balance_btc é 0 mas temos UTXOs!")
+                        total_utxo_value = sum(u.get('value', 0) for u in utxos)
+                        balance_from_utxos = total_utxo_value / 100000000
+                        print(f"   ✅✅✅ Recalculando balance_btc dos UTXOs: {balance_from_utxos} BTC")
+                        balance_btc = balance_from_utxos
+                        print(f"   ✅✅✅ balance_btc PROTEGIDO: {balance_btc} BTC")
+                    
                     if balance_btc < total_needed:
                         # 🚨🚨🚨 ÚLTIMA TENTATIVA: Verificar Blockstream UMA VEZ MAIS
                         print(f"\n🚨🚨🚨 SALDO INSUFICIENTE DETECTADO - ÚLTIMA VERIFICAÇÃO DE EMERGÊNCIA")
