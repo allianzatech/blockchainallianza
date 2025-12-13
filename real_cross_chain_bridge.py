@@ -4316,7 +4316,7 @@ class RealCrossChainBridge:
                                 print(f"✅ MAS: Saldo encontrado na busca simplificada: {balance_btc} BTC em {from_address}")
                                 print(f"   Usando saldo da busca simplificada - NÃO criando wallet (já temos UTXOs)")
                                 # Não criar wallet se já temos saldo e UTXOs da busca simplificada
-                                continue
+                                pass  # Não fazer nada, já temos saldo
                             else:
                                 print(f"⚠️  Usando endereço do .env: {expected_address}")
                             
