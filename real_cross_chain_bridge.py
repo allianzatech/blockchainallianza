@@ -4122,95 +4122,81 @@ class RealCrossChainBridge:
                     print(f"🚨 amount_btc: {amount_btc}", file=sys.stderr)
                     print(f"🚨 amount_btc: {amount_btc}")
                     
-                    # 🚨🚨🚨 PATCH CRÍTICO: FORÇAR BUSCA DE SALDO VIA BLOCKSTREAM ANTES DE QUALQUER COISA
-                    # Isso garante que sempre temos o saldo correto, mesmo se a wallet não encontrar
-                    # ✅ CORREÇÃO DEFINITIVA: SEMPRE buscar saldo do endereço esperado, SEM EXCEÇÕES
-                    address_to_check = expected_address or (from_address if from_address else None)
+                    # ✅ MÉTODO SIMPLES E DIRETO: Buscar saldo e UTXOs via Blockstream (como simple_bitcoin_direct.py)
+                    # Sempre usar o endereço esperado do .env primeiro
+                    address_to_check = expected_address
+                    
+                    if not address_to_check:
+                        # Se não tem endereço esperado, tentar derivar da chave privada
+                        try:
+                            from bitcoinlib.keys import HDKey
+                            key_obj = HDKey(from_private_key, network='testnet')
+                            address_to_check = key_obj.address()
+                            print(f"   📍 Endereço derivado da chave: {address_to_check}")
+                        except:
+                            pass
                     
                     if address_to_check:
-                        print(f"\n🚨🚨🚨 PATCH CRÍTICO: Forçando busca de saldo via Blockstream para {address_to_check}")
-                        print(f"   ⚠️⚠️⚠️  IGNORANDO TODAS AS OUTRAS VERIFICAÇÕES - BUSCANDO DIRETO NO BLOCKSTREAM")
+                        print(f"\n🔍 Buscando saldo e UTXOs via Blockstream para: {address_to_check}")
                         try:
-                            forced_balance_url = f"https://blockstream.info/testnet/api/address/{address_to_check}"
-                            print(f"   🔍🔍🔍 FORCED BALANCE CHECK: {forced_balance_url}")
+                            # 1. Buscar saldo
+                            balance_url = f"https://blockstream.info/testnet/api/address/{address_to_check}"
+                            balance_resp = requests.get(balance_url, timeout=15, headers={'Cache-Control': 'no-cache'})
                             
-                            # ✅ FORÇAR: Não usar cache, sempre buscar direto
-                            forced_resp = requests.get(forced_balance_url, timeout=15, headers={'Cache-Control': 'no-cache'})
-                            print(f"   🔍🔍🔍 FORCED BALANCE CHECK Status: {forced_resp.status_code}")
-                            
-                            if forced_resp.status_code == 200:
-                                forced_data = forced_resp.json()
-                                print(f"   🔍🔍🔍 FORCED BALANCE CHECK Response completo:")
-                                print(f"      {json.dumps(forced_data, indent=2)}")
+                            if balance_resp.status_code == 200:
+                                balance_data = balance_resp.json()
+                                funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
+                                spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
+                                balance_sats = funded - spent
+                                balance_btc = balance_sats / 100000000
                                 
-                                forced_funded = forced_data.get('chain_stats', {}).get('funded_txo_sum', 0)
-                                forced_spent = forced_data.get('chain_stats', {}).get('spent_txo_sum', 0)
-                                forced_balance_sats = forced_funded - forced_spent
-                                forced_balance_btc = forced_balance_sats / 100000000
-                                
-                                print(f"   🔍🔍🔍 FORCED BALANCE: funded={forced_funded}, spent={forced_spent}, balance={forced_balance_sats} sats ({forced_balance_btc:.8f} BTC)")
-                                
-                                # ✅ FORÇAR: SEMPRE usar o saldo encontrado, mesmo se for 0
-                                print(f"   ✅✅✅ DEFININDO balance_btc FORÇADO: {forced_balance_btc} BTC")
-                                balance_btc = forced_balance_btc
+                                print(f"   ✅ Saldo encontrado: {balance_btc:.8f} BTC ({balance_sats} sats)")
                                 from_address = address_to_check
-                                print(f"   ✅✅✅ balance_btc DEFINIDO: {balance_btc} BTC")
-                                print(f"   ✅✅✅ from_address DEFINIDO: {from_address}")
                                 
-                                # Buscar UTXOs também
-                                forced_utxo_url = f"{forced_balance_url}/utxo"
-                                print(f"   🔍🔍🔍 FORCED UTXO CHECK: {forced_utxo_url}")
-                                forced_utxo_resp = requests.get(forced_utxo_url, timeout=20, headers={'Cache-Control': 'no-cache'})
-                                print(f"   🔍🔍🔍 FORCED UTXO CHECK Status: {forced_utxo_resp.status_code}")
+                                # 2. Buscar UTXOs
+                                utxo_url = f"{balance_url}/utxo"
+                                utxo_resp = requests.get(utxo_url, timeout=20, headers={'Cache-Control': 'no-cache'})
                                 
-                                if forced_utxo_resp.status_code == 200:
-                                    forced_utxos = forced_utxo_resp.json()
-                                    print(f"   ✅✅✅ UTXOs FORÇADOS encontrados: {len(forced_utxos)}")
-                                    print(f"   🔍🔍🔍 Primeiros 5 UTXOs:")
-                                    for i, u in enumerate(forced_utxos[:5]):
-                                        print(f"      UTXO {i+1}: txid={u.get('txid', 'N/A')[:20]}..., vout={u.get('vout', 'N/A')}, value={u.get('value', 'N/A')}, confirmed={u.get('status', {}).get('confirmed', False)}")
+                                if utxo_resp.status_code == 200:
+                                    utxos_data = utxo_resp.json()
+                                    print(f"   ✅ UTXOs encontrados: {len(utxos_data)}")
                                     
-                                    if forced_utxos:
-                                        utxos = []
-                                        for bs_utxo in forced_utxos:
-                                            # ✅ ACEITAR TODOS OS UTXOs, mesmo não confirmados (para testnet)
-                                            confirmed = bs_utxo.get('status', {}).get('confirmed', False)
-                                            if confirmed or True:  # Aceitar todos para testnet
-                                                utxos.append({
-                                                    'txid': bs_utxo.get('txid'),
-                                                    'vout': bs_utxo.get('vout', 0),
-                                                    'output_n': bs_utxo.get('vout', 0),
-                                                    'value': int(bs_utxo.get('value', 0)),
-                                                    'address': address_to_check,
-                                                    'confirmed': confirmed,
-                                                    'spent': False
-                                                })
-                                        print(f"   ✅✅✅ UTXOs FORÇADOS convertidos: {len(utxos)} UTXOs")
-                                        
-                                        if utxos:
-                                            total_forced_value = sum(u.get('value', 0) for u in utxos)
-                                            print(f"   ✅✅✅ Valor total dos UTXOs FORÇADOS: {total_forced_value} sats ({total_forced_value/100000000:.8f} BTC)")
-                                            # ✅ FORÇAR: SEMPRE usar o valor dos UTXOs (mais confiável)
-                                            balance_btc = total_forced_value / 100000000
-                                            print(f"   ✅✅✅ balance_btc FORÇADO com UTXOs: {balance_btc} BTC")
+                                    # Converter UTXOs para formato esperado
+                                    utxos = []
+                                    for bs_utxo in utxos_data:
+                                        # Aceitar UTXOs confirmados (para testnet, aceitar todos)
+                                        confirmed = bs_utxo.get('status', {}).get('confirmed', False)
+                                        if confirmed or True:  # Aceitar todos para testnet
+                                            utxos.append({
+                                                'txid': bs_utxo.get('txid'),
+                                                'vout': bs_utxo.get('vout', 0),
+                                                'output_n': bs_utxo.get('vout', 0),
+                                                'value': int(bs_utxo.get('value', 0)),
+                                                'address': address_to_check,
+                                                'confirmed': confirmed,
+                                                'spent': False
+                                            })
+                                    
+                                    if utxos:
+                                        # Usar valor total dos UTXOs (mais confiável)
+                                        total_value = sum(u.get('value', 0) for u in utxos)
+                                        balance_btc = total_value / 100000000
+                                        print(f"   ✅ Saldo calculado dos UTXOs: {balance_btc:.8f} BTC")
                                 else:
-                                    print(f"   ⚠️⚠️⚠️  Erro ao buscar UTXOs: Status {forced_utxo_resp.status_code}")
-                                    print(f"   Response: {forced_utxo_resp.text[:500]}")
+                                    print(f"   ⚠️  Erro ao buscar UTXOs: {utxo_resp.status_code}")
                             else:
-                                print(f"   ⚠️⚠️⚠️  Erro HTTP na busca forçada: {forced_resp.status_code}")
-                                print(f"   Response: {forced_resp.text[:500]}")
-                        except Exception as forced_err:
-                            print(f"   ❌❌❌ Erro na busca forçada: {forced_err}")
+                                print(f"   ⚠️  Erro ao buscar saldo: {balance_resp.status_code}")
+                        except Exception as e:
+                            print(f"   ❌ Erro na busca: {e}")
                             import traceback
                             traceback.print_exc()
                     else:
-                        print(f"   ⚠️⚠️⚠️  Nenhum endereço disponível para busca forçada (expected_address={expected_address}, from_address={from_address})")
+                        print(f"   ⚠️  Nenhum endereço disponível para verificar")
                     
-                    print(f"\n🚨🚨🚨 PATCH CRÍTICO: Estado APÓS busca forçada")
-                    print(f"   balance_btc: {balance_btc}")
+                    print(f"\n📊 Estado após busca:")
+                    print(f"   balance_btc: {balance_btc:.8f} BTC")
                     print(f"   from_address: {from_address}")
                     print(f"   utxos count: {len(utxos)}")
-                    print(f"   ⚠️⚠️⚠️  ESTE É O SALDO QUE SERÁ USADO - NÃO PERMITIR QUE SEJA RESETADO!")
                     
                     print(f"🔍 Procurando endereço com saldo...")
                     if expected_address:
