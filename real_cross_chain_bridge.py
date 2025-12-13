@@ -4285,10 +4285,20 @@ class RealCrossChainBridge:
                             print(f"   ⚠️  Erro ao testar {witness_type}: {e}")
                             continue
                     
+                    # ✅ CORREÇÃO CRÍTICA: Se já encontramos saldo na busca forçada, NÃO resetar!
                     # Se não encontrou saldo em nenhum tipo, usar o esperado do .env ou o primeiro
-                    if not wallet or balance_btc == 0.0:
+                    # MAS: Se já temos saldo da busca forçada, usar esse saldo e não resetar!
+                    balance_from_forced_check = balance_btc > 0.0 and from_address == address_to_check
+                    
+                    if not wallet or (balance_btc == 0.0 and not balance_from_forced_check):
                         if expected_address:
-                            print(f"⚠️  Nenhum saldo encontrado. Usando endereço do .env: {expected_address}")
+                            print(f"⚠️  Nenhum saldo encontrado nos witness_types testados.")
+                            if balance_from_forced_check:
+                                print(f"✅ MAS: Saldo encontrado na busca forçada: {balance_btc} BTC em {from_address}")
+                                print(f"   Usando saldo da busca forçada e criando wallet para esse endereço...")
+                            else:
+                                print(f"⚠️  Usando endereço do .env: {expected_address}")
+                            
                             # Tentar criar wallet com legacy (P2PKH) que é o mais comum
                             wallet = Wallet.create(
                                 wallet_name,
@@ -4296,7 +4306,9 @@ class RealCrossChainBridge:
                                 network='testnet',
                                 witness_type='legacy'
                             )
-                            from_address = expected_address
+                            # ✅ CORREÇÃO: Se já temos from_address da busca forçada, não sobrescrever!
+                            if not from_address or not balance_from_forced_check:
+                                from_address = expected_address
                             
                             # SOLUÇÃO CRÍTICA: Fazer scan IMEDIATAMENTE após criar wallet
                             # Isso sincroniza a wallet com a blockchain e faz ela reconhecer UTXOs
@@ -4313,21 +4325,25 @@ class RealCrossChainBridge:
                                 add_log("wallet_scan_error_after_create", {"error": str(scan_error)}, "warning")
                             
                             # ✅ CORREÇÃO CRÍTICA: Usar Blockstream em vez de BlockCypher (BlockCypher está desatualizado)
-                            try:
-                                # Usar Blockstream API (mais confiável e atualizado)
-                                balance_url = f"https://blockstream.info/testnet/api/address/{expected_address}"
-                                print(f"   🔍 CHECK BALANCE (Blockstream): {balance_url}")
-                                balance_response = requests.get(balance_url, timeout=10)
-                                print(f"   🔍 CHECK BALANCE: Status: {balance_response.status_code}")
-                                if balance_response.status_code == 200:
-                                    balance_data = balance_response.json()
-                                    print(f"   🔍 CHECK BALANCE: Dados: {json.dumps(balance_data)[:300]}...")
-                                    funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
-                                    spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
-                                    balance_satoshis = funded - spent
-                                    balance_btc = balance_satoshis / 100000000
-                                    print(f"   🔍 CHECK BALANCE: funded={funded}, spent={spent}, balance={balance_satoshis} sats ({balance_btc:.8f} BTC)")
-                                    print(f"✅ Saldo do endereço esperado: {balance_btc} BTC")
+                            # ✅ PROTEÇÃO: Se já temos saldo da busca forçada, não sobrescrever!
+                            if not balance_from_forced_check:
+                                try:
+                                    # Usar Blockstream API (mais confiável e atualizado)
+                                    balance_url = f"https://blockstream.info/testnet/api/address/{expected_address}"
+                                    print(f"   🔍 CHECK BALANCE (Blockstream): {balance_url}")
+                                    balance_response = requests.get(balance_url, timeout=10)
+                                    print(f"   🔍 CHECK BALANCE: Status: {balance_response.status_code}")
+                                    if balance_response.status_code == 200:
+                                        balance_data = balance_response.json()
+                                        print(f"   🔍 CHECK BALANCE: Dados: {json.dumps(balance_data)[:300]}...")
+                                        funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
+                                        spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
+                                        balance_satoshis = funded - spent
+                                        balance_btc = balance_satoshis / 100000000
+                                        print(f"   🔍 CHECK BALANCE: funded={funded}, spent={spent}, balance={balance_satoshis} sats ({balance_btc:.8f} BTC)")
+                                        print(f"✅ Saldo do endereço esperado: {balance_btc} BTC")
+                            else:
+                                print(f"   ✅✅✅ Usando saldo da busca forçada: {balance_btc} BTC (NÃO sobrescrever!)")
                             except Exception as balance_error:
                                 print(f"⚠️  Erro ao verificar saldo: {balance_error}")
                         else:
