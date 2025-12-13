@@ -3,6 +3,7 @@
 !/Allianza Blockchain/
 !.gitignore
 !render.yaml
+!Procfile
 
 # Ignorar arquivos do sistema
 AppData/
