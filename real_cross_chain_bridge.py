@@ -4193,17 +4193,30 @@ class RealCrossChainBridge:
                     else:
                         print(f"   ⚠️  Nenhum endereço disponível para verificar")
                     
-                    print(f"\n📊 Estado após busca:")
+                    print(f"\n📊 Estado após busca simplificada:")
                     print(f"   balance_btc: {balance_btc:.8f} BTC")
                     print(f"   from_address: {from_address}")
                     print(f"   utxos count: {len(utxos)}")
                     
-                    print(f"🔍 Procurando endereço com saldo...")
-                    if expected_address:
-                        print(f"   Endereço esperado do .env: {expected_address}")
+                    # ✅ CRÍTICO: Se já encontramos saldo e UTXOs na busca simplificada, PULAR criação de wallets
+                    if balance_btc > 0.0 and len(utxos) > 0 and from_address:
+                        print(f"✅✅✅ SALDO E UTXOs JÁ ENCONTRADOS NA BUSCA SIMPLIFICADA!")
+                        print(f"   Saldo: {balance_btc:.8f} BTC")
+                        print(f"   UTXOs: {len(utxos)}")
+                        print(f"   Endereço: {from_address}")
+                        print(f"   ⚠️  PULANDO criação de wallets - usando dados da busca simplificada")
+                        # Pular todo o loop de criação de wallets
+                        skip_wallet_creation = True
+                    else:
+                        skip_wallet_creation = False
+                        print(f"🔍 Procurando endereço com saldo...")
+                        if expected_address:
+                            print(f"   Endereço esperado do .env: {expected_address}")
                     
-                    # Tentar cada tipo de witness_type
-                    for witness_type in witness_types_to_try:
+                    # Tentar cada tipo de witness_type (APENAS se não encontramos saldo na busca simplificada)
+                    if not skip_wallet_creation:
+                        for witness_type in witness_types_to_try:
+                            try:
                         try:
                             # Criar wallet temporário para este tipo
                             test_wallet_name = f"{wallet_name}_{witness_type}"
@@ -4281,18 +4294,30 @@ class RealCrossChainBridge:
                         except Exception as e:
                             print(f"   ⚠️  Erro ao testar {witness_type}: {e}")
                             continue
+                    else:
+                        print(f"   ⚠️  Loop de criação de wallets PULADO - usando dados da busca simplificada")
                     
-                    # ✅ CORREÇÃO CRÍTICA: Se já encontramos saldo na busca forçada, NÃO resetar!
+                    # ✅ CORREÇÃO CRÍTICA: Se já encontramos saldo na busca simplificada, NÃO resetar!
                     # Se não encontrou saldo em nenhum tipo, usar o esperado do .env ou o primeiro
-                    # MAS: Se já temos saldo da busca forçada, usar esse saldo e não resetar!
-                    balance_from_forced_check = balance_btc > 0.0 and from_address == address_to_check
+                    # MAS: Se já temos saldo da busca simplificada, usar esse saldo e não resetar!
+                    balance_from_simplified_check = balance_btc > 0.0 and len(utxos) > 0 and from_address
                     
-                    if not wallet or (balance_btc == 0.0 and not balance_from_forced_check):
+                    # ✅ CRÍTICO: Se já temos saldo da busca simplificada, NÃO tentar criar wallet ou resetar!
+                    if skip_wallet_creation and balance_from_simplified_check:
+                        print(f"✅✅✅ USANDO SALDO DA BUSCA SIMPLIFICADA - NÃO CRIANDO WALLET")
+                        print(f"   balance_btc: {balance_btc:.8f} BTC")
+                        print(f"   from_address: {from_address}")
+                        print(f"   utxos: {len(utxos)}")
+                        # Pular criação de wallet e continuar direto para criação de transação
+                        wallet = None  # Não precisamos de wallet se já temos UTXOs
+                    elif not wallet or (balance_btc == 0.0 and not balance_from_simplified_check):
                         if expected_address:
                             print(f"⚠️  Nenhum saldo encontrado nos witness_types testados.")
-                            if balance_from_forced_check:
-                                print(f"✅ MAS: Saldo encontrado na busca forçada: {balance_btc} BTC em {from_address}")
-                                print(f"   Usando saldo da busca forçada e criando wallet para esse endereço...")
+                            if balance_from_simplified_check:
+                                print(f"✅ MAS: Saldo encontrado na busca simplificada: {balance_btc} BTC em {from_address}")
+                                print(f"   Usando saldo da busca simplificada - NÃO criando wallet (já temos UTXOs)")
+                                # Não criar wallet se já temos saldo e UTXOs da busca simplificada
+                                continue
                             else:
                                 print(f"⚠️  Usando endereço do .env: {expected_address}")
                             
@@ -4322,8 +4347,8 @@ class RealCrossChainBridge:
                                 add_log("wallet_scan_error_after_create", {"error": str(scan_error)}, "warning")
                             
                             # ✅ CORREÇÃO CRÍTICA: Usar Blockstream em vez de BlockCypher (BlockCypher está desatualizado)
-                            # ✅ PROTEÇÃO: Se já temos saldo da busca forçada, não sobrescrever!
-                            if not balance_from_forced_check:
+                            # ✅ PROTEÇÃO: Se já temos saldo da busca simplificada, não sobrescrever!
+                            if not balance_from_simplified_check:
                                 try:
                                     # Usar Blockstream API (mais confiável e atualizado)
                                     balance_url = f"https://blockstream.info/testnet/api/address/{expected_address}"
