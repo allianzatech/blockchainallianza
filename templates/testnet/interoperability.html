@@ -368,19 +368,40 @@
                 
                 <form id="verifierForm" class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium mb-2">Proof (hex string)</label>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-medium">Proof (hex string)</label>
+                            <button type="button" onclick="copyFieldValue('verifierProof', event)" 
+                                    class="copy-btn-small text-xs px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded transition"
+                                    title="{{ t('copy') or 'Copy' }}">
+                                <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
+                            </button>
+                        </div>
                         <textarea id="verifierProof" rows="3" 
                                   placeholder="{{ t('paste_zk_proof') or 'Paste the ZK proof hex string here...' }}"
                                   class="w-full bg-gray-700 text-white p-2 rounded font-mono"></textarea>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-2">Verification Key (hex string)</label>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-medium">Verification Key (hex string)</label>
+                            <button type="button" onclick="copyFieldValue('verifierKey', event)" 
+                                    class="copy-btn-small text-xs px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded transition"
+                                    title="{{ t('copy') or 'Copy' }}">
+                                <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
+                            </button>
+                        </div>
                         <textarea id="verifierKey" rows="3" 
                                   placeholder="{{ t('paste_verification_key') or 'Paste the verification key hex string here...' }}"
                                   class="w-full bg-gray-700 text-white p-2 rounded font-mono"></textarea>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-2">Public Inputs / State Hash (optional)</label>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-medium">Public Inputs / State Hash (optional)</label>
+                            <button type="button" onclick="copyFieldValue('verifierInputs', event)" 
+                                    class="copy-btn-small text-xs px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded transition"
+                                    title="{{ t('copy') or 'Copy' }}">
+                                <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
+                            </button>
+                        </div>
                         <input type="text" id="verifierInputs" 
                                placeholder="{{ t('state_transition_hash') or 'State transition hash (optional)' }}"
                                class="w-full bg-gray-700 text-white p-2 rounded font-mono">
@@ -440,6 +461,38 @@
                 if (button && button.classList && button.classList.contains('copy-btn-small')) {
                     const originalText = button.innerHTML;
                     button.innerHTML = '✅ {{ t("copied") or "Copied!" }}';
+                    button.style.background = '#10b981';
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.style.background = '';
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                alert('Erro ao copiar. Tente selecionar e copiar manualmente.');
+            });
+        }
+        
+        // Copy field value (for ZK Verifier fields)
+        function copyFieldValue(fieldId, event) {
+            const field = document.getElementById(fieldId);
+            if (!field) {
+                alert('{{ t("field_not_found") or "Field not found" }}');
+                return;
+            }
+            
+            const textToCopy = field.value || field.textContent || '';
+            if (!textToCopy.trim()) {
+                alert('{{ t("no_data_to_copy") or "No data to copy" }}');
+                return;
+            }
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                // Visual feedback
+                const button = event ? event.target.closest('button') : document.querySelector(`button[onclick*="${fieldId}"]`);
+                if (button) {
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-check"></i> {{ t("copied") or "Copied!" }}';
                     button.style.background = '#10b981';
                     setTimeout(() => {
                         button.innerHTML = originalText;
