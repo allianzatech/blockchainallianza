@@ -4244,51 +4244,51 @@ class RealCrossChainBridge:
                                 # ✅ CORREÇÃO CRÍTICA: Usar Blockstream em vez de BlockCypher (BlockCypher está desatualizado)
                                 test_balance_btc = 0.0  # Inicializar antes do try
                                 try:
-                                # Usar Blockstream API (mais confiável e atualizado)
-                                balance_url = f"https://blockstream.info/testnet/api/address/{test_address}"
-                                print(f"   🔍 CHECK BALANCE (Blockstream): {balance_url}")
-                                balance_response = requests.get(balance_url, timeout=10)
-                                print(f"   🔍 CHECK BALANCE: Status: {balance_response.status_code}")
-                                if balance_response.status_code == 200:
-                                    balance_data = balance_response.json()
-                                    print(f"   🔍 CHECK BALANCE: Dados: {json.dumps(balance_data)[:300]}...")
-                                    funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
-                                    spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
-                                    balance_satoshis = funded - spent
-                                    test_balance_btc = balance_satoshis / 100000000
-                                    print(f"   🔍 CHECK BALANCE: funded={funded}, spent={spent}, balance={balance_satoshis} sats ({test_balance_btc:.8f} BTC)")
-                                    
-                                    if test_balance_btc > 0:
-                                        print(f"   ✅ Saldo encontrado: {test_balance_btc} BTC em {test_address}")
-                                        from_address = test_address
-                                        balance_btc = test_balance_btc
-                                        best_witness_type = witness_type
-                                        wallet = test_wallet
-                                        wallet_name = test_wallet_name
+                                    # Usar Blockstream API (mais confiável e atualizado)
+                                    balance_url = f"https://blockstream.info/testnet/api/address/{test_address}"
+                                    print(f"   🔍 CHECK BALANCE (Blockstream): {balance_url}")
+                                    balance_response = requests.get(balance_url, timeout=10)
+                                    print(f"   🔍 CHECK BALANCE: Status: {balance_response.status_code}")
+                                    if balance_response.status_code == 200:
+                                        balance_data = balance_response.json()
+                                        print(f"   🔍 CHECK BALANCE: Dados: {json.dumps(balance_data)[:300]}...")
+                                        funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
+                                        spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
+                                        balance_satoshis = funded - spent
+                                        test_balance_btc = balance_satoshis / 100000000
+                                        print(f"   🔍 CHECK BALANCE: funded={funded}, spent={spent}, balance={balance_satoshis} sats ({test_balance_btc:.8f} BTC)")
                                         
-                                        # Atualizar UTXOs
-                                        wallet.utxos_update()
-                                        utxos = wallet.utxos()
-                                        
-                                        # Verificar se o endereço do wallet corresponde ao endereço esperado
-                                        wallet_keys = wallet.keys()
-                                        if wallet_keys:
-                                            wallet_address = wallet_keys[0].address
-                                            if wallet_address != test_address:
-                                                print(f"   ⚠️  Endereço do wallet ({wallet_address}) diferente do esperado ({test_address})")
-                                        
-                                        break
-                                    else:
-                                        print(f"   ⚠️  Sem saldo neste endereço")
-                            except Exception as api_error:
-                                print(f"   ⚠️  Erro ao verificar via API: {api_error}")
-                            
-                            # Se não encontrou saldo, deletar wallet de teste
-                            if test_balance_btc == 0.0:
-                                try:
-                                    test_wallet.delete()
-                                except:
-                                    pass
+                                        if test_balance_btc > 0:
+                                            print(f"   ✅ Saldo encontrado: {test_balance_btc} BTC em {test_address}")
+                                            from_address = test_address
+                                            balance_btc = test_balance_btc
+                                            best_witness_type = witness_type
+                                            wallet = test_wallet
+                                            wallet_name = test_wallet_name
+                                            
+                                            # Atualizar UTXOs
+                                            wallet.utxos_update()
+                                            utxos = wallet.utxos()
+                                            
+                                            # Verificar se o endereço do wallet corresponde ao endereço esperado
+                                            wallet_keys = wallet.keys()
+                                            if wallet_keys:
+                                                wallet_address = wallet_keys[0].address
+                                                if wallet_address != test_address:
+                                                    print(f"   ⚠️  Endereço do wallet ({wallet_address}) diferente do esperado ({test_address})")
+                                            
+                                            break
+                                        else:
+                                            print(f"   ⚠️  Sem saldo neste endereço")
+                                except Exception as api_error:
+                                    print(f"   ⚠️  Erro ao verificar via API: {api_error}")
+                                
+                                # Se não encontrou saldo, deletar wallet de teste
+                                if test_balance_btc == 0.0:
+                                    try:
+                                        test_wallet.delete()
+                                    except:
+                                        pass
                                 
                         except Exception as e:
                             print(f"   ⚠️  Erro ao testar {witness_type}: {e}")
