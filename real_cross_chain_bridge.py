@@ -4542,16 +4542,20 @@ class RealCrossChainBridge:
                     if utxos:
                         total_utxo_value_satoshis = sum(utxo.get('value', 0) for utxo in utxos)
                         total_utxo_value_btc = total_utxo_value_satoshis / 100000000
-                        print(f"📦 UTXOs encontrados: {len(utxos)} (Total: {total_utxo_value_btc} BTC = {total_utxo_value_satoshis} satoshis)")
+                        print(f"\n📦📦📦 UTXOs encontrados: {len(utxos)} (Total: {total_utxo_value_btc} BTC = {total_utxo_value_satoshis} satoshis)")
                         
                         # ✅ SEMPRE usar o valor dos UTXOs (mais preciso que API que pode ter cache)
                         if total_utxo_value_btc > 0:
                             if balance_btc != total_utxo_value_btc:
-                                print(f"   ⚠️  balance_btc da API ({balance_btc} BTC) difere dos UTXOs ({total_utxo_value_btc} BTC)")
-                                print(f"   ✅ Usando saldo calculado dos UTXOs: {total_utxo_value_btc} BTC (mais confiável)")
+                                print(f"   ⚠️⚠️⚠️  balance_btc da API ({balance_btc} BTC) difere dos UTXOs ({total_utxo_value_btc} BTC)")
+                                print(f"   ✅✅✅ Usando saldo calculado dos UTXOs: {total_utxo_value_btc} BTC (mais confiável)")
                             balance_btc = total_utxo_value_btc
+                            print(f"   ✅✅✅ balance_btc DEFINITIVO: {balance_btc} BTC (calculado dos UTXOs)")
                         else:
-                            print(f"   ⚠️  UTXOs encontrados mas valor total é 0")
+                            print(f"   ⚠️⚠️⚠️  UTXOs encontrados mas valor total é 0")
+                            print(f"   🔍🔍🔍 Detalhes dos UTXOs:")
+                            for i, u in enumerate(utxos[:5]):
+                                print(f"      UTXO {i+1}: value={u.get('value', 0)}, txid={u.get('txid', 'N/A')[:20]}...")
                     else:
                         print(f"⚠️  Nenhum UTXO encontrado no wallet nem via API")
                         # Se não tem UTXOs mas balance_btc > 0, pode ser cache da API
