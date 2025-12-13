@@ -3092,13 +3092,21 @@ class RealCrossChainBridge:
                         balance_data = balance_resp.json()
                         print(f"   🔍 CHECK BALANCE: Dados crus (primeiros 500 chars): {json.dumps(balance_data)[:500]}...")
                         
-                        funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
-                        spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
-                        balance_sats = funded - spent
-                        balance_btc = balance_sats / 100000000
+                        # ✅ CRÍTICO: Somar saldo confirmado + não confirmado (mempool)
+                        chain_funded = balance_data.get('chain_stats', {}).get('funded_txo_sum', 0)
+                        chain_spent = balance_data.get('chain_stats', {}).get('spent_txo_sum', 0)
+                        chain_balance_sats = chain_funded - chain_spent
                         
-                        print(f"   🔍 CHECK BALANCE: funded={funded}, spent={spent}, balance={balance_sats}")
-                        print(f"   💰 Saldo do endereço derivado: {balance_sats} satoshis ({balance_btc:.8f} BTC)")
+                        mempool_funded = balance_data.get('mempool_stats', {}).get('funded_txo_sum', 0)
+                        mempool_spent = balance_data.get('mempool_stats', {}).get('spent_txo_sum', 0)
+                        mempool_balance_sats = mempool_funded - mempool_spent
+                        
+                        total_balance_sats = chain_balance_sats + mempool_balance_sats
+                        balance_btc = total_balance_sats / 100000000
+                        
+                        print(f"   🔍 CHECK BALANCE: chain_funded={chain_funded}, chain_spent={chain_spent}, chain_balance={chain_balance_sats}")
+                        print(f"   🔍 CHECK BALANCE: mempool_funded={mempool_funded}, mempool_spent={mempool_spent}, mempool_balance={mempool_balance_sats}")
+                        print(f"   💰 Saldo TOTAL do endereço derivado: {total_balance_sats} satoshis ({balance_btc:.8f} BTC)")
                         
                         # ✅ LOG CRÍTICO: Verificar UTXOs também
                         utxo_check_url = f"{balance_url}/utxo"
