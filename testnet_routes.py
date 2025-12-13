@@ -163,6 +163,17 @@ def init_testnet_routes(app, blockchain_instance, quantum_security_instance, bri
         app.register_blueprint(testnet_bp)
         print(f"✅ Testnet blueprint registrado com sucesso! URL prefix: / (raiz)")
         
+        # ✅ DEBUG: Verificar se a rota /interoperability foi registrada
+        try:
+            registered_routes = [str(rule) for rule in app.url_map.iter_rules()]
+            interoperability_routes = [r for r in registered_routes if 'interoperability' in r.lower()]
+            if interoperability_routes:
+                print(f"✅ Rotas de interoperabilidade registradas: {interoperability_routes}")
+            else:
+                print(f"⚠️  AVISO: Nenhuma rota de interoperabilidade encontrada após registro do blueprint!")
+        except Exception as debug_err:
+            print(f"⚠️  Erro ao verificar rotas registradas: {debug_err}")
+        
         # Inicializar Professional Test Suite
         if PROFESSIONAL_SUITE_AVAILABLE:
             try:
