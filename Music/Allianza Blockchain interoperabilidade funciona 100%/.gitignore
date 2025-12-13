@@ -4,6 +4,8 @@
 !.gitignore
 !render.yaml
 !Procfile
+!README.md
+!LICENSE
 
 # Ignorar arquivos do sistema
 AppData/
