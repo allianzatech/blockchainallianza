@@ -4289,10 +4289,9 @@ class RealCrossChainBridge:
                                         test_wallet.delete()
                                     except:
                                         pass
-                                
-                        except Exception as e:
-                            print(f"   ⚠️  Erro ao testar {witness_type}: {e}")
-                            continue
+                            except Exception as e:
+                                print(f"   ⚠️  Erro ao testar {witness_type}: {e}")
+                                continue
                     else:
                         print(f"   ⚠️  Loop de criação de wallets PULADO - usando dados da busca simplificada")
                     
