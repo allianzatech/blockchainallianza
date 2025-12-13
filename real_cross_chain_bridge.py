@@ -4887,17 +4887,17 @@ class RealCrossChainBridge:
                                 # ✅ FALLBACK FINAL: Se nem Blockstream nem BlockCypher retornaram, tentar método direto
                                 if not utxos or len(utxos) == 0:
                                     print(f"🔄 Nem Blockstream nem BlockCypher retornaram UTXOs, tentando método direto...")
-                                        try:
-                                            utxos_url = f"https://blockstream.info/testnet/api/address/{from_address}/utxo"
-                                            print(f"   📡 URL: {utxos_url}")
-                                            utxos_response = requests.get(utxos_url, timeout=15)
-                                            print(f"   📊 Status: {utxos_response.status_code}")
+                                    try:
+                                        utxos_url = f"https://blockstream.info/testnet/api/address/{from_address}/utxo"
+                                        print(f"   📡 URL: {utxos_url}")
+                                        utxos_response = requests.get(utxos_url, timeout=15)
+                                        print(f"   📊 Status: {utxos_response.status_code}")
+                                        
+                                        if utxos_response.status_code == 200:
+                                            blockstream_utxos = utxos_response.json()
+                                            print(f"   📦 Resposta JSON: {len(blockstream_utxos) if blockstream_utxos else 0} UTXOs")
                                             
-                                            if utxos_response.status_code == 200:
-                                                blockstream_utxos = utxos_response.json()
-                                                print(f"   📦 Resposta JSON: {len(blockstream_utxos) if blockstream_utxos else 0} UTXOs")
-                                                
-                                                if blockstream_utxos:
+                                            if blockstream_utxos:
                                                     # ✅ CORREÇÃO: Converter formato Blockstream para formato esperado
                                                     # Garantir que value e vout são sempre inteiros
                                                     # ✅ CRÍTICO: Verificar se UTXO não foi gasto e se output existe
