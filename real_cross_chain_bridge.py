@@ -5002,13 +5002,13 @@ class RealCrossChainBridge:
                                                 else:
                                                     print(f"⚠️  Nenhum UTXO válido após processamento")
                                                     add_log("blockstream_no_valid_utxos", {"address": from_address}, "warning")
-                                                else:
-                                                    print(f"⚠️  Blockstream retornou lista vazia de UTXOs")
-                                                    add_log("blockstream_no_utxos", {"address": from_address}, "warning")
                                             else:
-                                                print(f"⚠️  Blockstream API retornou status {utxos_response.status_code}: {utxos_response.text[:200]}")
-                                                add_log("blockstream_api_error", {"status": utxos_response.status_code, "error": utxos_response.text[:200]}, "error")
-                                        except Exception as bs_err:
+                                                print(f"⚠️  Blockstream retornou lista vazia de UTXOs")
+                                                add_log("blockstream_no_utxos", {"address": from_address}, "warning")
+                                        else:
+                                            print(f"⚠️  Blockstream API retornou status {utxos_response.status_code}: {utxos_response.text[:200]}")
+                                            add_log("blockstream_api_error", {"status": utxos_response.status_code, "error": utxos_response.text[:200]}, "error")
+                                    except Exception as bs_err:
                                             print(f"⚠️  Erro ao buscar UTXOs da Blockstream: {bs_err}")
                                             import traceback
                                             traceback.print_exc()
