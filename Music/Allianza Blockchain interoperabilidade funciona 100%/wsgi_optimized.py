@@ -161,6 +161,7 @@ if not crypto_fallback_used:
                     from allianza_blockchain import app as application
                     application.config['ENV'] = os.getenv('FLASK_ENV', 'production')
                     application.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+                    app_imported = True
                 else:
                     # Se falhar, tentar instalar requirements.txt completo
                     print(f"⚠️  Instalação direta falhou. Instalando requirements.txt completo...")
@@ -171,6 +172,7 @@ if not crypto_fallback_used:
                     from allianza_blockchain import app as application
                     application.config['ENV'] = os.getenv('FLASK_ENV', 'production')
                     application.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+                    app_imported = True
             except Exception as install_err:
                 print(f"❌ Falha ao instalar {missing_module}: {install_err}")
                 # Não fazer raise - criar app de fallback
@@ -197,6 +199,7 @@ if not crypto_fallback_used:
                 @application.route('/health', endpoint='import_error_health')
                 def import_error_health():
                     return jsonify({"status": "ok", "service": "Allianza Blockchain"}), 200
+                app_imported = True  # App de fallback criado
         else:
             # Se não conseguir identificar o módulo, tentar instalar requirements.txt
             print(f"⚠️  Erro de importação: {err_str}. Tentando instalar requirements.txt...")
@@ -210,6 +213,7 @@ if not crypto_fallback_used:
                 from allianza_blockchain import app as application
                 application.config['ENV'] = os.getenv('FLASK_ENV', 'production')
                 application.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+                app_imported = True
             except Exception as install_err:
                 print(f"❌ Falha ao instalar requirements.txt: {install_err}")
                 # Não fazer raise - criar app de fallback
