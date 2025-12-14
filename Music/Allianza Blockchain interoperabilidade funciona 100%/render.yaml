@@ -2,7 +2,7 @@ services:
   - type: web
     name: allianza-blockchain
     env: python
-    buildCommand: pip install --upgrade pip setuptools wheel && pip install --no-cache-dir cryptography==41.0.7 && pip install --no-cache-dir -r requirements.txt
+    buildCommand: chmod +x build.sh && ./build.sh || (pip install --upgrade pip setuptools wheel && pip install --no-cache-dir cryptography==41.0.7 base58==2.1.1 flask==2.3.3 python-dotenv==1.0.0 && pip install --no-cache-dir -r requirements.txt)
     startCommand: gunicorn -w 2 -b 0.0.0.0:$PORT --timeout 300 --keep-alive 5 --preload wsgi_optimized:application
     envVars:
       - key: FLASK_ENV
