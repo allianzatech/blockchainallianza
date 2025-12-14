@@ -25,25 +25,61 @@ os.environ.setdefault('FLASK_DEBUG', 'False')
 # Importar Flask básico primeiro
 from flask import Flask, request
 
-# Importar app completo diretamente (sem lazy loading)
+# VERIFICAR E INSTALAR CRYPTOGRAPHY ANTES DE QUALQUER OUTRA COISA
+# Isso é crítico porque allianza_blockchain.py importa cryptography no topo
 try:
-    # Verificar se cryptography está instalado antes de importar
+    import cryptography
+    print(f"✅ cryptography instalado: {cryptography.__version__}")
+except ImportError as crypto_error:
+    print(f"❌ ERRO CRÍTICO: cryptography não está instalado: {crypto_error}")
+    print("   Tentando instalar cryptography...")
+    import subprocess
+    import sys
     try:
-        import cryptography
-        print(f"✅ cryptography instalado: {cryptography.__version__}")
-    except ImportError as crypto_error:
-        print(f"❌ ERRO CRÍTICO: cryptography não está instalado: {crypto_error}")
-        print("   Tentando instalar cryptography...")
-        import subprocess
-        import sys
-        try:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "cryptography==41.0.7"])
+        # Instalar cryptography antes de qualquer outra importação
+        result = subprocess.run(
+            [sys.executable, "-m", "pip", "install", "--upgrade", "cryptography==41.0.7"],
+            capture_output=True,
+            text=True,
+            timeout=120
+        )
+        if result.returncode == 0:
             import cryptography
             print(f"✅ cryptography instalado com sucesso: {cryptography.__version__}")
-        except Exception as install_error:
-            print(f"❌ Falha ao instalar cryptography: {install_error}")
-            raise ImportError("cryptography não está disponível e não pôde ser instalado automaticamente")
-    
+        else:
+            print(f"❌ Erro ao instalar cryptography: {result.stderr}")
+            # Tentar instalar sem versão específica
+            subprocess.run([sys.executable, "-m", "pip", "install", "--upgrade", "cryptography"], timeout=120)
+            import cryptography
+            print(f"✅ cryptography instalado (versão genérica): {cryptography.__version__}")
+    except Exception as install_error:
+        print(f"❌ Falha ao instalar cryptography: {install_error}")
+        # Criar app mínimo de fallback
+        application = Flask(__name__)
+        application.config['ENV'] = os.getenv('FLASK_ENV', 'production')
+        application.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+        application.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(32).hex())
+        from flask import jsonify
+        @application.route('/', endpoint='crypto_error_root')
+        def crypto_error_root():
+            return jsonify({
+                "error": "Service initialization failed",
+                "message": "cryptography module is required but could not be installed",
+                "details": str(install_error)
+            }), 500
+        @application.route('/health', endpoint='crypto_error_health')
+        def crypto_error_health():
+            return jsonify({"status": "error", "service": "Allianza Blockchain", "error": "cryptography not available"}), 503
+        print("⚠️  Usando app de fallback devido a erro no cryptography")
+        # Não fazer mais nada, usar o app de fallback
+        if __name__ == "__main__":
+            port = int(os.getenv('PORT', 5000))
+            host = os.getenv('HOST', '0.0.0.0')
+            application.run(host=host, port=port, debug=False)
+        exit(0)
+
+# Importar app completo diretamente (sem lazy loading)
+try:
     from allianza_blockchain import app as application
     application.config['ENV'] = os.getenv('FLASK_ENV', 'production')
     application.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
