@@ -92,6 +92,41 @@ if not crypto_fallback_used:
         from allianza_blockchain import app as application
         application.config['ENV'] = os.getenv('FLASK_ENV', 'production')
         application.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+    except ImportError as import_err:
+        # Tentar instalar dependências faltantes automaticamente
+        missing_module = str(import_err).replace("No module named '", "").replace("'", "").split()[0]
+        print(f"⚠️  Módulo faltando: {missing_module}. Tentando instalar...")
+        import subprocess
+        import sys
+        try:
+            # Tentar instalar o módulo específico
+            result = subprocess.run(
+                [sys.executable, "-m", "pip", "install", "--no-cache-dir", missing_module],
+                capture_output=True,
+                text=True,
+                timeout=120
+            )
+            if result.returncode == 0:
+                print(f"✅ {missing_module} instalado com sucesso. Tentando importar novamente...")
+                from allianza_blockchain import app as application
+                application.config['ENV'] = os.getenv('FLASK_ENV', 'production')
+                application.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+            else:
+                # Se falhar, tentar instalar requirements.txt completo
+                print(f"⚠️  Instalação direta falhou. Instalando requirements.txt completo...")
+                subprocess.run(
+                    [sys.executable, "-m", "pip", "install", "--no-cache-dir", "-r", "requirements.txt"],
+                    timeout=300
+                )
+                from allianza_blockchain import app as application
+                application.config['ENV'] = os.getenv('FLASK_ENV', 'production')
+                application.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+        except Exception as install_err:
+            print(f"❌ Falha ao instalar {missing_module}: {install_err}")
+            raise import_err  # Re-raise o erro original
+    
+    # Se chegou aqui, o app foi importado com sucesso
+    try:
         # Verificar se já existe uma rota '/' registrada (do blueprint testnet)
         # Se não existir, registrar uma rota simples de health check
         has_root_route = False
