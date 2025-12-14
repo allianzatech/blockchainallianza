@@ -308,18 +308,18 @@ if not crypto_fallback_used:
                 pass
             
             if not has_root_route:
-            # Registrar rota raiz de saúde simples apenas se não existir
-            from flask import jsonify, Response
-            @application.route('/', methods=['GET', 'HEAD'], endpoint='wsgi_root')
-            def root_health():
-                if request.method == 'HEAD':
-                    return Response(status=200)
-                return jsonify({
-                    "status": "OK",
-                    "service": "Allianza Blockchain",
-                    "version": "1.0.0"
-                }), 200
-        
+                # Registrar rota raiz de saúde simples apenas se não existir
+                from flask import jsonify, Response
+                @application.route('/', methods=['GET', 'HEAD'], endpoint='wsgi_root')
+                def root_health():
+                    if request.method == 'HEAD':
+                        return Response(status=200)
+                    return jsonify({
+                        "status": "OK",
+                        "service": "Allianza Blockchain",
+                        "version": "1.0.0"
+                    }), 200
+            
             # Health check básico - verificar se já existe antes de registrar
             has_health_route = False
             try:
