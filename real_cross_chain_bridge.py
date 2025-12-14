@@ -3152,38 +3152,42 @@ class RealCrossChainBridge:
                         "key_format": "WIF" if from_private_key.startswith(('c', '9', '5', 'K', 'L')) else "HEX" if len(from_private_key) == 64 or from_private_key.startswith('0x') else "UNKNOWN"
                     }
         
-        # 2. Buscar UTXOs via Blockstream
-        print(f"\n2. 🔍 Buscando UTXOs confirmados...")
-        utxo_url = f"https://blockstream.info/testnet/api/address/{from_address}/utxo"
-        response = requests.get(utxo_url, timeout=20)
+        # 2. Buscar UTXOs via BlockCypher (garante que BlockCypher reconhece os UTXOs)
+        print(f"\n2. 🔍 Buscando UTXOs via BlockCypher...")
+        token = os.getenv('BLOCKCYPHER_API_TOKEN', '17766314e49c439e85cec883969614ac')
+        blockcypher_url = f"https://api.blockcypher.com/v1/btc/test3/addrs/{from_address}?token={token}&unspentOnly=true"
         
-        if response.status_code != 200:
-            return {"success": False, "error": f"Erro ao buscar UTXOs: {response.status_code}"}
+        try:
+            response = requests.get(blockcypher_url, timeout=20)
+            if response.status_code != 200:
+                # Fallback para Blockstream se BlockCypher falhar
+                print(f"   ⚠️  BlockCypher retornou {response.status_code}, tentando Blockstream...")
+                utxo_url = f"https://blockstream.info/testnet/api/address/{from_address}/utxo"
+                response = requests.get(utxo_url, timeout=20)
+                if response.status_code != 200:
+                    return {"success": False, "error": f"Erro ao buscar UTXOs: {response.status_code}"}
+                all_utxos = response.json()
+                confirmed_utxos = [utxo for utxo in all_utxos if utxo.get('status', {}).get('confirmed', False)]
+            else:
+                # BlockCypher retorna dados do endereço com txrefs (UTXOs)
+                addr_data = response.json()
+                confirmed_utxos = []
+                for txref in addr_data.get('txrefs', []):
+                    # BlockCypher retorna apenas UTXOs não gastos quando unspentOnly=true
+                    if txref.get('tx_output_n') is not None and txref.get('value', 0) > 0:
+                        confirmed_utxos.append({
+                            'txid': txref.get('tx_hash', '').lower(),
+                            'vout': txref.get('tx_output_n', 0),
+                            'value': txref.get('value', 0),
+                            'confirmations': txref.get('confirmations', 0)
+                        })
+        except Exception as e:
+            return {"success": False, "error": f"Erro ao buscar UTXOs: {str(e)}"}
         
-        all_utxos = response.json()
-        print(f"   Total UTXOs: {len(all_utxos)}")
-        
-        # Filtrar apenas confirmados
-        confirmed_utxos = []
-        for utxo in all_utxos:
-            status = utxo.get('status', {})
-            if status.get('confirmed', False):
-                # Verificar se não foi gasto
-                try:
-                    tx_url = f"https://blockstream.info/testnet/api/tx/{utxo['txid']}"
-                    tx_resp = requests.get(tx_url, timeout=10)
-                    if tx_resp.status_code == 200:
-                        tx_data = tx_resp.json()
-                        vout_data = tx_data['vout'][utxo['vout']]
-                        if not vout_data.get('spent', False):
-                            confirmed_utxos.append(utxo)
-                except:
-                    continue
-        
-        print(f"   UTXOs confirmados disponíveis: {len(confirmed_utxos)}")
+        print(f"   UTXOs disponíveis via BlockCypher: {len(confirmed_utxos)}")
         
         if not confirmed_utxos:
-            return {"success": False, "error": "Nenhum UTXO confirmado disponível"}
+            return {"success": False, "error": "Nenhum UTXO disponível no BlockCypher"}
         
         # 3. Usar BlockCypher API para TUDO (criar, assinar e broadcast)
         print(f"\n3. 📡 Usando BlockCypher API para criar, assinar e broadcastar...")
@@ -3195,13 +3199,13 @@ class RealCrossChainBridge:
         inputs_list = []
         total_input = 0
         
-        # ✅ CORREÇÃO CRÍTICA: Validar UTXOs ANTES de usar e adicionar 'value' para BlockCypher
-        print(f"\n   🔍 Validando UTXOs antes de usar...")
+        # ✅ CORREÇÃO: UTXOs já vêm do BlockCypher, então são válidos. Apenas normalizar e preparar.
+        print(f"\n   🔍 Preparando UTXOs do BlockCypher...")
         valid_utxos = []
         
         for utxo in confirmed_utxos:
-            txid = utxo.get('txid')
-            vout = utxo.get('vout')
+            txid = utxo.get('txid', '').strip().lower()
+            vout = utxo.get('vout', 0)
             value = utxo.get('value', 0)
             
             # Validar campos básicos
@@ -3209,62 +3213,40 @@ class RealCrossChainBridge:
                 print(f"   ⚠️  UTXO inválido (campos faltando): txid={txid}, vout={vout}, value={value}")
                 continue
             
-            # ✅ NORMALIZAÇÃO CRÍTICA: BlockCypher precisa de txid em lowercase
-            if isinstance(txid, str):
-                txid = txid.strip().lower()
-            
-            # ✅ VALIDAÇÃO CRÍTICA: Verificar se o UTXO realmente existe e não foi gasto
-            try:
-                tx_url = f"https://blockstream.info/testnet/api/tx/{txid}"
-                tx_resp = requests.get(tx_url, timeout=10)
-                
-                if tx_resp.status_code != 200:
-                    print(f"   ⚠️  UTXO {txid[:16]}... não encontrado na rede (status {tx_resp.status_code})")
-                    continue
-                
-                tx_data = tx_resp.json()
-                
-                # Verificar se o vout existe
-                if vout >= len(tx_data.get('vout', [])):
-                    print(f"   ⚠️  UTXO {txid[:16]}...:{vout} - vout não existe na transação")
-                    continue
-                
-                vout_data = tx_data['vout'][vout]
-                
-                # Verificar se foi gasto
-                if vout_data.get('spent', False):
-                    print(f"   ⚠️  UTXO {txid[:16]}...:{vout} já foi gasto!")
-                    continue
-                
-                # Verificar se o valor corresponde
-                if vout_data.get('value', 0) != value:
-                    print(f"   ⚠️  UTXO {txid[:16]}...:{vout} - valor não corresponde (esperado {value}, encontrado {vout_data.get('value', 0)})")
-                    # Usar o valor real da transação
-                    value = vout_data.get('value', value)
-                
-                # UTXO válido!
-                valid_utxos.append({
-                    'txid': txid,  # Já normalizado para lowercase
-                    'vout': vout,
-                    'value': value
-                })
-                print(f"   ✅ UTXO válido: {txid[:16]}...:{vout} = {value} sats")
-                
-            except Exception as val_err:
-                print(f"   ⚠️  Erro ao validar UTXO {txid[:16]}...: {val_err}")
-                continue
+            # UTXO válido do BlockCypher!
+            valid_utxos.append({
+                'txid': txid,  # Já normalizado para lowercase
+                'vout': vout,
+                'value': value
+            })
+            print(f"   ✅ UTXO do BlockCypher: {txid[:16]}...:{vout} = {value} sats")
         
         if not valid_utxos:
             return {
                 "success": False,
-                "error": "Nenhum UTXO válido após validação completa",
-                "note": "Todos os UTXOs foram validados e nenhum passou na verificação (podem estar gastos ou inválidos)"
+                "error": "Nenhum UTXO válido disponível",
+                "note": "Nenhum UTXO não gasto encontrado no BlockCypher"
             }
         
-        print(f"   ✅ {len(valid_utxos)} UTXO(s) válido(s) após validação completa")
+        print(f"   ✅ {len(valid_utxos)} UTXO(s) válido(s) do BlockCypher")
         
-        # Usar primeiro UTXO válido (ou múltiplos se necessário)
-        for utxo in valid_utxos[:1]:  # Usar primeiro UTXO válido
+        # Usar UTXOs suficientes para cobrir o valor + fee
+        selected_utxos = []
+        total_selected = 0
+        for utxo in valid_utxos:
+            selected_utxos.append(utxo)
+            total_selected += utxo['value']
+            if total_selected >= amount_sats + fee_sats:
+                break
+        
+        if total_selected < amount_sats + fee_sats:
+            return {
+                "success": False,
+                "error": f"Fundos insuficientes. Necessário: {amount_sats + fee_sats}, Disponível: {total_selected}"
+            }
+        
+        # Preparar inputs com os UTXOs selecionados
+        for utxo in selected_utxos:
             # ✅ CORREÇÃO CRÍTICA: BlockCypher precisa do campo 'value' no input para validação
             inputs_list.append({
                 "prev_hash": utxo['txid'],
@@ -3273,12 +3255,6 @@ class RealCrossChainBridge:
             })
             total_input += utxo['value']
             print(f"   ✅ Input preparado: {utxo['txid'][:16]}...:{utxo['vout']} = {utxo['value']} sats (com 'value' incluído)")
-        
-        if total_input < amount_sats + fee_sats:
-            return {
-                "success": False,
-                "error": f"Fundos insuficientes. Necessário: {amount_sats + fee_sats}, Disponível: {total_input}"
-            }
         
         # Preparar outputs
         outputs_list = [{
