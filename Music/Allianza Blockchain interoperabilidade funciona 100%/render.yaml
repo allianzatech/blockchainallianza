@@ -2,8 +2,8 @@ services:
   - type: web
     name: allianza-blockchain
     env: python
-    buildCommand: find . -type d -name "Allianza Blockchain" -exec sh -c 'cd "$1" && chmod +x build.sh start.sh start_render.sh && pip install --upgrade pip setuptools wheel && pip install -r requirements.txt' _ {} \;
-    startCommand: bash -c 'SCRIPT=$(find . -name "start_render.sh" -type f -executable | head -1); if [ -n "$SCRIPT" ]; then bash "$SCRIPT"; else echo "start_render.sh not found"; exit 1; fi'
+    buildCommand: cd "Music/Allianza Blockchain interoperabilidade funciona 100%" && chmod +x build.sh start_render.sh && pip install --upgrade pip setuptools wheel && pip install cryptography==41.0.7 && (./build.sh || pip install -r requirements.txt)
+    startCommand: cd "Music/Allianza Blockchain interoperabilidade funciona 100%" && bash start_render.sh
     envVars:
       - key: FLASK_ENV
         value: production
