@@ -2,8 +2,8 @@ services:
   - type: web
     name: allianza-blockchain
     env: python
-    buildCommand: cd "Music/Allianza Blockchain interoperabilidade funciona 100%" && chmod +x build.sh start_render.sh && pip install --upgrade pip setuptools wheel && pip install cryptography==41.0.7 && (./build.sh || pip install -r requirements.txt)
-    startCommand: cd "Music/Allianza Blockchain interoperabilidade funciona 100%" && bash start_render.sh
+    buildCommand: pip install --upgrade pip setuptools wheel && pip install --no-cache-dir cryptography==41.0.7 && pip install --no-cache-dir -r requirements.txt
+    startCommand: gunicorn -w 2 -b 0.0.0.0:$PORT --timeout 300 --keep-alive 5 --preload wsgi_optimized:application
     envVars:
       - key: FLASK_ENV
         value: production
