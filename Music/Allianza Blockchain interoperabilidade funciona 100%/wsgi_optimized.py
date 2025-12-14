@@ -94,26 +94,58 @@ if not crypto_fallback_used:
         application.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
     except ImportError as import_err:
         # Tentar instalar dependências faltantes automaticamente
-        missing_module = str(import_err).replace("No module named '", "").replace("'", "").split()[0]
-        print(f"⚠️  Módulo faltando: {missing_module}. Tentando instalar...")
-        import subprocess
-        import sys
-        try:
-            # Tentar instalar o módulo específico
-            result = subprocess.run(
-                [sys.executable, "-m", "pip", "install", "--no-cache-dir", missing_module],
-                capture_output=True,
-                text=True,
-                timeout=120
-            )
-            if result.returncode == 0:
-                print(f"✅ {missing_module} instalado com sucesso. Tentando importar novamente...")
-                from allianza_blockchain import app as application
-                application.config['ENV'] = os.getenv('FLASK_ENV', 'production')
-                application.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
-            else:
-                # Se falhar, tentar instalar requirements.txt completo
-                print(f"⚠️  Instalação direta falhou. Instalando requirements.txt completo...")
+        err_str = str(import_err)
+        missing_module = err_str.replace("No module named '", "").replace("'", "").split()[0] if "No module named" in err_str else None
+        
+        if missing_module:
+            print(f"⚠️  Módulo faltando: {missing_module}. Tentando instalar...")
+            import subprocess
+            import sys
+            
+            # Mapear nomes de módulos para nomes de pacotes pip
+            module_to_package = {
+                'base58': 'base58==2.1.1',
+                'cryptography': 'cryptography==41.0.7',
+                'flask': 'flask==2.3.3',
+                'dotenv': 'python-dotenv==1.0.0',
+                'web3': 'web3==6.11.0',
+            }
+            
+            package_name = module_to_package.get(missing_module, missing_module)
+            
+            try:
+                # Tentar instalar o módulo específico com versão
+                print(f"📦 Instalando {package_name}...")
+                result = subprocess.run(
+                    [sys.executable, "-m", "pip", "install", "--no-cache-dir", package_name],
+                    capture_output=True,
+                    text=True,
+                    timeout=120
+                )
+                if result.returncode == 0:
+                    print(f"✅ {missing_module} instalado com sucesso. Tentando importar novamente...")
+                    from allianza_blockchain import app as application
+                    application.config['ENV'] = os.getenv('FLASK_ENV', 'production')
+                    application.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+                else:
+                    # Se falhar, tentar instalar requirements.txt completo
+                    print(f"⚠️  Instalação direta falhou. Instalando requirements.txt completo...")
+                    subprocess.run(
+                        [sys.executable, "-m", "pip", "install", "--no-cache-dir", "-r", "requirements.txt"],
+                        timeout=300
+                    )
+                    from allianza_blockchain import app as application
+                    application.config['ENV'] = os.getenv('FLASK_ENV', 'production')
+                    application.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+            except Exception as install_err:
+                print(f"❌ Falha ao instalar {missing_module}: {install_err}")
+                raise import_err  # Re-raise o erro original
+        else:
+            # Se não conseguir identificar o módulo, tentar instalar requirements.txt
+            print(f"⚠️  Erro de importação: {err_str}. Tentando instalar requirements.txt...")
+            import subprocess
+            import sys
+            try:
                 subprocess.run(
                     [sys.executable, "-m", "pip", "install", "--no-cache-dir", "-r", "requirements.txt"],
                     timeout=300
@@ -121,9 +153,9 @@ if not crypto_fallback_used:
                 from allianza_blockchain import app as application
                 application.config['ENV'] = os.getenv('FLASK_ENV', 'production')
                 application.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
-        except Exception as install_err:
-            print(f"❌ Falha ao instalar {missing_module}: {install_err}")
-            raise import_err  # Re-raise o erro original
+            except Exception as install_err:
+                print(f"❌ Falha ao instalar requirements.txt: {install_err}")
+                raise import_err
     
     # Se chegou aqui, o app foi importado com sucesso
     try:
