@@ -25,45 +25,86 @@ os.environ.setdefault('FLASK_DEBUG', 'False')
 # Importar Flask básico primeiro
 from flask import Flask, request
 
-# VERIFICAR E INSTALAR CRYPTOGRAPHY ANTES DE QUALQUER OUTRA COISA
-# Isso é crítico porque allianza_blockchain.py importa cryptography no topo
+# VERIFICAR E INSTALAR DEPENDÊNCIAS CRÍTICAS ANTES DE QUALQUER OUTRA COISA
+# Isso é crítico porque allianza_blockchain.py importa essas bibliotecas no topo
 crypto_fallback_used = False
-try:
-    import cryptography
-    print(f"✅ cryptography instalado: {cryptography.__version__}")
-except ImportError as crypto_error:
-    print(f"❌ ERRO CRÍTICO: cryptography não está instalado: {crypto_error}")
-    print("   Tentando instalar cryptography...")
-    import subprocess
-    import sys
+
+# Lista de dependências críticas que devem estar instaladas
+CRITICAL_MODULES = [
+    ('cryptography', 'cryptography==41.0.7'),
+    ('base58', 'base58==2.1.1'),
+    ('flask', 'flask==2.3.3'),
+    ('dotenv', 'python-dotenv==1.0.0'),
+]
+
+# Verificar e instalar cada dependência crítica
+import subprocess
+import sys
+
+for module_name, package_name in CRITICAL_MODULES:
     try:
-        # Instalar cryptography antes de qualquer outra importação
-        result = subprocess.run(
-            [sys.executable, "-m", "pip", "install", "--upgrade", "cryptography==41.0.7"],
-            capture_output=True,
-            text=True,
-            timeout=120
-        )
-        if result.returncode == 0:
-            import cryptography
-            print(f"✅ cryptography instalado com sucesso: {cryptography.__version__}")
+        if module_name == 'dotenv':
+            import dotenv
+            print(f"✅ python-dotenv instalado")
         else:
-            print(f"❌ Erro ao instalar cryptography: {result.stderr}")
-            # Tentar instalar sem versão específica
-            subprocess.run([sys.executable, "-m", "pip", "install", "--upgrade", "cryptography"], timeout=120)
-            import cryptography
-            print(f"✅ cryptography instalado (versão genérica): {cryptography.__version__}")
-    except Exception as install_error:
-        print(f"❌ Falha ao instalar cryptography: {install_error}")
+            mod = __import__(module_name)
+            version = getattr(mod, '__version__', 'unknown')
+            print(f"✅ {module_name} instalado: {version}")
+    except ImportError as module_error:
+        print(f"❌ {module_name} não está instalado: {module_error}")
+        print(f"   Tentando instalar {package_name}...")
+        try:
+            result = subprocess.run(
+                [sys.executable, "-m", "pip", "install", "--no-cache-dir", package_name],
+                capture_output=True,
+                text=True,
+                timeout=120
+            )
+            if result.returncode == 0:
+                if module_name == 'dotenv':
+                    import dotenv
+                    print(f"✅ python-dotenv instalado com sucesso")
+                else:
+                    mod = __import__(module_name)
+                    version = getattr(mod, '__version__', 'unknown')
+                    print(f"✅ {module_name} instalado com sucesso: {version}")
+            else:
+                print(f"❌ Erro ao instalar {package_name}: {result.stderr}")
+                # Tentar instalar sem versão específica
+                package_base = package_name.split('==')[0]
+                subprocess.run(
+                    [sys.executable, "-m", "pip", "install", "--no-cache-dir", package_base],
+                    timeout=120
+                )
+                if module_name == 'dotenv':
+                    import dotenv
+                    print(f"✅ python-dotenv instalado (versão genérica)")
+                else:
+                    mod = __import__(module_name)
+                    print(f"✅ {module_name} instalado (versão genérica)")
+        except Exception as install_error:
+            print(f"❌ Falha ao instalar {module_name}: {install_error}")
+            # Se cryptography falhar, usar fallback
+            if module_name == 'cryptography':
+                crypto_fallback_used = True
+                break
+
+# Se cryptography não foi instalado, criar app de fallback
+if crypto_fallback_used:
+    try:
+        import cryptography
+        crypto_fallback_used = False
+        print("✅ cryptography foi instalado após tentativa")
+    except ImportError as crypto_error:
+        print(f"❌ ERRO CRÍTICO: cryptography não está instalado: {crypto_error}")
         # Criar app mínimo de fallback
         application = Flask(__name__)
         application.config['ENV'] = os.getenv('FLASK_ENV', 'production')
         application.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
         application.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(32).hex())
-        from flask import jsonify
+        from flask import jsonify, Response
         @application.route('/', methods=['GET', 'HEAD'], endpoint='crypto_error_root')
         def crypto_error_root():
-            from flask import Response
             if request.method == 'HEAD':
                 return Response(status=200)
             return jsonify({
@@ -77,13 +118,6 @@ except ImportError as crypto_error:
         def crypto_error_health():
             return jsonify({"status": "ok", "service": "Allianza Blockchain", "warning": "cryptography not available"}), 200
         print("⚠️  Usando app de fallback devido a erro no cryptography")
-        # Usar o app de fallback - não fazer mais nada
-        # O código continuará e o application será usado pelo gunicorn
-        crypto_fallback_used = True
-    else:
-        crypto_fallback_used = False
-except:
-    crypto_fallback_used = False
 
 # Importar app completo diretamente (sem lazy loading)
 # Só tentar importar se não usamos o fallback do cryptography
