@@ -133,35 +133,35 @@ if not crypto_fallback_used:
             def wsgi_health_status():
                 return jsonify({"status": "ok", "service": "Allianza Blockchain"}), 200
     except Exception as e:
-    # Fallback mínimo se app completo falhar
-    import traceback
-    err_msg = str(e)
-    error_trace = traceback.format_exc()
-    print(f"❌❌ ERRO ao importar allianza_blockchain: {err_msg}")
-    print(error_trace)
-    
-    application = Flask(__name__)
-    application.config['ENV'] = os.getenv('FLASK_ENV', 'production')
-    application.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
-    application.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(32).hex())
-    from flask import jsonify, Response
-    
-    @application.route('/', methods=['GET', 'HEAD'], endpoint='wsgi_error_root')
-    def error_root():
-        if request.method == 'HEAD':
-            return Response(status=200)
-        # Sempre retornar 200 OK para não quebrar monitores
-        return jsonify({
-            "status": "OK",
-            "service": "Allianza Blockchain",
-            "version": "1.0.0",
-            "message": "Service is running",
-            "warning": "Full initialization pending"
-        }), 200
-    
-    @application.route('/health', endpoint='wsgi_error_health')
-    def health_fallback():
-        return jsonify({"status": "ok", "service": "Allianza Blockchain"}), 200
+        # Fallback mínimo se app completo falhar
+        import traceback
+        err_msg = str(e)
+        error_trace = traceback.format_exc()
+        print(f"❌❌ ERRO ao importar allianza_blockchain: {err_msg}")
+        print(error_trace)
+        
+        application = Flask(__name__)
+        application.config['ENV'] = os.getenv('FLASK_ENV', 'production')
+        application.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+        application.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(32).hex())
+        from flask import jsonify, Response
+        
+        @application.route('/', methods=['GET', 'HEAD'], endpoint='wsgi_error_root')
+        def error_root():
+            if request.method == 'HEAD':
+                return Response(status=200)
+            # Sempre retornar 200 OK para não quebrar monitores
+            return jsonify({
+                "status": "OK",
+                "service": "Allianza Blockchain",
+                "version": "1.0.0",
+                "message": "Service is running",
+                "warning": "Full initialization pending"
+            }), 200
+        
+        @application.route('/health', endpoint='wsgi_error_health')
+        def health_fallback():
+            return jsonify({"status": "ok", "service": "Allianza Blockchain"}), 200
 
 # Aplicação WSGI
 if __name__ == "__main__":
