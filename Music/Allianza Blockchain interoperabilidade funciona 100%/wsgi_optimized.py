@@ -241,16 +241,16 @@ if not crypto_fallback_used:
     # Se chegou aqui, o app foi importado com sucesso ou fallback foi criado
     if app_imported:
         try:
-        # Verificar se já existe uma rota '/' registrada (do blueprint testnet)
-        # Se não existir, registrar uma rota simples de health check
-        has_root_route = False
-        try:
-            for rule in application.url_map.iter_rules():
-                if rule.rule == '/' and 'GET' in rule.methods:
-                    has_root_route = True
-                    break
-        except:
-            pass
+            # Verificar se já existe uma rota '/' registrada (do blueprint testnet)
+            # Se não existir, registrar uma rota simples de health check
+            has_root_route = False
+            try:
+                for rule in application.url_map.iter_rules():
+                    if rule.rule == '/' and 'GET' in rule.methods:
+                        has_root_route = True
+                        break
+            except:
+                pass
         
         if not has_root_route:
             # Registrar rota raiz de saúde simples apenas se não existir
@@ -265,23 +265,23 @@ if not crypto_fallback_used:
                     "version": "1.0.0"
                 }), 200
         
-        # Health check básico - verificar se já existe antes de registrar
-        has_health_route = False
-        try:
-            for rule in application.url_map.iter_rules():
-                if rule.rule == '/health' and 'GET' in rule.methods:
-                    has_health_route = True
-                    break
-        except:
-            pass
-        
-        if not has_health_route:
-            # Registrar health check apenas se não existir, com endpoint único
-            from flask import jsonify
-            @application.route('/health', endpoint='wsgi_health')
-            def wsgi_health_status():
-                return jsonify({"status": "ok", "service": "Allianza Blockchain"}), 200
-    except Exception as e:
+            # Health check básico - verificar se já existe antes de registrar
+            has_health_route = False
+            try:
+                for rule in application.url_map.iter_rules():
+                    if rule.rule == '/health' and 'GET' in rule.methods:
+                        has_health_route = True
+                        break
+            except:
+                pass
+            
+            if not has_health_route:
+                # Registrar health check apenas se não existir, com endpoint único
+                from flask import jsonify
+                @application.route('/health', endpoint='wsgi_health')
+                def wsgi_health_status():
+                    return jsonify({"status": "ok", "service": "Allianza Blockchain"}), 200
+        except Exception as e:
         # Fallback mínimo se app completo falhar
         import traceback
         err_msg = str(e)
