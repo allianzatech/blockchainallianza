@@ -235,9 +235,29 @@
                                 class="w-full bg-gray-700 text-white p-2 rounded"
                                 required
                             >
-                            <p id="amountHint" class="text-xs text-gray-400 mt-1">
-                                {{ t('min_amount_hint') or 'Min BTC: 0.0000546 | Min ETH: 0.001 | Min MATIC: 1 | Min SOL: 0.01' }}
-                            </p>
+                            <div id="amountHint" class="mt-2 text-[11px] text-gray-300">
+                                <div class="font-semibold text-gray-400 mb-1">
+                                    {{ t('min_amount_hint_title') or 'Mínimos recomendados por token' }}
+                                </div>
+                                <div class="grid grid-cols-2 gap-1 bg-gray-800/80 border border-gray-700 rounded-md p-2">
+                                    <div class="flex justify-between gap-2">
+                                        <span class="text-gray-400">BTC</span>
+                                        <span class="font-mono">0.0000546</span>
+                                    </div>
+                                    <div class="flex justify-between gap-2">
+                                        <span class="text-gray-400">ETH</span>
+                                        <span class="font-mono">0.000000000000000001</span>
+                                    </div>
+                                    <div class="flex justify-between gap-2">
+                                        <span class="text-gray-400">MATIC</span>
+                                        <span class="font-mono">0.000000001</span>
+                                    </div>
+                                    <div class="flex justify-between gap-2">
+                                        <span class="text-gray-400">SOL</span>
+                                        <span class="font-mono">0.000000001</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-2">{{ t('token_symbol') or 'Token Symbol' }}</label>
@@ -475,10 +495,7 @@
                 // Sempre atualiza o valor do campo para o mínimo recomendado ao trocar o token
                 amountInput.value = min;
                 
-                if (amountHint) {
-                    amountHint.textContent =
-                        `Mínimos recomendados — BTC: ${TOKEN_MINIMUMS.BTC} | ETH: ${TOKEN_MINIMUMS.ETH} | MATIC: ${TOKEN_MINIMUMS.MATIC} | SOL: ${TOKEN_MINIMUMS.SOL}`;
-                }
+                // A tabela já mostra todos os mínimos; não precisamos alterar o HTML aqui
             }
         }
         
