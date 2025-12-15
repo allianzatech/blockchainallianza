@@ -47,12 +47,12 @@ def rate_limit_middleware() -> Optional[dict]:
         custom_limits = None
         
         if path.startswith("/api/cross-chain/transfer"):
-            # Transferência real cross-chain → limitar bem mais
+            # Transferência real cross-chain → limite mais alto para testes, ainda protegido
             custom_limits = {
-                "requests_per_minute": 5,
-                "requests_per_hour": 50,
-                "requests_per_day": 200,
-                "burst_size": 3,
+                "requests_per_minute": 20,
+                "requests_per_hour": 200,
+                "requests_per_day": 1000,
+                "burst_size": 10,
                 "burst_window": 2,
             }
         elif path.startswith("/api/faucet/") or path == "/api/faucet/request":
