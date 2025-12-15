@@ -633,12 +633,50 @@
                 return;
             }
             
-            // ✅ GARANTIR: Copiar o objeto COMPLETO, incluindo todas as propriedades
-            // Usar JSON.stringify com replacer para garantir que tudo seja incluído
-            const textToCopy = JSON.stringify(resultToCopy, (key, value) => {
-                // Incluir todas as propriedades, mesmo undefined/null
-                return value;
-            }, 2);
+            const r = resultToCopy;
+            
+            // 📝 Resumo humano (o que aparece visualmente na tela)
+            const summaryLines = [];
+            
+            if (r.message) summaryLines.push(`✅ ${r.message}`);
+            if (r.uchain_id) summaryLines.push(`UChainID: ${r.uchain_id}`);
+            if (r.tx_hash) summaryLines.push(`TX Hash: ${r.tx_hash}`);
+            if (r.has_zk_proof) {
+                if (r.proof_id) {
+                    summaryLines.push(`ZK Proof: YES (Proof ID: ${r.proof_id})`);
+                } else {
+                    summaryLines.push('ZK Proof: YES');
+                }
+            }
+            if (r.commitment_id) summaryLines.push(`Commitment ID: ${r.commitment_id}`);
+            if (r.state_id) summaryLines.push(`State ID: ${r.state_id}`);
+            if (r.transfer_id) summaryLines.push(`Transfer ID: ${r.transfer_id}`);
+            
+            const stateHash =
+                (r.memo && r.memo.zk_proof && (r.memo.zk_proof.state_hash || r.memo.zk_proof.state_transition_hash)) ||
+                r.state_hash ||
+                (r.real_transaction && r.real_transaction.memo && r.real_transaction.memo.zk_proof && (r.real_transaction.memo.zk_proof.state_hash || r.real_transaction.memo.zk_proof.state_transition_hash));
+            if (stateHash) summaryLines.push(`State Hash: ${stateHash}`);
+            
+            if (r.real_transaction && r.real_transaction.success) {
+                summaryLines.push('');
+                summaryLines.push('🎉 Transação REAL Enviada!');
+                if (r.real_transaction.tx_hash) summaryLines.push(`TX Hash: ${r.real_transaction.tx_hash}`);
+                if (r.real_transaction.source_chain && r.real_transaction.target_chain) {
+                    summaryLines.push(`Chain: ${r.real_transaction.source_chain} → ${r.real_transaction.target_chain}`);
+                }
+                if (r.real_transaction.amount != null) {
+                    const token = r.real_transaction.token || r.token || '';
+                    summaryLines.push(`Amount: ${r.real_transaction.amount} ${token}`.trim());
+                }
+                if (r.real_transaction.memo_hex) summaryLines.push(`Memo (hex): ${r.real_transaction.memo_hex}`);
+            }
+            
+            const summaryText = summaryLines.join('\n');
+            
+            // ✅ GARANTIR: Copiar também o objeto COMPLETO em JSON
+            const jsonPart = JSON.stringify(resultToCopy, (key, value) => value, 2);
+            const textToCopy = `${summaryText}\n\n${jsonPart}`;
             
             navigator.clipboard.writeText(textToCopy).then(() => {
                 const button = document.getElementById('copyAllTransferBtn');
