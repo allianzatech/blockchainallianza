@@ -3339,6 +3339,31 @@ class RealCrossChainBridge:
         
         unsigned_tx = create_response.json()
         
+        # Alguns erros do BlockCypher vêm como 200/201 com campo "errors" no JSON.
+        # Tratar esses casos aqui e acionar o fallback SimpleBitcoinDirect.
+        errors_field = unsigned_tx.get("errors") or unsigned_tx.get("error")
+        if errors_field:
+            errors_text = str(errors_field)
+            utxo_error = (
+                "Could not find referenced output" in errors_text
+                or "Not enough funds in 0 inputs" in errors_text
+            )
+            if utxo_error and getattr(self, "simple_btc_direct", None):
+                print("   ⚠️ BlockCypher retornou 'errors' no JSON (mesmo com status 200/201).")
+                print("   🔁 Fallback JSON: tentando SimpleBitcoinDirect.create_and_broadcast_transaction()...")
+                try:
+                    direct_result = self.simple_btc_direct.create_and_broadcast_transaction(
+                        from_wif=from_private_key,
+                        to_address=to_address,
+                        amount_btc=amount_btc
+                    )
+                    print(f"   📊 Resultado SimpleBitcoinDirect (JSON fallback): success={direct_result.get('success')} error={direct_result.get('error')}")
+                    if direct_result.get("success"):
+                        direct_result.setdefault("method", "simplebitcoin_direct_fallback")
+                        return direct_result
+                except Exception as direct_err:
+                    print(f"   ❌ Erro no fallback SimpleBitcoinDirect (JSON errors): {direct_err}")
+        
         # ✅ VALIDAÇÃO CRÍTICA: Verificar se a transação tem inputs
         tx_inputs = unsigned_tx.get('tx', {}).get('inputs', [])
         print(f"   🔍 Validação: Transação tem {len(tx_inputs)} inputs")
