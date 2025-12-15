@@ -3323,8 +3323,12 @@ class RealCrossChainBridge:
                 or "Not enough funds in 0 inputs" in error_text
             )
             
+            print(f"   🔍 Debug fallback: blockcypher_utxo_error={blockcypher_utxo_error}, error_text preview: {error_text[:100]}")
+            
             # Fallback: tentar SimpleBitcoinDirect se disponível
             simple_btc_direct = getattr(self, "simple_btc_direct", None)
+            print(f"   🔍 Debug fallback: simple_btc_direct={simple_btc_direct}, has_method={hasattr(simple_btc_direct, 'create_and_broadcast_transaction') if simple_btc_direct else False}")
+            
             if blockcypher_utxo_error and simple_btc_direct and hasattr(simple_btc_direct, "create_and_broadcast_transaction"):
                 print("   🔁 Fallback: tentando SimpleBitcoinDirect.create_and_broadcast_transaction()...")
                 try:
