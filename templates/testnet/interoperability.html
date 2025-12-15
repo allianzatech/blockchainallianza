@@ -454,10 +454,10 @@
         // 🔢 Mínimos recomendados por token para a UX (valores humanos, não os limites técnicos da blockchain)
         // IMPORTANTE: usamos strings para evitar notação científica (1e-18) no campo number.
         const TOKEN_MINIMUMS = {
-            BTC: '0.0000546',  // mínimo recomendado BTC (exemplo real que você já usou)
-            ETH: '0.001',      // mínimo recomendado ETH
-            MATIC: '1',        // mínimo recomendado MATIC
-            SOL: '0.01'        // mínimo recomendado SOL
+            BTC: '0.0000546',              // mínimo recomendado BTC (exemplo real usado)
+            ETH: '0.000000000000000001',   // 1 wei (10^-18 ETH)
+            MATIC: '0.000000001',          // 10^-9 MATIC (formato que você pediu)
+            SOL: '0.000000001'             // 1 lamport (10^-9 SOL)
         };
         
         function updateAmountForToken() {
