@@ -668,9 +668,14 @@ def auto_faucet_check():
         }), 200
     
     except Exception as e:
+        # Não expor detalhes internos nem dados sensíveis no response
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"❌ Erro em /api/cross-chain/transfer: {e}")
+        print(error_trace)
         return jsonify({
             "success": False,
-            "error": str(e)
+            "error": "Internal error while processing cross-chain transfer. Please try again or contact support."
         }), 500
 
 @testnet_bp.route('/api/auto-faucet/request/<chain>', methods=['POST'])
