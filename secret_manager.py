@@ -52,9 +52,15 @@ class SecretManager:
         if master_key is None:
             master_key = os.getenv("ALLIANZA_MASTER_KEY")
             if master_key is None:
-                # Gerar master key (em produção, deve ser configurada)
+                # Em produção, falhar explicitamente se não houver master key configurada
+                if os.getenv("FLASK_ENV") == "production" or os.getenv("ALLIANZA_ENV") == "production":
+                    raise RuntimeError(
+                        "ALLIANZA_MASTER_KEY não configurada em produção. "
+                        "Defina a variável de ambiente ALLIANZA_MASTER_KEY ou passe master_key explicitamente."
+                    )
+                # Em ambientes de desenvolvimento/teste, ainda podemos gerar automaticamente
                 master_key = Fernet.generate_key().decode()
-                print("⚠️  Master key gerada automaticamente - configure ALLIANZA_MASTER_KEY em produção!")
+                print("⚠️  Master key gerada automaticamente (DEV) - configure ALLIANZA_MASTER_KEY em produção!")
         
         # Inicializar criptografia local
         self.fernet = Fernet(master_key.encode() if isinstance(master_key, str) else master_key)

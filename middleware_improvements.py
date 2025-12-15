@@ -42,8 +42,43 @@ def rate_limit_middleware() -> Optional[dict]:
         # Obter identificador (IP do cliente)
         identifier = request.remote_addr or "unknown"
         
-        # Verificar rate limit
-        is_allowed, error_message = global_rate_limiter.is_allowed(identifier)
+        # Definir limites mais rígidos para rotas críticas (transfer, faucet, auto-faucet)
+        path = (request.path or "").lower()
+        custom_limits = None
+        
+        if path.startswith("/api/cross-chain/transfer"):
+            # Transferência real cross-chain → limitar bem mais
+            custom_limits = {
+                "requests_per_minute": 5,
+                "requests_per_hour": 50,
+                "requests_per_day": 200,
+                "burst_size": 3,
+                "burst_window": 2,
+            }
+        elif path.startswith("/api/faucet/") or path == "/api/faucet/request":
+            # Faucet → alvo clássico de abuso
+            custom_limits = {
+                "requests_per_minute": 2,
+                "requests_per_hour": 20,
+                "requests_per_day": 50,
+                "burst_size": 2,
+                "burst_window": 10,
+            }
+        elif path.startswith("/api/auto-faucet/"):
+            # Auto-faucet e rotas administrativas relacionadas
+            custom_limits = {
+                "requests_per_minute": 1,
+                "requests_per_hour": 10,
+                "requests_per_day": 30,
+                "burst_size": 1,
+                "burst_window": 10,
+            }
+        
+        # Verificar rate limit (global ou customizado)
+        is_allowed, error_message = global_rate_limiter.is_allowed(
+            identifier,
+            custom_limits=custom_limits,
+        )
         
         if not is_allowed:
             if structured_logger:
