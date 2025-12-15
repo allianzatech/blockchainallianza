@@ -225,15 +225,27 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium mb-2">{{ t('amount') or 'Amount' }}</label>
-                            <input type="number" name="amount" id="amount" step="any" value="0.1" class="w-full bg-gray-700 text-white p-2 rounded" required>
+                            <input
+                                type="number"
+                                name="amount"
+                                id="amount"
+                                step="any"
+                                value="0.0000546"
+                                placeholder="0.0000546 (mínimo BTC)"
+                                class="w-full bg-gray-700 text-white p-2 rounded"
+                                required
+                            >
+                            <p id="amountHint" class="text-xs text-gray-400 mt-1">
+                                {{ t('min_amount_hint') or 'Min BTC: 0.0000546 | Min ETH: 0.001 | Min MATIC: 1 | Min SOL: 0.01' }}
+                            </p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-2">{{ t('token_symbol') or 'Token Symbol' }}</label>
                             <select name="token_symbol" id="tokenSymbol" class="w-full bg-gray-700 text-white p-2 rounded" required>
+                                <option value="BTC">BTC</option>
                                 <option value="ETH">ETH</option>
                                 <option value="MATIC">MATIC</option>
                                 <option value="SOL">SOL</option>
-                                <option value="BTC">BTC</option>
                             </select>
                         </div>
                     </div>
@@ -433,7 +445,48 @@
             document.getElementById(`tab-${tabName}`).classList.add('active');
             event.target.classList.add('active');
         }
-
+        
+        // 🔢 Mínimos recomendados por token (apenas UX, não trava se usar menos)
+        const TOKEN_MINIMUMS = {
+            BTC: 0.0000546,
+            ETH: 0.001,
+            MATIC: 1,
+            SOL: 0.01
+        };
+        
+        function updateAmountForToken() {
+            const tokenSelect = document.getElementById('tokenSymbol');
+            const amountInput = document.getElementById('amount');
+            const amountHint = document.getElementById('amountHint');
+            
+            if (!tokenSelect || !amountInput) return;
+            
+            const symbol = tokenSelect.value || 'BTC';
+            const min = TOKEN_MINIMUMS[symbol];
+            
+            if (min) {
+                amountInput.placeholder = `${min} (mínimo ${symbol})`;
+                // Não forçamos o valor, apenas sugerimos; se o campo estiver vazio, preenche com o mínimo
+                if (!amountInput.value) {
+                    amountInput.value = min;
+                }
+                
+                if (amountHint) {
+                    amountHint.textContent =
+                        `Mínimos recomendados — BTC: ${TOKEN_MINIMUMS.BTC} | ETH: ${TOKEN_MINIMUMS.ETH} | MATIC: ${TOKEN_MINIMUMS.MATIC} | SOL: ${TOKEN_MINIMUMS.SOL}`;
+                }
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const tokenSelect = document.getElementById('tokenSymbol');
+            if (tokenSelect) {
+                tokenSelect.addEventListener('change', updateAmountForToken);
+            }
+            // Inicializar de acordo com o token padrão
+            updateAmountForToken();
+        });
+        
         // Copy to clipboard
         function copyToClipboard(elementId) {
             const element = document.getElementById(elementId);
