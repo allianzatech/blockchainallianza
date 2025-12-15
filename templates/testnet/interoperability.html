@@ -448,10 +448,11 @@
         
         // 🔢 Mínimos recomendados por token (apenas UX, não trava se usar menos)
         const TOKEN_MINIMUMS = {
-            BTC: 0.0000546,
-            ETH: 0.001,
-            MATIC: 1,
-            SOL: 0.01
+            // Valores mínimos técnicos aproximados por blockchain (não travam o usuário)
+            BTC: 0.00000001,     // 1 satoshi
+            ETH: 0.000000000000000001, // 1 wei
+            MATIC: 0.000000000000000001, // 1 unidade mínima (18 decimais)
+            SOL: 0.000000001     // 1 lamport
         };
         
         function updateAmountForToken() {
@@ -466,10 +467,8 @@
             
             if (min) {
                 amountInput.placeholder = `${min} (mínimo ${symbol})`;
-                // Não forçamos o valor, apenas sugerimos; se o campo estiver vazio, preenche com o mínimo
-                if (!amountInput.value) {
-                    amountInput.value = min;
-                }
+                // Agora SEMPRE atualiza o valor para o mínimo ao trocar o token
+                amountInput.value = min;
                 
                 if (amountHint) {
                     amountHint.textContent =
@@ -782,9 +781,20 @@
 
                     if (result.success) {
                         clearInterval(loadingInterval);
+                        const prettyJson = JSON.stringify(result, null, 2);
                         searchContent.innerHTML = `
-                            <p class="success">✅ {{ t('proof_found') or 'Proof found!' }}</p>
-                            <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="success">✅ {{ t('proof_found') or 'Proof found!' }}</p>
+                                <button
+                                    type="button"
+                                    class="copy-btn-small bg-gray-700 hover:bg-gray-600 text-xs px-3 py-1 rounded flex items-center gap-1"
+                                    onclick="copyText('${'${'}prettyJson.replace(/`/g, '\\`').replace(/\\/g, '\\\\').replace(/\\n/g, '\\n').replace(/\\r/g, ''){'}'}')"
+                                    title="{{ t('copy_all_information') or 'Copy All Information' }}"
+                                >
+                                    <i class="fas fa-copy"></i> {{ t('copy_all') or 'Copy All' }}
+                                </button>
+                            </div>
+                            <pre class="mt-2 text-xs overflow-auto">${prettyJson}</pre>
                         `;
                         return; // Sucesso, sair do loop
                     } else {
