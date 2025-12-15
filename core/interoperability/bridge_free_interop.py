@@ -1453,7 +1453,7 @@ class BridgeFreeInterop:
                 "memo": memo_info["memo_data"],  # Incluir memo
                 "has_zk_proof": proof_id is not None,
                 "message": "🎉 Transferência bridge-free concluída!",
-                "world_first": "🌍 PRIMEIRO NO MUNDO: Transferência cross-chain sem bridge, sem custódia!",
+                "world_first": "🌍 PRIMEIRO NO MUNDO: Transferência cross-chain sem bridge, sem custódia, sem wrapped!",
                 "benefits": [
                     "✅ Sem custódia: não precisa ter fundos de reserva",
                     "✅ Sem bridge hackável: não há ponte para hackear",
