@@ -3313,21 +3313,21 @@ class RealCrossChainBridge:
             )
             
             # Fallback: tentar SimpleBitcoinDirect se disponível
-            if blockcypher_utxo_error and getattr(self, \"simple_btc_direct\", None):
-                print(f\"   🔁 Fallback: tentando SimpleBitcoinDirect.create_and_broadcast_transaction()...\")
+            if blockcypher_utxo_error and getattr(self, "simple_btc_direct", None):
+                print("   🔁 Fallback: tentando SimpleBitcoinDirect.create_and_broadcast_transaction()...")
                 try:
                     direct_result = self.simple_btc_direct.create_and_broadcast_transaction(
                         from_wif=from_private_key,
                         to_address=to_address,
                         amount_btc=amount_btc
                     )
-                    print(f\"   📊 Resultado SimpleBitcoinDirect fallback: success={direct_result.get('success')} error={direct_result.get('error')}\")
-                    if direct_result.get(\"success\"):
+                    print(f"   📊 Resultado SimpleBitcoinDirect fallback: success={direct_result.get('success')} error={direct_result.get('error')}")
+                    if direct_result.get("success"):
                         # Marcar método para o caller
-                        direct_result.setdefault(\"method\", \"simplebitcoin_direct_fallback\")
+                        direct_result.setdefault("method", "simplebitcoin_direct_fallback")
                         return direct_result
                 except Exception as direct_err:
-                    print(f\"   ❌ Erro no fallback SimpleBitcoinDirect: {direct_err}\")
+                    print(f"   ❌ Erro no fallback SimpleBitcoinDirect: {direct_err}")
             
             # Se não houve fallback bem-sucedido, retornar erro normal
             return {
