@@ -370,9 +370,20 @@
         <!-- Tab: ZK Verifier -->
         <div id="tab-verifier" class="tab-content">
             <div class="bg-gray-800 rounded-lg p-6 mb-6">
-                <h2 class="text-2xl font-bold mb-4">
-                    <i class="fas fa-shield-alt text-green-400"></i> {{ t('zk_proof_verifier') or 'ZK Proof Verifier' }}
-                </h2>
+                <div class="flex items-center justify-between mb-2 gap-2">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-shield-alt text-green-400"></i> {{ t('zk_proof_verifier') or 'ZK Proof Verifier' }}
+                    </h2>
+                    <button
+                        type="button"
+                        onclick="copyAllVerifierData()"
+                        class="copy-btn-small text-xs px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded transition flex items-center gap-1"
+                        title="{{ t('copy_all_information') or 'Copy all ZK proof data' }}"
+                    >
+                        <i class="fas fa-copy"></i>
+                        {{ t('copy_all') or 'Copy All' }}
+                    </button>
+                </div>
                 <p class="text-sm text-gray-400 mb-4">{{ t('verify_zk_proofs') or 'Verify Zero-Knowledge proofs from cross-chain transfers' }}</p>
                 
                 <!-- Quick Load UChainID - Topo da aba ZK Verifier -->
@@ -858,6 +869,34 @@
             window.location.href = `/decode/${encodeURIComponent(uchainId)}`;
         });
 
+        // Copiar todos os dados do ZK Verifier (meta + campos + resultado)
+        function copyAllVerifierData() {
+            const proof = (document.getElementById('verifierProof') || {}).value || '';
+            const vkey = (document.getElementById('verifierKey') || {}).value || '';
+            const inputs = (document.getElementById('verifierInputs') || {}).value || '';
+            const meta = window.lastVerifierMeta || {};
+            
+            const payload = {
+                uchain_id: meta.uchain_id || null,
+                proof_id: meta.proof_id || null,
+                state_hash: meta.state_hash || null,
+                source_chain: meta.source_chain || null,
+                target_chain: meta.target_chain || null,
+                verified: meta.verified !== undefined ? meta.verified : null,
+                proof_hex: proof || null,
+                verification_key_hex: vkey || null,
+                public_inputs: inputs || null
+            };
+            
+            const text = JSON.stringify(payload, null, 2);
+            navigator.clipboard.writeText(text).then(() => {
+                alert('{{ t("zk_copy_all_success") or "All ZK proof data copied to clipboard." }}');
+            }).catch(err => {
+                console.error('Erro ao copiar tudo:', err);
+                alert('Erro ao copiar todos os dados. Tente novamente.');
+            });
+        }
+        
         // Load All Proofs
         // Função para copiar todas as provas
         function copyAllProofsInfo() {
@@ -1135,6 +1174,16 @@
                         } else if (zkProof.valid !== undefined) {
                             verifiedStatus = zkProof.valid === true || zkProof.valid === 1 || zkProof.valid === 'true';
                         }
+                        
+                        // Guardar metadados globalmente para o botão "Copy All"
+                        window.lastVerifierMeta = {
+                            uchain_id: uchainId,
+                            proof_id: zkProof.proof_id || null,
+                            state_hash: zkProof.state_transition_hash || zkProof.state_hash || null,
+                            source_chain: zkProof.source_chain || data.source_chain || null,
+                            target_chain: zkProof.target_chain || data.target_chain || null,
+                            verified: verifiedStatus
+                        };
                         
                         // Mostrar feedback visual no topo
                         resultContent.innerHTML = `
