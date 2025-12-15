@@ -133,19 +133,19 @@
 
         <!-- Tabs -->
         <div class="mb-6 flex gap-2 overflow-x-auto">
-            <button class="tab-button active" onclick="showTab('about')">
+            <button class="tab-button active" onclick="showTab('about', this)">
                 <i class="fas fa-book"></i> {{ t('about') or 'About' }}
             </button>
-            <button class="tab-button" onclick="showTab('transfer')">
+            <button class="tab-button" onclick="showTab('transfer', this)">
                 <i class="fas fa-exchange-alt"></i> {{ t('cross_chain_transfer') or 'Cross-Chain Transfer' }}
             </button>
-            <button class="tab-button" onclick="showTab('decoder')">
+            <button class="tab-button" onclick="showTab('decoder', this)">
                 <i class="fas fa-code"></i> {{ t('decoder') or 'Decoder' }}
             </button>
-            <button class="tab-button" onclick="showTab('proofs')">
+            <button class="tab-button" onclick="showTab('proofs', this)">
                 <i class="fas fa-list"></i> {{ t('proofs') or 'Proofs' }}
             </button>
-            <button class="tab-button" onclick="showTab('verifier')">
+            <button class="tab-button" onclick="showTab('verifier', this)">
                 <i class="fas fa-shield-alt"></i> {{ t('zk_verifier') or 'ZK Verifier' }}
             </button>
         </div>
@@ -432,7 +432,7 @@
 
     <script>
         // Tab switching
-        function showTab(tabName) {
+        function showTab(tabName, button) {
             // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
@@ -442,8 +442,13 @@
             });
             
             // Show selected tab
-            document.getElementById(`tab-${tabName}`).classList.add('active');
-            event.target.classList.add('active');
+            const target = document.getElementById(`tab-${tabName}`);
+            if (target) {
+                target.classList.add('active');
+            }
+            if (button) {
+                button.classList.add('active');
+            }
         }
         
         // 🔢 Mínimos recomendados por token (apenas UX, não trava se usar menos)
@@ -523,6 +528,15 @@
                 console.error('Erro ao copiar:', err);
                 alert('Erro ao copiar. Tente selecionar e copiar manualmente.');
             });
+        }
+        
+        // Helper específico para copiar o resultado da busca de prova por UChainID
+        function copySearchProofJson() {
+            if (window.lastSearchProofJson) {
+                copyText(window.lastSearchProofJson);
+            } else {
+                alert('Nenhuma prova carregada ainda para copiar.');
+            }
         }
         
         // Copy field value (for ZK Verifier fields)
@@ -782,13 +796,15 @@
                     if (result.success) {
                         clearInterval(loadingInterval);
                         const prettyJson = JSON.stringify(result, null, 2);
+                        // Armazenar globalmente para o botão "Copy All"
+                        window.lastSearchProofJson = prettyJson;
                         searchContent.innerHTML = `
                             <div class="flex items-center justify-between mb-2">
                                 <p class="success">✅ {{ t('proof_found') or 'Proof found!' }}</p>
                                 <button
                                     type="button"
                                     class="copy-btn-small bg-gray-700 hover:bg-gray-600 text-xs px-3 py-1 rounded flex items-center gap-1"
-                                    onclick="copyText('${'${'}prettyJson.replace(/`/g, '\\`').replace(/\\/g, '\\\\').replace(/\\n/g, '\\n').replace(/\\r/g, ''){'}'}')"
+                                    onclick="copySearchProofJson()"
                                     title="{{ t('copy_all_information') or 'Copy All Information' }}"
                                 >
                                     <i class="fas fa-copy"></i> {{ t('copy_all') or 'Copy All' }}
