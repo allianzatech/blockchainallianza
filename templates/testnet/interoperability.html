@@ -451,13 +451,13 @@
             }
         }
         
-        // 🔢 Mínimos recomendados por token (apenas UX, não trava se usar menos)
+        // 🔢 Mínimos recomendados por token para a UX (valores humanos, não os limites técnicos da blockchain)
+        // IMPORTANTE: usamos strings para evitar notação científica (1e-18) no campo number.
         const TOKEN_MINIMUMS = {
-            // Valores mínimos técnicos aproximados por blockchain (não travam o usuário)
-            BTC: 0.00000001,     // 1 satoshi
-            ETH: 0.000000000000000001, // 1 wei
-            MATIC: 0.000000000000000001, // 1 unidade mínima (18 decimais)
-            SOL: 0.000000001     // 1 lamport
+            BTC: '0.0000546',  // mínimo recomendado BTC (exemplo real que você já usou)
+            ETH: '0.001',      // mínimo recomendado ETH
+            MATIC: '1',        // mínimo recomendado MATIC
+            SOL: '0.01'        // mínimo recomendado SOL
         };
         
         function updateAmountForToken() {
@@ -472,7 +472,7 @@
             
             if (min) {
                 amountInput.placeholder = `${min} (mínimo ${symbol})`;
-                // Agora SEMPRE atualiza o valor para o mínimo ao trocar o token
+                // Sempre atualiza o valor do campo para o mínimo recomendado ao trocar o token
                 amountInput.value = min;
                 
                 if (amountHint) {
