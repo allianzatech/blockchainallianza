@@ -3304,7 +3304,18 @@ class RealCrossChainBridge:
         # Se BlockCypher falhar aqui (especialmente com erros de UTXO/0 inputs), tentar fallback DIRETO
         if create_response.status_code not in [200, 201]:
             error_text = create_response.text[:500]
-            print(f"   ⚠️  BlockCypher txs/new falhou ao criar transação.")
+            print(f"   ⚠️  BlockCypher txs/new falhou ao criar transação (status {create_response.status_code}).")
+            
+            # Tentar parsear JSON mesmo com status de erro (BlockCypher às vezes retorna JSON com "errors")
+            errors_in_json = False
+            try:
+                error_json = create_response.json()
+                errors_field = error_json.get("errors") or error_json.get("error")
+                if errors_field:
+                    errors_in_json = True
+                    error_text = str(errors_field)
+            except:
+                pass
             
             # Erros típicos que estamos vendo na prática
             blockcypher_utxo_error = (
@@ -3313,10 +3324,11 @@ class RealCrossChainBridge:
             )
             
             # Fallback: tentar SimpleBitcoinDirect se disponível
-            if blockcypher_utxo_error and getattr(self, "simple_btc_direct", None):
+            simple_btc_direct = getattr(self, "simple_btc_direct", None)
+            if blockcypher_utxo_error and simple_btc_direct and hasattr(simple_btc_direct, "create_and_broadcast_transaction"):
                 print("   🔁 Fallback: tentando SimpleBitcoinDirect.create_and_broadcast_transaction()...")
                 try:
-                    direct_result = self.simple_btc_direct.create_and_broadcast_transaction(
+                    direct_result = simple_btc_direct.create_and_broadcast_transaction(
                         from_wif=from_private_key,
                         to_address=to_address,
                         amount_btc=amount_btc
@@ -3328,13 +3340,19 @@ class RealCrossChainBridge:
                         return direct_result
                 except Exception as direct_err:
                     print(f"   ❌ Erro no fallback SimpleBitcoinDirect: {direct_err}")
+                    import traceback
+                    traceback.print_exc()
+            elif blockcypher_utxo_error:
+                print(f"   ⚠️  SimpleBitcoinDirect não disponível para fallback (simple_btc_direct={simple_btc_direct})")
             
             # Se não houve fallback bem-sucedido, retornar erro normal
             return {
                 "success": False,
                 "error": f"Erro ao criar transação: {create_response.status_code}",
                 "response": error_text,
-                "tx_data": tx_data
+                "tx_data": tx_data,
+                "blockcypher_attempted": True,
+                "manual_attempted": False
             }
         
         unsigned_tx = create_response.json()
@@ -3363,6 +3381,8 @@ class RealCrossChainBridge:
                         return direct_result
                 except Exception as direct_err:
                     print(f"   ❌ Erro no fallback SimpleBitcoinDirect (JSON errors): {direct_err}")
+                    import traceback
+                    traceback.print_exc()
         
         # ✅ VALIDAÇÃO CRÍTICA: Verificar se a transação tem inputs
         tx_inputs = unsigned_tx.get('tx', {}).get('inputs', [])
