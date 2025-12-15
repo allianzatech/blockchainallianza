@@ -5452,15 +5452,16 @@ class RealCrossChainBridge:
                                                         except Exception as direct_err:
                                                             print(f"   ⚠️  SimpleBitcoinDirect fallback também falhou: {direct_err}")
                                                     
-                                                    # Se não é erro de UTXO conhecido OU fallback falhou, retornar erro normal
-                                                    if "input" in error_text.lower() or "output" in error_text.lower() or "invalid" in error_text.lower():
-                                                        print(f"   ❌ Erro parece ser sobre estrutura da transação")
+                                                    # Se não é erro de UTXO conhecido, retornar erro imediatamente
+                                                    # Se é erro de UTXO conhecido mas fallback falhou, continuar para bitcoinlib fallback
+                                                    if not blockcypher_utxo_error and ("input" in error_text.lower() or "output" in error_text.lower() or "invalid" in error_text.lower()):
+                                                        print(f"   ❌ Erro parece ser sobre estrutura da transação (não é UTXO conhecido) - não tentando métodos alternativos")
                                                         proof_data["final_result"] = {
                                                             "success": False,
                                                             "error": f"BlockCypher falhou: {error_text}",
                                                             "note": "Erro na estrutura da transação. Verifique UTXOs e endereços.",
                                                             "blockcypher_attempted": True,
-                                                            "manual_attempted": bool(blockcypher_utxo_error and getattr(self, "simple_btc_direct", None))
+                                                            "manual_attempted": False
                                                         }
                                                         proof_file = self._save_transaction_proof(proof_data)
                                                         return {
@@ -5471,9 +5472,10 @@ class RealCrossChainBridge:
                                                             "amount": amount_btc,
                                                             "note": "Erro na estrutura da transação. Verifique UTXOs e endereços.",
                                                             "blockcypher_attempted": True,
-                                                            "manual_attempted": bool(blockcypher_utxo_error and getattr(self, "simple_btc_direct", None)),
+                                                            "manual_attempted": False,
                                                             "proof_file": proof_file
                                                         }
+                                                    # Se é erro de UTXO conhecido mas fallback falhou, continuar para bitcoinlib (não fazer return aqui)
                                         except Exception as blockcypher_err:
                                             print(f"⚠️  Erro ao tentar BlockCypher: {blockcypher_err}")
                                             import traceback
