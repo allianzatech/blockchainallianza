@@ -8760,9 +8760,24 @@ class RealCrossChainBridge:
                             "note": "Defina BITCOIN_BRIDGE_ADDRESS ou BITCOIN_TESTNET_ADDRESS no .env com um endereço Bitcoin válido"
                         }
                 
+                # ✅ VALIDAÇÃO EXPLÍCITA: Garantir que bridge_address é um endereço Bitcoin válido
+                # ⚠️ CRÍTICO: NUNCA usar recipient (pode ser endereço EVM) quando source_chain == "bitcoin"
+                is_valid_btc_addr, validation_error = self._validate_bitcoin_address(bridge_address)
+                if not is_valid_btc_addr:
+                    print(f"   ❌ bridge_address inválido: {bridge_address} - {validation_error}")
+                    return {
+                        "success": False,
+                        "error": f"Endereço Bitcoin de bridge inválido: {validation_error}",
+                        "to_address": bridge_address,
+                        "note": f"BITCOIN_BRIDGE_ADDRESS deve ser um endereço Bitcoin válido. Recebido: {bridge_address}",
+                        "proof_file": None
+                    }
+                
+                print(f"   ✅ bridge_address validado: {bridge_address}")
+                
                 source_tx_result = self.send_bitcoin_transaction(
                     from_private_key=source_private_key,
-                    to_address=bridge_address,
+                    to_address=bridge_address,  # ✅ SEMPRE bridge_address, NUNCA recipient
                     amount_btc=amount
                 )
                 
@@ -8939,9 +8954,24 @@ class RealCrossChainBridge:
                             "note": "Defina BITCOIN_BRIDGE_ADDRESS ou BITCOIN_TESTNET_ADDRESS no .env com um endereço Bitcoin válido"
                         }
                 
+                # ✅ VALIDAÇÃO EXPLÍCITA: Garantir que bridge_address é um endereço Bitcoin válido
+                # ⚠️ CRÍTICO: NUNCA usar recipient (pode ser endereço EVM) quando source_chain == "bitcoin"
+                is_valid_btc_addr, validation_error = self._validate_bitcoin_address(bridge_address)
+                if not is_valid_btc_addr:
+                    print(f"   ❌ bridge_address inválido: {bridge_address} - {validation_error}")
+                    return {
+                        "success": False,
+                        "error": f"Endereço Bitcoin de bridge inválido: {validation_error}",
+                        "to_address": bridge_address,
+                        "note": f"BITCOIN_BRIDGE_ADDRESS deve ser um endereço Bitcoin válido. Recebido: {bridge_address}",
+                        "proof_file": None
+                    }
+                
+                print(f"   ✅ bridge_address validado: {bridge_address}")
+                
                 source_tx_result = self.send_bitcoin_transaction(
                     from_private_key=source_private_key,
-                    to_address=bridge_address,
+                    to_address=bridge_address,  # ✅ SEMPRE bridge_address, NUNCA recipient
                     amount_btc=amount
                 )
                 
