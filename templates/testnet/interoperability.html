@@ -662,7 +662,11 @@
                 summaryLines.push('');
                 summaryLines.push('🎉 Transação REAL Enviada!');
                 if (r.real_transaction.tx_hash) summaryLines.push(`TX Hash: ${r.real_transaction.tx_hash}`);
-                if (r.real_transaction.source_chain && r.real_transaction.target_chain) {
+                // ✅ CORREÇÃO: source_chain e target_chain estão no nível superior, não em real_transaction
+                if (r.source_chain && r.target_chain) {
+                    summaryLines.push(`Chain: ${r.source_chain} → ${r.target_chain}`);
+                } else if (r.real_transaction && r.real_transaction.source_chain && r.real_transaction.target_chain) {
+                    // Fallback: tentar em real_transaction se não estiver no nível superior
                     summaryLines.push(`Chain: ${r.real_transaction.source_chain} → ${r.real_transaction.target_chain}`);
                 }
                 if (r.real_transaction.amount != null) {
@@ -781,7 +785,7 @@
                             <div class="bg-green-900/20 border border-green-500 rounded p-3 mt-3">
                                 <p class="success font-bold mb-2">🎉 Transação REAL Enviada!</p>
                                 <p class="info"><strong>TX Hash:</strong> <a href="${result.real_transaction.explorer_url || '#'}" target="_blank" class="font-mono text-blue-400 hover:underline">${result.real_transaction.tx_hash}</a> <button class="copy-btn-small" onclick="copyText('${result.real_transaction.tx_hash}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>
-                                <p class="info"><strong>Chain:</strong> ${result.real_transaction.source_chain} → ${result.real_transaction.target_chain}</p>
+                                <p class="info"><strong>Chain:</strong> ${result.source_chain || (result.real_transaction && result.real_transaction.source_chain) || 'N/A'} → ${result.target_chain || (result.real_transaction && result.real_transaction.target_chain) || 'N/A'}</p>
                                 <p class="info"><strong>Amount:</strong> ${result.real_transaction.amount} ${result.real_transaction.token || result.token}</p>
                                 ${result.real_transaction.memo_hex ? `<p class="info text-xs mt-1"><strong>Memo (hex):</strong> <span class="font-mono">${result.real_transaction.memo_hex.substring(0, 50)}...</span> <button class="copy-btn-small" onclick="copyText('${result.real_transaction.memo_hex}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>` : ''}
                             </div>
