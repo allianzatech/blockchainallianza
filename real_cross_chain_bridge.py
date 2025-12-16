@@ -8735,7 +8735,30 @@ class RealCrossChainBridge:
                 print(f"   Primeiros 10 caracteres: {source_private_key[:10]}...")
                 
                 # Endereço de bridge Bitcoin
-                bridge_address = os.getenv('BITCOIN_BRIDGE_ADDRESS', recipient)
+                # ⚠️ IMPORTANTE: NUNCA usar diretamente o recipient (pode ser endereço Polygon/EVM)
+                bridge_address = os.getenv('BITCOIN_BRIDGE_ADDRESS')
+                if not bridge_address:
+                    # Fallback 1: usar endereço Bitcoin do .env (mesmo da wallet)
+                    bridge_address = (
+                        os.getenv('BITCOIN_TESTNET_ADDRESS') or
+                        os.getenv('BITCOIN_ADDRESS') or
+                        os.getenv('BTC_ADDRESS')
+                    )
+                
+                if not bridge_address:
+                    # Fallback 2: derivar endereço da própria chave privada
+                    try:
+                        from bitcoinlib.keys import Key
+                        bridge_key = Key(source_private_key, network='testnet')
+                        bridge_address = bridge_key.address()
+                        print(f"   🔁 BITCOIN_BRIDGE_ADDRESS não definido; usando endereço derivado da chave: {bridge_address}")
+                    except Exception as addr_err:
+                        print(f"   ❌ Não foi possível determinar endereço Bitcoin de bridge: {addr_err}")
+                        return {
+                            "success": False,
+                            "error": f"Não foi possível determinar endereço Bitcoin de bridge: {addr_err}",
+                            "note": "Defina BITCOIN_BRIDGE_ADDRESS ou BITCOIN_TESTNET_ADDRESS no .env com um endereço Bitcoin válido"
+                        }
                 
                 source_tx_result = self.send_bitcoin_transaction(
                     from_private_key=source_private_key,
@@ -8891,7 +8914,30 @@ class RealCrossChainBridge:
                 print(f"   Primeiros 10 caracteres: {source_private_key[:10]}...")
                 
                 # Endereço de bridge Bitcoin
-                bridge_address = os.getenv('BITCOIN_BRIDGE_ADDRESS', recipient)
+                # ⚠️ IMPORTANTE: NUNCA usar diretamente o recipient (pode ser endereço Polygon/EVM)
+                bridge_address = os.getenv('BITCOIN_BRIDGE_ADDRESS')
+                if not bridge_address:
+                    # Fallback 1: usar endereço Bitcoin do .env (mesmo da wallet)
+                    bridge_address = (
+                        os.getenv('BITCOIN_TESTNET_ADDRESS') or
+                        os.getenv('BITCOIN_ADDRESS') or
+                        os.getenv('BTC_ADDRESS')
+                    )
+                
+                if not bridge_address:
+                    # Fallback 2: derivar endereço da própria chave privada
+                    try:
+                        from bitcoinlib.keys import Key
+                        bridge_key = Key(source_private_key, network='testnet')
+                        bridge_address = bridge_key.address()
+                        print(f"   🔁 BITCOIN_BRIDGE_ADDRESS não definido; usando endereço derivado da chave: {bridge_address}")
+                    except Exception as addr_err:
+                        print(f"   ❌ Não foi possível determinar endereço Bitcoin de bridge: {addr_err}")
+                        return {
+                            "success": False,
+                            "error": f"Não foi possível determinar endereço Bitcoin de bridge: {addr_err}",
+                            "note": "Defina BITCOIN_BRIDGE_ADDRESS ou BITCOIN_TESTNET_ADDRESS no .env com um endereço Bitcoin válido"
+                        }
                 
                 source_tx_result = self.send_bitcoin_transaction(
                     from_private_key=source_private_key,
