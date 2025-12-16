@@ -427,9 +427,31 @@ class BridgeFreeInterop:
                     if token_symbol == "BTC":
                         amount_btc = amount
                     else:
-                        # Assumir que é EVM token, converter para BTC equivalente (simplificado)
-                        # Em produção, usar oráculo de preço
-                        amount_btc = amount * 0.0001  # Taxa de conversão simplificada para teste
+                        # ✅ CORREÇÃO: Usar taxas de câmbio reais em vez de conversão simplificada
+                        # Atualizar taxas de câmbio antes de converter
+                        try:
+                            bridge.update_exchange_rates()
+                            token_price = bridge.get_exchange_rate(token_symbol)
+                            btc_price = bridge.get_exchange_rate("BTC")
+                            
+                            if token_price and btc_price and token_price > 0 and btc_price > 0:
+                                # Converter: (amount * token_price) / btc_price
+                                amount_btc = (amount * token_price) / btc_price
+                                print(f"   💱 Conversão: {amount} {token_symbol} @ ${token_price} = ${amount * token_price} → {amount_btc} BTC @ ${btc_price}")
+                            else:
+                                # Fallback: usar taxa simplificada se não conseguir obter preços
+                                print(f"   ⚠️  Não foi possível obter taxas de câmbio, usando conversão simplificada")
+                                amount_btc = amount * 0.0001
+                        except Exception as rate_err:
+                            print(f"   ⚠️  Erro ao obter taxas de câmbio: {rate_err}, usando conversão simplificada")
+                            amount_btc = amount * 0.0001
+                    
+                    # ✅ GARANTIR VALOR MÍNIMO: 1 satoshi (0.00000001 BTC)
+                    MIN_BTC_AMOUNT = 0.00000001  # 1 satoshi
+                    if amount_btc < MIN_BTC_AMOUNT:
+                        print(f"   ⚠️  Valor convertido ({amount_btc} BTC) menor que mínimo (1 satoshi). Ajustando para mínimo.")
+                        amount_btc = MIN_BTC_AMOUNT
+                        print(f"   ✅ Valor ajustado para mínimo: {amount_btc} BTC (1 satoshi)")
                     
                     # Bitcoin como target: EVM → Bitcoin
                     if target_chain == "bitcoin":
