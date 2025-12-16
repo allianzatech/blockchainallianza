@@ -624,10 +624,51 @@ class BridgeFreeInterop:
                         
                         print(f"   🔑 Chave privada Bitcoin obtida: {bitcoin_private_key[:10]}... (tamanho: {len(bitcoin_private_key)})")
                         
+                        # ✅ CORREÇÃO CRÍTICA: Quando source_chain == "bitcoin", NUNCA usar recipient (é endereço EVM)
+                        # ⚠️ IMPORTANTE: Sempre usar bridge_address Bitcoin, nunca recipient diretamente
+                        bridge_address = os.getenv('BITCOIN_BRIDGE_ADDRESS')
+                        if not bridge_address:
+                            # Fallback 1: usar endereço Bitcoin do .env
+                            bridge_address = (
+                                os.getenv('BITCOIN_TESTNET_ADDRESS') or
+                                os.getenv('BITCOIN_ADDRESS') or
+                                os.getenv('BTC_ADDRESS')
+                            )
+                        
+                        if not bridge_address:
+                            # Fallback 2: derivar endereço da própria chave privada
+                            try:
+                                from bitcoinlib.keys import Key
+                                bridge_key = Key(bitcoin_private_key, network='testnet')
+                                bridge_address = bridge_key.address()
+                                print(f"   🔁 BITCOIN_BRIDGE_ADDRESS não definido; usando endereço derivado da chave: {bridge_address}")
+                            except Exception as addr_err:
+                                print(f"   ❌ Não foi possível determinar endereço Bitcoin de bridge: {addr_err}")
+                                return {
+                                    "success": False,
+                                    "error": f"Não foi possível determinar endereço Bitcoin de bridge: {addr_err}",
+                                    "note": "Defina BITCOIN_BRIDGE_ADDRESS ou BITCOIN_TESTNET_ADDRESS no .env com um endereço Bitcoin válido",
+                                    "real_transaction": False
+                                }
+                        
+                        # ✅ VALIDAÇÃO EXPLÍCITA: Garantir que bridge_address é um endereço Bitcoin válido
+                        is_valid_btc_addr, validation_error = bridge._validate_bitcoin_address(bridge_address)
+                        if not is_valid_btc_addr:
+                            print(f"   ❌ bridge_address inválido: {bridge_address} - {validation_error}")
+                            return {
+                                "success": False,
+                                "error": f"Endereço Bitcoin de bridge inválido: {validation_error}",
+                                "to_address": bridge_address,
+                                "note": f"BITCOIN_BRIDGE_ADDRESS deve ser um endereço Bitcoin válido. Recebido: {bridge_address}",
+                                "real_transaction": False
+                            }
+                        
+                        print(f"   ✅ bridge_address validado: {bridge_address} (NÃO usando recipient EVM: {recipient})")
+                        
                         # Enviar Bitcoin com OP_RETURN primeiro
                         bitcoin_result = bridge.send_bitcoin_transaction(
                             from_private_key=bitcoin_private_key,
-                            to_address=recipient,  # Endereço Bitcoin intermediário
+                            to_address=bridge_address,  # ✅ SEMPRE bridge_address, NUNCA recipient
                             amount_btc=amount_btc,
                             source_tx_hash=memo_hex_str if memo_hex_str else None  # Incluir memo no OP_RETURN
                         )
