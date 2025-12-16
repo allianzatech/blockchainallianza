@@ -449,10 +449,13 @@ class BridgeFreeInterop:
                     # ✅ GARANTIR VALOR MÍNIMO: Dust limit do Bitcoin (546 satoshis = 0.00000546 BTC)
                     # O dust limit é o valor mínimo aceito pela rede Bitcoin para evitar spam
                     MIN_BTC_AMOUNT = 0.00000546  # 546 satoshis (dust limit)
+                    print(f"   🔍 Valor BTC antes do ajuste: {amount_btc} BTC")
                     if amount_btc < MIN_BTC_AMOUNT:
                         print(f"   ⚠️  Valor convertido ({amount_btc} BTC) menor que dust limit ({MIN_BTC_AMOUNT} BTC). Ajustando para mínimo.")
                         amount_btc = MIN_BTC_AMOUNT
                         print(f"   ✅ Valor ajustado para dust limit: {amount_btc} BTC (546 satoshis)")
+                    else:
+                        print(f"   ✅ Valor BTC já está acima do dust limit: {amount_btc} BTC")
                     
                     # Bitcoin como target: EVM → Bitcoin
                     if target_chain == "bitcoin":
