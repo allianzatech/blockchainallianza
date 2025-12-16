@@ -446,12 +446,13 @@ class BridgeFreeInterop:
                             print(f"   ⚠️  Erro ao obter taxas de câmbio: {rate_err}, usando conversão simplificada")
                             amount_btc = amount * 0.0001
                     
-                    # ✅ GARANTIR VALOR MÍNIMO: 1 satoshi (0.00000001 BTC)
-                    MIN_BTC_AMOUNT = 0.00000001  # 1 satoshi
+                    # ✅ GARANTIR VALOR MÍNIMO: Dust limit do Bitcoin (546 satoshis = 0.00000546 BTC)
+                    # O dust limit é o valor mínimo aceito pela rede Bitcoin para evitar spam
+                    MIN_BTC_AMOUNT = 0.00000546  # 546 satoshis (dust limit)
                     if amount_btc < MIN_BTC_AMOUNT:
-                        print(f"   ⚠️  Valor convertido ({amount_btc} BTC) menor que mínimo (1 satoshi). Ajustando para mínimo.")
+                        print(f"   ⚠️  Valor convertido ({amount_btc} BTC) menor que dust limit ({MIN_BTC_AMOUNT} BTC). Ajustando para mínimo.")
                         amount_btc = MIN_BTC_AMOUNT
-                        print(f"   ✅ Valor ajustado para mínimo: {amount_btc} BTC (1 satoshi)")
+                        print(f"   ✅ Valor ajustado para dust limit: {amount_btc} BTC (546 satoshis)")
                     
                     # Bitcoin como target: EVM → Bitcoin
                     if target_chain == "bitcoin":
