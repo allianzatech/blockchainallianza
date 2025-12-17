@@ -76,6 +76,28 @@
                         <a href="{{ explorer_url }}" target="_blank" class="text-blue-400 hover:underline mt-2 inline-block">
                             View on Explorer <i class="fas fa-external-link-alt"></i>
                         </a>
+                        {# Segundo link: explorer da chain de destino, apenas UI, sem mudar backend #}
+                        {% if target_chain and recipient %}
+                            {% set target = target_chain.lower() %}
+                            {% if target == 'solana' %}
+                                {% set target_explorer = 'https://solscan.io/account/' ~ recipient ~ '?cluster=testnet' %}
+                            {% elif target == 'polygon' %}
+                                {% set target_explorer = 'https://amoy.polygonscan.com/address/' ~ recipient %}
+                            {% elif target == 'ethereum' %}
+                                {% set target_explorer = 'https://sepolia.etherscan.io/address/' ~ recipient %}
+                            {% elif target == 'bitcoin' %}
+                                {% set target_explorer = 'https://blockstream.info/testnet/address/' ~ recipient %}
+                            {% else %}
+                                {% set target_explorer = None %}
+                            {% endif %}
+                            {% if target_explorer %}
+                            <div class="mt-2">
+                                <a href="{{ target_explorer }}" target="_blank" class="text-blue-300 hover:underline inline-block text-sm">
+                                    View on Target Chain Explorer ({{ target_chain|title }}) <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            </div>
+                            {% endif %}
+                        {% endif %}
                     </div>
                     {% endif %}
                     
