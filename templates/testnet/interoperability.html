@@ -557,6 +557,43 @@
                 alert('Erro ao copiar. Tente selecionar e copiar manualmente.');
             });
         }
+
+        // Helper: construir URL de explorer para a chain de destino (segundo link)
+        function getTargetExplorerUrl(result) {
+            if (!result) return '';
+            const target = (result.target_chain || '').toLowerCase();
+            const recipient = result.recipient || '';
+            const txHash = result.tx_hash || (result.real_transaction && result.real_transaction.tx_hash) || '';
+            const realTx = result.real_transaction || {};
+
+            // Se a transação real já é na própria target_chain, reaproveitar explorer_url
+            if (realTx.chain && realTx.explorer_url && realTx.chain.toLowerCase() === target) {
+                return realTx.explorer_url;
+            }
+
+            // Caso contrário, construir um link útil por chain (normalmente por address)
+            switch (target) {
+                case 'bitcoin':
+                    if (txHash) return `https://blockstream.info/testnet/tx/${txHash}`;
+                    if (recipient) return `https://blockstream.info/testnet/address/${recipient}`;
+                    return '';
+                case 'polygon':
+                    if (txHash) return `https://amoy.polygonscan.com/tx/${txHash}`;
+                    if (recipient) return `https://amoy.polygonscan.com/address/${recipient}`;
+                    return '';
+                case 'ethereum':
+                    if (txHash) return `https://sepolia.etherscan.io/tx/${txHash}`;
+                    if (recipient) return `https://sepolia.etherscan.io/address/${recipient}`;
+                    return '';
+                case 'solana':
+                    // Para Solana testnet, é mais útil abrir pelo address quando a TX ainda não existe
+                    if (txHash) return `https://solscan.io/tx/${txHash}?cluster=testnet`;
+                    if (recipient) return `https://solscan.io/account/${recipient}?cluster=testnet`;
+                    return '';
+                default:
+                    return '';
+            }
+        }
         
         // Helper específico para copiar o resultado da busca de prova por UChainID
         function copySearchProofJson() {
@@ -778,6 +815,11 @@
                         // Armazenar resultado globalmente para função de copiar
                         window.lastTransferResult = result;
                     }
+
+                    const targetExplorerUrl = getTargetExplorerUrl(result);
+                    const targetExplorerLine = targetExplorerUrl
+                        ? `<p class="info"><strong>Explorer (target chain):</strong> <a href="${targetExplorerUrl}" target="_blank" class="font-mono text-blue-400 hover:underline">${targetExplorerUrl}</a></p>`
+                        : '';
                     
                     let txInfo = '';
                     if (result.real_transaction && result.real_transaction.success) {
@@ -787,6 +829,7 @@
                                 <p class="info"><strong>TX Hash:</strong> <a href="${result.real_transaction.explorer_url || '#'}" target="_blank" class="font-mono text-blue-400 hover:underline">${result.real_transaction.tx_hash}</a> <button class="copy-btn-small" onclick="copyText('${result.real_transaction.tx_hash}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>
                                 <p class="info"><strong>Chain:</strong> ${result.source_chain || (result.real_transaction && result.real_transaction.source_chain) || 'N/A'} → ${result.target_chain || (result.real_transaction && result.real_transaction.target_chain) || 'N/A'}</p>
                                 <p class="info"><strong>Amount:</strong> ${result.real_transaction.amount} ${result.real_transaction.token || result.token}</p>
+                                ${targetExplorerLine}
                                 ${result.real_transaction.memo_hex ? `<p class="info text-xs mt-1"><strong>Memo (hex):</strong> <span class="font-mono">${result.real_transaction.memo_hex.substring(0, 50)}...</span> <button class="copy-btn-small" onclick="copyText('${result.real_transaction.memo_hex}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>` : ''}
                             </div>
                         `;
