@@ -909,6 +909,24 @@
                     if (result.success) {
                         clearInterval(loadingInterval);
                         const prettyJson = JSON.stringify(result, null, 2);
+                        
+                        // Extrair memo de forma resiliente (sem alterar o backend)
+                        const memoCandidate =
+                            (result.transfer_details && result.transfer_details.memo) ||
+                            result.memo_data ||
+                            result.memo ||
+                            null;
+                        let memoSection = '';
+                        if (memoCandidate) {
+                            const memoJson = JSON.stringify(memoCandidate, null, 2);
+                            memoSection = `
+                                <div class="mt-3 border-t border-gray-700 pt-3">
+                                    <p class="info font-semibold mb-1">Memo</p>
+                                    <pre class="mt-1 text-xs overflow-auto">${memoJson}</pre>
+                                </div>
+                            `;
+                        }
+
                         // Armazenar globalmente para o botão "Copy All"
                         window.lastSearchProofJson = prettyJson;
                         searchContent.innerHTML = `
@@ -923,6 +941,7 @@
                                     <i class="fas fa-copy"></i> {{ t('copy_all') or 'Copy All' }}
                                 </button>
                             </div>
+                            ${memoSection}
                             <pre class="mt-2 text-xs overflow-auto">${prettyJson}</pre>
                         `;
                         return; // Sucesso, sair do loop
