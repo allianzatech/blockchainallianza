@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verificador Público de Provas - Allianza Blockchain</title>
+    <title>Public Proof Verifier - Allianza Blockchain</title>
     <style>
         * {
             margin: 0;
@@ -27,7 +27,7 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
         
-        /* Botão Voltar */
+        /* Back button */
                 .btn-back {
             display: inline-block;
             padding: 8px 16px;
@@ -233,42 +233,40 @@
 </head>
 <body>
     <div class="container">
-        <a href="javascript:history.back()" class="btn-back">
-Voltar
-        </a>
+        <a href="javascript:history.back()" class="btn-back">Back</a>
         
-        <h1>🔍 Verificador Público de Provas</h1>
-        <p class="subtitle">Verifique a autenticidade de transferências cross-chain sem confiar no backend</p>
+        <h1>🔍 Public Proof Verifier</h1>
+        <p class="subtitle">Verify the authenticity of cross-chain transfers without trusting the backend</p>
         
         <div class="info-box">
-            <p><strong>Como funciona:</strong></p>
-            <p>1. Cole os hashes das transações Polygon e Bitcoin</p>
-            <p>2. O sistema verifica ambas as transações diretamente nas blockchains</p>
-            <p>3. Verifica o vínculo criptográfico via OP_RETURN na transação Bitcoin</p>
-            <p>4. Retorna resultado verificável independentemente</p>
+            <p><strong>How it works:</strong></p>
+            <p>1. Paste the Polygon and Bitcoin transaction hashes</p>
+            <p>2. The system verifies both transactions directly on the blockchains</p>
+            <p>3. It checks the cryptographic link via OP_RETURN in the Bitcoin transaction</p>
+            <p>4. It returns a result that can be independently verified</p>
         </div>
         
         <form id="verifyForm">
             <div class="form-group">
-                <label for="polygon_tx_hash">Hash da Transação Polygon:</label>
+                <label for="polygon_tx_hash">Polygon transaction hash:</label>
                 <input type="text" id="polygon_tx_hash" name="polygon_tx_hash" 
                        placeholder="0x049cd16743b1a953788e197e54073cc7775480282c24b22eeb3084024e9d1a52" required>
             </div>
             
             <div class="form-group">
-                <label for="bitcoin_tx_hash">Hash da Transação Bitcoin:</label>
+                <label for="bitcoin_tx_hash">Bitcoin transaction hash:</label>
                 <input type="text" id="bitcoin_tx_hash" name="bitcoin_tx_hash" 
                        placeholder="204027d6fae86a20cff8dd584795494287eb061e855927d6f0c8254994ffb792" required>
             </div>
             
             <div class="form-group">
-                <label for="zk_proof_hash">Hash da Prova ZK (opcional):</label>
+                <label for="zk_proof_hash">ZK proof hash (optional):</label>
                 <input type="text" id="zk_proof_hash" name="zk_proof_hash" 
                        placeholder="b2fdcad963b32dce33d71839b3bc6d24...">
             </div>
             
             <div class="form-group">
-                <label for="merkle_root">Merkle Root (opcional):</label>
+                <label for="merkle_root">Merkle root (optional):</label>
                 <input type="text" id="merkle_root" name="merkle_root" 
                        placeholder="0ab7589eed2eacb2853c7952258db985...">
             </div>
@@ -286,7 +284,7 @@ Voltar
             const resultDiv = document.getElementById('result');
             resultDiv.style.display = 'block';
             resultDiv.className = 'result loading';
-            resultDiv.innerHTML = '<p>⏳ Verificando prova...</p>';
+            resultDiv.innerHTML = '<p>⏳ Verifying proof...</p>';
             
             const formData = {
                 polygon_tx_hash: document.getElementById('polygon_tx_hash').value.trim(),
@@ -310,12 +308,12 @@ Voltar
                     resultDiv.className = 'result success';
                     const jsonData = JSON.stringify(data, null, 2);
                     resultDiv.innerHTML = `
-                        <h2>✅ Prova Verificada</h2>
-                        <p><strong>Transferência cross-chain autêntica verificada!</strong></p>
+                        <h2>✅ Proof verified</h2>
+                        <p><strong>Authentic cross-chain transfer verified!</strong></p>
                         <div class="code-container">
                             <div class="code-wrapper">
-                                <button class="btn-copy" onclick="copyCode('proof-json')" title="Copiar JSON">
-                                    <i class="fas fa-copy"></i> Copiar
+                                <button class="btn-copy" onclick="copyCode('proof-json')" title="Copy JSON">
+                                    <i class="fas fa-copy"></i> Copy
                                 </button>
                                 <pre id="proof-json"><code>${jsonData}</code></pre>
                             </div>
@@ -323,22 +321,22 @@ Voltar
                         <div class="details">
                             <div class="detail-item">
                                 <strong>Polygon:</strong> 
-                                <span class="status-badge status-verified">Verificado</span>
+                                <span class="status-badge status-verified">Verified</span>
                                 <br>Block: ${data.details.polygon.block_number || 'N/A'}
-                                <br>Confirmações: ${data.details.polygon.confirmations}
+                                <br>Confirmations: ${data.details.polygon.confirmations}
                             </div>
                             <div class="detail-item">
                                 <strong>Bitcoin:</strong> 
-                                <span class="status-badge status-verified">Verificado</span>
-                                <br>Confirmações: ${data.details.bitcoin.confirmations}
+                                <span class="status-badge status-verified">Verified</span>
+                                <br>Confirmations: ${data.details.bitcoin.confirmations}
                             </div>
                             <div class="detail-item">
-                                <strong>Vínculo Criptográfico:</strong> 
+                                <strong>Cryptographic link:</strong> 
                                 <span class="status-badge ${data.details.cryptographic_link.verified ? 'status-verified' : 'status-unverified'}">
-                                    ${data.details.cryptographic_link.verified ? 'Verificado' : 'Não Verificado'}
+                                    ${data.details.cryptographic_link.verified ? 'Verified' : 'Not verified'}
                                 </span>
                                 <br>${data.details.cryptographic_link.note}
-                                ${data.details.bitcoin.op_return_polygon_hash ? '<br>Hash no OP_RETURN: ' + data.details.bitcoin.op_return_polygon_hash : ''}
+                                ${data.details.bitcoin.op_return_polygon_hash ? '<br>Hash in OP_RETURN: ' + data.details.bitcoin.op_return_polygon_hash : ''}
                             </div>
                         </div>
                     `;
@@ -346,12 +344,12 @@ Voltar
                     resultDiv.className = 'result error';
                     const jsonData = JSON.stringify(data, null, 2);
                     resultDiv.innerHTML = `
-                        <h2>❌ Prova Não Verificada</h2>
-                        <p>${data.message || 'Erro ao verificar prova'}</p>
+                        <h2>❌ Proof not verified</h2>
+                        <p>${data.message || 'Error verifying proof'}</p>
                         <div class="code-container">
                             <div class="code-wrapper">
-                                <button class="btn-copy" onclick="copyCode('proof-json-error')" title="Copiar JSON">
-                                    <i class="fas fa-copy"></i> Copiar
+                                <button class="btn-copy" onclick="copyCode('proof-json-error')" title="Copy JSON">
+                                    <i class="fas fa-copy"></i> Copy
                                 </button>
                                 <pre id="proof-json-error"><code>${jsonData}</code></pre>
                             </div>
@@ -360,18 +358,18 @@ Voltar
                             <div class="detail-item">
                                 <strong>Polygon:</strong> 
                                 <span class="status-badge ${data.details.polygon.verified ? 'status-verified' : 'status-unverified'}">
-                                    ${data.details.polygon.verified ? 'Verificado' : 'Não Verificado'}
+                                    ${data.details.polygon.verified ? 'Verified' : 'Not verified'}
                                 </span>
                             </div>
                             <div class="detail-item">
                                 <strong>Bitcoin:</strong> 
                                 <span class="status-badge ${data.details.bitcoin.verified ? 'status-verified' : 'status-unverified'}">
-                                    ${data.details.bitcoin.verified ? 'Verificado' : 'Não Verificado'}
+                                    ${data.details.bitcoin.verified ? 'Verified' : 'Not verified'}
                                 </span>
                             </div>
                             <div class="detail-item">
-                                <strong>Vínculo Criptográfico:</strong> 
-                                <span class="status-badge status-unverified">Não Verificado</span>
+                                <strong>Cryptographic link:</strong> 
+                                <span class="status-badge status-unverified">Not verified</span>
                                 <br>${data.details.cryptographic_link.note}
                             </div>
                         </div>
@@ -381,12 +379,12 @@ Voltar
                 resultDiv.className = 'result error';
                 const errorJson = JSON.stringify({error: error.message}, null, 2);
                 resultDiv.innerHTML = `
-                    <h2>❌ Erro</h2>
-                    <p>Erro ao verificar: ${error.message}</p>
+                    <h2>❌ Error</h2>
+                    <p>Error while verifying: ${error.message}</p>
                     <div class="code-container">
                         <div class="code-wrapper">
-                            <button class="btn-copy" onclick="copyCode('proof-json-error-catch')" title="Copiar JSON">
-                                <i class="fas fa-copy"></i> Copiar
+                            <button class="btn-copy" onclick="copyCode('proof-json-error-catch')" title="Copy JSON">
+                                <i class="fas fa-copy"></i> Copy
                             </button>
                             <pre id="proof-json-error-catch"><code>${errorJson}</code></pre>
                         </div>
