@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="{{ lang or 'en' }}">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>🌉 {{ t('interoperability') or 'Interoperability - Allianza Testnet' }}</title>
+    <title>🌉 Interoperability - Allianza Testnet</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -122,31 +122,31 @@
         <!-- Header -->
         <div class="mb-8">
             <a href="/" class="text-blue-400 hover:text-blue-300 mb-4 inline-flex items-center gap-2">
-                <i class="fas fa-arrow-left"></i> {{ t('back_to_dashboard') or 'Back to Dashboard' }}
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
             </a>
             <h1 class="text-4xl font-bold mb-2">
                 <i class="fas fa-project-diagram text-blue-400"></i> 
-                {{ t('interoperability') or 'Interoperability' }}
+                Interoperability
             </h1>
-            <p class="text-gray-400">{{ t('bridge_free_interoperability_complete') or 'Bridge-free cross-chain interoperability with UChainID and ZK Proofs' }}</p>
+            <p class="text-gray-400">Bridge-free cross-chain interoperability with UChainID and ZK Proofs</p>
         </div>
 
         <!-- Tabs -->
         <div class="mb-6 flex gap-2 overflow-x-auto">
             <button class="tab-button active" onclick="showTab('about', this)">
-                <i class="fas fa-book"></i> {{ t('about') or 'About' }}
+                <i class="fas fa-book"></i> About
             </button>
             <button class="tab-button" onclick="showTab('transfer', this)">
-                <i class="fas fa-exchange-alt"></i> {{ t('cross_chain_transfer') or 'Cross-Chain Transfer' }}
+                <i class="fas fa-exchange-alt"></i> Cross-Chain Transfer
             </button>
             <button class="tab-button" onclick="showTab('decoder', this)">
-                <i class="fas fa-code"></i> {{ t('decoder') or 'Decoder' }}
+                <i class="fas fa-code"></i> Decoder
             </button>
             <button class="tab-button" onclick="showTab('proofs', this)">
-                <i class="fas fa-list"></i> {{ t('proofs') or 'Proofs' }}
+                <i class="fas fa-list"></i> Proofs
             </button>
             <button class="tab-button" onclick="showTab('verifier', this)">
-                <i class="fas fa-shield-alt"></i> {{ t('zk_verifier') or 'ZK Verifier' }}
+                <i class="fas fa-shield-alt"></i> ZK Verifier
             </button>
         </div>
 
@@ -155,7 +155,7 @@
             <div class="bg-gray-800 rounded-lg p-6 mb-6">
                 <h2 class="text-2xl font-bold mb-4">🧬 ALZ-NIEV Protocol</h2>
                 <p class="text-gray-300 mb-4">
-                    {{ t('alz_niev_description') or 'The ALZ-NIEV system provides bridge-free cross-chain interoperability with 5 layers of security and cryptographic proofs.' }}
+                    The ALZ-NIEV system provides bridge-free cross-chain interoperability with 5 layers of security and cryptographic proofs.
                 </p>
                 <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
                     <div class="bg-blue-500/20 border border-blue-500 rounded-lg p-4">
@@ -182,11 +182,11 @@
                 <div class="bg-green-900/20 border border-green-500 rounded-lg p-4">
                     <h3 class="font-bold mb-2 text-green-300">✅ Benefits</h3>
                     <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                        <li>{{ t('no_custody') or 'No custody: no need to hold reserve funds' }}</li>
-                        <li>{{ t('no_hackable_bridge') or 'No hackable bridge: no bridge to hack' }}</li>
-                        <li>{{ t('no_wrapped_tokens') or 'No wrapped tokens: no need to create synthetic tokens' }}</li>
-                        <li>{{ t('mathematical_security') or 'Mathematical security: ZK proof guarantees validity' }}</li>
-                        <li>{{ t('privacy') or 'Privacy: does not reveal sensitive data' }}</li>
+                        <li>No custody: no need to hold reserve funds</li>
+                        <li>No hackable bridge: no bridge to hack</li>
+                        <li>No wrapped tokens: no need to create synthetic tokens</li>
+                        <li>Mathematical security: ZK proof guarantees validity</li>
+                        <li>Privacy: does not reveal sensitive data</li>
                     </ul>
                 </div>
             </div>
@@ -196,15 +196,15 @@
         <div id="tab-transfer" class="tab-content">
             <div class="bg-gray-800 rounded-lg p-6 mb-6">
                 <h2 class="text-2xl font-bold mb-4">
-                    <i class="fas fa-exchange-alt text-blue-400"></i> {{ t('cross_chain_transfer') or 'Cross-Chain Transfer' }}
+                    <i class="fas fa-exchange-alt text-blue-400"></i> Cross-Chain Transfer
                 </h2>
                 <p class="text-sm text-gray-400 mb-6">
-                    {{ t('real_transfer_description') or 'Send REAL tokens between different blockchains (EVM and Bitcoin). All transfers include UChainID and ZK Proofs on-chain.' }}
+                    Send REAL tokens between different blockchains (EVM and Bitcoin). All transfers include UChainID and ZK Proofs on-chain.
                 </p>
                 <form id="transferForm" class="space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium mb-2">{{ t('source_chain') or 'Source Chain' }}</label>
+                            <label class="block text-sm font-medium mb-2">Source Chain</label>
                             <select name="source_chain" id="sourceChain" class="w-full bg-gray-700 text-white p-2 rounded" required>
                                 <option value="polygon">Polygon (Amoy Testnet)</option>
                                 <option value="ethereum">Ethereum (Sepolia Testnet)</option>
@@ -213,7 +213,7 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium mb-2">{{ t('target_chain') or 'Target Chain' }}</label>
+                            <label class="block text-sm font-medium mb-2">Target Chain</label>
                             <select name="target_chain" id="targetChain" class="w-full bg-gray-700 text-white p-2 rounded" required>
                                 <option value="ethereum">Ethereum (Sepolia Testnet)</option>
                                 <option value="polygon">Polygon (Amoy Testnet)</option>
@@ -224,20 +224,20 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium mb-2">{{ t('amount') or 'Amount' }}</label>
+                            <label class="block text-sm font-medium mb-2">Amount</label>
                             <input
                                 type="number"
                                 name="amount"
                                 id="amount"
                                 step="any"
                                 value="0.0000546"
-                                placeholder="0.0000546 (mínimo BTC)"
+                                placeholder="0.0000546 (BTC minimum)"
                                 class="w-full bg-gray-700 text-white p-2 rounded"
                                 required
                             >
                             <div id="amountHint" class="mt-2 text-[11px] text-gray-300">
                                 <div class="font-semibold text-gray-400 mb-1">
-                                    {{ t('min_amount_hint_title') or 'Mínimos recomendados por token' }}
+                                    Recommended minimums per token
                                 </div>
                                 <div class="grid grid-cols-2 gap-1 bg-gray-800/80 border border-gray-700 rounded-md p-2">
                                     <div class="flex justify-between gap-2">
@@ -260,7 +260,7 @@
                             </div>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium mb-2">{{ t('token_symbol') or 'Token Symbol' }}</label>
+                            <label class="block text-sm font-medium mb-2">Token Symbol</label>
                             <select name="token_symbol" id="tokenSymbol" class="w-full bg-gray-700 text-white p-2 rounded" required>
                                 <option value="BTC">BTC</option>
                                 <option value="ETH">ETH</option>
@@ -270,38 +270,38 @@
                         </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-2">{{ t('recipient_address') or 'Recipient Address' }}</label>
-                        <input type="text" name="recipient" id="recipient" placeholder="0x... ou mjQMvYHE5Bpqze4ifq6NLP9BthNJgxWRud" class="w-full bg-gray-700 text-white p-2 rounded font-mono" required>
-                        <p class="text-xs text-gray-400 mt-1">{{ t('recipient_hint') or 'EVM address (0x...) or Bitcoin address' }}</p>
+                        <label class="block text-sm font-medium mb-2">Recipient Address</label>
+                        <input type="text" name="recipient" id="recipient" placeholder="0x... or mjQMvYHE5Bpqze4ifq6NLP9BthNJgxWRud" class="w-full bg-gray-700 text-white p-2 rounded font-mono" required>
+                        <p class="text-xs text-gray-400 mt-1">EVM address (0x...) or Bitcoin address</p>
                     </div>
                     <button type="submit" id="executeTransferBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition relative">
                         <span id="btnText">
-                            <i class="fas fa-rocket mr-2"></i> 🚀 {{ t('execute_real_transfer') or 'Execute REAL Transfer' }}
+                            <i class="fas fa-rocket mr-2"></i> 🚀 Execute REAL Transfer
                         </span>
                         <span id="btnLoader" class="hidden">
-                            <i class="fas fa-spinner fa-spin mr-2"></i> {{ t('processing') or 'Processing...' }}
+                            <i class="fas fa-spinner fa-spin mr-2"></i> Processing...
                         </span>
                     </button>
                     <p class="text-xs text-gray-400 text-center mt-2">
-                        {{ t('all_transfers_real') or '⚠️ All transfers are REAL and will appear on-chain with UChainID and ZK Proofs' }}
+                        ⚠️ All transfers are REAL and will appear on-chain with UChainID and ZK Proofs
                     </p>
                 </form>
             </div>
             <div id="transferResults" class="hidden">
                 <!-- Botão FORA da caixa para copiar tudo -->
                 <div class="text-center mb-4">
-                    <button id="copyAllTransferBtn" class="copy-btn-large hidden" onclick="copyAllTransferInfo()" title="{{ t('copy_all_information') or 'Copy All Information' }}">
-                        <i class="fas fa-copy"></i> {{ t('copy_all_information') or 'Copy All Information' }}
+                    <button id="copyAllTransferBtn" class="copy-btn-large hidden" onclick="copyAllTransferInfo()" title="Copy All Information">
+                        <i class="fas fa-copy"></i> Copy All Information
                     </button>
                 </div>
                 <div class="bg-gray-800 p-6 rounded-lg mb-6">
-                    <h2 class="text-2xl font-bold mb-4">{{ t('result') or 'Result' }}</h2>
+                    <h2 class="text-2xl font-bold mb-4">Result</h2>
                     <div id="transferResultContent" class="result-box">
                     </div>
                 </div>
             </div>
             <div class="bg-gray-800 p-6 rounded-lg mb-6">
-                <h2 class="text-2xl font-bold mb-4">{{ t('search_proof_by_uchainid') or 'Search Proof by UChainID' }}</h2>
+                <h2 class="text-2xl font-bold mb-4">Search Proof by UChainID</h2>
                 <form id="searchForm" class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium mb-2">UChainID</label>
@@ -309,7 +309,7 @@
                                class="w-full bg-gray-700 text-white p-2 rounded font-mono" required>
                     </div>
                     <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition">
-                        <i class="fas fa-search mr-2"></i> {{ t('search_proof') or 'Search Proof' }}
+                        <i class="fas fa-search mr-2"></i> Search Proof
                     </button>
                 </form>
                 <div id="searchResults" class="hidden mt-4">
@@ -323,9 +323,9 @@
         <div id="tab-decoder" class="tab-content">
             <div class="bg-gray-800 rounded-lg p-6 mb-6">
                 <h2 class="text-2xl font-bold mb-4">
-                    <i class="fas fa-code text-blue-400"></i> {{ t('memo_decoder') or 'Memo Decoder' }}
+                    <i class="fas fa-code text-blue-400"></i> Memo Decoder
                 </h2>
-                <p class="text-sm text-gray-400 mb-4">{{ t('decode_uchainid_memo') or 'Decode UChainID memo from on-chain transaction' }}</p>
+                <p class="text-sm text-gray-400 mb-4">Decode UChainID memo from on-chain transaction</p>
                 <form id="decoderForm" class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium mb-2">UChainID</label>
@@ -333,7 +333,7 @@
                                class="w-full bg-gray-700 text-white p-2 rounded font-mono" required>
                     </div>
                     <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition">
-                        <i class="fas fa-search mr-2"></i> {{ t('decode') or 'Decode' }}
+                        <i class="fas fa-search mr-2"></i> Decode
                     </button>
                 </form>
                 <div id="decoderResults" class="hidden mt-4">
@@ -347,17 +347,17 @@
         <div id="tab-proofs" class="tab-content">
             <div class="bg-gray-800 rounded-lg p-6 mb-6">
                 <h2 class="text-2xl font-bold mb-4">
-                    <i class="fas fa-list text-purple-400"></i> {{ t('public_proofs') or 'Public Proofs' }}
+                    <i class="fas fa-list text-purple-400"></i> Public Proofs
                 </h2>
-                <p class="text-sm text-gray-400 mb-4">{{ t('all_cross_chain_transfers') or 'All cross-chain transfers with UChainID and ZK Proofs' }}</p>
+                <p class="text-sm text-gray-400 mb-4">All cross-chain transfers with UChainID and ZK Proofs</p>
                 <button onclick="loadAllProofs()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition">
-                    <i class="fas fa-list mr-2"></i> {{ t('load_all_proofs') or 'Load All Proofs (last 50)' }}
+                    <i class="fas fa-list mr-2"></i> Load All Proofs (last 50)
                 </button>
                 <div id="proofsResults" class="hidden mt-4">
                     <div class="bg-gray-800 p-6 rounded-lg">
                         <div class="text-center mb-4">
-                            <button id="copyAllProofsBtn" class="copy-btn-large hidden" onclick="copyAllProofsInfo()" title="{{ t('copy_all_information') or 'Copy All Information' }}">
-                                <i class="fas fa-copy"></i> {{ t('copy_all_information') or 'Copy All Information' }}
+                            <button id="copyAllProofsBtn" class="copy-btn-large hidden" onclick="copyAllProofsInfo()" title="Copy All Information">
+                                <i class="fas fa-copy"></i> Copy All Information
                             </button>
                         </div>
                         <div id="proofsContent" class="result-box">
@@ -372,38 +372,38 @@
             <div class="bg-gray-800 rounded-lg p-6 mb-6">
                 <div class="flex items-center justify-between mb-2 gap-2">
                     <h2 class="text-2xl font-bold">
-                        <i class="fas fa-shield-alt text-green-400"></i> {{ t('zk_proof_verifier') or 'ZK Proof Verifier' }}
+                        <i class="fas fa-shield-alt text-green-400"></i> ZK Proof Verifier
                     </h2>
                     <button
                         type="button"
                         onclick="copyAllVerifierData()"
                         class="copy-btn-small text-xs px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded transition flex items-center gap-1"
-                        title="{{ t('copy_all_information') or 'Copy all ZK proof data' }}"
+                        title="Copy all ZK proof data"
                     >
                         <i class="fas fa-copy"></i>
-                        {{ t('copy_all') or 'Copy All' }}
+                        Copy All
                     </button>
                 </div>
-                <p class="text-sm text-gray-400 mb-4">{{ t('verify_zk_proofs') or 'Verify Zero-Knowledge proofs from cross-chain transfers' }}</p>
+                <p class="text-sm text-gray-400 mb-4">Verify Zero-Knowledge proofs from cross-chain transfers</p>
                 
                 <!-- Quick Load UChainID - Topo da aba ZK Verifier -->
                 <div class="bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-lg p-4 mb-6 border border-blue-500/30">
                     <div class="flex items-center gap-2 mb-3">
                         <i class="fas fa-bolt text-yellow-400"></i>
-                        <h3 class="text-lg font-semibold">{{ t('quick_load') or 'Quick Load UChainID' }}</h3>
+                        <h3 class="text-lg font-semibold">Quick Load UChainID</h3>
                     </div>
                     <div class="flex gap-2 flex-wrap">
                         <select id="recentUChainIDs" class="flex-1 min-w-[200px] bg-gray-700 text-white p-2 rounded font-mono text-sm border border-gray-600" onchange="selectUChainID()">
-                            <option value="">{{ t('select_recent_uchainid') or 'Select recent UChainID...' }}</option>
+                            <option value="">Select recent UChainID...</option>
                         </select>
                         <input type="text" id="quickUChainID" placeholder="UCHAIN-..." 
                                class="flex-1 min-w-[250px] bg-gray-700 text-white p-2 rounded font-mono border border-gray-600"
                                onkeypress="if(event.key==='Enter') loadFromUChainID()">
                         <button onclick="loadFromUChainID()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded transition font-semibold whitespace-nowrap">
-                            <i class="fas fa-search"></i> {{ t('load') or 'Load' }}
+                            <i class="fas fa-search"></i> Load
                         </button>
                     </div>
-                    <p class="text-xs text-gray-400 mt-2">{{ t('quick_load_hint') or 'Select from recent transfers or paste a UChainID manually' }}</p>
+                    <p class="text-xs text-gray-400 mt-2">Select from recent transfers or paste a UChainID manually</p>
                     <div id="quickLoadResults" class="hidden mt-3">
                         <div id="quickLoadContent" class="bg-gray-800 rounded p-3 border border-gray-600"></div>
                     </div>
@@ -415,12 +415,12 @@
                             <label class="block text-sm font-medium">Proof (hex string)</label>
                             <button type="button" onclick="copyFieldValue('verifierProof', event)" 
                                     class="copy-btn-small text-xs px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded transition"
-                                    title="{{ t('copy') or 'Copy' }}">
-                                <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
+                                    title="Copy">
+                                <i class="fas fa-copy"></i> Copy
                             </button>
                         </div>
                         <textarea id="verifierProof" rows="3" 
-                                  placeholder="{{ t('paste_zk_proof') or 'Paste the ZK proof hex string here...' }}"
+                                  placeholder="Paste the ZK proof hex string here..."
                                   class="w-full bg-gray-700 text-white p-2 rounded font-mono"></textarea>
                     </div>
                     <div>
@@ -428,12 +428,12 @@
                             <label class="block text-sm font-medium">Verification Key (hex string)</label>
                             <button type="button" onclick="copyFieldValue('verifierKey', event)" 
                                     class="copy-btn-small text-xs px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded transition"
-                                    title="{{ t('copy') or 'Copy' }}">
-                                <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
+                                    title="Copy">
+                                <i class="fas fa-copy"></i> Copy
                             </button>
                         </div>
                         <textarea id="verifierKey" rows="3" 
-                                  placeholder="{{ t('paste_verification_key') or 'Paste the verification key hex string here...' }}"
+                                  placeholder="Paste the verification key hex string here..."
                                   class="w-full bg-gray-700 text-white p-2 rounded font-mono"></textarea>
                     </div>
                     <div>
@@ -441,16 +441,16 @@
                             <label class="block text-sm font-medium">Public Inputs / State Hash (optional)</label>
                             <button type="button" onclick="copyFieldValue('verifierInputs', event)" 
                                     class="copy-btn-small text-xs px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded transition"
-                                    title="{{ t('copy') or 'Copy' }}">
-                                <i class="fas fa-copy"></i> {{ t('copy') or 'Copy' }}
+                                    title="Copy">
+                                <i class="fas fa-copy"></i> Copy
                             </button>
                         </div>
                         <input type="text" id="verifierInputs" 
-                               placeholder="{{ t('state_transition_hash') or 'State transition hash (optional)' }}"
+                               placeholder="State transition hash (optional)"
                                class="w-full bg-gray-700 text-white p-2 rounded font-mono">
                     </div>
                     <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition">
-                        <i class="fas fa-check-circle mr-2"></i> {{ t('verify_proof') or 'Verify Proof' }}
+                        <i class="fas fa-check-circle mr-2"></i> Verify Proof
                     </button>
                 </form>
                 <div id="verifierResults" class="hidden mt-4">
@@ -482,8 +482,8 @@
             }
         }
         
-        // 🔢 Mínimos recomendados por token para a UX (valores humanos, não os limites técnicos da blockchain)
-        // IMPORTANTE: usamos strings para evitar notação científica (1e-18) no campo number.
+        // 🔢 Recommended minimums per token for UX (human values, not strict blockchain limits)
+        // IMPORTANT: we use strings to avoid scientific notation (1e-18) in the number input.
         const TOKEN_MINIMUMS = {
             BTC: '0.0000546',              // mínimo recomendado BTC (exemplo real usado)
             ETH: '0.000000000000000001',   // 1 wei (10^-18 ETH)
@@ -502,8 +502,8 @@
             const min = TOKEN_MINIMUMS[symbol];
             
             if (min) {
-                amountInput.placeholder = `${min} (mínimo ${symbol})`;
-                // Sempre atualiza o valor do campo para o mínimo recomendado ao trocar o token
+                amountInput.placeholder = `${min} (${symbol} minimum)`;
+                // Always update the value to the recommended minimum when changing token
                 amountInput.value = min;
                 
                 // A tabela já mostra todos os mínimos; não precisamos alterar o HTML aqui
@@ -529,7 +529,7 @@
                 const btn = element.querySelector('.copy-btn');
                 if (btn) {
                     const originalHTML = btn.innerHTML;
-                    btn.innerHTML = '<i class="fas fa-check"></i> {{ t("copied") or "Copied!" }}';
+                    btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
                     setTimeout(() => {
                         btn.innerHTML = originalHTML;
                     }, 2000);
@@ -545,7 +545,7 @@
                 const button = event.target || event.srcElement;
                 if (button && button.classList && button.classList.contains('copy-btn-small')) {
                     const originalText = button.innerHTML;
-                    button.innerHTML = '✅ {{ t("copied") or "Copied!" }}';
+                    button.innerHTML = '✅ Copied!';
                     button.style.background = '#10b981';
                     setTimeout(() => {
                         button.innerHTML = originalText;
@@ -553,8 +553,8 @@
                     }, 2000);
                 }
             }).catch(err => {
-                console.error('Erro ao copiar:', err);
-                alert('Erro ao copiar. Tente selecionar e copiar manualmente.');
+                console.error('Error copying:', err);
+                alert('Error copying. Try selecting and copying manually.');
             });
         }
 
@@ -600,7 +600,7 @@
             if (window.lastSearchProofJson) {
                 copyText(window.lastSearchProofJson);
             } else {
-                alert('Nenhuma prova carregada ainda para copiar.');
+                alert('No proof loaded yet to copy.');
             }
         }
         
@@ -608,13 +608,13 @@
         function copyFieldValue(fieldId, event) {
             const field = document.getElementById(fieldId);
             if (!field) {
-                alert('{{ t("field_not_found") or "Field not found" }}');
+                alert('Field not found');
                 return;
             }
             
             const textToCopy = field.value || field.textContent || '';
             if (!textToCopy.trim()) {
-                alert('{{ t("no_data_to_copy") or "No data to copy" }}');
+                alert('No data to copy');
                 return;
             }
             
@@ -623,7 +623,7 @@
                 const button = event ? event.target.closest('button') : document.querySelector(`button[onclick*="${fieldId}"]`);
                 if (button) {
                     const originalText = button.innerHTML;
-                    button.innerHTML = '<i class="fas fa-check"></i> {{ t("copied") or "Copied!" }}';
+                    button.innerHTML = '<i class="fas fa-check"></i> Copied!';
                     button.style.background = '#10b981';
                     setTimeout(() => {
                         button.innerHTML = originalText;
@@ -631,8 +631,8 @@
                     }, 2000);
                 }
             }).catch(err => {
-                console.error('Erro ao copiar:', err);
-                alert('Erro ao copiar. Tente selecionar e copiar manualmente.');
+                console.error('Error copying:', err);
+                alert('Error copying. Try selecting and copying manually.');
             });
         }
         
@@ -648,7 +648,7 @@
                     try {
                         resultToCopy = JSON.parse(preElement.textContent);
                     } catch (e) {
-                        console.warn('Erro ao parsear JSON do pre tag:', e);
+                        console.warn('Error parsing JSON from pre tag:', e);
                     }
                 }
             }
@@ -660,13 +660,13 @@
                     try {
                         resultToCopy = JSON.parse(preElement.textContent);
                     } catch (e) {
-                        console.warn('Erro ao parsear JSON do pre tag genérico:', e);
+                        console.warn('Error parsing JSON from generic pre tag:', e);
                     }
                 }
             }
             
             if (!resultToCopy) {
-                alert('{{ t("no_data_to_copy") or "No data to copy" }}');
+                alert('No data to copy');
                 return;
             }
             
@@ -697,7 +697,7 @@
             
             if (r.real_transaction && r.real_transaction.success) {
                 summaryLines.push('');
-                summaryLines.push('🎉 Transação REAL Enviada!');
+                summaryLines.push('🎉 REAL Transaction Sent!');
                 if (r.real_transaction.tx_hash) summaryLines.push(`TX Hash: ${r.real_transaction.tx_hash}`);
                 // ✅ CORREÇÃO: source_chain e target_chain estão no nível superior, não em real_transaction
                 if (r.source_chain && r.target_chain) {
@@ -715,7 +715,7 @@
             
             const summaryText = summaryLines.join('\n');
             
-            // ✅ GARANTIR: Copiar também o objeto COMPLETO em JSON
+            // Ensure we also copy the FULL object as JSON
             const jsonPart = JSON.stringify(resultToCopy, (key, value) => value, 2);
             const textToCopy = `${summaryText}\n\n${jsonPart}`;
             
@@ -723,7 +723,7 @@
                 const button = document.getElementById('copyAllTransferBtn');
                 if (button) {
                     const originalText = button.innerHTML;
-                    button.innerHTML = '<i class="fas fa-check"></i> {{ t("all_information_copied") or "All Information Copied!" }}';
+                    button.innerHTML = '<i class="fas fa-check"></i> All Information Copied!';
                     button.style.background = '#10b981';
                     setTimeout(() => {
                         button.innerHTML = originalText;
@@ -731,8 +731,8 @@
                     }, 2000);
                 }
             }).catch(err => {
-                console.error('Erro ao copiar:', err);
-                alert('Erro ao copiar. Tente selecionar e copiar manualmente.');
+                console.error('Error copying:', err);
+                alert('Error copying. Try selecting and copying manually.');
             });
         }
 
@@ -760,11 +760,11 @@
                 <div class="bg-gray-800 rounded-lg p-8 max-w-md w-full mx-4 border border-green-500">
                     <div class="text-center">
                         <div class="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500 mb-4"></div>
-                        <h3 class="text-xl font-bold text-white mb-2">{{ t("executing_real_transfer") or "Executing REAL Transfer" }}</h3>
-                        <p class="text-gray-300 mb-4">{{ t("please_wait") or "Please wait while we process your cross-chain transfer..." }}</p>
+                        <h3 class="text-xl font-bold text-white mb-2">Executing REAL Transfer</h3>
+                        <p class="text-gray-300 mb-4">Please wait while we process your cross-chain transfer...</p>
                         <div class="flex items-center justify-center space-x-2 text-green-400">
                             <i class="fas fa-rocket animate-pulse"></i>
-                            <span class="text-sm">{{ t("creating_transaction") or "Creating transaction..." }}</span>
+                            <span class="text-sm">Creating transaction...</span>
                         </div>
                     </div>
                 </div>
@@ -784,7 +784,7 @@
             const resultsDiv = document.getElementById('transferResults');
             const resultContent = document.getElementById('transferResultContent');
             resultsDiv.classList.remove('hidden');
-            resultContent.innerHTML = '<p class="info">⏳ {{ t("executing_real_transfer") or "Executing REAL transfer..." }}</p>';
+            resultContent.innerHTML = '<p class="info">⏳ Executing REAL transfer...</p>';
 
             try {
                 const response = await fetch('/api/cross-chain/transfer', {
@@ -825,30 +825,30 @@
                     if (result.real_transaction && result.real_transaction.success) {
                         txInfo = `
                             <div class="bg-green-900/20 border border-green-500 rounded p-3 mt-3">
-                                <p class="success font-bold mb-2">🎉 Transação REAL Enviada!</p>
-                                <p class="info"><strong>TX Hash:</strong> <a href="${result.real_transaction.explorer_url || '#'}" target="_blank" class="font-mono text-blue-400 hover:underline">${result.real_transaction.tx_hash}</a> <button class="copy-btn-small" onclick="copyText('${result.real_transaction.tx_hash}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>
+                                <p class="success font-bold mb-2">🎉 REAL Transaction Sent!</p>
+                                <p class="info"><strong>TX Hash:</strong> <a href="${result.real_transaction.explorer_url || '#'}" target="_blank" class="font-mono text-blue-400 hover:underline">${result.real_transaction.tx_hash}</a> <button class="copy-btn-small" onclick="copyText('${result.real_transaction.tx_hash}')" title="Copy">📋 Copy</button></p>
                                 <p class="info"><strong>Chain:</strong> ${result.source_chain || (result.real_transaction && result.real_transaction.source_chain) || 'N/A'} → ${result.target_chain || (result.real_transaction && result.real_transaction.target_chain) || 'N/A'}</p>
                                 <p class="info"><strong>Amount:</strong> ${result.real_transaction.amount} ${result.real_transaction.token || result.token}</p>
                                 ${targetExplorerLine}
-                                ${result.real_transaction.memo_hex ? `<p class="info text-xs mt-1"><strong>Memo (hex):</strong> <span class="font-mono">${result.real_transaction.memo_hex.substring(0, 50)}...</span> <button class="copy-btn-small" onclick="copyText('${result.real_transaction.memo_hex}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>` : ''}
+                                ${result.real_transaction.memo_hex ? `<p class="info text-xs mt-1"><strong>Memo (hex):</strong> <span class="font-mono">${result.real_transaction.memo_hex.substring(0, 50)}...</span> <button class="copy-btn-small" onclick="copyText('${result.real_transaction.memo_hex}')" title="Copy">📋 Copy</button></p>` : ''}
                             </div>
                         `;
                     }
                     resultContent.innerHTML = `
-                        <p class="success">✅ {{ t("transfer_created_success") or "Transfer created successfully!" }}</p>
-                        ${result.uchain_id ? `<p class="info mt-2"><strong>UChainID:</strong> <span class="font-mono text-cyan-400">${result.uchain_id}</span> <button class="copy-btn-small" onclick="copyText('${result.uchain_id}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>` : ''}
-                        ${result.tx_hash ? `<p class="info mt-2"><strong>TX Hash:</strong> <a href="${result.explorer_url || '#'}" target="_blank" class="font-mono text-blue-400 hover:underline">${result.tx_hash}</a> <button class="copy-btn-small" onclick="copyText('${result.tx_hash}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>` : ''}
-                        ${result.has_zk_proof && result.proof_id ? `<p class="success mt-2">✅ ZK Proof: Yes (Proof ID: <span class="font-mono text-xs">${result.proof_id}</span> <button class="copy-btn-small" onclick="copyText('${result.proof_id}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button>)</p>` : result.has_zk_proof ? `<p class="success mt-2">✅ ZK Proof: Yes</p>` : ''}
-                        ${result.commitment_id ? `<p class="info mt-2"><strong>Commitment ID:</strong> <span class="font-mono text-xs">${result.commitment_id}</span> <button class="copy-btn-small" onclick="copyText('${result.commitment_id}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>` : ''}
-                        ${result.state_id ? `<p class="info mt-2"><strong>State ID:</strong> <span class="font-mono text-xs">${result.state_id}</span> <button class="copy-btn-small" onclick="copyText('${result.state_id}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>` : ''}
-                        ${result.transfer_id ? `<p class="info mt-2"><strong>Transfer ID:</strong> <span class="font-mono text-xs">${result.transfer_id}</span> <button class="copy-btn-small" onclick="copyText('${result.transfer_id}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>` : ''}
-                        ${result.memo && result.memo.zk_proof && result.memo.zk_proof.state_hash ? `<p class="info mt-2"><strong>State Hash:</strong> <span class="font-mono text-xs break-all">${result.memo.zk_proof.state_hash}</span> <button class="copy-btn-small" onclick="copyText('${result.memo.zk_proof.state_hash}')" title="{{ t('copy') or 'Copy' }}">📋 {{ t('copy') or 'Copy' }}</button></p>` : ''}
+                        <p class="success">✅ Transfer created successfully!</p>
+                        ${result.uchain_id ? `<p class="info mt-2"><strong>UChainID:</strong> <span class="font-mono text-cyan-400">${result.uchain_id}</span> <button class="copy-btn-small" onclick="copyText('${result.uchain_id}')" title="Copy">📋 Copy</button></p>` : ''}
+                        ${result.tx_hash ? `<p class="info mt-2"><strong>TX Hash:</strong> <a href="${result.explorer_url || '#'}" target="_blank" class="font-mono text-blue-400 hover:underline">${result.tx_hash}</a> <button class="copy-btn-small" onclick="copyText('${result.tx_hash}')" title="Copy">📋 Copy</button></p>` : ''}
+                        ${result.has_zk_proof && result.proof_id ? `<p class="success mt-2">✅ ZK Proof: Yes (Proof ID: <span class="font-mono text-xs">${result.proof_id}</span> <button class="copy-btn-small" onclick="copyText('${result.proof_id}')" title="Copy">📋 Copy</button>)</p>` : result.has_zk_proof ? `<p class="success mt-2">✅ ZK Proof: Yes</p>` : ''}
+                        ${result.commitment_id ? `<p class="info mt-2"><strong>Commitment ID:</strong> <span class="font-mono text-xs">${result.commitment_id}</span> <button class="copy-btn-small" onclick="copyText('${result.commitment_id}')" title="Copy">📋 Copy</button></p>` : ''}
+                        ${result.state_id ? `<p class="info mt-2"><strong>State ID:</strong> <span class="font-mono text-xs">${result.state_id}</span> <button class="copy-btn-small" onclick="copyText('${result.state_id}')" title="Copy">📋 Copy</button></p>` : ''}
+                        ${result.transfer_id ? `<p class="info mt-2"><strong>Transfer ID:</strong> <span class="font-mono text-xs">${result.transfer_id}</span> <button class="copy-btn-small" onclick="copyText('${result.transfer_id}')" title="Copy">📋 Copy</button></p>` : ''}
+                        ${result.memo && result.memo.zk_proof && result.memo.zk_proof.state_hash ? `<p class="info mt-2"><strong>State Hash:</strong> <span class="font-mono text-xs break-all">${result.memo.zk_proof.state_hash}</span> <button class="copy-btn-small" onclick="copyText('${result.memo.zk_proof.state_hash}')" title="Copy">📋 Copy</button></p>` : ''}
                         ${txInfo}
                         <pre id="fullResultJson" class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
                     `;
                 } else {
                     resultContent.innerHTML = `
-                        <p class="error">❌ ${result.error || '{{ t("transfer_error") or "Transfer error" }}'}</p>
+                        <p class="error">❌ ${result.error || 'Transfer error'}</p>
                         ${result.note ? `<p class="info mt-2">ℹ️ ${result.note}</p>` : ''}
                         <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
                     `;
@@ -866,7 +866,7 @@
                 btnText.classList.remove('hidden');
                 btnLoader.classList.add('hidden');
                 
-                resultContent.innerHTML = `<p class="error">❌ {{ t("error") or "Error" }}: ${error.message}</p>`;
+                resultContent.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
             }
         });
 
@@ -875,7 +875,7 @@
             e.preventDefault();
             const uchainId = document.getElementById('uchainId').value.trim();
             if (!uchainId) {
-                alert('{{ t("please_enter_uchainid") or "Please enter a UChainID" }}');
+                alert('Please enter a UChainID');
                 return;
             }
 
@@ -888,7 +888,7 @@
             const loadingInterval = setInterval(() => {
                 loadingDots = (loadingDots + 1) % 4;
                 const dots = '.'.repeat(loadingDots);
-                searchContent.innerHTML = `<p class="info">⏳ {{ t("searching_proof") or "Searching proof..." }}${dots}</p>`;
+                searchContent.innerHTML = `<p class="info">⏳ Searching proof...${dots}</p>`;
             }, 300);
 
             // Retry automático no frontend (silencioso, sem mostrar erro)
@@ -931,14 +931,14 @@
                         window.lastSearchProofJson = prettyJson;
                         searchContent.innerHTML = `
                             <div class="flex items-center justify-between mb-2">
-                                <p class="success">✅ {{ t('proof_found') or 'Proof found!' }}</p>
+                                <p class="success">✅ Proof found!</p>
                                 <button
                                     type="button"
                                     class="copy-btn-small bg-gray-700 hover:bg-gray-600 text-xs px-3 py-1 rounded flex items-center gap-1"
                                     onclick="copySearchProofJson()"
-                                    title="{{ t('copy_all_information') or 'Copy All Information' }}"
+                                    title="Copy All Information"
                                 >
-                                    <i class="fas fa-copy"></i> {{ t('copy_all') or 'Copy All' }}
+                                    <i class="fas fa-copy"></i> Copy All
                                 </button>
                             </div>
                             ${memoSection}
@@ -946,7 +946,7 @@
                         `;
                         return; // Sucesso, sair do loop
                     } else {
-                        lastError = result.error || '{{ t("proof_not_found") or "Proof not found" }}';
+                        lastError = result.error || 'Proof not found';
                         // Continuar para próxima tentativa (não mostrar erro ainda)
                     }
                 } catch (error) {
@@ -958,7 +958,7 @@
             // Só mostrar erro após todas as tentativas falharem
             clearInterval(loadingInterval);
             searchContent.innerHTML = `
-                <p class="error">❌ ${lastError || '{{ t("proof_not_found") or "Proof not found" }}'}</p>
+                <p class="error">❌ ${lastError || 'Proof not found'}</p>
                 <p class="info mt-2 text-xs">ℹ️ Tentou ${maxRetries} vezes. O UChainID pode estar sendo salvo ainda. Tente novamente em alguns segundos.</p>
             `;
         });
@@ -994,10 +994,10 @@
             
             const text = JSON.stringify(payload, null, 2);
             navigator.clipboard.writeText(text).then(() => {
-                alert('{{ t("zk_copy_all_success") or "All ZK proof data copied to clipboard." }}');
+                alert('All ZK proof data copied to clipboard.');
             }).catch(err => {
-                console.error('Erro ao copiar tudo:', err);
-                alert('Erro ao copiar todos os dados. Tente novamente.');
+                console.error('Error copying all:', err);
+                alert('Error copying all data. Please try again.');
             });
         }
         
@@ -1017,7 +1017,7 @@
             }
 
             if (!textToCopy) {
-                alert('{{ t("no_data_to_copy") or "No data to copy" }}');
+                alert('No data to copy');
                 return;
             }
             
@@ -1025,7 +1025,7 @@
                 const button = document.getElementById('copyAllProofsBtn');
                 if (button) {
                     const originalText = button.innerHTML;
-                    button.innerHTML = '<i class="fas fa-check"></i> {{ t("all_information_copied") or "All Information Copied!" }}';
+                    button.innerHTML = '<i class="fas fa-check"></i> All Information Copied!';
                     button.style.background = '#10b981';
                     setTimeout(() => {
                         button.innerHTML = originalText;
@@ -1033,8 +1033,8 @@
                     }, 2000);
                 }
             }).catch(err => {
-                console.error('Erro ao copiar:', err);
-                alert('Erro ao copiar. Tente selecionar e copiar manualmente.');
+                console.error('Error copying:', err);
+                alert('Error copying. Try selecting and copying manually.');
             });
         }
 
@@ -1044,7 +1044,7 @@
             const copyAllBtn = document.getElementById('copyAllProofsBtn');
             resultsDiv.classList.remove('hidden');
             copyAllBtn.classList.add('hidden'); // Esconder botão enquanto carrega
-            resultContent.innerHTML = '<p class="info">⏳ {{ t("loading_proofs") or "Loading proofs..." }}</p>';
+            resultContent.innerHTML = '<p class="info">⏳ Loading proofs...</p>';
 
             try {
                 const response = await fetch('/api/cross-chain/proofs?limit=50');
@@ -1057,13 +1057,13 @@
                     if (result.total === 0) {
                         copyAllBtn.classList.add('hidden'); // Esconder se não há provas
                         resultContent.innerHTML = `
-                            <p class="info">ℹ️ {{ t('no_proofs_yet') or 'No cross-chain proofs found yet.' }}</p>
-                            <p class="text-xs text-gray-400 mt-2">{{ t('create_first_transfer') or 'Create your first cross-chain transfer to generate proofs.' }}</p>
+                            <p class="info">ℹ️ No cross-chain proofs found yet.</p>
+                            <p class="text-xs text-gray-400 mt-2">Create your first cross-chain transfer to generate proofs.</p>
                         `;
                     } else {
                         copyAllBtn.classList.remove('hidden'); // Mostrar botão quando há provas
                         resultContent.innerHTML = `
-                            <p class="success">✅ ${result.total} {{ t('proofs_found_showing') or 'proofs found (showing' }} ${result.returned})</p>
+                            <p class="success">✅ ${result.total} proofs found (showing ${result.returned})</p>
                             <pre id="allProofsJson" class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
                         `;
                     }
@@ -1072,7 +1072,7 @@
                     window.lastProofsResult = result;
                     copyAllBtn.classList.remove('hidden'); // Mostrar botão mesmo em erro
                     resultContent.innerHTML = `
-                        <p class="error">❌ ${result.error || '{{ t("error_listing_proofs") or "Error listing proofs" }}'}</p>
+                        <p class="error">❌ ${result.error || 'Error listing proofs'}</p>
                         <pre id="allProofsJson" class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
                     `;
                 }
@@ -1090,14 +1090,14 @@
             const publicInputs = document.getElementById('verifierInputs').value.trim();
 
             if (!proof || !verificationKey) {
-                alert('{{ t("please_enter_proof_and_key") or "Please enter both proof and verification key" }}');
+                alert('Please enter both proof and verification key');
                 return;
             }
 
             const resultsDiv = document.getElementById('verifierResults');
             const resultContent = document.getElementById('verifierContent');
             resultsDiv.classList.remove('hidden');
-            resultContent.innerHTML = '<p class="info">⏳ {{ t("verifying_proof") or "Verifying..." }}</p>';
+            resultContent.innerHTML = '<p class="info">⏳ Verifying...</p>';
 
             try {
                 // Garantir que public_inputs é um objeto, não string
@@ -1182,7 +1182,7 @@
         async function loadFromUChainID() {
             const uchainId = document.getElementById('quickUChainID').value.trim();
             if (!uchainId) {
-                alert('{{ t("please_enter_uchainid") or "Please enter a UChainID" }}');
+                alert('Please enter a UChainID');
                 return;
             }
 
@@ -1201,7 +1201,7 @@
             const loadingInterval = setInterval(() => {
                 loadingDots = (loadingDots + 1) % 4;
                 const dots = '.'.repeat(loadingDots);
-                resultContent.innerHTML = `<p class="info">⏳ {{ t("loading") or "Loading..." }}${dots}</p>`;
+                resultContent.innerHTML = `<p class="info">⏳ Loading...${dots}</p>`;
             }, 200);
 
             try {
@@ -1291,23 +1291,23 @@
                         
                         // Mostrar feedback visual no topo
                         resultContent.innerHTML = `
-                            <p class="success">✅ {{ t("proof_data_loaded") or "Proof data loaded successfully!" }}</p>
+                            <p class="success">✅ Proof data loaded successfully!</p>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 text-sm">
                                 <p class="info"><strong>UChainID:</strong> <span class="font-mono text-xs">${uchainId}</span></p>
                                 <p class="info"><strong>Proof ID:</strong> <span class="font-mono text-xs">${zkProof.proof_id || 'N/A'}</span></p>
                                 <p class="info"><strong>State Hash:</strong> <span class="font-mono text-xs break-all">${zkProof.state_transition_hash || zkProof.state_hash || 'N/A'}</span></p>
                                 <p class="info"><strong>Verified:</strong> ${verifiedStatus ? '✅ Yes' : '❌ No'}</p>
                             </div>
-                            <p class="text-xs text-gray-400 mt-2">{{ t("fields_auto_filled") or "All fields have been automatically filled. Go to 'ZK Verifier' tab to verify." }}</p>
+                            <p class="text-xs text-gray-400 mt-2">All fields have been automatically filled. Go to 'ZK Verifier' tab to verify.</p>
                         `;
                         
                         // Scroll suave para o resultado
                         resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                     } else {
-                        resultContent.innerHTML = `<p class="error">❌ {{ t("zk_proof_invalid_format") or "ZK Proof data is in invalid format" }}</p>`;
+                        resultContent.innerHTML = `<p class="error">❌ ZK Proof data is in invalid format</p>`;
                     }
                 } else {
-                    resultContent.innerHTML = `<p class="error">❌ {{ t("no_zk_proof_available") or "No ZK Proof available for this UChainID" }}</p>`;
+                    resultContent.innerHTML = `<p class="error">❌ No ZK Proof available for this UChainID</p>`;
                 }
             } else {
                 resultContent.innerHTML = `<p class="error">❌ ${data ? (data.error || '{{ t("uchainid_not_found") or "UChainID not found" }}') : '{{ t("error_loading_proof") or "Error loading proof" }}'}</p>`;
