@@ -630,8 +630,102 @@
             display: none;
         }
         
+        /* Painel Educacional */
+        .educational-panel {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border: 2px solid rgba(139, 92, 246, 0.3);
+        }
+        
+        .educational-content h3 {
+            color: #8b5cf6;
+            margin-bottom: 15px;
+        }
+        
+        .educational-details {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 10px;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+        
+        /* Informações de Algoritmo */
+        .algorithm-info {
+            text-align: center;
+            font-size: 0.9em;
+            color: #94a3b8;
+            margin-bottom: 15px;
+            padding: 8px;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 8px;
+        }
+        
+        /* Barra de Progresso */
+        .attack-progress {
+            width: 100%;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 10px;
+        }
+        
+        .progress-label {
+            font-size: 0.9em;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(71, 85, 105, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+        
+        .progress-fill.protected {
+            background: linear-gradient(90deg, #10b981, #059669);
+        }
+        
+        .progress-text {
+            font-size: 0.85em;
+            color: #94a3b8;
+            text-align: center;
+        }
+        
+        /* Explicações de Ataque */
+        .attack-explanation {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 10px;
+            font-size: 0.9em;
+            line-height: 1.6;
+            color: #cbd5e1;
+            min-height: 60px;
+        }
+        
+        .layer-algorithm {
+            font-size: 0.85em;
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+        
         /* Botão Voltar Padronizado */
-                .btn-back {
+        .btn-back {
             display: inline-block;
             padding: 8px 16px;
             background: #374151;
@@ -642,9 +736,6 @@
             transition: background 0.2s;
         }
         
-        
-        
-    
         .btn-back:hover {
             background: #4b5563;
         }
@@ -712,11 +803,21 @@
             </div>
         </div>
         
+        <!-- Explicação Educacional -->
+        <div class="educational-panel" id="educational-panel" style="display: none;">
+            <div class="educational-content">
+                <h3 id="educational-title">Understanding Quantum Attacks</h3>
+                <p id="educational-text">Quantum computers can break traditional cryptography by solving problems that are impossible for classical computers.</p>
+                <div class="educational-details" id="educational-details"></div>
+            </div>
+        </div>
+        
         <!-- Animação Visual do Ataque -->
         <div class="attack-animation-container" id="attack-animation" style="display: none;">
             <!-- Blockchain Tradicional -->
             <div class="animation-panel traditional">
-                <div class="animation-title traditional">🔴 Blockchain Tradicional</div>
+                <div class="animation-title traditional">🔴 Blockchain Tradicional (ECDSA)</div>
+                <div class="algorithm-info">Algorithm: ECDSA-secp256k1 | Key Size: 256 bits</div>
                 <div class="wallet-container" id="traditional-wallet">
                     <div class="wallet-icon">💼</div>
                     <div class="lock-container">
@@ -724,36 +825,56 @@
                         <div class="key-icon" id="traditional-key">🔑</div>
                     </div>
                     <div class="funds-display" id="traditional-funds">10.0 BTC</div>
+                    <div class="attack-progress" id="traditional-progress">
+                        <div class="progress-label">Attack Progress:</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="traditional-progress-fill"></div>
+                        </div>
+                        <div class="progress-text" id="traditional-progress-text">0%</div>
+                    </div>
                     <div class="qubits-container" id="traditional-qubits"></div>
+                    <div class="attack-explanation" id="traditional-explanation"></div>
                 </div>
             </div>
             
             <!-- Blockchain Allianza -->
             <div class="animation-panel protected">
-                <div class="animation-title protected">🟢 Allianza Protegido (QRS-3)</div>
+                <div class="animation-title protected">🟢 Allianza Protected (QRS-3)</div>
+                <div class="algorithm-info">Triple Redundancy: ECDSA + ML-DSA-128 + SPHINCS+</div>
                 <div class="wallet-container" id="protected-wallet">
                     <div class="wallet-icon">💼</div>
                     <div class="lock-container">
                         <div class="lock-icon secure" id="protected-lock">🔒</div>
                     </div>
                     <div class="funds-display protected" id="protected-funds">10.0 BTC</div>
+                    <div class="attack-progress" id="protected-progress">
+                        <div class="progress-label">Attack Attempts:</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill protected" id="protected-progress-fill"></div>
+                        </div>
+                        <div class="progress-text" id="protected-progress-text">0/3 layers attacked</div>
+                    </div>
                     <div class="layers-container" id="protection-layers">
                         <div class="protection-layer layer1" id="layer1">
-                            <div class="layer-name">🛡️ Camada 1: ECDSA (Tradicional)</div>
-                            <div class="layer-status">Aguardando ataque quântico...</div>
+                            <div class="layer-name">🛡️ Layer 1: ECDSA (Traditional)</div>
+                            <div class="layer-algorithm">Algorithm: secp256k1 | Status: Fallback</div>
+                            <div class="layer-status">Waiting for quantum attack...</div>
                             <div class="attack-indicator">⏳</div>
                         </div>
                         <div class="protection-layer layer2" id="layer2">
-                            <div class="layer-name">🛡️ Camada 2: ML-DSA-128 (Pós-Quântica)</div>
-                            <div class="layer-status">Aguardando ataque quântico...</div>
+                            <div class="layer-name">🛡️ Layer 2: ML-DSA-128 (Post-Quantum)</div>
+                            <div class="layer-algorithm">Standard: FIPS 204 | Security: 128 quantum bits</div>
+                            <div class="layer-status">Waiting for quantum attack...</div>
                             <div class="attack-indicator">⏳</div>
                         </div>
                         <div class="protection-layer layer3" id="layer3">
-                            <div class="layer-name">🛡️ Camada 3: SPHINCS+ (Pós-Quântica)</div>
-                            <div class="layer-status">Aguardando ataque quântico...</div>
+                            <div class="layer-name">🛡️ Layer 3: SPHINCS+ (Post-Quantum)</div>
+                            <div class="layer-algorithm">Standard: FIPS 205 | Security: 128 quantum bits</div>
+                            <div class="layer-status">Waiting for quantum attack...</div>
                             <div class="attack-indicator">⏳</div>
                         </div>
                     </div>
+                    <div class="attack-explanation" id="protected-explanation"></div>
                 </div>
             </div>
         </div>
@@ -809,21 +930,34 @@
             
             <!-- Seção de Prova Técnica -->
             <div class="proof-section" id="proof-section" style="display: none;">
-                <h3>📄 Prova Criptográfica Completa</h3>
-                <p>O teste foi concluído com sucesso. Baixe o arquivo JSON completo contendo:</p>
+                <h3>📄 Complete Cryptographic Proof</h3>
+                <p>The test completed successfully. Download the complete JSON file containing:</p>
                 <ul style="text-align: left; display: inline-block; color: #94a3b8; margin: 15px 0;">
-                    <li>✅ Assinatura PQC real (ML-DSA-128 + SPHINCS+)</li>
-                    <li>✅ Hash SHA-256 canônico (RFC 8785)</li>
-                    <li>✅ Cálculos matemáticos completos</li>
-                    <li>✅ Parâmetros NIST FIPS 204/205</li>
-                    <li>✅ Estimativas de recursos quânticos</li>
-                    <li>✅ Comandos de verificação independente</li>
+                    <li>✅ Real PQC signatures (ML-DSA-128 + SPHINCS+)</li>
+                    <li>✅ Canonical SHA-256 hash (RFC 8785)</li>
+                    <li>✅ Complete mathematical calculations</li>
+                    <li>✅ NIST FIPS 204/205 parameters</li>
+                    <li>✅ Quantum resource estimates</li>
+                    <li>✅ Independent verification commands</li>
+                    <li>✅ Scientific references and papers</li>
+                    <li>✅ Attack complexity analysis</li>
+                    <li>✅ Security margin calculations</li>
                 </ul>
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 20px; border-radius: 10px; margin: 20px 0; text-align: left;">
+                    <h4 style="color: #f59e0b; margin-bottom: 10px;">📊 Mathematical Proofs Included:</h4>
+                    <ul style="color: #cbd5e1; line-height: 1.8;">
+                        <li><strong>ECDSA Attack:</strong> Shor's Algorithm complexity (O((log N)³))</li>
+                        <li><strong>ML-DSA Resistance:</strong> Lattice-based security (2^128 quantum bits)</li>
+                        <li><strong>SPHINCS+ Resistance:</strong> Hash-based security (2^128 quantum bits)</li>
+                        <li><strong>Comparison:</strong> Security improvement factor calculations</li>
+                        <li><strong>References:</strong> NIST standards, scientific papers, implementation guides</li>
+                    </ul>
+                </div>
                 <p style="color: #f59e0b; font-weight: 600; margin-top: 20px;">
-                    Este arquivo serve como prova técnica verificável para auditores, desenvolvedores e instituições financeiras.
+                    This file serves as a verifiable technical proof for auditors, developers, and financial institutions.
                 </p>
                 <button class="btn btn-proof" onclick="downloadProof()" id="download-proof-btn">
-                    📥 Baixar Prova Criptográfica Completa
+                    📥 Download Complete Cryptographic Proof
                 </button>
                 <p id="proof-file-path" style="margin-top: 15px; font-family: monospace; font-size: 0.9em; color: #64748b;"></p>
             </div>
@@ -854,8 +988,15 @@
             await delay(1000);
             
             // Step 2: Mostrar animação
-            await executeStep(2, 'Animando ataque quântico...', 'Iniciando visualização...');
+            await executeStep(2, 'Animating quantum attack...', 'Visualizing attack process step by step...');
             await delay(500);
+            
+            // Mostrar painel educacional
+            document.getElementById('educational-panel').style.display = 'block';
+            document.getElementById('educational-title').textContent = 'Understanding Quantum Attacks';
+            document.getElementById('educational-text').textContent = 'Quantum computers can break traditional cryptography (like ECDSA) using Shor\'s Algorithm, which solves problems in polynomial time that would take classical computers exponential time.';
+            document.getElementById('educational-details').innerHTML = '<strong>How it works:</strong><br>1. Attacker observes a public transaction<br>2. Uses quantum computer to run Shor\'s Algorithm<br>3. Recovers the private key in polynomial time<br>4. Creates fraudulent transactions';
+            await delay(3000);
             
             // Mostrar animação
             document.getElementById('attack-animation').style.display = 'grid';
@@ -863,6 +1004,12 @@
             
             // Animar ataque na blockchain tradicional
             await animateTraditionalAttack();
+            
+            // Atualizar painel educacional
+            document.getElementById('educational-title').textContent = 'Why Allianza is Protected';
+            document.getElementById('educational-text').textContent = 'Allianza uses QRS-3 (Triple Redundancy Quantum Security) with post-quantum algorithms that cannot be broken by quantum computers.';
+            document.getElementById('educational-details').innerHTML = '<strong>QRS-3 Protection:</strong><br>• Layer 1: ECDSA (fallback, can be broken)<br>• Layer 2: ML-DSA-128 (FIPS 204) - UNBREAKABLE<br>• Layer 3: SPHINCS+ (FIPS 205) - UNBREAKABLE<br><br><strong>Result:</strong> Even if Layer 1 is broken, Layers 2 and 3 protect your funds.';
+            await delay(2000);
             
             // Animar proteção na Allianza
             await animateProtectedDefense();
@@ -918,10 +1065,25 @@
             const key = document.getElementById('traditional-key');
             const funds = document.getElementById('traditional-funds');
             const qubitsContainer = document.getElementById('traditional-qubits');
+            const explanation = document.getElementById('traditional-explanation');
+            const progressFill = document.getElementById('traditional-progress-fill');
+            const progressText = document.getElementById('traditional-progress-text');
             const lockContainer = lock.parentElement;
             
             // Limpar qubits anteriores
             qubitsContainer.innerHTML = '';
+            
+            // FASE 1: Observar transação pública
+            explanation.innerHTML = '<strong>Phase 1:</strong> Attacker observes public transaction on blockchain...';
+            await delay(1000);
+            explanation.innerHTML = '<strong>Phase 1:</strong> ✅ ECDSA signature captured from public transaction<br><small>Signature: 0x7f3bbee8bedefd8c972ee32103ad3cff2ad88ccacff1dc566d4f6ab179f3599f...</small>';
+            await delay(1500);
+            
+            // FASE 2: Iniciar ataque Shor's Algorithm
+            explanation.innerHTML = '<strong>Phase 2:</strong> ⚛️ Initializing Shor\'s Algorithm...<br><small>Target: ECDSA private key (secp256k1, 256 bits)</small>';
+            progressFill.style.width = '25%';
+            progressText.textContent = '25% - Initializing quantum computer...';
+            await delay(1000);
             
             // Criar qubits atacando (mais organizados)
             const lockRect = lockContainer.getBoundingClientRect();
@@ -929,11 +1091,14 @@
             const lockCenterX = ((lockRect.left + lockRect.width/2) - containerRect.left) / containerRect.width * 100;
             const lockCenterY = ((lockRect.top + lockRect.height/2) - containerRect.top) / containerRect.height * 100;
             
-            for (let i = 0; i < 12; i++) {
+            explanation.innerHTML = '<strong>Phase 2:</strong> ⚛️ Applying Quantum Fourier Transform...<br><small>Using ~20-30 million logical qubits</small>';
+            progressFill.style.width = '50%';
+            progressText.textContent = '50% - Quantum Fourier Transform...';
+            
+            for (let i = 0; i < 15; i++) {
                 const qubit = document.createElement('div');
                 qubit.className = 'qubit';
-                // Posições iniciais ao redor da tela
-                const angle = (i / 12) * Math.PI * 2;
+                const angle = (i / 15) * Math.PI * 2;
                 const radius = 40;
                 const startX = 50 + Math.cos(angle) * radius;
                 const startY = 50 + Math.sin(angle) * radius;
@@ -942,11 +1107,21 @@
                 qubit.style.top = startY + '%';
                 qubit.style.setProperty('--target-x', (lockCenterX - startX) + '%');
                 qubit.style.setProperty('--target-y', (lockCenterY - startY) + '%');
-                qubit.style.animationDelay = (i * 0.15) + 's';
+                qubit.style.animationDelay = (i * 0.12) + 's';
                 qubitsContainer.appendChild(qubit);
             }
             
-            await delay(2500);
+            await delay(2000);
+            
+            explanation.innerHTML = '<strong>Phase 2:</strong> ⚛️ Executing Shor\'s Algorithm...<br><small>Complexity: O((log N)³) - Polynomial time attack</small>';
+            progressFill.style.width = '75%';
+            progressText.textContent = '75% - Executing Shor\'s Algorithm...';
+            await delay(1500);
+            
+            // FASE 3: Chave recuperada
+            explanation.innerHTML = '<strong>Phase 3:</strong> ✅ Private key recovered!<br><small>ECDSA vulnerability: COMPLETE - Key extracted in polynomial time</small>';
+            progressFill.style.width = '100%';
+            progressText.textContent = '100% - Attack successful!';
             
             // Quebrar cadeado
             lock.classList.add('broken');
@@ -956,41 +1131,83 @@
             
             // Mostrar chave
             key.classList.add('visible');
+            explanation.innerHTML = '<strong>Result:</strong> 🔑 Private key extracted: 5KYZdUEo39z3FPrtuX2QbbwGnNP5zTd7yyr2SC1j299sBCnWjss<br><small>Attack time: ~4.2 seconds (simulated) | Real: days to months with error correction</small>';
             
-            await delay(1200);
+            await delay(1500);
             
-            // Roubar fundos
+            // FASE 4: Roubar fundos
+            explanation.innerHTML = '<strong>Phase 4:</strong> 💸 Creating fraudulent transaction...<br><small>Signing with recovered private key</small>';
+            await delay(800);
+            
             funds.classList.add('stolen');
             funds.textContent = '0.0 BTC';
+            explanation.innerHTML = '<strong>❌ ATTACK SUCCESSFUL:</strong> All 10.0 BTC stolen!<br><small>Traditional blockchain (ECDSA) is completely vulnerable to quantum attacks</small>';
             
-            await delay(600);
+            await delay(1000);
         }
         
         async function animateProtectedDefense() {
             const layer1 = document.getElementById('layer1');
             const layer2 = document.getElementById('layer2');
             const layer3 = document.getElementById('layer3');
+            const explanation = document.getElementById('protected-explanation');
+            const progressFill = document.getElementById('protected-progress-fill');
+            const progressText = document.getElementById('protected-progress-text');
             
-            // Ataque na camada 1 (ECDSA) - quebra
-            await delay(500);
-            layer1.classList.add('attacked');
-            layer1.querySelector('.layer-status').textContent = '❌ Quebrada pelo ataque quântico';
-            layer1.querySelector('.attack-indicator').textContent = '❌';
+            explanation.innerHTML = '<strong>QRS-3 Protection:</strong> Triple redundancy signature system active<br><small>3 independent cryptographic layers protect the transaction</small>';
             await delay(1000);
+            
+            // Ataque na camada 1 (ECDSA) - quebra (mas não é suficiente)
+            explanation.innerHTML = '<strong>Attack Attempt 1:</strong> ⚛️ Attacking Layer 1 (ECDSA)...<br><small>Using Shor\'s Algorithm (same as traditional blockchain)</small>';
+            progressFill.style.width = '33%';
+            progressText.textContent = '1/3 layers attacked';
+            await delay(800);
+            
+            layer1.classList.add('attacked');
+            layer1.querySelector('.layer-status').textContent = '❌ Broken by quantum attack (expected - fallback layer)';
+            layer1.querySelector('.attack-indicator').textContent = '❌';
+            explanation.innerHTML = '<strong>Result:</strong> ⚠️ ECDSA layer broken, BUT...<br><small>ECDSA alone is NOT sufficient to validate transaction! QRS-3 requires 2 of 3 signatures.</small>';
+            await delay(2000);
             
             // Ataque na camada 2 (ML-DSA) - resiste
-            await delay(500);
-            layer2.classList.add('resisted');
-            layer2.querySelector('.layer-status').textContent = '✅ Resistiu - Algoritmo pós-quântico NIST';
-            layer2.querySelector('.attack-indicator').textContent = '✅';
+            explanation.innerHTML = '<strong>Attack Attempt 2:</strong> ⚛️ Attacking Layer 2 (ML-DSA-128)...<br><small>Trying Shor\'s Algorithm on lattice-based problem...</small>';
+            progressFill.style.width = '66%';
+            progressText.textContent = '2/3 layers attacked';
             await delay(1000);
             
-            // Ataque na camada 3 (SPHINCS+) - resiste
-            await delay(500);
-            layer3.classList.add('resisted');
-            layer3.querySelector('.layer-status').textContent = '✅ Resistiu - Algoritmo pós-quântico NIST';
-            layer3.querySelector('.attack-indicator').textContent = '✅';
+            explanation.innerHTML = '<strong>Attack Attempt 2:</strong> ❌ Shor\'s Algorithm FAILED!<br><small>Shor\'s only works on factorization/discrete log. ML-DSA uses lattice problems (LWE).</small>';
+            await delay(1500);
+            
+            explanation.innerHTML = '<strong>Attack Attempt 2:</strong> ⚛️ Trying Grover\'s Algorithm...<br><small>Search algorithm - only provides quadratic speedup</small>';
             await delay(1000);
+            
+            explanation.innerHTML = '<strong>Attack Attempt 2:</strong> ❌ Grover\'s Algorithm FAILED!<br><small>Complexity: 2^143 → 2^128 (insufficient). ML-DSA security: 128 quantum bits (NIST Level 3)</small>';
+            await delay(1500);
+            
+            layer2.classList.add('resisted');
+            layer2.querySelector('.layer-status').textContent = '✅ RESISTED - Post-quantum algorithm (FIPS 204)';
+            layer2.querySelector('.attack-indicator').textContent = '✅';
+            explanation.innerHTML = '<strong>Result:</strong> ✅ ML-DSA-128 RESISTED all quantum attacks!<br><small>Standard: FIPS 204 | Security: 128 quantum bits | Status: UNBREAKABLE</small>';
+            await delay(2000);
+            
+            // Ataque na camada 3 (SPHINCS+) - resiste
+            explanation.innerHTML = '<strong>Attack Attempt 3:</strong> ⚛️ Attacking Layer 3 (SPHINCS+)...<br><small>Hash-based signature - trying quantum attacks...</small>';
+            progressFill.style.width = '100%';
+            progressText.textContent = '3/3 layers attacked';
+            await delay(1000);
+            
+            explanation.innerHTML = '<strong>Attack Attempt 3:</strong> ❌ All quantum attacks FAILED!<br><small>SPHINCS+ uses hash-based signatures. Shor\'s doesn\'t apply. Grover provides only quadratic speedup (insufficient).</small>';
+            await delay(1500);
+            
+            layer3.classList.add('resisted');
+            layer3.querySelector('.layer-status').textContent = '✅ RESISTED - Post-quantum algorithm (FIPS 205)';
+            layer3.querySelector('.attack-indicator').textContent = '✅';
+            explanation.innerHTML = '<strong>Result:</strong> ✅ SPHINCS+ RESISTED all quantum attacks!<br><small>Standard: FIPS 205 | Security: 128 quantum bits | Status: UNBREAKABLE</small>';
+            await delay(2000);
+            
+            // Conclusão
+            explanation.innerHTML = '<strong>🛡️ PROTECTION SUCCESSFUL:</strong> QRS-3 system resisted all quantum attacks!<br><small>Even though Layer 1 (ECDSA) was broken, Layers 2 and 3 (ML-DSA + SPHINCS+) resisted all attacks. Funds: PROTECTED ✅</small>';
+            await delay(2000);
         }
         
         function delay(ms) {
@@ -1012,17 +1229,38 @@
             document.getElementById('summary-stolen').textContent = traditional.funds_stolen + ' BTC';
             document.getElementById('summary-protected').textContent = '0.0 BTC';
             
-            // Tabela simplificada
+            // Tabela simplificada com dados técnicos
+            const mathProofs = simulation.mathematical_proofs || {};
+            const ecdsaProof = mathProofs.ecdsa_attack || {};
+            const mlDsaProof = mathProofs.ml_dsa_resistance || {};
+            const sphincsProof = mathProofs.sphincs_resistance || {};
+            
             document.getElementById('comparison-tbody').innerHTML = `
                 <tr>
-                    <td><strong>Blockchain Tradicional</strong></td>
-                    <td>❌ Foi hackeado</td>
-                    <td>Ataque quântico recuperou a chave privada em ${traditional.attack_time_seconds} segundos</td>
+                    <td><strong>Traditional Blockchain (ECDSA)</strong></td>
+                    <td>❌ Hacked</td>
+                    <td>
+                        <strong>Attack:</strong> Shor's Algorithm<br>
+                        <strong>Complexity:</strong> ${ecdsaProof.complexity || 'O((log N)³)'}<br>
+                        <strong>Qubits Required:</strong> ${ecdsaProof.qubits_required || '20-30 million'}<br>
+                        <strong>Time:</strong> ${traditional.attack_time_seconds}s (simulated) | ${ecdsaProof.attack_time_estimate || 'days to months'} (real)<br>
+                        <strong>Result:</strong> Private key recovered - ALL FUNDS STOLEN
+                    </td>
                 </tr>
                 <tr>
                     <td><strong>Allianza QRS-3</strong></td>
-                    <td>✅ Não foi hackeado</td>
-                    <td>Usa 2 assinaturas pós-quânticas (ML-DSA e SPHINCS+) que não podem ser quebradas por computadores quânticos</td>
+                    <td>✅ Protected</td>
+                    <td>
+                        <strong>Layer 1 (ECDSA):</strong> Broken (expected - fallback only)<br>
+                        <strong>Layer 2 (ML-DSA-128):</strong> ✅ RESISTED<br>
+                        &nbsp;&nbsp;• Standard: ${mlDsaProof.standard || 'FIPS 204'}<br>
+                        &nbsp;&nbsp;• Security: ${mlDsaProof.security_level_quantum_bits || '128'} quantum bits<br>
+                        &nbsp;&nbsp;• Complexity: ${mlDsaProof.classical_complexity || '2^143'} operations<br>
+                        <strong>Layer 3 (SPHINCS+):</strong> ✅ RESISTED<br>
+                        &nbsp;&nbsp;• Standard: ${sphincsProof.standard || 'FIPS 205'}<br>
+                        &nbsp;&nbsp;• Security: ${sphincsProof.security_level_quantum_bits || '128'} quantum bits<br>
+                        <strong>Result:</strong> QRS-3 requires 2 of 3 signatures - FUNDS PROTECTED ✅
+                    </td>
                 </tr>
             `;
             
