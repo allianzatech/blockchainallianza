@@ -279,7 +279,7 @@
             try {
                 functionParams = JSON.parse(functionParamsText);
             } catch (e) {
-                alert('Erro: Function Params deve ser JSON válido');
+                alert('Error: Function Params must be valid JSON');
                 return;
             }
 
@@ -304,10 +304,10 @@
                 // Usar modal moderno
                 const resultType = data.success ? 'success' : 'error';
                 const description = {
-                    statusTitle: data.success ? 'Execução Bem-Sucedida' : 'Erro na Execução',
-                    description: data.success ? 'A execução cross-chain foi concluída com sucesso!' : (data.error || 'Erro ao executar')
+                    statusTitle: data.success ? 'Execution Successful' : 'Execution Error',
+                    description: data.success ? 'The cross-chain execution was completed successfully!' : (data.error || 'Error during execution')
                 };
-                createModernModal('Execução Cross-Chain ALZ-NIEV', data, resultType, description);
+                createModernModal('ALZ-NIEV Cross-Chain Execution', data, resultType, description);
                 resultDiv.innerHTML = '';
             } catch (error) {
                 const errorData = {
@@ -319,7 +319,7 @@
                     statusTitle: 'Erro ao Executar',
                     description: error.message
                 };
-                createModernModal('Execução Cross-Chain ALZ-NIEV', errorData, resultType, description);
+                createModernModal('ALZ-NIEV Cross-Chain Execution', errorData, resultType, description);
                 resultDiv.innerHTML = '';
             }
         }
@@ -332,7 +332,7 @@
             try {
                 chains = JSON.parse(chainsText);
             } catch (e) {
-                alert('Erro: Chains deve ser JSON válido');
+                alert('Error: Chains must be valid JSON');
                 return;
             }
 
@@ -352,10 +352,10 @@
                 // Usar modal moderno
                 const resultType = data.success ? 'success' : 'error';
                 const description = {
-                    statusTitle: data.success ? 'Execução Atômica Bem-Sucedida' : 'Erro na Execução Atômica',
-                    description: data.success ? 'Todas as execuções foram concluídas atomicamente!' : (data.error || 'Erro ao executar atomicamente')
+                    statusTitle: data.success ? 'Atomic Execution Successful' : 'Atomic Execution Error',
+                    description: data.success ? 'All executions were completed atomically!' : (data.error || 'Error during atomic execution')
                 };
-                createModernModal('Execução Atômica Multi-Chain', data, resultType, description);
+                createModernModal('Atomic Multi-Chain Execution', data, resultType, description);
                 resultDiv.innerHTML = '';
             } catch (error) {
                 const errorData = {
@@ -367,7 +367,7 @@
                     statusTitle: 'Erro ao Executar',
                     description: error.message
                 };
-                createModernModal('Execução Atômica Multi-Chain', errorData, resultType, description);
+                createModernModal('Atomic Multi-Chain Execution', errorData, resultType, description);
                 resultDiv.innerHTML = '';
             }
         }
