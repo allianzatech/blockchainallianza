@@ -115,8 +115,9 @@ pip install -r requirements.txt
 
 ### Configuration
 
-Create a `.env` file in the project root:
+Create a `.env` file in the project root. See the example below for required variables:
 
+**Required Variables:**
 ```bash
 # Flask Configuration
 FLASK_ENV=development
@@ -139,7 +140,10 @@ SOLANA_PRIVATE_KEY=your_solana_private_key
 SOLANA_RPC_URL=https://api.testnet.solana.com
 ```
 
-> ⚠️ **Important:** Never commit real mainnet keys. Only use **testnet** keys for development.
+> ⚠️ **Important:** 
+> - Never commit real mainnet keys. Only use **testnet** keys for development.
+> - The `.env` file is already in `.gitignore` to prevent accidental commits.
+> - For a complete list of environment variables, see the configuration section in the codebase.
 
 ### Run Locally
 
@@ -227,9 +231,16 @@ pip-audit
 
 ### Core Documentation
 
+- **[Architecture Documentation](docs/ARCHITECTURE.md)** - Complete system architecture and design
 - **[Security Audit Report](docs/SECURITY_AUDIT_REPORT.md)** - Complete security analysis
 - **[Dependency Vulnerabilities](docs/DEPENDENCY_VULNERABILITIES_REPORT.md)** - Dependency security status
 - **[Quantum Attack Analysis](docs/QUANTUM_ATTACK_ANALYSIS.md)** - Quantum security methodology
+- **[Contributing Guide](CONTRIBUTING.md)** - How to contribute to the project
+
+### Module Documentation
+
+- **[Core Module](core/README.md)** - Core functionality documentation
+- **[Contracts](contracts/README.md)** - Smart contracts documentation
 
 ### API Documentation
 
