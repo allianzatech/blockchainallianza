@@ -200,7 +200,6 @@ Then open: `http://localhost:5000/interoperability`
 
 A comprehensive security audit has been performed. See:
 - **[Security Audit Report](docs/SECURITY_AUDIT_REPORT.md)** - Full vulnerability analysis
-- **[Security Improvements Summary](docs/SECURITY_IMPROVEMENTS_SUMMARY.md)** - Applied fixes
 - **[Dependency Vulnerabilities Report](docs/DEPENDENCY_VULNERABILITIES_REPORT.md)** - Dependency security status
 
 ### Security Features Implemented
@@ -231,6 +230,7 @@ pip-audit
 
 ### Core Documentation
 
+- **[Architecture Documentation](docs/ARCHITECTURE.md)** - Complete system architecture and design
 - **[Architecture Documentation](docs/ARCHITECTURE.md)** - Complete system architecture and design
 - **[Security Audit Report](docs/SECURITY_AUDIT_REPORT.md)** - Complete security analysis
 - **[Dependency Vulnerabilities](docs/DEPENDENCY_VULNERABILITIES_REPORT.md)** - Dependency security status
