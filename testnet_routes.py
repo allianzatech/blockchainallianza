@@ -14,7 +14,7 @@ try:
     from csrf_protection import csrf_protection
     CSRF_AVAILABLE = True
 except ImportError:
-    print("⚠️  CSRF protection não disponível")
+    print("⚠️  CSRF protection not available")
     CSRF_AVAILABLE = False
     # Criar decorator dummy se não estiver disponível
     def dummy_csrf(f):
@@ -35,7 +35,7 @@ try:
     from alz_niev_interoperability import ALZNIEV
     ALZ_NIEV_AVAILABLE = True
 except ImportError as e:
-    print(f"⚠️  ALZ-NIEV não disponível: {e}")
+    print(f"⚠️  ALZ-NIEV not available: {e}")
     ALZNIEV = None
     ALZ_NIEV_AVAILABLE = False
 
@@ -44,7 +44,7 @@ try:
     from testnet_professional_tests import ProfessionalTestRunner
     PROFESSIONAL_TESTS_AVAILABLE = True
 except ImportError as e:
-    print(f"⚠️  ProfessionalTestRunner não disponível: {e}")
+    print(f"⚠️  ProfessionalTestRunner not available: {e}")
     ProfessionalTestRunner = None
     PROFESSIONAL_TESTS_AVAILABLE = False
 
@@ -53,7 +53,7 @@ try:
     from testnet_professional_test_suite import init_professional_tests, professional_tests_bp
     PROFESSIONAL_SUITE_AVAILABLE = True
 except ImportError as e:
-    print(f"⚠️  Professional Test Suite não disponível: {e}")
+    print(f"⚠️  Professional Test Suite not available: {e}")
     PROFESSIONAL_SUITE_AVAILABLE = False
 
 # Criar blueprint SEM prefixo - rotas na raiz
@@ -105,28 +105,28 @@ def init_testnet_routes(app, blockchain_instance, quantum_security_instance, bri
     try:
         quantum_security = quantum_security_instance
         
-        # Inicializar Faucet com tratamento robusto de erros
-        print("🔧 Tentando inicializar Faucet...")
+        # Initialize Faucet with robust error handling
+        print("🔧 Attempting to initialize Faucet...")
         try:
             if blockchain_instance is None:
-                print("⚠️  blockchain_instance é None!")
+                print("⚠️  blockchain_instance is None!")
             if quantum_security_instance is None:
-                print("⚠️  quantum_security_instance é None!")
+                print("⚠️  quantum_security_instance is None!")
             
             faucet = TestnetFaucet(blockchain_instance, quantum_security_instance)
-            print("✅ Faucet inicializado com sucesso!")
+            print("✅ Faucet initialized successfully!")
         except ImportError as e:
-            print(f"❌ Erro de importação ao inicializar Faucet: {e}")
+            print(f"❌ Import error initializing Faucet: {e}")
             import traceback
             traceback.print_exc()
             faucet = None
         except AttributeError as e:
-            print(f"❌ Erro de atributo ao inicializar Faucet: {e}")
+            print(f"❌ Attribute error initializing Faucet: {e}")
             import traceback
             traceback.print_exc()
             faucet = None
         except Exception as e:
-            print(f"❌ Erro ao inicializar Faucet: {type(e).__name__}: {e}")
+            print(f"❌ Error initializing Faucet: {type(e).__name__}: {e}")
             import traceback
             traceback.print_exc()
             faucet = None
@@ -140,9 +140,9 @@ def init_testnet_routes(app, blockchain_instance, quantum_security_instance, bri
                 bridge_instance=bridge_instance,
                 quantum_security_instance=quantum_security_instance
             )
-            print("✅ Explorer Melhorado inicializado!")
+            print("✅ Enhanced Explorer initialized!")
         except ImportError:
-            # Usar explorer padrão
+            # Use default explorer
             explorer = TestnetExplorer(blockchain_instance)
         proof_generator = TestnetProofGenerator(blockchain_instance, quantum_security_instance)
         wallet_generator = TestnetWalletGenerator(blockchain_instance)
@@ -151,13 +151,13 @@ def init_testnet_routes(app, blockchain_instance, quantum_security_instance, bri
         public_tests = PublicTestsInterface(blockchain_instance, quantum_security_instance)
         leaderboard = TestnetLeaderboard()
         
-        # Inicializar ALZ-NIEV (substitui testnet_interoperability)
+        # Initialize ALZ-NIEV (replaces testnet_interoperability)
         if ALZ_NIEV_AVAILABLE and ALZNIEV:
             try:
                 alz_niev = ALZNIEV()
-                print("🌐 ALZ-NIEV inicializado no testnet!")
+                print("🌐 ALZ-NIEV initialized on testnet!")
             except Exception as e:
-                print(f"⚠️  Erro ao inicializar ALZ-NIEV: {e}")
+                print(f"⚠️  Error initializing ALZ-NIEV: {e}")
                 alz_niev = None
         else:
             alz_niev = None
@@ -167,15 +167,15 @@ def init_testnet_routes(app, blockchain_instance, quantum_security_instance, bri
             try:
                 professional_tests = ProfessionalTestRunner(blockchain_instance, quantum_security_instance)
             except Exception as e:
-                print(f"⚠️  Erro ao inicializar ProfessionalTestRunner: {e}")
+                print(f"⚠️  Error initializing ProfessionalTestRunner: {e}")
                 professional_tests = None
         else:
             professional_tests = None
         
         app.register_blueprint(testnet_bp)
-        print(f"✅ Testnet blueprint registrado com sucesso! URL prefix: / (raiz)")
+        print(f"✅ Testnet blueprint registered successfully! URL prefix: / (root)")
         
-        # Inicializar Professional Test Suite
+        # Initialize Professional Test Suite
         if PROFESSIONAL_SUITE_AVAILABLE:
             try:
                 # Tentar obter bridge instance
@@ -190,42 +190,42 @@ def init_testnet_routes(app, blockchain_instance, quantum_security_instance, bri
                 init_professional_tests(app, blockchain_instance, quantum_security_instance, bridge_instance)
                 print("✅ Professional Test Suite registrada!")
             except Exception as e:
-                print(f"⚠️  Erro ao inicializar Professional Test Suite: {e}")
+                print(f"⚠️  Error initializing Professional Test Suite: {e}")
                 import traceback
                 traceback.print_exc()
         
-        # Inicializar gerador automático de transações
+        # Initialize automatic transaction generator
         try:
             from testnet_auto_transaction_generator import TestnetAutoTransactionGenerator
             auto_tx_generator = TestnetAutoTransactionGenerator(blockchain_instance, quantum_security_instance)
-            # Gerar lote inicial de transações
+            # Generate initial batch of transactions
             initial_txs = auto_tx_generator.generate_batch(count=20)
-            print(f"✅ {len(initial_txs)} transações iniciais geradas!")
-            # Iniciar gerador automático (1 transação a cada 30 segundos)
+            print(f"✅ {len(initial_txs)} initial transactions generated!")
+            # Start automatic generator (1 transaction every 30 seconds)
             auto_tx_generator.start(interval=30)
-            print("🔄 Gerador automático de transações ativado!")
+            print("🔄 Automatic transaction generator activated!")
         except Exception as e:
-            print(f"⚠️  Gerador automático de transações não disponível: {e}")
+            print(f"⚠️  Automatic transaction generator not available: {e}")
         
-        # Inicializar teste de estresse
+        # Initialize stress test
         try:
             from testnet_stress_test import TestnetStressTest
             stress_test = TestnetStressTest(blockchain_instance, quantum_security_instance)
-            # Executar teste inicial para popular transações
+            # Run initial test to populate transactions
             stress_test.run_stress_test(count=50, delay=0.05)
-            print("🔥 Teste de estresse inicial executado!")
+            print("🔥 Initial stress test executed!")
         except Exception as e:
-            print(f"⚠️  Teste de estresse não disponível: {e}")
+            print(f"⚠️  Stress test not available: {e}")
         
         return app
     except Exception as e:
-        print(f"⚠️  Erro ao inicializar testnet: {e}")
+        print(f"⚠️  Error initializing testnet: {e}")
         import traceback
         traceback.print_exc()
-        # Mesmo com erro, tentar registrar o blueprint
+        # Even with errors, try to register the blueprint
         try:
             app.register_blueprint(testnet_bp)
-            print(f"✅ Testnet blueprint registrado mesmo com erros parciais")
+            print(f"✅ Testnet blueprint registered even with partial errors")
         except:
             pass
         return app

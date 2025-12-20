@@ -264,7 +264,7 @@
                     statusDiv.innerHTML = '<p class="text-red-400 flex items-center gap-2"><i class="fas fa-times-circle"></i>❌ ALZ-NIEV não disponível</p>';
                 }
             } catch (error) {
-                document.getElementById('status').innerHTML = '<p class="text-red-400 flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i>❌ Erro ao verificar status</p>';
+                document.getElementById('status').innerHTML = '<p class="text-red-400 flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i>❌ Error checking status</p>';
             }
         }
 
@@ -316,7 +316,7 @@
                 };
                 const resultType = 'error';
                 const description = {
-                    statusTitle: 'Erro ao Executar',
+                    statusTitle: 'Execution Error',
                     description: error.message
                 };
                 createModernModal('ALZ-NIEV Cross-Chain Execution', errorData, resultType, description);
@@ -364,7 +364,7 @@
                 };
                 const resultType = 'error';
                 const description = {
-                    statusTitle: 'Erro ao Executar',
+                    statusTitle: 'Execution Error',
                     description: error.message
                 };
                 createModernModal('Atomic Multi-Chain Execution', errorData, resultType, description);

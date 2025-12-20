@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Script para verificar vulnerabilidades de segurança nas dependências
-Usa pip-audit ou safety check
+Script to check security vulnerabilities in dependencies
+Uses pip-audit or safety check
 """
 
 import subprocess
@@ -10,7 +10,7 @@ import sys
 import os
 
 def check_with_pip_audit():
-    """Verificar com pip-audit"""
+    """Check with pip-audit"""
     try:
         # Tentar primeiro como comando direto (pip-audit)
         result = subprocess.run(
@@ -31,12 +31,12 @@ def check_with_pip_audit():
             )
             return result.returncode == 0, result.stdout, result.stderr
         except FileNotFoundError:
-            return None, "", "pip-audit não encontrado. Instale com: pip install pip-audit"
+            return None, "", "pip-audit not found. Install with: pip install pip-audit"
     except subprocess.TimeoutExpired:
-        return False, "", "Timeout ao executar pip-audit"
+        return False, "", "Timeout executing pip-audit"
 
 def check_with_safety():
-    """Verificar com safety check"""
+    """Check with safety check"""
     try:
         result = subprocess.run(
             ["safety", "check", "--json"],
@@ -46,68 +46,68 @@ def check_with_safety():
         )
         return result.returncode == 0, result.stdout, result.stderr
     except subprocess.TimeoutExpired:
-        return False, "", "Timeout ao executar safety check"
+        return False, "", "Timeout executing safety check"
     except FileNotFoundError:
-        return None, "", "safety não encontrado. Instale com: pip install safety"
+        return None, "", "safety not found. Install with: pip install safety"
 
 def main():
-    print("🔒 Verificando vulnerabilidades de segurança nas dependências...\n")
+    print("🔒 Checking security vulnerabilities in dependencies...\n")
     
-    # Tentar pip-audit primeiro
-    print("1️⃣ Tentando pip-audit...")
+    # Try pip-audit first
+    print("1️⃣ Trying pip-audit...")
     pip_audit_result = check_with_pip_audit()
     
     if pip_audit_result[0] is None:
         print(f"   ⚠️  {pip_audit_result[2]}")
-        print("   💡 Instale: pip install pip-audit\n")
+        print("   💡 Install: pip install pip-audit\n")
     elif pip_audit_result[0]:
-        print("   ✅ pip-audit executado com sucesso!")
-        print("   ℹ️  Nenhuma vulnerabilidade encontrada.\n")
+        print("   ✅ pip-audit executed successfully!")
+        print("   ℹ️  No vulnerabilities found.\n")
         if pip_audit_result[1]:
-            print("   📋 Resultados:")
+            print("   📋 Results:")
             print(pip_audit_result[1])
         if pip_audit_result[2]:
-            print("   ⚠️  Avisos:")
+            print("   ⚠️  Warnings:")
             print(pip_audit_result[2])
         return
     else:
-        print("   ⚠️  pip-audit encontrou vulnerabilidades:")
-        print("   📋 Detalhes:")
+        print("   ⚠️  pip-audit found vulnerabilities:")
+        print("   📋 Details:")
         if pip_audit_result[1]:
             print(pip_audit_result[1])
         if pip_audit_result[2]:
             print(pip_audit_result[2])
-        print("\n   💡 Consulte docs/DEPENDENCY_VULNERABILITIES_REPORT.md para detalhes e correções")
+        print("\n   💡 See docs/DEPENDENCY_VULNERABILITIES_REPORT.md for details and fixes")
     
-    # Tentar safety check como alternativa
-    print("\n2️⃣ Tentando safety check...")
+    # Try safety check as alternative
+    print("\n2️⃣ Trying safety check...")
     safety_result = check_with_safety()
     
     if safety_result[0] is None:
         print(f"   ⚠️  {safety_result[2]}")
-        print("   💡 Instale: pip install safety\n")
+        print("   💡 Install: pip install safety\n")
     elif safety_result[0]:
-        print("   ✅ safety check executado com sucesso!")
+        print("   ✅ safety check executed successfully!")
         if safety_result[1]:
-            print("   📋 Resultados:")
+            print("   📋 Results:")
             print(safety_result[1])
         if safety_result[2]:
-            print("   ⚠️  Avisos:")
+            print("   ⚠️  Warnings:")
             print(safety_result[2])
     else:
-        print("   ⚠️  safety check encontrou problemas:")
+        print("   ⚠️  safety check found issues:")
         if safety_result[1]:
             print(safety_result[1])
         if safety_result[2]:
             print(safety_result[2])
     
-    # Se nenhum estiver disponível, dar instruções
+    # If none available, provide instructions
     if (pip_audit_result[0] is None and safety_result[0] is None):
-        print("\n📝 Nenhuma ferramenta de verificação disponível.")
-        print("   Instale uma das opções:")
+        print("\n📝 No verification tool available.")
+        print("   Install one of the options:")
         print("   • pip install pip-audit")
         print("   • pip install safety")
-        print("\n   Ou verifique manualmente em:")
+        print("\n   Or check manually at:")
         print("   • https://pypi.org/project/pip-audit/")
         print("   • https://github.com/pyupio/safety")
 

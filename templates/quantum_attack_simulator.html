@@ -795,8 +795,8 @@
                 <div class="step-item pending" id="step-4">
                     <div class="step-number">4</div>
                     <div class="step-content">
-                        <div class="step-title">Gerando prova técnica...</div>
-                        <div class="step-description">Criando JSON verificável com todas as evidências</div>
+                        <div class="step-title">Generating technical proof...</div>
+                        <div class="step-description">Creating verifiable JSON with all evidence</div>
                     </div>
                     <div class="step-status">⏳</div>
                 </div>
@@ -918,9 +918,9 @@
                 </table>
                 <div style="margin-top: 20px; padding: 20px; background: rgba(16, 185, 129, 0.1); border-radius: 10px; border-left: 4px solid #10b981;">
                     <p style="font-size: 1.1em; line-height: 1.6;">
-                        <strong>💡 Explicação:</strong> O ataque quântico conseguiu quebrar apenas a primeira camada (ECDSA tradicional). 
-                        As outras duas camadas usam algoritmos pós-quânticos aprovados pelo NIST (ML-DSA e SPHINCS+) e 
-                        <strong>NÃO podem ser quebradas nem por computadores quânticos</strong>.
+                        <strong>💡 Explanation:</strong> The quantum attack managed to break only the first layer (traditional ECDSA). 
+                        The other two layers use post-quantum algorithms approved by NIST (ML-DSA and SPHINCS+) and 
+                        <strong>CANNOT be broken even by quantum computers</strong>.
                     </p>
                 </div>
             </div>
@@ -1022,8 +1022,8 @@
             await delay(1500);
             completeStep(3);
             
-            // Step 4: Gerar prova
-            await executeStep(4, 'Gerando prova técnica...', 'Executando simulação completa...');
+            // Step 4: Generate proof
+            await executeStep(4, 'Generating technical proof...', 'Executing complete simulation...');
             
             try {
                 const response = await fetch('/dashboard/api/quantum-attack-simulator/run');
@@ -1037,10 +1037,10 @@
                     await delay(500);
                     displayResults(data.simulation);
                 } else {
-                    throw new Error(data.error || 'Erro desconhecido');
+                    throw new Error(data.error || 'Unknown error');
                 }
             } catch (error) {
-                alert('Erro ao executar simulação: ' + error.message);
+                alert('Error executing simulation: ' + error.message);
             }
         }
         
@@ -1286,7 +1286,7 @@
             if (lastJSONFile) {
                 window.open('/dashboard/api/quantum-attack-simulator/download?file=' + encodeURIComponent(lastJSONFile), '_blank');
             } else {
-                alert('Nenhuma prova disponível. Execute o teste primeiro.');
+                alert('No proof available. Run the test first.');
             }
         }
     </script>
