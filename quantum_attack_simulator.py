@@ -255,6 +255,8 @@ REFERENCES = {
 MIGRATION_STRATEGIES = {
     "hybrid_approach": {
         "description": "ECDSA + PQC signature (dual signatures)",
+        "signature_order": "PQC first (ML-DSA + SPHINCS+), then ECDSA (fallback)",
+        "rationale": "PQC signatures validated first for security, ECDSA for compatibility",
         "security_benefit": "Proteção durante transição, compatibilidade retroativa",
         "implementation_complexity": "Moderada",
         "standard": "NIST SP 800-208",
@@ -651,9 +653,17 @@ class QuantumAttackSimulator:
                 {
                     "algorithm": a.algorithm,
                     "success": a.success,
-                    "time_seconds": round(a.time_seconds, 2),
+                    "simulation_duration_seconds": round(a.time_seconds, 2),  # Visual only
+                    "attack_complexity": "Polynomial (O((log N)³))" if a.success else "Exponential (2^128 quantum bits)",
+                    "attack_feasibility": "FEASIBLE in CRQC" if a.success else "NOT FEASIBLE",
                     "method": a.method,
-                    "details": a.details,
+                    "details": {
+                        **a.details,
+                        "note": "Simulation duration is for visual purposes only. Real attack complexity is exponential (2^128 quantum bits) for PQC algorithms."
+                    } if not a.success else {
+                        **a.details,
+                        "note": "Simulation duration is for visual purposes only. Real attack would take days to months with error correction."
+                    },
                     "algorithm_spec": next(
                         (s["spec"] for s in protected_schemes if s["algorithm"] == a.algorithm),
                         None
@@ -669,6 +679,18 @@ class QuantumAttackSimulator:
                 "failed_attacks": len(quantum_resistant_attacks),
                 "protection_mechanism": "ML-DSA + SPHINCS+ (NIST PQC Standards)",
                 "migration_strategy": MIGRATION_STRATEGIES["composite_signatures"]
+            },
+            "redundancy_explanation": {
+                "qrs3_concept": "Triple redundancy combines different cryptographic families",
+                "layer_1_ecdsa": "ECDSA (fallback) - Can be broken, but alone is insufficient",
+                "layer_2_ml_dsa": "ML-DSA-128 (Lattice-based, FIPS 204) - UNBREAKABLE",
+                "layer_3_sphincs": "SLH-DSA-128s (Hash-based, FIPS 205) - UNBREAKABLE",
+                "why_redundancy": "If one PQC algorithm is broken in the future, the other still protects funds",
+                "mathematical_independence": "Lattice and Hash problems are mathematically independent - breakthrough in one doesn't affect the other",
+                "security_principle": "Defense in depth - multiple independent cryptographic families",
+                "validation_requirement": "QRS-3 requires 2 of 3 signatures to validate transaction",
+                "future_proof": "Protection against unknown future attacks on either cryptographic family",
+                "redundancy_benefit": "Even if ML-DSA is broken by future lattice attack, SPHINCS+ (hash-based) still protects. And vice versa."
             }
         }
         
@@ -795,7 +817,13 @@ class QuantumAttackSimulator:
                     "key_generation": "Hardware Security Modules (HSM) quando possível",
                     "storage": "Proteção contra captura futura (encrypt-at-rest)",
                     "rotation": "Políticas baseadas em avaliação de risco contínua",
-                    "backup": "Backup seguro com criptografia PQC"
+                    "backup": "Backup seguro com criptografia PQC",
+                    "harvesting_mitigation": {
+                        "description": "ML-KEM-768 used for encrypting long-term data",
+                        "benefit": "Protects against 'Store Now, Attack Later' attacks",
+                        "standard": "FIPS 203 (ML-KEM)",
+                        "note": "Data encrypted today with ML-KEM remains secure even when quantum computers become available"
+                    }
                 },
                 "deployment_phases": {
                     "phase_1": "Implementação híbrida (ECDSA + PQC)",
