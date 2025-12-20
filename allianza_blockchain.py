@@ -1349,11 +1349,20 @@ app = Flask(__name__)
 # SECRET_KEY deve vir de variável de ambiente em produção
 SECRET_KEY = os.getenv('SECRET_KEY')
 if not SECRET_KEY:
-    if os.getenv('FLASK_ENV') == 'production':
-        raise ValueError("SECRET_KEY must be set in production environment")
-    else:
-        SECRET_KEY = secrets.token_hex(32)
-        print("⚠️  SECRET_KEY gerada automaticamente (apenas para desenvolvimento)")
+    # Em produção, SEMPRE falhar explicitamente
+    if (os.getenv('FLASK_ENV') == 'production' or 
+        os.getenv('ALLIANZA_ENV') == 'production' or
+        os.getenv('RENDER') == 'true'):  # Render.com
+        raise RuntimeError(
+            "SECRET_KEY must be set in production environment. "
+            "Set environment variable SECRET_KEY before starting the application. "
+            "This is a security requirement."
+        )
+    # Em desenvolvimento, gerar mas avisar claramente
+    SECRET_KEY = secrets.token_hex(32)
+    print("⚠️  WARNING: SECRET_KEY auto-generated for development only!")
+    print("⚠️  Set SECRET_KEY environment variable for production!")
+    print("⚠️  Using auto-generated key will invalidate sessions on restart!")
 app.config['SECRET_KEY'] = SECRET_KEY
 
 # =============================================================================

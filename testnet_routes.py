@@ -9,6 +9,18 @@ import json
 import os
 from datetime import datetime
 
+# Importar CSRF protection
+try:
+    from csrf_protection import csrf_protection
+    CSRF_AVAILABLE = True
+except ImportError:
+    print("⚠️  CSRF protection não disponível")
+    CSRF_AVAILABLE = False
+    # Criar decorator dummy se não estiver disponível
+    def dummy_csrf(f):
+        return f
+    csrf_protection = type('obj', (object,), {'require_csrf': lambda f: dummy_csrf(f)})()
+
 from testnet_config import get_network_info, is_valid_testnet_address
 from testnet_faucet import TestnetFaucet
 from testnet_explorer import TestnetExplorer
@@ -556,6 +568,20 @@ def faucet_page():
 @testnet_bp.route('/api/faucet/request', methods=['POST'])
 def faucet_request():
     """Endpoint para solicitar tokens do faucet"""
+    # CSRF protection aplicado se disponível
+    if CSRF_AVAILABLE:
+        from flask import session
+        token = request.headers.get('X-CSRF-Token') or request.form.get('csrf_token')
+        if request.is_json:
+            data = request.get_json(silent=True)
+            if data:
+                token = token or data.get('csrf_token')
+        if not csrf_protection.validate_token(token):
+            return jsonify({
+                "success": False,
+                "error": "CSRF token inválido ou ausente"
+            }), 403
+    
     try:
         data = request.get_json() or {}
         address = data.get('address', '').strip()
@@ -1849,6 +1875,21 @@ def api_test_proof_of_lock():
 @testnet_bp.route('/api/interoperability/transfer-real', methods=['POST'])
 def api_transfer_real():
     """Transferência REAL cross-chain usando ALZ-NIEV"""
+    # CSRF protection aplicado se disponível
+    if CSRF_AVAILABLE:
+        from flask import session
+        token = request.headers.get('X-CSRF-Token') or request.form.get('csrf_token')
+        if request.is_json:
+            data = request.get_json(silent=True)
+            if data:
+                token = token or data.get('csrf_token')
+        if not csrf_protection.validate_token(token):
+            return jsonify({
+                "success": False,
+                "error": "CSRF token inválido ou ausente"
+            }), 403
+    
+    """Transferência REAL cross-chain usando ALZ-NIEV"""
     try:
         # Verificar se é JSON
         if not request.is_json:
@@ -2253,6 +2294,21 @@ def alz_niev_dashboard():
 @testnet_bp.route('/api/alz-niev/execute', methods=['POST'])
 def api_alz_niev_execute():
     """Executa função cross-chain com ALZ-NIEV (modo real)"""
+    # CSRF protection aplicado se disponível
+    if CSRF_AVAILABLE:
+        from flask import session
+        token = request.headers.get('X-CSRF-Token') or request.form.get('csrf_token')
+        if request.is_json:
+            data = request.get_json(silent=True)
+            if data:
+                token = token or data.get('csrf_token')
+        if not csrf_protection.validate_token(token):
+            return jsonify({
+                "success": False,
+                "error": "CSRF token inválido ou ausente"
+            }), 403
+    
+    """Executa função cross-chain com ALZ-NIEV (modo real)"""
     if not alz_niev:
         return jsonify({"error": "ALZ-NIEV não inicializado"}), 500
     
@@ -2353,6 +2409,21 @@ def api_test_write_cross_chain():
 
 @testnet_bp.route('/api/alz-niev/atomic', methods=['POST'])
 def api_alz_niev_atomic():
+    """Executa operação atômica cross-chain com ALZ-NIEV"""
+    # CSRF protection aplicado se disponível
+    if CSRF_AVAILABLE:
+        from flask import session
+        token = request.headers.get('X-CSRF-Token') or request.form.get('csrf_token')
+        if request.is_json:
+            data = request.get_json(silent=True)
+            if data:
+                token = token or data.get('csrf_token')
+        if not csrf_protection.validate_token(token):
+            return jsonify({
+                "success": False,
+                "error": "CSRF token inválido ou ausente"
+            }), 403
+    
     """Executa transação atômica multi-chain com ALZ-NIEV (modo real)"""
     if not alz_niev:
         return jsonify({"error": "ALZ-NIEV não inicializado"}), 500
@@ -2448,21 +2519,47 @@ def api_quantum_attack_simulator_run():
 def api_quantum_attack_simulator_download():
     """Download do JSON detalhado da simulação"""
     try:
+        from pathlib import Path
+        
         file_path = request.args.get('file')
         if not file_path:
             return jsonify({"error": "Parâmetro 'file' não fornecido"}), 400
         
-        # Verificar se arquivo existe
-        if not os.path.exists(file_path):
-            return jsonify({"error": "Arquivo não encontrado"}), 404
+        # Normalizar e validar caminho (prevenir path traversal)
+        base_dir = Path('quantum_attack_simulations').resolve()
         
-        # Verificar se está no diretório permitido
-        if not file_path.startswith('quantum_attack_simulations'):
+        # Tentar resolver o caminho do arquivo
+        try:
+            # Se file_path já é absoluto, usar diretamente, senão juntar com base_dir
+            if os.path.isabs(file_path):
+                file_path_resolved = Path(file_path).resolve()
+            else:
+                file_path_resolved = (base_dir / file_path).resolve()
+        except (ValueError, OSError) as e:
+            return jsonify({"error": "Caminho inválido"}), 400
+        
+        # Verificar se está dentro do diretório base (prevenir path traversal)
+        try:
+            # Usar os.path.commonpath para verificar se está dentro do diretório base
+            if not str(file_path_resolved).startswith(str(base_dir)):
+                return jsonify({"error": "Acesso negado - path traversal detectado"}), 403
+        except ValueError:
+            # Se não conseguir comparar, negar acesso
             return jsonify({"error": "Acesso negado"}), 403
         
-        return send_file(file_path, as_attachment=True, mimetype='application/json')
+        # Verificar se arquivo existe
+        if not file_path_resolved.exists() or not file_path_resolved.is_file():
+            return jsonify({"error": "Arquivo não encontrado"}), 404
+        
+        # Verificar se é arquivo JSON
+        if file_path_resolved.suffix.lower() != '.json':
+            return jsonify({"error": "Tipo de arquivo não permitido"}), 403
+        
+        return send_file(str(file_path_resolved), as_attachment=True, mimetype='application/json')
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        import traceback
+        logger.error(f"Erro ao fazer download: {e}\n{traceback.format_exc()}")
+        return jsonify({"error": "Erro interno do servidor"}), 500
 
 @testnet_bp.route('/dashboard/api/quantum-attack-simulator/verify', methods=['POST'])
 def api_quantum_attack_simulator_verify():
@@ -2856,6 +2953,24 @@ def api_get_cross_chain_proof(uchain_id):
 
 @testnet_bp.route('/api/cross-chain/transfer', methods=['POST'])
 def api_cross_chain_transfer_with_proof():
+    """
+    Cria transferência cross-chain com UChainID e ZK Proof no memo
+    POST /api/cross-chain/transfer
+    """
+    # CSRF protection aplicado se disponível
+    if CSRF_AVAILABLE:
+        from flask import session
+        token = request.headers.get('X-CSRF-Token') or request.form.get('csrf_token')
+        if request.is_json:
+            data = request.get_json(silent=True)
+            if data:
+                token = token or data.get('csrf_token')
+        if not csrf_protection.validate_token(token):
+            return jsonify({
+                "success": False,
+                "error": "CSRF token inválido ou ausente"
+            }), 403
+    
     """
     Cria transferência cross-chain com UChainID e ZK Proof no memo
     POST /api/cross-chain/transfer
