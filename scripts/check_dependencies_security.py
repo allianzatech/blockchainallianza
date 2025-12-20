@@ -12,17 +12,28 @@ import os
 def check_with_pip_audit():
     """Verificar com pip-audit"""
     try:
+        # Tentar primeiro como comando direto (pip-audit)
         result = subprocess.run(
-            [sys.executable, "-m", "pip", "audit"],
+            ["pip-audit"],
             capture_output=True,
             text=True,
             timeout=120
         )
         return result.returncode == 0, result.stdout, result.stderr
+    except FileNotFoundError:
+        # Se não encontrar como comando direto, tentar como módulo Python
+        try:
+            result = subprocess.run(
+                [sys.executable, "-m", "pip_audit"],
+                capture_output=True,
+                text=True,
+                timeout=120
+            )
+            return result.returncode == 0, result.stdout, result.stderr
+        except FileNotFoundError:
+            return None, "", "pip-audit não encontrado. Instale com: pip install pip-audit"
     except subprocess.TimeoutExpired:
         return False, "", "Timeout ao executar pip-audit"
-    except FileNotFoundError:
-        return None, "", "pip-audit não encontrado. Instale com: pip install pip-audit"
 
 def check_with_safety():
     """Verificar com safety check"""
@@ -51,6 +62,7 @@ def main():
         print("   💡 Instale: pip install pip-audit\n")
     elif pip_audit_result[0]:
         print("   ✅ pip-audit executado com sucesso!")
+        print("   ℹ️  Nenhuma vulnerabilidade encontrada.\n")
         if pip_audit_result[1]:
             print("   📋 Resultados:")
             print(pip_audit_result[1])
@@ -59,11 +71,13 @@ def main():
             print(pip_audit_result[2])
         return
     else:
-        print("   ⚠️  pip-audit encontrou problemas:")
+        print("   ⚠️  pip-audit encontrou vulnerabilidades:")
+        print("   📋 Detalhes:")
         if pip_audit_result[1]:
             print(pip_audit_result[1])
         if pip_audit_result[2]:
             print(pip_audit_result[2])
+        print("\n   💡 Consulte docs/DEPENDENCY_VULNERABILITIES_REPORT.md para detalhes e correções")
     
     # Tentar safety check como alternativa
     print("\n2️⃣ Tentando safety check...")
