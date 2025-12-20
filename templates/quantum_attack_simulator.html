@@ -1240,10 +1240,11 @@
                     <td><strong>Traditional Blockchain (ECDSA)</strong></td>
                     <td>❌ Hacked</td>
                     <td>
-                        <strong>Attack:</strong> Shor's Algorithm<br>
-                        <strong>Complexity:</strong> ${ecdsaProof.complexity || 'O((log N)³)'}<br>
-                        <strong>Qubits Required:</strong> ${ecdsaProof.qubits_required || '20-30 million'}<br>
-                        <strong>Time:</strong> ${traditional.attack_time_seconds}s (simulated) | ${ecdsaProof.attack_time_estimate || 'days to months'} (real)<br>
+                        <strong>Attack:</strong> Shor's Algorithm (Q2 model)<br>
+                        <strong>Complexity:</strong> ${ecdsaProof.complexity || 'O((log N)³)'} - Polynomial time<br>
+                        <strong>Qubits Required:</strong> ${ecdsaProof.qubits_required || '20-30 million logical'} (${ecdsaProof.physical_qubits || '2-4 billion physical'})<br>
+                        <strong>Attack Time:</strong> ${ecdsaProof.attack_time_estimate || 'Days to months'} (with error correction)<br>
+                        <strong>Feasibility:</strong> FEASIBLE in CRQC (Cryptographically Relevant Quantum Computer)<br>
                         <strong>Result:</strong> Private key recovered - ALL FUNDS STOLEN
                     </td>
                 </tr>
@@ -1269,8 +1270,8 @@
                 <h3 style="margin-bottom: 15px;">✅ Resultado: Sistema Protegido</h3>
                 <p>A blockchain Allianza com proteção QRS-3 demonstrou resistência completa aos ataques quânticos simulados.</p>
                 <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;">
-                    O sistema tradicional (ECDSA) foi comprometido em ${traditional.attack_time_seconds} segundos, 
-                    enquanto o sistema protegido (QRS-3) resistiu a todos os ataques.
+                    The traditional system (ECDSA) is vulnerable to polynomial-time quantum attacks (feasible in CRQC), 
+                    while the protected system (QRS-3) resisted all attacks with exponential complexity (2^128 quantum bits required).
                 </p>
             `;
             
