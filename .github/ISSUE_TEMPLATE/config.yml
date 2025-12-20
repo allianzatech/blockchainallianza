@@ -1,0 +1,12 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussions
+    url: https://github.com/allianzatech/blockchainallianza/discussions
+    about: Ask questions and discuss ideas
+  - name: 📚 Documentation
+    url: https://github.com/allianzatech/blockchainallianza/tree/main/docs
+    about: Check our documentation
+  - name: 🌐 Live Testnet
+    url: https://testnet.allianza.tech
+    about: Try the live testnet
+

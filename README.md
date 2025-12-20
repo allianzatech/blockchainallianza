@@ -247,17 +247,39 @@ pip-audit
 
 ## 🧪 Testing
 
-### Run Test Suite
+### Running Tests
 
 ```bash
 # Complete validation suite
 python complete_validation_suite.py
 
-# Professional tests
+# Professional test suite
 python testnet_professional_test_suite.py
 
 # Critical tests
 python critical_tests_suite.py
+
+# All tests
+python run_all_tests.py
+
+# With pytest (if installed)
+pytest tests/
+
+# With coverage report
+pytest tests/ --cov=. --cov-report=html
+```
+
+### Test Structure
+
+```
+tests/
+├── public/              # Public test suite
+├── test_results/        # Test results
+└── ...
+
+test_results/
+├── test_results_complete.json
+└── ...
 ```
 
 ### Test Coverage
@@ -266,9 +288,13 @@ python critical_tests_suite.py
 - ✅ Quantum-safe cryptography
 - ✅ ZK proof generation and verification
 - ✅ UChainID system
-- ✅ Security features
-- ✅ Rate limiting
+- ✅ Security features (CSRF, rate limiting)
 - ✅ Input validation
+- ✅ Real blockchain transactions (testnet)
+
+### Writing Tests
+
+See [CONTRIBUTING.md](CONTRIBUTING.md#testing) for guidelines on writing tests.
 
 ---
 
