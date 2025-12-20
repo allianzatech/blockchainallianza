@@ -146,6 +146,14 @@ github_pat_*
 # Temporary documentation files
 LIMPAR_ARQUIVOS_DESNECESSARIOS.md
 
+# Internal improvement/suggestion documents (not for public repo)
+*_IMPROVEMENTS*.md
+*_IMPROVEMENTS_SUMMARY*.md
+*_SUGGESTIONS*.md
+*_STATUS*.md
+docs/*IMPROVEMENTS*.md
+docs/*SUGGESTIONS*.md
+
 # Credentials (não commitar)
 BITCOIN_CREDENTIALS*.md
 *_CREDENTIALS*.md
