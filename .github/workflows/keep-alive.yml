@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout (não necessário, mas mantém workflow ativo)
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
       
       - name: Ping Testnet
         run: |
