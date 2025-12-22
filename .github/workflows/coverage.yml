@@ -31,7 +31,7 @@ jobs:
         pytest tests/public/ --cov=core --cov=allianza_blockchain --cov-report=xml --cov-report=html --cov-report=term-missing || true
     
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       with:
         file: ./coverage.xml
         flags: unittests
