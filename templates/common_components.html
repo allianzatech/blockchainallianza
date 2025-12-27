@@ -1,0 +1,189 @@
+<!-- Componentes Reutilizáveis -->
+<style>
+    /* Botão Voltar */
+            .btn-back {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #374151;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        
+    
+    
+    
+    
+        .btn-back:hover {
+            background: #4b5563;
+        }
+/* Container para código com botão copiar */
+    .code-container {
+        position: relative;
+        margin: 15px 0;
+    }
+    
+    .code-wrapper {
+        position: relative;
+        background: #1e293b;
+        border-radius: 8px;
+        padding: 15px;
+        overflow-x: auto;
+    }
+    
+    .code-wrapper pre {
+        margin: 0;
+        color: #e2e8f0;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+    
+    .btn-copy {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(59, 130, 246, 0.8);
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s ease;
+        z-index: 10;
+    }
+    
+    .btn-copy:hover {
+        background: rgba(59, 130, 246, 1);
+        transform: scale(1.05);
+    }
+    
+    .btn-copy:active {
+        transform: scale(0.95);
+    }
+    
+    .btn-copy.copied {
+        background: #10b981;
+    }
+    
+    .btn-copy.copied::after {
+        content: " ✓ Copiado!";
+    }
+</style>
+
+<script>
+    // Função para copiar código
+    function copyCode(elementId) {
+        const element = document.getElementById(elementId);
+        if (!element) {
+            console.error('Elemento não encontrado:', elementId);
+            return;
+        }
+        
+        let textToCopy = '';
+        
+        // Se for um <pre> ou <code>, pegar o texto
+        if (element.tagName === 'PRE' || element.tagName === 'CODE') {
+            textToCopy = element.textContent || element.innerText;
+        } else {
+            // Se for outro elemento, tentar pegar o texto
+            textToCopy = element.textContent || element.innerText || element.value;
+        }
+        
+        // Copiar para clipboard
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            // Feedback visual
+            const btn = document.querySelector(`[onclick*="${elementId}"]`);
+            if (btn) {
+                const originalText = btn.innerHTML;
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.innerHTML = originalText;
+                }, 2000);
+            }
+            
+            // Toast notification (opcional)
+            showToast('Código copiado para a área de transferência!');
+        }).catch(err => {
+            console.error('Erro ao copiar:', err);
+            showToast('Erro ao copiar código', 'error');
+        });
+    }
+    
+    // Função para criar container de código com botão copiar
+    function createCodeContainer(code, language = 'json') {
+        const containerId = 'code-' + Date.now();
+        return `
+            <div class="code-container">
+                <div class="code-wrapper">
+                    <button class="btn-copy" onclick="copyCode('${containerId}')" title="Copiar código">
+                        <i class="fas fa-copy"></i> Copiar
+                    </button>
+                    <pre id="${containerId}"><code>${escapeHtml(code)}</code></pre>
+                </div>
+            </div>
+        `;
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    function showToast(message, type = 'success') {
+        // Criar toast notification
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'error' ? '#ef4444' : '#10b981'};
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+        `;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+</script>
+
+<style>
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+</style>
+

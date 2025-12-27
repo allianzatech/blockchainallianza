@@ -1,0 +1,84 @@
+{
+  "timestamp": "2025-11-20T11:44:57.010976",
+  "proofs": {
+    "PILAR_1_INTEROPERABILIDADE": {
+      "proof_name": "PILAR_1_INTEROPERABILIDADE",
+      "script": "PROVA_PILAR_1_INTEROPERABILIDADE_REAL",
+      "description": "Prova de Interoperabilidade - Validação Universal de Assinaturas e Proof-of-Lock ZK",
+      "status": "SUCESSO",
+      "elapsed_time_seconds": 15.113376140594482,
+      "timestamp": "2025-11-20T11:45:12.124417"
+    },
+    "PILAR_2_SEGURANCA_QUANTICA": {
+      "proof_name": "PILAR_2_SEGURANCA_QUANTICA",
+      "script": "PROVA_PILAR_2_SEGURANCA_QUANTICA",
+      "description": "Prova de Segurança Quântica - QRS-3, ML-DSA, ML-KEM, SPHINCS+",
+      "status": "SUCESSO",
+      "elapsed_time_seconds": 0.577481746673584,
+      "timestamp": "2025-11-20T11:45:13.202536"
+    },
+    "PERFORMANCE_PQC": {
+      "proof_name": "PERFORMANCE_PQC",
+      "script": "TESTE_PERFORMANCE_PQC",
+      "description": "Análise de Performance e Escalabilidade PQC",
+      "status": "SUCESSO",
+      "elapsed_time_seconds": 0.005034446716308594,
+      "timestamp": "2025-11-20T11:45:13.707910"
+    },
+    "BATCH_VERIFICATION": {
+      "proof_name": "BATCH_VERIFICATION",
+      "script": "TESTE_BATCH_VERIFICATION",
+      "description": "Otimização de Escalabilidade - Batch Verification QRS-3",
+      "status": "SUCESSO",
+      "elapsed_time_seconds": 2.2188284397125244,
+      "timestamp": "2025-11-20T11:45:16.427502"
+    },
+    "FALCON_COMPACTO": {
+      "proof_name": "FALCON_COMPACTO",
+      "script": "TESTE_FALCON_COMPACTO",
+      "description": "Alternativa Compacta - FALCON vs ML-DSA",
+      "status": "SUCESSO",
+      "elapsed_time_seconds": 0.0020961761474609375,
+      "timestamp": "2025-11-20T11:45:16.930423"
+    },
+    "COMPRESSAO_ASSINATURAS": {
+      "proof_name": "COMPRESSAO_ASSINATURAS",
+      "script": "TESTE_COMPRESSAO_ASSINATURAS",
+      "description": "Otimização de Escalabilidade - Compressão de Assinaturas",
+      "status": "SUCESSO",
+      "elapsed_time_seconds": 0.250408411026001,
+      "timestamp": "2025-11-20T11:45:17.681527"
+    },
+    "STRESS_QRS3": {
+      "proof_name": "STRESS_QRS3",
+      "script": "TESTE_STRESS_QRS3",
+      "description": "Teste de Stress - QRS-3 sob Carga Alta",
+      "status": "SUCESSO",
+      "elapsed_time_seconds": 0.28672075271606445,
+      "timestamp": "2025-11-20T11:45:18.469216"
+    },
+    "TODAS_INOVACOES": {
+      "proof_name": "TODAS_INOVACOES",
+      "script": "TESTE_TODAS_INOVACOES",
+      "description": "Inovações - Quantum-Safe Cross-Chain, QRS-3 Multi-Sig, Quantum-Safe AI Routing",
+      "status": "SUCESSO",
+      "elapsed_time_seconds": 0.001241922378540039,
+      "timestamp": "2025-11-20T11:45:18.971466"
+    },
+    "PROVAS_COMPLETAS": {
+      "proof_name": "PROVAS_COMPLETAS",
+      "script": "generate_complete_proof",
+      "description": "Gerador de Provas Completas - Salva em pasta com data/hora (POCs e todas as provas)",
+      "status": "SUCESSO",
+      "elapsed_time_seconds": 0.00635838508605957,
+      "timestamp": "2025-11-20T11:45:19.478266"
+    }
+  },
+  "summary": {
+    "total_proofs": 9,
+    "successful": 9,
+    "failed": 0,
+    "success_rate": 100.0,
+    "total_time_seconds": 22.96803593635559
+  }
+}

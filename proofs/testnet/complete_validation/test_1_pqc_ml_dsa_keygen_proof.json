@@ -1,0 +1,112 @@
+{
+  "test_id": "test_1_pqc_ml_dsa_keygen",
+  "name": "PQC Keygen ML-DSA Funcionando",
+  "start_time": "2025-11-26T00:53:54.136449",
+  "iterations": 10,
+  "keypairs": [
+    {
+      "iteration": 0,
+      "keypair_id": "ml_dsa_test_0_1764129234",
+      "real": true,
+      "algorithm": "ML-DSA-128",
+      "implementation": "Open Quantum Safe (liboqs)"
+    },
+    {
+      "iteration": 1,
+      "keypair_id": "ml_dsa_test_1_1764129234",
+      "real": true,
+      "algorithm": "ML-DSA-128",
+      "implementation": "Open Quantum Safe (liboqs)"
+    },
+    {
+      "iteration": 2,
+      "keypair_id": "ml_dsa_test_2_1764129234",
+      "real": true,
+      "algorithm": "ML-DSA-128",
+      "implementation": "Open Quantum Safe (liboqs)"
+    },
+    {
+      "iteration": 3,
+      "keypair_id": "ml_dsa_test_3_1764129234",
+      "real": true,
+      "algorithm": "ML-DSA-128",
+      "implementation": "Open Quantum Safe (liboqs)"
+    },
+    {
+      "iteration": 4,
+      "keypair_id": "ml_dsa_test_4_1764129234",
+      "real": true,
+      "algorithm": "ML-DSA-128",
+      "implementation": "Open Quantum Safe (liboqs)"
+    },
+    {
+      "iteration": 5,
+      "keypair_id": "ml_dsa_test_5_1764129234",
+      "real": true,
+      "algorithm": "ML-DSA-128",
+      "implementation": "Open Quantum Safe (liboqs)"
+    },
+    {
+      "iteration": 6,
+      "keypair_id": "ml_dsa_test_6_1764129234",
+      "real": true,
+      "algorithm": "ML-DSA-128",
+      "implementation": "Open Quantum Safe (liboqs)"
+    },
+    {
+      "iteration": 7,
+      "keypair_id": "ml_dsa_test_7_1764129234",
+      "real": true,
+      "algorithm": "ML-DSA-128",
+      "implementation": "Open Quantum Safe (liboqs)"
+    },
+    {
+      "iteration": 8,
+      "keypair_id": "ml_dsa_test_8_1764129234",
+      "real": true,
+      "algorithm": "ML-DSA-128",
+      "implementation": "Open Quantum Safe (liboqs)"
+    },
+    {
+      "iteration": 9,
+      "keypair_id": "ml_dsa_test_9_1764129234",
+      "real": true,
+      "algorithm": "ML-DSA-128",
+      "implementation": "Open Quantum Safe (liboqs)"
+    }
+  ],
+  "signature_tests": [
+    {
+      "iteration": 0,
+      "signed": true,
+      "verified": true
+    },
+    {
+      "iteration": 1,
+      "signed": true,
+      "verified": true
+    },
+    {
+      "iteration": 2,
+      "signed": true,
+      "verified": true
+    },
+    {
+      "iteration": 3,
+      "signed": true,
+      "verified": true
+    },
+    {
+      "iteration": 4,
+      "signed": true,
+      "verified": true
+    }
+  ],
+  "errors": [],
+  "total_keypairs": 10,
+  "total_errors": 0,
+  "success_rate": 100.0,
+  "all_signed": true,
+  "success": true,
+  "duration": 0.07111215591430664
+}

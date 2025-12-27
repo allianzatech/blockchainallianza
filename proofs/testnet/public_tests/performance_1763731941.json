@@ -1,0 +1,36 @@
+{
+  "success": true,
+  "test_id": "performance_1763731941",
+  "test_name": "Performance",
+  "results": {
+    "total_signatures": 100,
+    "successful_signatures": 100,
+    "success_rate_percent": 100.0,
+    "avg_time_ms": 261.95,
+    "min_time_ms": 127.94,
+    "max_time_ms": 346.12,
+    "std_deviation_ms": 35.83,
+    "throughput_per_second": 3.82,
+    "total_time_ms": 26196.41,
+    "percentiles": {
+      "p50_ms": 262.5,
+      "p75_ms": 279.5,
+      "p95_ms": 317.24,
+      "p99_ms": 346.12
+    },
+    "proofs": {
+      "test_environment": {
+        "cpu": "Intel64 Family 6 Model 186 Stepping 3, GenuineIntel",
+        "os": "Windows",
+        "os_version": "10.0.26100",
+        "python_version": "3.13.7",
+        "threads": 1,
+        "warmup_iterations": 0
+      },
+      "algorithm_mode": "QRS-3 (ECDSA + ML-DSA + SPHINCS+)",
+      "benchmark_method": "sequential_100_signatures",
+      "verification_command": "python verify_allianza_proofs.py proofs/testnet/public_tests/performance_1763731941.json"
+    }
+  },
+  "timestamp": "2025-11-21T13:32:47.599589Z"
+}

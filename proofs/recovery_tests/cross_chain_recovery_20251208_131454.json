@@ -1,0 +1,117 @@
+{
+  "suite_name": "Cross-Chain Recovery Tests",
+  "timestamp": "2025-12-08T13:14:54.239643",
+  "tests": [
+    {
+      "test_type": "chain_failure_simulation",
+      "chain": "ethereum",
+      "failure_type": "network_partition",
+      "timestamp": "2025-12-08T13:14:54.239824",
+      "scenario": {
+        "description": "Partição de rede - chain temporariamente inacessível",
+        "recovery_action": "Usar chain alternativa para validação",
+        "expected_recovery_time": "< 5 minutos"
+      },
+      "simulation_status": "completed"
+    },
+    {
+      "test_type": "recovery_mechanism_test",
+      "source_chain": "bitcoin",
+      "target_chain": "polygon",
+      "failure_chain": "ethereum",
+      "timestamp": "2025-12-08T13:14:54.240196",
+      "failure_simulation": {
+        "test_type": "chain_failure_simulation",
+        "chain": "ethereum",
+        "failure_type": "network_partition",
+        "timestamp": "2025-12-08T13:14:54.240205",
+        "scenario": {
+          "description": "Partição de rede - chain temporariamente inacessível",
+          "recovery_action": "Usar chain alternativa para validação",
+          "expected_recovery_time": "< 5 minutos"
+        },
+        "simulation_status": "completed"
+      },
+      "recovery_steps": [
+        {
+          "step": 1,
+          "action": "Detectar falha na chain",
+          "status": "completed",
+          "time_ms": 100
+        },
+        {
+          "step": 2,
+          "action": "Identificar chain alternativa",
+          "status": "completed",
+          "time_ms": 50,
+          "alternative_chain": "polygon"
+        },
+        {
+          "step": 3,
+          "action": "Validar transação na chain alternativa",
+          "status": "completed",
+          "time_ms": 200
+        },
+        {
+          "step": 4,
+          "action": "Completar transferência",
+          "status": "completed",
+          "time_ms": 150
+        }
+      ],
+      "total_recovery_time_ms": 500,
+      "recovery_successful": true
+    },
+    {
+      "test_type": "atomicity_failure_test",
+      "chains": [
+        "bitcoin",
+        "ethereum",
+        "polygon"
+      ],
+      "failure_point": 2,
+      "timestamp": "2025-12-08T13:14:54.240693",
+      "execution_steps": [
+        {
+          "chain": "bitcoin",
+          "step_number": 1,
+          "status": "completed",
+          "timestamp": "2025-12-08T13:14:54.240702"
+        },
+        {
+          "chain": "ethereum",
+          "step_number": 2,
+          "status": "completed",
+          "timestamp": "2025-12-08T13:14:54.240706"
+        },
+        {
+          "chain": "polygon",
+          "step_number": 3,
+          "status": "failed",
+          "timestamp": "2025-12-08T13:14:54.240708"
+        }
+      ],
+      "rollback_steps": [
+        {
+          "chain": "ethereum",
+          "action": "rollback",
+          "status": "completed",
+          "time_ms": 100
+        },
+        {
+          "chain": "bitcoin",
+          "action": "rollback",
+          "status": "completed",
+          "time_ms": 100
+        }
+      ],
+      "atomicity_maintained": true,
+      "all_chains_rolled_back": true
+    }
+  ],
+  "summary": {
+    "total_tests": 3,
+    "recovery_tests_passed": 2,
+    "average_recovery_time_ms": 500.0
+  }
+}

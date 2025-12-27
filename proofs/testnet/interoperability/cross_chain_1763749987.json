@@ -1,0 +1,48 @@
+{
+  "success": true,
+  "test_id": "cross_chain_1763749987",
+  "test_name": "Transferência Cross-Chain Real",
+  "results": {
+    "source_chain": "polygon",
+    "target_chain": "bitcoin",
+    "amount": 0.001,
+    "recipient": "tb1qxy2kgdygjrsqtzq2n0yrf2493p83kkfhrcndzj",
+    "source_tx_hash": "790d1f1dd1e89c17e59ee39085dc2c8de4e2a6c57ad06f97aac2a1d803fa0f71",
+    "target_tx_hash": "180bfe4728be4fd81d1c744cf19d9f0096ec75cd64507cea925bc5c479826adf",
+    "source_block_number": 29346024,
+    "target_block_number": null,
+    "source_confirmations": 0,
+    "target_confirmations": 0,
+    "transfer_real": true,
+    "total_time_ms": 45756.76
+  },
+  "proofs": {
+    "transfer_proof": {
+      "source_tx_hash": "790d1f1dd1e89c17e59ee39085dc2c8de4e2a6c57ad06f97aac2a1d803fa0f71",
+      "target_tx_hash": "180bfe4728be4fd81d1c744cf19d9f0096ec75cd64507cea925bc5c479826adf",
+      "source_block_number": 29346024,
+      "target_block_number": null,
+      "source_confirmations": 0,
+      "target_confirmations": 0,
+      "merkle_proof": null,
+      "spv_proof": null,
+      "source_explorer": "https://amoy.polygonscan.com/tx/790d1f1dd1e89c17e59ee39085dc2c8de4e2a6c57ad06f97aac2a1d803fa0f71",
+      "target_explorer": "https://live.blockcypher.com/btc-testnet/tx/180bfe4728be4fd81d1c744cf19d9f0096ec75cd64507cea925bc5c479826adf",
+      "verification_command": "python verify_allianza_proofs.py proofs/testnet/interoperability/cross_chain_1763749987.json",
+      "note": "✅ Transferência real executada na blockchain",
+      "real_transfer_instructions": null
+    }
+  },
+  "real_transfer_status": {
+    "can_execute_real": true,
+    "bridge_available": true,
+    "source_key_configured": true,
+    "target_key_configured": true,
+    "instructions": "✅ Transferência real disponível! Configure as chaves privadas no arquivo .env",
+    "env_vars_needed": {
+      "source": "POLYGON_PRIVATE_KEY",
+      "target": "BITCOIN_PRIVATE_KEY"
+    }
+  },
+  "timestamp": "2025-11-21T18:33:53.750945Z"
+}

@@ -1,0 +1,21 @@
+{
+  "test_id": "test_6_audit_reproducible_bundle",
+  "timestamp": "2025-11-26T00:53:53.934508",
+  "version": "1.0",
+  "components": {
+    "original_payload": "Test payload for audit",
+    "canonical_json": "{\"test\": \"data\"}",
+    "sha256_hash": "6ba7b50f47d04306a9a3ff84500bc0e137ab1961d0b8ff585e8b0fbafdc1c57c",
+    "qrs3_signature": {
+      "algorithm": "QRS-3",
+      "ecdsa": "simulated",
+      "ml_dsa": "simulated",
+      "sphincs": "simulated",
+      "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+      "keypair_id": "qrs3_1764129233_b1bbc707d80abae2",
+      "bundle_hash": "6ba7b50f47d04306a9a3ff84500bc0e137ab1961d0b8ff585e8b0fbafdc1c57c"
+    },
+    "verification_command": "python verify_bundle.py <bundle_path>",
+    "reproducibility": true
+  }
+}

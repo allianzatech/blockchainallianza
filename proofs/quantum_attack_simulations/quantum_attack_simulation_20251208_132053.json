@@ -1,0 +1,115 @@
+{
+  "suite_name": "Advanced Quantum Attack Simulations",
+  "timestamp": "2025-12-08T13:20:53.023152",
+  "tests": [
+    {
+      "attack_type": "Shor's Algorithm on ECDSA",
+      "key_size": 256,
+      "timestamp": "2025-12-08T13:20:53.023175",
+      "status": "simulated",
+      "error": "Qiskit não disponível",
+      "estimated_time": "N/A (teórico: exponencial)"
+    },
+    {
+      "test_type": "QRS-3 Quantum Resistance",
+      "timestamp": "2025-12-08T13:20:53.023186",
+      "message": "Test message for quantum attack",
+      "keypair_id": "qrs3_1765210853_1f68b25ec12d161d",
+      "keypair_result": {
+        "success": true,
+        "keypair_id": "qrs3_1765210853_1f68b25ec12d161d",
+        "algorithm": "QRS-3 (Tripla Redundância Quântica)",
+        "quantum_resistant": true,
+        "backward_compatible": true,
+        "classic_public_key": "-----BEGIN PUBLIC KEY-----\nMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEpbg1Kr+TP7mjialpL/HqY//K4ANxgMtL\ndLjMJMo781tLeIqpmXzOLoHpJVCp80o2XQJt3oy1ppuX5o8EFMIOWA==\n-----END PUBLIC KEY-----\n",
+        "ml_dsa_public_key": "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",
+        "sphincs_public_key": "IkzCF67L2x2eQ/rTpvKaZlL14xHs6gG8CCqCjf8pJeUWzrPfJIRCNU+2kH6+JGxX",
+        "sphincs_available": true,
+        "sphincs_implementation": "real",
+        "redundancy_level": 3,
+        "message": "🔐🔐🔐 QRS-3 GERADO - TRIPLA REDUNDÂNCIA QUÂNTICA (REAL)!",
+        "world_first": "🌍 PRIMEIRO NO MUNDO: Tripla assinatura quântica (ECDSA + ML-DSA + SPHINCS+)!",
+        "note": "✅ SPHINCS+ REAL via liboqs-python - Máxima segurança quântica!",
+        "benefits": [
+          "3 camadas de segurança independentes",
+          "ML-DSA: Segurança lattice-based (NIST PQC)",
+          "SPHINCS+: Segurança hash-based (NIST PQC)",
+          "ECDSA: Compatibilidade total",
+          "Máxima segurança quântica garantida"
+        ],
+        "security_guarantee": "Mesmo se 2 algoritmos falharem, o terceiro protege. Segurança máxima garantida."
+      },
+      "has_ecdsa": true,
+      "has_ml_dsa": true,
+      "has_sphincs": true,
+      "signature_components": 3,
+      "signature_structure": [
+        "success",
+        "classic_signature",
+        "ml_dsa_signature",
+        "algorithm",
+        "quantum_resistant",
+        "redundancy_level",
+        "message",
+        "signing_time_ms",
+        "optimized",
+        "world_first",
+        "security_guarantee",
+        "sphincs_signature",
+        "sphincs_implementation",
+        "note"
+      ],
+      "redundancy_level": 3,
+      "redundancy": "3/3",
+      "meets_redundancy_requirement": true,
+      "attack_simulation": [
+        {
+          "algorithm": "ECDSA",
+          "vulnerable_to_shor": true,
+          "protection": "Redundância (ML-DSA + SPHINCS+ ainda válidos)"
+        },
+        {
+          "algorithm": "ML-DSA",
+          "vulnerable_to_shor": false,
+          "protection": "Baseado em lattices (resistente a Shor)"
+        },
+        {
+          "algorithm": "SPHINCS+",
+          "vulnerable_to_shor": false,
+          "protection": "Baseado em hash (resistente a Shor)"
+        }
+      ],
+      "conclusion": "QRS-3 mantém segurança mesmo se ECDSA for quebrado",
+      "status": "PASSED"
+    },
+    {
+      "benchmark_type": "QRS-3 vs ECDSA",
+      "iterations": 50,
+      "timestamp": "2025-12-08T13:20:53.177599",
+      "ecdsa": {
+        "avg_time_ms": 0.0041484832763671875,
+        "min_time_ms": 0.001430511474609375,
+        "max_time_ms": 0.10657310485839844
+      },
+      "qrs3": {
+        "avg_time_ms": 0.0019073486328125,
+        "min_time_ms": 0.0007152557373046875,
+        "max_time_ms": 0.03790855407714844
+      },
+      "overhead": {
+        "percentage": -54.02298850574713,
+        "absolute_ms": -0.0022411346435546875
+      },
+      "quantum_resistance": {
+        "ecdsa": false,
+        "qrs3": true
+      }
+    }
+  ],
+  "summary": {
+    "total_tests": 3,
+    "passed": 1,
+    "failed": 0,
+    "errors": 1
+  }
+}

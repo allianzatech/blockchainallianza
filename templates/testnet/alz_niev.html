@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="{{ lang or 'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>🌐 ALZ-NIEV - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/testnet-modern.css">
+    <link rel="stylesheet" href="/static/css/testnet-mobile.css">
+    <script src="/static/js/testnet-modals.js"></script>
+    <style>
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid #4b5563;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .btn-back:hover {
+            background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        .main-card {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border: 1px solid #374151;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+        }
+        .main-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+        }
+        .layer-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.8) 100%);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+        .layer-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+            border-color: rgba(71, 85, 105, 0.8);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px rgba(37, 99, 235, 0.4);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(220, 38, 38, 0.3);
+        }
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px rgba(220, 38, 38, 0.4);
+        }
+        .input-modern {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            transition: all 0.2s;
+        }
+        .input-modern:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 text-white min-h-screen">
+    <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="javascript:history.back()" class="btn-back mb-4 inline-flex">
+                <i class="fas fa-arrow-left"></i>
+                <span>{{ t('back') or 'Back' }}</span>
+            </a>
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-2xl">
+                    🌐
+                </div>
+                <div>
+                    <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">ALZ-NIEV</h1>
+                    <p class="text-gray-400 text-sm mt-1">{{ t('alz_niev_subtitle') or 'Non-Intermediate Execution Validation - Unique Interoperability in the World' }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div id="status" class="main-card mb-6">
+            <p class="text-yellow-400 flex items-center gap-2">
+                <i class="fas fa-spinner fa-spin"></i>
+                ⏳ {{ t('checking_status') or 'Checking status...' }}
+            </p>
+        </div>
+
+        <!-- As 5 Camadas -->
+        <div class="main-card mb-6">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                <i class="fas fa-layer-group text-blue-400"></i>
+                {{ t('the_5_layers') or 'The 5 Layers of ALZ-NIEV' }}
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="layer-card bg-blue-500/10 border-blue-500/30">
+                    <h3 class="text-xl font-bold mb-2 text-blue-300">🔵 ELNI</h3>
+                    <p class="text-sm text-gray-300 font-semibold">Execution-Level Native Interop</p>
+                    <p class="text-xs text-gray-400 mt-2">{{ t('native_execution_no_bridges') or 'Native execution without bridges' }}</p>
+                </div>
+                <div class="layer-card bg-purple-500/10 border-purple-500/30">
+                    <h3 class="text-xl font-bold mb-2 text-purple-300">🟣 ZKEF</h3>
+                    <p class="text-sm text-gray-300 font-semibold">Zero-Knowledge External Functions</p>
+                    <p class="text-xs text-gray-400 mt-2">{{ t('zk_proofs_no_relayers') or 'ZK proofs without relayers' }}</p>
+                </div>
+                <div class="layer-card bg-green-500/10 border-green-500/30">
+                    <h3 class="text-xl font-bold mb-2 text-green-300">🟢 UP-NMT</h3>
+                    <p class="text-sm text-gray-300 font-semibold">Universal Proof Normalized Merkle Tunneling</p>
+                    <p class="text-xs text-gray-400 mt-2">{{ t('universal_merkle_proofs') or 'Universal Merkle proofs' }}</p>
+                </div>
+                <div class="layer-card bg-yellow-500/10 border-yellow-500/30">
+                    <h3 class="text-xl font-bold mb-2 text-yellow-300">🟡 MCL</h3>
+                    <p class="text-sm text-gray-300 font-semibold">Multi-Consensus Layer</p>
+                    <p class="text-xs text-gray-400 mt-2">{{ t('support_any_consensus') or 'Support for any consensus' }}</p>
+                </div>
+                <div class="layer-card bg-red-500/10 border-red-500/30">
+                    <h3 class="text-xl font-bold mb-2 text-red-300">🔴 AES</h3>
+                    <p class="text-sm text-gray-300 font-semibold">Atomic Execution Sync</p>
+                    <p class="text-xs text-gray-400 mt-2">{{ t('atomic_multi_chain_execution') or 'Atomic multi-chain execution' }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Teste 1: Execução Cross-Chain Simples -->
+        <div class="main-card mb-6">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-project-diagram text-blue-400 text-xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold">🔵 {{ t('test_1_cross_chain') or 'Test 1: Cross-Chain Execution (ELNI + All Proofs)' }}</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Source Chain</label>
+                    <select id="sourceChain" class="input-modern w-full">
+                        <option value="allianza">Allianza</option>
+                        <option value="polygon">Polygon</option>
+                        <option value="ethereum">Ethereum</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Target Chain</label>
+                    <select id="targetChain" class="input-modern w-full">
+                        <option value="polygon">Polygon</option>
+                        <option value="ethereum">Ethereum</option>
+                        <option value="bsc">BSC</option>
+                        <option value="bitcoin">Bitcoin</option>
+                        <option value="solana">Solana</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Function Name</label>
+                    <input type="text" id="functionName" value="getBalance" class="input-modern w-full">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Function Params (JSON)</label>
+                    <input type="text" id="functionParams" value='{"address": "0x1234..."}' class="input-modern w-full">
+                </div>
+            </div>
+
+            <button onclick="testExecution()" class="btn-primary">
+                <i class="fas fa-rocket mr-2"></i>🚀 {{ t('execute_with_alz_niev') or 'Execute with ALZ-NIEV' }}
+            </button>
+
+            <div id="executionResult" class="mt-4 hidden"></div>
+        </div>
+
+        <!-- Teste 2: Execução Atômica Multi-Chain -->
+        <div class="main-card mb-6">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-bolt text-red-400 text-xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold">🔴 {{ t('test_2_atomic') or 'Test 2: Atomic Multi-Chain Execution (AES)' }}</h2>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2 text-gray-300">Chains (JSON Array)</label>
+                <textarea id="atomicChains" rows="6" class="input-modern w-full font-mono text-sm">[
+  {"chain": "polygon", "function": "transfer", "params": {"to": "0x1234...", "amount": 100}},
+  {"chain": "ethereum", "function": "mint", "params": {"to": "0x5678...", "amount": 50}},
+  {"chain": "bsc", "function": "swap", "params": {"token_in": "BNB", "token_out": "USDT", "amount": 10}}
+]</textarea>
+            </div>
+
+            <button onclick="testAtomic()" class="btn-danger">
+                <i class="fas fa-bolt mr-2"></i>⚡ {{ t('execute_atomically') or 'Execute Atomically' }}
+            </button>
+
+            <div id="atomicResult" class="mt-4 hidden"></div>
+        </div>
+
+        <!-- Link para Faucet -->
+        <div class="main-card bg-yellow-500/10 border-yellow-500/30">
+            <p class="font-bold mb-2 text-yellow-300 flex items-center gap-2">
+                <i class="fas fa-coins"></i>
+                💰 {{ t('need_test_tokens') or 'Need Test Tokens?' }}
+            </p>
+            <p class="text-sm mb-2 text-gray-300">{{ t('use_faucet_description') or 'To execute functions that require balance, use the faucet:' }}</p>
+            <a href="/faucet" class="text-blue-400 hover:text-blue-300 font-semibold inline-flex items-center gap-2">
+                <i class="fas fa-faucet"></i>
+                → {{ t('access_faucet') or 'Access Faucet' }}
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Verificar status
+        async function checkStatus() {
+            try {
+                const response = await fetch('/api/alz-niev/status');
+                const data = await response.json();
+                
+                const statusDiv = document.getElementById('status');
+                if (data.available) {
+                    statusDiv.innerHTML = '<p class="text-green-400 flex items-center gap-2"><i class="fas fa-check-circle"></i>✅ ALZ-NIEV disponível e funcionando!</p>';
+                } else {
+                    statusDiv.innerHTML = '<p class="text-red-400 flex items-center gap-2"><i class="fas fa-times-circle"></i>❌ ALZ-NIEV não disponível</p>';
+                }
+            } catch (error) {
+                document.getElementById('status').innerHTML = '<p class="text-red-400 flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i>❌ Error checking status</p>';
+            }
+        }
+
+        // Teste de execução cross-chain
+        async function testExecution() {
+            const sourceChain = document.getElementById('sourceChain').value;
+            const targetChain = document.getElementById('targetChain').value;
+            const functionName = document.getElementById('functionName').value;
+            const functionParamsText = document.getElementById('functionParams').value;
+            
+            let functionParams = {};
+            try {
+                functionParams = JSON.parse(functionParamsText);
+            } catch (e) {
+                alert('Error: Function Params must be valid JSON');
+                return;
+            }
+
+            const resultDiv = document.getElementById('executionResult');
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<p class="text-blue-400 flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i>⏳ Executando...</p>';
+
+            try {
+                const response = await fetch('/api/alz-niev/execute', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        source_chain: sourceChain,
+                        target_chain: targetChain,
+                        function_name: functionName,
+                        function_params: functionParams
+                    })
+                });
+
+                const data = await response.json();
+                
+                // Usar modal moderno
+                const resultType = data.success ? 'success' : 'error';
+                const description = {
+                    statusTitle: data.success ? 'Execution Successful' : 'Execution Error',
+                    description: data.success ? 'The cross-chain execution was completed successfully!' : (data.error || 'Error during execution')
+                };
+                createModernModal('ALZ-NIEV Cross-Chain Execution', data, resultType, description);
+                resultDiv.innerHTML = '';
+            } catch (error) {
+                const errorData = {
+                    success: false,
+                    error: error.message
+                };
+                const resultType = 'error';
+                const description = {
+                    statusTitle: 'Execution Error',
+                    description: error.message
+                };
+                createModernModal('ALZ-NIEV Cross-Chain Execution', errorData, resultType, description);
+                resultDiv.innerHTML = '';
+            }
+        }
+
+        // Teste de execução atômica
+        async function testAtomic() {
+            const chainsText = document.getElementById('atomicChains').value;
+            
+            let chains = [];
+            try {
+                chains = JSON.parse(chainsText);
+            } catch (e) {
+                alert('Error: Chains must be valid JSON');
+                return;
+            }
+
+            const resultDiv = document.getElementById('atomicResult');
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<p class="text-blue-400 flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i>⏳ Executando atomicamente...</p>';
+
+            try {
+                const response = await fetch('/api/alz-niev/atomic', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ chains })
+                });
+
+                const data = await response.json();
+                
+                // Usar modal moderno
+                const resultType = data.success ? 'success' : 'error';
+                const description = {
+                    statusTitle: data.success ? 'Atomic Execution Successful' : 'Atomic Execution Error',
+                    description: data.success ? 'All executions were completed atomically!' : (data.error || 'Error during atomic execution')
+                };
+                createModernModal('Atomic Multi-Chain Execution', data, resultType, description);
+                resultDiv.innerHTML = '';
+            } catch (error) {
+                const errorData = {
+                    success: false,
+                    error: error.message
+                };
+                const resultType = 'error';
+                const description = {
+                    statusTitle: 'Execution Error',
+                    description: error.message
+                };
+                createModernModal('Atomic Multi-Chain Execution', errorData, resultType, description);
+                resultDiv.innerHTML = '';
+            }
+        }
+
+        // Verificar status ao carregar
+        checkStatus();
+    </script>
+</body>
+</html>

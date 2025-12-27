@@ -1,0 +1,1991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>🌉 Interoperability - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .tab-button {
+            background: #374151;
+            border: 1px solid #4b5563;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-button.active {
+            background: #1f2937;
+            border-bottom-color: #1f2937;
+            color: #60a5fa;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .result-box {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            position: relative;
+            transition: all 0.2s;
+        }
+        .result-box:hover {
+            border-color: #4b5563;
+            background: #1f1f1f;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #374151;
+            border: 1px solid #4b5563;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            z-index: 10;
+        }
+        .copy-btn:hover {
+            background: #4b5563;
+        }
+        .copy-btn-small {
+            background: #374151;
+            border: 1px solid #4b5563;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+            margin-left: 8px;
+        }
+        .copy-btn-small:hover {
+            background: #4b5563;
+            border-color: #60a5fa;
+        }
+        .copy-btn-small:active {
+            background: #1f2937;
+        }
+        .copy-btn-large {
+            background: #2563eb;
+            border: 1px solid #3b82f6;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .copy-btn-large:hover {
+            background: #1d4ed8;
+            border-color: #2563eb;
+        }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .info { color: #60a5fa; }
+        
+        /* Loading overlay animation */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+        
+        /* ============================================
+           MOBILE RESPONSIVE STYLES
+           ============================================ */
+        
+        /* Mobile First - Base styles for mobile */
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+            
+            .container {
+                padding: 1rem !important;
+            }
+            
+            h1 {
+                font-size: 1.75rem !important;
+                line-height: 1.2;
+            }
+            
+            h2 {
+                font-size: 1.5rem !important;
+            }
+            
+            h3 {
+                font-size: 1.25rem !important;
+            }
+            
+            /* Tabs - Scrollable on mobile */
+            .mb-6.flex.gap-2 {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+                padding-bottom: 0.5rem;
+            }
+            
+            .mb-6.flex.gap-2::-webkit-scrollbar {
+                display: none;
+            }
+            
+            .tab-button {
+                padding: 10px 16px !important;
+                font-size: 13px !important;
+                white-space: nowrap;
+                min-width: fit-content;
+            }
+            
+            /* Forms - Full width on mobile */
+            .grid.grid-cols-1.md\:grid-cols-2 {
+                grid-template-columns: 1fr !important;
+                gap: 1rem !important;
+            }
+            
+            /* Inputs - Larger touch targets */
+            input, select, textarea {
+                font-size: 16px !important; /* Prevents zoom on iOS */
+                padding: 12px !important;
+                min-height: 44px; /* Apple's recommended touch target */
+            }
+            
+            /* Buttons - Larger touch targets */
+            button, .btn, a.button {
+                min-height: 44px !important;
+                min-width: 44px !important;
+                padding: 12px 20px !important;
+                font-size: 14px !important;
+            }
+            
+            /* Cards - Less padding on mobile */
+            .bg-gray-800.rounded-lg {
+                padding: 1rem !important;
+            }
+            
+            /* Result boxes - Better scrolling */
+            .result-box {
+                max-height: 300px !important;
+                font-size: 11px !important;
+                padding: 12px !important;
+            }
+            
+            /* Copy buttons - Larger on mobile */
+            .copy-btn, .copy-btn-small {
+                min-height: 36px !important;
+                min-width: 36px !important;
+                padding: 8px 12px !important;
+            }
+            
+            /* Tables - Horizontal scroll */
+            table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                white-space: nowrap;
+            }
+            
+            /* Modals - Full screen on mobile */
+            .fixed.inset-0 {
+                padding: 1rem !important;
+            }
+            
+            .bg-gray-800.rounded-lg.p-8 {
+                padding: 1.5rem !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+            }
+            
+            /* Text - Better readability */
+            .text-xs {
+                font-size: 11px !important;
+            }
+            
+            .text-sm {
+                font-size: 13px !important;
+            }
+            
+            /* Spacing - Reduced on mobile */
+            .space-y-4 > * + * {
+                margin-top: 1rem !important;
+            }
+            
+            .mb-8 {
+                margin-bottom: 1.5rem !important;
+            }
+            
+            .mb-6 {
+                margin-bottom: 1rem !important;
+            }
+            
+            /* Grid cards - Single column */
+            .grid.grid-cols-1.md\:grid-cols-5 {
+                grid-template-columns: 1fr !important;
+                gap: 0.75rem !important;
+            }
+            
+            /* Font mono - Smaller on mobile */
+            .font-mono {
+                font-size: 11px !important;
+                word-break: break-all;
+            }
+            
+            /* Loading overlay - Better on mobile */
+            .fixed.inset-0.bg-black {
+                padding: 1rem !important;
+            }
+            
+            .max-w-md {
+                max-width: 100% !important;
+            }
+        }
+        
+        /* Very small screens */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5rem !important;
+            }
+            
+            .tab-button {
+                padding: 8px 12px !important;
+                font-size: 12px !important;
+            }
+            
+            .bg-gray-800.rounded-lg {
+                padding: 0.75rem !important;
+            }
+            
+            input, select, textarea {
+                font-size: 16px !important;
+                padding: 10px !important;
+            }
+        }
+        
+        /* Touch-friendly interactions */
+        @media (hover: none) and (pointer: coarse) {
+            button, a, .clickable, .copy-btn, .copy-btn-small {
+                -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+                touch-action: manipulation;
+            }
+            
+            button:active, a:active {
+                transform: scale(0.98);
+                transition: transform 0.1s;
+            }
+        }
+        
+        /* Landscape mobile */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .container {
+                padding: 0.75rem !important;
+            }
+            
+            h1 {
+                font-size: 1.5rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="/" class="text-blue-400 hover:text-blue-300 mb-4 inline-flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <h1 class="text-4xl font-bold mb-2">
+                <i class="fas fa-project-diagram text-blue-400"></i> 
+                Interoperability
+            </h1>
+            <p class="text-gray-400">Bridge-free cross-chain interoperability with UChainID and ZK Proofs</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="mb-6 flex gap-2 overflow-x-auto">
+            <button class="tab-button active" onclick="showTab('about', this)">
+                <i class="fas fa-book"></i> About
+            </button>
+            <button class="tab-button" onclick="showTab('transfer', this)">
+                <i class="fas fa-exchange-alt"></i> Cross-Chain Transfer
+            </button>
+            <button class="tab-button" onclick="showTab('decoder', this)">
+                <i class="fas fa-code"></i> Decoder
+            </button>
+            <button class="tab-button" onclick="showTab('proofs', this)">
+                <i class="fas fa-list"></i> Proofs
+            </button>
+            <button class="tab-button" onclick="showTab('verifier', this)">
+                <i class="fas fa-shield-alt"></i> ZK Verifier
+            </button>
+        </div>
+
+        <!-- Tab: About -->
+        <div id="tab-about" class="tab-content active">
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4">🧬 ALZ-NIEV Protocol</h2>
+                <p class="text-gray-300 mb-4">
+                    The ALZ-NIEV system provides bridge-free cross-chain interoperability with 5 layers of security and cryptographic proofs.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+                    <div class="bg-blue-500/20 border border-blue-500 rounded-lg p-4">
+                        <h3 class="font-bold mb-1 text-blue-300">🔵 ELNI</h3>
+                        <p class="text-xs text-gray-300">Execution-Level Native Interop</p>
+                    </div>
+                    <div class="bg-purple-500/20 border border-purple-500 rounded-lg p-4">
+                        <h3 class="font-bold mb-1 text-purple-300">🟣 ZKEF</h3>
+                        <p class="text-xs text-gray-300">Zero-Knowledge External Functions</p>
+                    </div>
+                    <div class="bg-green-500/20 border border-green-500 rounded-lg p-4">
+                        <h3 class="font-bold mb-1 text-green-300">🟢 UP-NMT</h3>
+                        <p class="text-xs text-gray-300">Universal Proof Normalized Merkle Tunneling</p>
+                    </div>
+                    <div class="bg-yellow-500/20 border border-yellow-500 rounded-lg p-4">
+                        <h3 class="font-bold mb-1 text-yellow-300">🟡 MCL</h3>
+                        <p class="text-xs text-gray-300">Multi-Consensus Layer</p>
+                    </div>
+                    <div class="bg-red-500/20 border border-red-500 rounded-lg p-4">
+                        <h3 class="font-bold mb-1 text-red-300">🔴 AES</h3>
+                        <p class="text-xs text-gray-300">Atomic Execution Sync</p>
+                    </div>
+                </div>
+                <div class="bg-green-900/20 border border-green-500 rounded-lg p-4">
+                    <h3 class="font-bold mb-2 text-green-300">✅ Benefits</h3>
+                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                        <li>No custody: no need to hold reserve funds</li>
+                        <li>No hackable bridge: no bridge to hack</li>
+                        <li>No wrapped tokens: no need to create synthetic tokens</li>
+                        <li>Mathematical security: ZK proof guarantees validity</li>
+                        <li>Privacy: does not reveal sensitive data</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Cross-Chain Transfer (Unified - Always Real) -->
+        <div id="tab-transfer" class="tab-content">
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4">
+                    <i class="fas fa-exchange-alt text-blue-400"></i> Cross-Chain Transfer
+                </h2>
+                <p class="text-sm text-gray-400 mb-6">
+                    Send REAL tokens between different blockchains (EVM and Bitcoin). All transfers include UChainID and ZK Proofs on-chain.
+                </p>
+                <form id="transferForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Source Chain</label>
+                            <select name="source_chain" id="sourceChain" class="w-full bg-gray-700 text-white p-2 rounded" required onchange="handleSourceChainChange()">
+                                <option value="allianza">🌐 Allianza (ALZ)</option>
+                                <option value="polygon">Polygon (Amoy Testnet)</option>
+                                <option value="ethereum">Ethereum (Sepolia Testnet)</option>
+                                <option value="solana">Solana (Testnet)</option>
+                                <option value="bitcoin">Bitcoin (Testnet)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Target Chain</label>
+                            <select name="target_chain" id="targetChain" class="w-full bg-gray-700 text-white p-2 rounded" required onchange="handleSourceChainChange()">
+                                <option value="ethereum">Ethereum (Sepolia Testnet)</option>
+                                <option value="polygon">Polygon (Amoy Testnet)</option>
+                                <option value="solana">Solana (Testnet)</option>
+                                <option value="bitcoin">Bitcoin (Testnet)</option>
+                                <option value="allianza">🌐 Allianza (ALZ)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2" id="amountLabel">
+                                <span class="text-green-400">💰 Amount</span> (valor no token de origem)
+                            </label>
+                            <input
+                                type="number"
+                                name="amount"
+                                id="amount"
+                                step="any"
+                                value=""
+                                placeholder="Digite o valor (será calculado o mínimo baseado no destino)"
+                                class="w-full bg-gray-700 text-white p-2 rounded"
+                                required
+                            >
+                            <p class="text-xs text-gray-400 mt-1" id="amountHelp">
+                                <i class="fas fa-info-circle"></i> Quantidade do token de origem que você quer enviar
+                            </p>
+                            <!-- Conversão em tempo real (sempre visível) -->
+                            <div id="conversionDisplay" class="mt-2 p-3 bg-gray-800/80 border border-gray-700 rounded-md">
+                                <div class="text-xs text-gray-400 mb-2">💱 Conversão Automática:</div>
+                                <div id="conversionDetails" class="space-y-1 text-xs">
+                                    <!-- Será preenchido via JavaScript -->
+                                </div>
+                                <div id="minimumWarning" class="hidden mt-2 p-2 bg-yellow-900/30 border border-yellow-700 rounded text-yellow-300 text-xs">
+                                    ⚠️ <span id="minimumWarningText"></span>
+                                </div>
+                            </div>
+                            <div id="amountHint" class="mt-2 text-[11px] text-gray-300">
+                                <div class="font-semibold text-gray-400 mb-1">
+                                    Recommended minimums per token
+                                </div>
+                                <div class="grid grid-cols-2 gap-1 bg-gray-800/80 border border-gray-700 rounded-md p-2">
+                                    <div class="flex justify-between gap-2">
+                                        <span class="text-gray-400">BTC</span>
+                                        <span class="font-mono">0.0000546</span>
+                                    </div>
+                                    <div class="flex justify-between gap-2">
+                                        <span class="text-gray-400">ETH</span>
+                                        <span class="font-mono">0.00000001</span>
+                                    </div>
+                                    <div class="flex justify-between gap-2">
+                                        <span class="text-gray-400">MATIC</span>
+                                        <span class="font-mono">0.00000001</span>
+                                    </div>
+                                    <div class="flex justify-between gap-2">
+                                        <span class="text-gray-400">SOL</span>
+                                        <span class="font-mono">0.00000001</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Campo de endereço Allianza removido - sempre usa bridge address padrão automaticamente -->
+                    <div>
+                        <label class="block text-sm font-medium mb-2">
+                            <span class="text-green-400">🎯 Endereço de Destino</span> <span id="recipientChainLabel"></span>
+                        </label>
+                        <input type="text" name="recipient" id="recipient" placeholder="0x..." class="w-full bg-gray-700 text-white p-2 rounded font-mono border border-green-600" required>
+                        <p class="text-xs text-gray-400 mt-1" id="recipientHelp">
+                            Endereço da blockchain de destino (será atualizado automaticamente)
+                        </p>
+                    </div>
+                    <button type="submit" id="executeTransferBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition relative">
+                        <span id="btnText">
+                            <i class="fas fa-rocket mr-2"></i> 🚀 Execute REAL Transfer
+                        </span>
+                        <span id="btnLoader" class="hidden">
+                            <i class="fas fa-spinner fa-spin mr-2"></i> Processing...
+                        </span>
+                    </button>
+                    <p class="text-xs text-gray-400 text-center mt-2">
+                        ⚠️ All transfers are REAL and will appear on-chain with UChainID and ZK Proofs
+                    </p>
+                </form>
+            </div>
+            <div id="transferResults" class="hidden">
+                <!-- Botão FORA da caixa para copiar tudo -->
+                <div class="text-center mb-4">
+                    <button id="copyAllTransferBtn" class="copy-btn-large hidden" onclick="copyAllTransferInfo()" title="Copy All Information">
+                        <i class="fas fa-copy"></i> Copy All Information
+                    </button>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg mb-6">
+                    <h2 class="text-2xl font-bold mb-4">Result</h2>
+                    <div id="transferResultContent" class="result-box">
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg mb-6">
+                <h2 class="text-2xl font-bold mb-4">Search Proof by UChainID</h2>
+                <form id="searchForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">UChainID</label>
+                        <input type="text" id="uchainId" placeholder="UCHAIN-..." 
+                               class="w-full bg-gray-700 text-white p-2 rounded font-mono" required>
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                        <i class="fas fa-search mr-2"></i> Search Proof
+                    </button>
+                </form>
+                <div id="searchResults" class="hidden mt-4">
+                    <div id="searchContent" class="result-box">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Decoder -->
+        <div id="tab-decoder" class="tab-content">
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4">
+                    <i class="fas fa-code text-blue-400"></i> Memo Decoder
+                </h2>
+                <p class="text-sm text-gray-400 mb-4">Decode UChainID memo from on-chain transaction</p>
+                <form id="decoderForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">UChainID</label>
+                        <input type="text" id="decoderUChainID" placeholder="UCHAIN-..." 
+                               class="w-full bg-gray-700 text-white p-2 rounded font-mono" required>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                        <i class="fas fa-search mr-2"></i> Decode
+                    </button>
+                </form>
+                <div id="decoderResults" class="hidden mt-4">
+                    <div id="decoderContent" class="result-box">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Proofs -->
+        <div id="tab-proofs" class="tab-content">
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4">
+                    <i class="fas fa-list text-purple-400"></i> Public Proofs
+                </h2>
+                <p class="text-sm text-gray-400 mb-4">All cross-chain transfers with UChainID and ZK Proofs</p>
+                <button onclick="loadAllProofs()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                    <i class="fas fa-list mr-2"></i> Load All Proofs (last 50)
+                </button>
+                <div id="proofsResults" class="hidden mt-4">
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <div class="text-center mb-4">
+                            <button id="copyAllProofsBtn" class="copy-btn-large hidden" onclick="copyAllProofsInfo()" title="Copy All Information">
+                                <i class="fas fa-copy"></i> Copy All Information
+                            </button>
+                        </div>
+                        <div id="proofsContent" class="result-box">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: ZK Verifier -->
+        <div id="tab-verifier" class="tab-content">
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <div class="flex items-center justify-between mb-2 gap-2">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-shield-alt text-green-400"></i> ZK Proof Verifier
+                    </h2>
+                    <button
+                        type="button"
+                        onclick="copyAllVerifierData()"
+                        class="copy-btn-small text-xs px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded transition flex items-center gap-1"
+                        title="Copy all ZK proof data"
+                    >
+                        <i class="fas fa-copy"></i>
+                        Copy All
+                    </button>
+                </div>
+                <p class="text-sm text-gray-400 mb-4">Verify Zero-Knowledge proofs from cross-chain transfers</p>
+                
+                <!-- Quick Load UChainID - Topo da aba ZK Verifier -->
+                <div class="bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-lg p-4 mb-6 border border-blue-500/30">
+                    <div class="flex items-center gap-2 mb-3">
+                        <i class="fas fa-bolt text-yellow-400"></i>
+                        <h3 class="text-lg font-semibold">Quick Load UChainID</h3>
+                    </div>
+                    <div class="flex gap-2 flex-wrap">
+                        <select id="recentUChainIDs" class="flex-1 min-w-[200px] bg-gray-700 text-white p-2 rounded font-mono text-sm border border-gray-600" onchange="selectUChainID()">
+                            <option value="">Select recent UChainID...</option>
+                        </select>
+                        <input type="text" id="quickUChainID" placeholder="UCHAIN-..." 
+                               class="flex-1 min-w-[250px] bg-gray-700 text-white p-2 rounded font-mono border border-gray-600"
+                               onkeypress="if(event.key==='Enter') loadFromUChainID()">
+                        <button onclick="loadFromUChainID()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded transition font-semibold whitespace-nowrap">
+                            <i class="fas fa-search"></i> Load
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">Select from recent transfers or paste a UChainID manually</p>
+                    <div id="quickLoadResults" class="hidden mt-3">
+                        <div id="quickLoadContent" class="bg-gray-800 rounded p-3 border border-gray-600"></div>
+                    </div>
+                </div>
+                
+                <form id="verifierForm" class="space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-medium">Proof (hex string)</label>
+                            <button type="button" onclick="copyFieldValue('verifierProof', event)" 
+                                    class="copy-btn-small text-xs px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded transition"
+                                    title="Copy">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <textarea id="verifierProof" rows="3" 
+                                  placeholder="Paste the ZK proof hex string here..."
+                                  class="w-full bg-gray-700 text-white p-2 rounded font-mono"></textarea>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-medium">Verification Key (hex string)</label>
+                            <button type="button" onclick="copyFieldValue('verifierKey', event)" 
+                                    class="copy-btn-small text-xs px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded transition"
+                                    title="Copy">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <textarea id="verifierKey" rows="3" 
+                                  placeholder="Paste the verification key hex string here..."
+                                  class="w-full bg-gray-700 text-white p-2 rounded font-mono"></textarea>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-medium">Public Inputs / State Hash (optional)</label>
+                            <button type="button" onclick="copyFieldValue('verifierInputs', event)" 
+                                    class="copy-btn-small text-xs px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded transition"
+                                    title="Copy">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <input type="text" id="verifierInputs" 
+                               placeholder="State transition hash (optional)"
+                               class="w-full bg-gray-700 text-white p-2 rounded font-mono">
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                        <i class="fas fa-check-circle mr-2"></i> Verify Proof
+                    </button>
+                </form>
+                <div id="verifierResults" class="hidden mt-4">
+                    <div id="verifierContent" class="result-box">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        function showTab(tabName, button) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            const target = document.getElementById(`tab-${tabName}`);
+            if (target) {
+                target.classList.add('active');
+            }
+            if (button) {
+                button.classList.add('active');
+            }
+        }
+        
+        // 🔢 Recommended minimums per token for UX (human values, not strict blockchain limits)
+        // IMPORTANT: we use strings to avoid scientific notation (1e-18) in the number input.
+        const TOKEN_MINIMUMS = {
+            BTC: '0.0000546',              // mínimo recomendado BTC (exemplo real usado)
+            ETH: '0.000000000000000001',   // 1 wei (10^-18 ETH)
+            MATIC: '0.000000001',          // 10^-9 MATIC (formato que você pediu)
+            SOL: '0.000000001'             // 1 lamport (10^-9 SOL)
+        };
+        
+        function updateAmountForToken() {
+            const tokenSelect = document.getElementById('tokenSymbol');
+            const amountInput = document.getElementById('amount');
+            const amountHint = document.getElementById('amountHint');
+            
+            if (!tokenSelect || !amountInput) return;
+            
+            const symbol = tokenSelect.value || 'BTC';
+            const min = TOKEN_MINIMUMS[symbol];
+            
+            if (min) {
+                amountInput.placeholder = `${min} (${symbol} minimum)`;
+                // Always update the value to the recommended minimum when changing token
+                amountInput.value = min;
+                
+                // A tabela já mostra todos os mínimos; não precisamos alterar o HTML aqui
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const tokenSelect = document.getElementById('tokenSymbol');
+            if (tokenSelect) {
+                tokenSelect.addEventListener('change', updateAmountForToken);
+            }
+            // Inicializar de acordo com o token padrão
+            updateAmountForToken();
+        });
+        
+        // Copy to clipboard
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.innerText || element.textContent;
+            const textWithoutButton = text.replace(/Copy.*?Copy/g, '').trim();
+            
+            navigator.clipboard.writeText(textWithoutButton).then(() => {
+                const btn = element.querySelector('.copy-btn');
+                if (btn) {
+                    const originalHTML = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    setTimeout(() => {
+                        btn.innerHTML = originalHTML;
+                    }, 2000);
+                }
+            });
+        }
+        
+        // Copy specific text
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Visual feedback
+                const event = window.event || {};
+                const button = event.target || event.srcElement;
+                if (button && button.classList && button.classList.contains('copy-btn-small')) {
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '✅ Copied!';
+                    button.style.background = '#10b981';
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.style.background = '';
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error('Error copying:', err);
+                alert('Error copying. Try selecting and copying manually.');
+            });
+        }
+
+        // Helper: construir URL de explorer para a chain de destino (segundo link)
+        function getTargetExplorerUrl(result) {
+            if (!result) return '';
+            const target = (result.target_chain || '').toLowerCase();
+            const recipient = result.recipient || '';
+            const txHash = result.tx_hash || (result.real_transaction && result.real_transaction.tx_hash) || '';
+            const realTx = result.real_transaction || {};
+
+            // Se a transação real já é na própria target_chain, reaproveitar explorer_url
+            if (realTx.chain && realTx.explorer_url && realTx.chain.toLowerCase() === target) {
+                return realTx.explorer_url;
+            }
+
+            // Caso contrário, construir um link útil por chain (normalmente por address)
+            switch (target) {
+                case 'bitcoin':
+                    if (txHash) return `https://blockstream.info/testnet/tx/${txHash}`;
+                    if (recipient) return `https://blockstream.info/testnet/address/${recipient}`;
+                    return '';
+                case 'polygon':
+                    if (txHash) return `https://amoy.polygonscan.com/tx/${txHash}`;
+                    if (recipient) return `https://amoy.polygonscan.com/address/${recipient}`;
+                    return '';
+                case 'ethereum':
+                    if (txHash) return `https://sepolia.etherscan.io/tx/${txHash}`;
+                    if (recipient) return `https://sepolia.etherscan.io/address/${recipient}`;
+                    return '';
+                case 'solana':
+                    // Para Solana testnet, é mais útil abrir pelo address quando a TX ainda não existe
+                    if (txHash) return `https://solscan.io/tx/${txHash}?cluster=testnet`;
+                    if (recipient) return `https://solscan.io/account/${recipient}?cluster=testnet`;
+                    return '';
+                default:
+                    return '';
+            }
+        }
+        
+        // Helper específico para copiar o resultado da busca de prova por UChainID
+        function copySearchProofJson() {
+            if (window.lastSearchProofJson) {
+                copyText(window.lastSearchProofJson);
+            } else {
+                alert('No proof loaded yet to copy.');
+            }
+        }
+        
+        // Copy field value (for ZK Verifier fields)
+        function copyFieldValue(fieldId, event) {
+            const field = document.getElementById(fieldId);
+            if (!field) {
+                alert('Field not found');
+                return;
+            }
+            
+            const textToCopy = field.value || field.textContent || '';
+            if (!textToCopy.trim()) {
+                alert('No data to copy');
+                return;
+            }
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                // Visual feedback
+                const button = event ? event.target.closest('button') : document.querySelector(`button[onclick*="${fieldId}"]`);
+                if (button) {
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    button.style.background = '#10b981';
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.style.background = '';
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error('Error copying:', err);
+                alert('Error copying. Try selecting and copying manually.');
+            });
+        }
+        
+        // Copy all transfer information
+        function copyAllTransferInfo() {
+            // Prioridade 1: Tentar usar window.lastTransferResult (objeto completo da API)
+            let resultToCopy = window.lastTransferResult;
+            
+            // Prioridade 2: Se não tiver, tentar extrair do pre tag com JSON completo
+            if (!resultToCopy) {
+                const preElement = document.getElementById('fullResultJson');
+                if (preElement) {
+                    try {
+                        resultToCopy = JSON.parse(preElement.textContent);
+                    } catch (e) {
+                        console.warn('Error parsing JSON from pre tag:', e);
+                    }
+                }
+            }
+            
+            // Prioridade 3: Tentar qualquer pre tag dentro do resultContent
+            if (!resultToCopy) {
+                const preElement = document.querySelector('#transferResultContent pre');
+                if (preElement) {
+                    try {
+                        resultToCopy = JSON.parse(preElement.textContent);
+                    } catch (e) {
+                        console.warn('Error parsing JSON from generic pre tag:', e);
+                    }
+                }
+            }
+            
+            if (!resultToCopy) {
+                alert('No data to copy');
+                return;
+            }
+            
+            const r = resultToCopy;
+            
+            // 📝 Resumo humano (o que aparece visualmente na tela)
+            const summaryLines = [];
+            
+            if (r.message) summaryLines.push(`✅ ${r.message}`);
+            if (r.uchain_id) summaryLines.push(`UChainID: ${r.uchain_id}`);
+            if (r.tx_hash) summaryLines.push(`TX Hash: ${r.tx_hash}`);
+            if (r.has_zk_proof) {
+                if (r.proof_id) {
+                    summaryLines.push(`ZK Proof: YES (Proof ID: ${r.proof_id})`);
+                } else {
+                    summaryLines.push('ZK Proof: YES');
+                }
+            }
+            if (r.commitment_id) summaryLines.push(`Commitment ID: ${r.commitment_id}`);
+            if (r.state_id) summaryLines.push(`State ID: ${r.state_id}`);
+            if (r.transfer_id) summaryLines.push(`Transfer ID: ${r.transfer_id}`);
+            
+            const stateHash =
+                (r.memo && r.memo.zk_proof && (r.memo.zk_proof.state_hash || r.memo.zk_proof.state_transition_hash)) ||
+                r.state_hash ||
+                (r.real_transaction && r.real_transaction.memo && r.real_transaction.memo.zk_proof && (r.real_transaction.memo.zk_proof.state_hash || r.real_transaction.memo.zk_proof.state_transition_hash));
+            if (stateHash) summaryLines.push(`State Hash: ${stateHash}`);
+            
+            if (r.real_transaction && r.real_transaction.success) {
+                summaryLines.push('');
+                summaryLines.push('🎉 REAL Transaction Sent!');
+                if (r.real_transaction.tx_hash) summaryLines.push(`TX Hash: ${r.real_transaction.tx_hash}`);
+                // ✅ CORREÇÃO: source_chain e target_chain estão no nível superior, não em real_transaction
+                if (r.source_chain && r.target_chain) {
+                    summaryLines.push(`Chain: ${r.source_chain} → ${r.target_chain}`);
+                } else if (r.real_transaction && r.real_transaction.source_chain && r.real_transaction.target_chain) {
+                    // Fallback: tentar em real_transaction se não estiver no nível superior
+                    summaryLines.push(`Chain: ${r.real_transaction.source_chain} → ${r.real_transaction.target_chain}`);
+                }
+                if (r.real_transaction.amount != null) {
+                    const token = r.real_transaction.token || r.token || '';
+                    summaryLines.push(`Amount: ${r.real_transaction.amount} ${token}`.trim());
+                }
+                if (r.real_transaction.memo_hex) summaryLines.push(`Memo (hex): ${r.real_transaction.memo_hex}`);
+            }
+            
+            const summaryText = summaryLines.join('\n');
+            
+            // Ensure we also copy the FULL object as JSON
+            const jsonPart = JSON.stringify(resultToCopy, (key, value) => value, 2);
+            const textToCopy = `${summaryText}\n\n${jsonPart}`;
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const button = document.getElementById('copyAllTransferBtn');
+                if (button) {
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-check"></i> All Information Copied!';
+                    button.style.background = '#10b981';
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.style.background = '';
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error('Error copying:', err);
+                alert('Error copying. Try selecting and copying manually.');
+            });
+        }
+
+        // Função para mostrar/ocultar campos e atualizar conversão
+        function handleSourceChainChange() {
+            const sourceChain = document.getElementById('sourceChain').value;
+            const targetChain = document.getElementById('targetChain').value;
+            const recipientInput = document.getElementById('recipient');
+            const recipientHelp = document.getElementById('recipientHelp');
+            const recipientChainLabel = document.getElementById('recipientChainLabel');
+            const amountLabel = document.getElementById('amountLabel');
+            const amountInput = document.getElementById('amount');
+            const conversionDisplay = document.getElementById('conversionDisplay');
+            const amountHint = document.getElementById('amountHint');
+            
+            // Mapear tokens nativos
+            const nativeTokens = {
+                'allianza': 'ALZ',
+                'polygon': 'MATIC',
+                'ethereum': 'ETH',
+                'bitcoin': 'BTC',
+                'solana': 'SOL'
+            };
+            
+            const sourceToken = nativeTokens[sourceChain] || 'ETH';
+            const targetToken = nativeTokens[targetChain] || 'ETH';
+            
+            // Taxas de câmbio em USD (mesmas usadas na conversão)
+            const tokenPrices = {
+                'ALZ': 0.10,
+                'MATIC': 0.80,
+                'ETH': 2932.03,
+                'BTC': 45000.00,
+                'SOL': 150.00
+            };
+            
+            // Mínimos por token (baseado no token de DESTINO)
+            const minAmounts = {
+                'BTC': 0.0000546,
+                'ETH': 0.00000001,
+                'MATIC': 0.00000001,
+                'SOL': 0.00000001,
+                'ALZ': 0.00000001
+            };
+            
+            const minTarget = minAmounts[targetToken] || 0.00000001;
+            const targetPrice = tokenPrices[targetToken] || 0;
+            const sourcePrice = tokenPrices[sourceToken] || 0;
+            
+            // Calcular mínimo necessário no token de origem para atingir o mínimo do token de destino
+            const minValueUsd = minTarget * targetPrice;
+            const minSourceNeeded = sourcePrice > 0 ? (minValueUsd / sourcePrice) : minTarget;
+            
+            // Atualizar label do amount
+            if (amountLabel) {
+                if (sourceChain === 'allianza') {
+                    amountLabel.innerHTML = `<span class="text-green-400">💰 Amount (ALZ)</span> - Quantos ALZ você quer enviar`;
+                } else {
+                    amountLabel.innerHTML = `<span class="text-green-400">💰 Amount (${sourceToken})</span> - Quantos ${sourceToken} você quer enviar`;
+                }
+            }
+            
+            // Atualizar help text com informação do mínimo
+            const amountHelp = document.getElementById('amountHelp');
+            if (amountHelp) {
+                if (sourceChain === 'allianza') {
+                    amountHelp.innerHTML = `<i class="fas fa-info-circle"></i> Quantidade de ALZ que você quer enviar. Mínimo: ${minSourceNeeded.toFixed(8)} ALZ (equivale a ${minTarget} ${targetToken} mínimo aceito por ${targetChain})`;
+                } else {
+                    amountHelp.innerHTML = `<i class="fas fa-info-circle"></i> Quantidade de ${sourceToken} que você quer enviar. Mínimo: ${minSourceNeeded.toFixed(8)} ${sourceToken} (equivale a ${minTarget} ${targetToken} mínimo aceito por ${targetChain})`;
+                }
+            }
+            
+            // Atualizar placeholder e valor inicial baseado no mínimo necessário
+            if (amountInput) {
+                // Arredondar para cima para garantir que seja maior que o mínimo
+                const suggestedAmount = Math.max(minSourceNeeded * 1.1, minSourceNeeded); // 10% acima do mínimo
+                amountInput.placeholder = `${minSourceNeeded.toFixed(8)} (mínimo: ${minTarget} ${targetToken})`;
+                
+                // Se o valor atual for muito pequeno ou o placeholder antigo, atualizar
+                const currentValue = parseFloat(amountInput.value) || 0;
+                if (currentValue < minSourceNeeded || amountInput.value === '0.0000546') {
+                    amountInput.value = suggestedAmount.toFixed(8);
+                }
+            }
+            
+            // Sempre mostrar conversão
+            if (conversionDisplay) {
+                conversionDisplay.classList.remove('hidden');
+            }
+            
+            // Ocultar hint de mínimos quando mostrar conversão
+            if (amountHint) {
+                amountHint.classList.add('hidden');
+            }
+            
+            // Atualizar conversão quando amount ou target chain mudar
+            if (amountInput) {
+                amountInput.removeEventListener('input', updateConversion);
+                amountInput.addEventListener('input', updateConversion);
+                updateConversion(); // Atualizar imediatamente
+            }
+            
+            // Atualizar campo de destino baseado na target chain
+            updateRecipientField(targetChain);
+        }
+        
+        // Executar handleSourceChainChange quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            // Executar imediatamente para mostrar conversão se source=allianza
+            handleSourceChainChange();
+            
+            // Também atualizar quando target chain mudar
+            const targetChainSelect = document.getElementById('targetChain');
+            if (targetChainSelect) {
+                targetChainSelect.addEventListener('change', function() {
+                    const sourceChain = document.getElementById('sourceChain').value;
+                    if (sourceChain === 'allianza') {
+                        handleSourceChainChange();
+                    }
+                });
+            }
+        });
+        
+        // Função para atualizar conversão em tempo real (Token origem → USD → Token destino)
+        function updateConversion() {
+            const sourceChain = document.getElementById('sourceChain').value;
+            const targetChain = document.getElementById('targetChain').value;
+            const amountInput = document.getElementById('amount');
+            const conversionDetails = document.getElementById('conversionDetails');
+            const minimumWarning = document.getElementById('minimumWarning');
+            const minimumWarningText = document.getElementById('minimumWarningText');
+            
+            if (!amountInput || !conversionDetails) return;
+            
+            const amount = parseFloat(amountInput.value) || 0;
+            
+            if (amount <= 0) {
+                conversionDetails.innerHTML = '<div class="text-gray-500">Digite um valor para ver a conversão</div>';
+                if (minimumWarning) minimumWarning.classList.add('hidden');
+                return;
+            }
+            
+            // Mapear tokens nativos
+            const nativeTokens = {
+                'allianza': 'ALZ',
+                'polygon': 'MATIC',
+                'ethereum': 'ETH',
+                'bitcoin': 'BTC',
+                'solana': 'SOL'
+            };
+            
+            const sourceToken = nativeTokens[sourceChain] || 'ETH';
+            const targetToken = nativeTokens[targetChain] || 'ETH';
+            
+            // Taxas de câmbio em USD (serão atualizadas via API em produção)
+            const tokenPrices = {
+                'ALZ': 0.10,
+                'MATIC': 0.80,
+                'ETH': 2932.03,
+                'BTC': 45000.00,
+                'SOL': 150.00
+            };
+            
+            const sourcePrice = tokenPrices[sourceToken] || 0;
+            const targetPrice = tokenPrices[targetToken] || 0;
+            
+            // Calcular conversão: Token origem → USD → Token destino
+            const valueUsd = amount * sourcePrice;
+            const amountTarget = valueUsd / targetPrice;
+            
+            // Mínimos por token
+            const minAmounts = {
+                'BTC': 0.0000546,
+                'ETH': 0.00000001,
+                'MATIC': 0.00000001,
+                'SOL': 0.00000001,
+                'ALZ': 0.00000001
+            };
+            
+            const minTarget = minAmounts[targetToken] || 0.00000001;
+            const minValueUsd = minTarget * targetPrice;
+            const minSourceNeeded = minValueUsd / sourcePrice;
+            
+            // Mostrar conversão
+            conversionDetails.innerHTML = `
+                <div class="flex justify-between">
+                    <span class="text-gray-400">💰 Valor em USD:</span>
+                    <span class="font-mono text-green-400">$${valueUsd.toFixed(2)}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">📤 Você envia:</span>
+                    <span class="font-mono">${amount.toFixed(8)} ${sourceToken}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">📥 Destinatário recebe:</span>
+                    <span class="font-mono text-blue-400">${amountTarget.toFixed(8)} ${targetToken}</span>
+                </div>
+            `;
+            
+            // Verificar mínimo
+            if (amountTarget < minTarget) {
+                if (minimumWarning) {
+                    minimumWarning.classList.remove('hidden');
+                    if (minimumWarningText) {
+                        minimumWarningText.innerHTML = `Valor muito pequeno! Mínimo necessário: <strong>${minSourceNeeded.toFixed(8)} ${sourceToken}</strong> (equivale a ${minTarget} ${targetToken})`;
+                    }
+                }
+            } else {
+                if (minimumWarning) minimumWarning.classList.add('hidden');
+            }
+        }
+        
+        // Também atualizar quando target chain mudar
+        document.addEventListener('DOMContentLoaded', function() {
+            const targetChainSelect = document.getElementById('targetChain');
+            if (targetChainSelect) {
+                targetChainSelect.addEventListener('change', function() {
+                    handleSourceChainChange(); // Sempre atualizar conversão
+                });
+            }
+        });
+        
+        // Função para atualizar campo de destino baseado na blockchain selecionada
+        function updateRecipientField(targetChain) {
+            const recipientInput = document.getElementById('recipient');
+            const recipientHelp = document.getElementById('recipientHelp');
+            const recipientChainLabel = document.getElementById('recipientChainLabel');
+            
+            const chainInfo = {
+                'allianza': {
+                    placeholder: 'ALZ1Test000000000000000000000000000000000000',
+                    help: 'Endereço Allianza (ALZ1...)',
+                    label: '(Allianza)'
+                },
+                'ethereum': {
+                    placeholder: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0',
+                    help: 'Endereço Ethereum (0x...) - Sepolia Testnet',
+                    label: '(Ethereum)'
+                },
+                'polygon': {
+                    placeholder: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0',
+                    help: 'Endereço Polygon (0x...) - Amoy Testnet',
+                    label: '(Polygon)'
+                },
+                'bitcoin': {
+                    placeholder: 'mjQMvYHE5Bpqze4ifq6NLP9BthNJgxWRud',
+                    help: 'Endereço Bitcoin (testnet)',
+                    label: '(Bitcoin)'
+                },
+                'solana': {
+                    placeholder: '5qzASbWFvFBhyAq8D9k9mvf3ubzHKYdA49saDgFNgvhk',
+                    help: 'Endereço Solana (testnet)',
+                    label: '(Solana)'
+                },
+                'bsc': {
+                    placeholder: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0',
+                    help: 'Endereço BSC (0x...) - BSC Testnet',
+                    label: '(BSC)'
+                }
+            };
+            
+            const info = chainInfo[targetChain] || {
+                placeholder: '0x... ou endereço da blockchain',
+                help: 'Endereço da blockchain de destino',
+                label: ''
+            };
+            
+            recipientInput.placeholder = info.placeholder;
+            recipientHelp.textContent = info.help;
+            recipientChainLabel.textContent = info.label;
+        }
+        
+        // Atualizar quando target chain mudar
+        document.addEventListener('DOMContentLoaded', function() {
+            const targetChainSelect = document.getElementById('targetChain');
+            if (targetChainSelect) {
+                targetChainSelect.addEventListener('change', function() {
+                    updateRecipientField(this.value);
+                });
+                // Atualizar inicialmente
+                updateRecipientField(targetChainSelect.value);
+            }
+        });
+
+        // Create Transfer (Unified - Always Real)
+        document.getElementById('transferForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Obter elementos
+            const submitBtn = document.getElementById('executeTransferBtn');
+            const btnText = document.getElementById('btnText');
+            const btnLoader = document.getElementById('btnLoader');
+            const form = e.target;
+            
+            // Mostrar loader e desabilitar botão
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+            btnText.classList.add('hidden');
+            btnLoader.classList.remove('hidden');
+            
+            // Criar overlay de loading
+            const loadingOverlay = document.createElement('div');
+            loadingOverlay.id = 'loadingOverlay';
+            loadingOverlay.className = 'fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center';
+            loadingOverlay.innerHTML = `
+                <div class="bg-gray-800 rounded-lg p-8 max-w-md w-full mx-4 border border-green-500">
+                    <div class="text-center">
+                        <div class="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500 mb-4"></div>
+                        <h3 class="text-xl font-bold text-white mb-2">Executing REAL Transfer</h3>
+                        <p class="text-gray-300 mb-4">Please wait while we process your cross-chain transfer...</p>
+                        <div class="flex items-center justify-center space-x-2 text-green-400">
+                            <i class="fas fa-rocket animate-pulse"></i>
+                            <span class="text-sm">Creating transaction...</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(loadingOverlay);
+            
+            const formData = new FormData(form);
+            
+            // Calcular token_symbol automaticamente baseado na source_chain
+            const nativeTokens = {
+                'allianza': 'ALZ',
+                'polygon': 'MATIC',
+                'ethereum': 'ETH',
+                'bitcoin': 'BTC',
+                'solana': 'SOL'
+            };
+            const sourceChain = formData.get('source_chain');
+            const tokenSymbol = nativeTokens[sourceChain] || 'ETH';
+            
+            const data = {
+                source_chain: sourceChain,
+                target_chain: formData.get('target_chain'),
+                amount: parseFloat(formData.get('amount')),
+                recipient: formData.get('recipient'),
+                token_symbol: tokenSymbol,  // Calculado automaticamente
+                send_real: true  // Sempre real
+            };
+            
+            // Se source_chain for allianza, adicionar from_address (opcional - usa bridge se não informado)
+            if (data.source_chain === 'allianza') {
+                const fromAddress = formData.get('from_address');
+                // Campo é opcional - se não informado, será usado o bridge address padrão
+                if (fromAddress && fromAddress.trim() !== '') {
+                    data.from_address = fromAddress.trim();
+                }
+                // Se não informado, o backend usará o bridge address automaticamente
+            }
+
+            const resultsDiv = document.getElementById('transferResults');
+            const resultContent = document.getElementById('transferResultContent');
+            resultsDiv.classList.remove('hidden');
+            resultContent.innerHTML = '<p class="info">⏳ Executing REAL transfer...</p>';
+
+            try {
+                // Usar endpoint correto baseado na source_chain
+                const endpoint = data.source_chain === 'allianza' 
+                    ? '/api/interoperability/transfer-real' 
+                    : '/api/cross-chain/transfer';
+                
+                // Função para fazer fetch com timeout
+                const fetchWithTimeout = (url, options, timeout = 300000) => { // 300 segundos (5 minutos) - Bitcoin pode demorar
+                    return Promise.race([
+                        fetch(url, options),
+                        new Promise((_, reject) =>
+                            setTimeout(() => reject(new Error('Request timeout: A requisição demorou mais de 5 minutos. A transação pode ter sido processada, mas a resposta não chegou a tempo. Verifique o explorer.')), timeout)
+                        )
+                    ]);
+                };
+                
+                // Atualizar overlay com progresso
+                let progressInterval;
+                let elapsedSeconds = 0;
+                const updateProgress = () => {
+                    elapsedSeconds++;
+                    const overlay = document.getElementById('loadingOverlay');
+                    if (overlay) {
+                        const progressText = overlay.querySelector('.text-sm');
+                        if (progressText) {
+                            if (elapsedSeconds < 30) {
+                                progressText.innerHTML = `<i class="fas fa-rocket animate-pulse"></i> <span>Creating transaction... (${elapsedSeconds}s)</span>`;
+                            } else if (elapsedSeconds < 120) {
+                                progressText.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>Processing... This may take a while for Bitcoin transfers (${elapsedSeconds}s)</span>`;
+                            } else if (elapsedSeconds < 240) {
+                                progressText.innerHTML = `<i class="fas fa-hourglass-half animate-pulse"></i> <span>Still processing... Bitcoin transfers can take up to 5 minutes (${elapsedSeconds}s)</span>`;
+                            } else {
+                                progressText.innerHTML = `<i class="fas fa-clock animate-pulse"></i> <span>Almost there... Validating UTXOs (${elapsedSeconds}s)</span>`;
+                            }
+                        }
+                    }
+                };
+                progressInterval = setInterval(updateProgress, 1000);
+                
+                try {
+                    const response = await fetchWithTimeout(endpoint, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(data)
+                    }, 300000); // 5 minutos de timeout (Bitcoin pode demorar)
+                    
+                    clearInterval(progressInterval);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    
+                    // Debug: Log da resposta
+                    console.log('✅ Resposta recebida do servidor:', result);
+                    console.log('✅ Success:', result.success);
+                    console.log('✅ TX Hash:', result.tx_hash);
+                    console.log('✅ UChainID:', result.uchain_id);
+                
+                // Remover overlay de loading
+                const overlay = document.getElementById('loadingOverlay');
+                if (overlay) {
+                    overlay.remove();
+                }
+                
+                // Restaurar botão
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                btnText.classList.remove('hidden');
+                btnLoader.classList.add('hidden');
+                
+                if (result.success) {
+                    // Mostrar botão de copiar tudo
+                    const copyAllBtn = document.getElementById('copyAllTransferBtn');
+                    if (copyAllBtn) {
+                        copyAllBtn.classList.remove('hidden');
+                        // Armazenar resultado globalmente para função de copiar
+                        window.lastTransferResult = result;
+                    }
+
+                    const targetExplorerUrl = getTargetExplorerUrl(result);
+                    const targetExplorerLine = targetExplorerUrl
+                        ? `<p class="info"><strong>Explorer (target chain):</strong> <a href="${targetExplorerUrl}" target="_blank" class="font-mono text-blue-400 hover:underline">${targetExplorerUrl}</a></p>`
+                        : '';
+                    
+                    let txInfo = '';
+                    if (result.real_transaction && result.real_transaction.success) {
+                        // Para transferências Allianza → outras chains, mostrar endereço Allianza de origem
+                        let fromAddressInfo = '';
+                        if (result.from_allianza_address) {
+                            fromAddressInfo = `<p class="info"><strong>From Allianza:</strong> <span class="font-mono text-yellow-400">${result.from_allianza_address}</span> <button class="copy-btn-small" onclick="copyText('${result.from_allianza_address}')" title="Copy">📋 Copy</button></p>`;
+                        }
+                        let toAddressInfo = '';
+                        if (result.to_target_address || result.recipient) {
+                            const targetAddr = result.to_target_address || result.recipient;
+                            toAddressInfo = `<p class="info"><strong>To ${result.target_chain || 'Target'}:</strong> <span class="font-mono text-green-400">${targetAddr}</span> <button class="copy-btn-small" onclick="copyText('${targetAddr}')" title="Copy">📋 Copy</button></p>`;
+                        }
+                        // Nota explicativa para transferências Allianza
+                        let noteInfo = '';
+                        if (result.source_chain === 'allianza' && result.target_transaction && result.target_transaction.explorer_url) {
+                            noteInfo = `<p class="info text-xs mt-2 text-yellow-300"><i class="fas fa-info-circle"></i> A transação Ethereum mostrada é apenas a parte final (bridge → destinatário). O ALZ foi debitado da sua carteira Allianza.</p>`;
+                        }
+                        txInfo = `
+                            <div class="bg-green-900/20 border border-green-500 rounded p-3 mt-3">
+                                <p class="success font-bold mb-2">🎉 REAL Transaction Sent!</p>
+                                ${fromAddressInfo}
+                                ${toAddressInfo}
+                                <p class="info"><strong>Chain:</strong> ${result.source_chain || (result.real_transaction && result.real_transaction.source_chain) || 'N/A'} → ${result.target_chain || (result.real_transaction && result.real_transaction.target_chain) || 'N/A'}</p>
+                                <p class="info"><strong>Amount:</strong> ${result.real_transaction.amount} ${result.real_transaction.token || result.token}</p>
+                                ${result.target_transaction && result.target_transaction.explorer_url ? `<p class="info"><strong>Target TX Hash:</strong> <a href="${result.target_transaction.explorer_url}" target="_blank" class="font-mono text-blue-400 hover:underline">${result.target_transaction.tx_hash || result.target_transaction.hash}</a> <button class="copy-btn-small" onclick="copyText('${result.target_transaction.tx_hash || result.target_transaction.hash}')" title="Copy">📋 Copy</button></p>` : ''}
+                                ${result.source_transaction && result.source_transaction.explorer_url ? `<p class="info"><strong>Source TX Hash:</strong> <a href="${result.source_transaction.explorer_url}" target="_blank" class="font-mono text-blue-400 hover:underline">${result.source_transaction.tx_hash || result.source_transaction.hash}</a> <button class="copy-btn-small" onclick="copyText('${result.source_transaction.tx_hash || result.source_transaction.hash}')" title="Copy">📋 Copy</button></p>` : ''}
+                                ${targetExplorerLine}
+                                ${noteInfo}
+                                ${result.real_transaction.memo_hex ? `<p class="info text-xs mt-1"><strong>Memo (hex):</strong> <span class="font-mono">${result.real_transaction.memo_hex.substring(0, 50)}...</span> <button class="copy-btn-small" onclick="copyText('${result.real_transaction.memo_hex}')" title="Copy">📋 Copy</button></p>` : ''}
+                            </div>
+                        `;
+                    }
+                    // Construir seção de provas de forma organizada
+                    let proofsSection = '';
+                    const hasProofs = result.uchain_id || result.tx_hash || result.has_zk_proof || result.proof_id || 
+                                     result.commitment_id || result.state_id || result.transfer_id || 
+                                     (result.memo && result.memo.zk_proof && result.memo.zk_proof.state_hash) ||
+                                     (result.proofs && Object.keys(result.proofs).length > 0);
+                    
+                    if (hasProofs) {
+                        proofsSection = `
+                            <div class="bg-purple-900/20 border border-purple-500 rounded p-4 mt-3">
+                                <p class="success font-bold mb-3 text-lg">✅ 🎉 Transferência REAL enviada! Aparece no explorer!</p>
+                                
+                                ${result.uchain_id ? `<p class="info mb-2"><strong>UChainID:</strong> <span class="font-mono text-cyan-400">${result.uchain_id}</span> <button class="copy-btn-small" onclick="copyText('${result.uchain_id}')" title="Copy">📋 Copy</button></p>` : ''}
+                                
+                                ${result.tx_hash ? `<p class="info mb-2"><strong>TX Hash:</strong> <a href="${result.explorer_url || (result.real_transaction && result.real_transaction.explorer_url) || '#'}" target="_blank" class="font-mono text-blue-400 hover:underline">${result.tx_hash}</a> <button class="copy-btn-small" onclick="copyText('${result.tx_hash}')" title="Copy">📋 Copy</button></p>` : ''}
+                                
+                                ${result.has_zk_proof && result.proof_id ? `<p class="success mb-2">✅ ZK Proof: YES (Proof ID: <span class="font-mono text-xs">${result.proof_id}</span> <button class="copy-btn-small" onclick="copyText('${result.proof_id}')" title="Copy">📋 Copy</button>)</p>` : result.has_zk_proof ? `<p class="success mb-2">✅ ZK Proof: YES</p>` : ''}
+                                
+                                ${result.proofs && result.proofs.zk_proof ? `<p class="success mb-2">✅ ZK Proof: YES ${result.proofs.zk_proof.proof_hash ? `(Hash: <span class="font-mono text-xs">${result.proofs.zk_proof.proof_hash}</span>)` : ''}</p>` : ''}
+                                
+                                ${result.commitment_id ? `<p class="info mb-2"><strong>Commitment ID:</strong> <span class="font-mono text-xs">${result.commitment_id}</span> <button class="copy-btn-small" onclick="copyText('${result.commitment_id}')" title="Copy">📋 Copy</button></p>` : ''}
+                                
+                                ${result.state_id ? `<p class="info mb-2"><strong>State ID:</strong> <span class="font-mono text-xs">${result.state_id}</span> <button class="copy-btn-small" onclick="copyText('${result.state_id}')" title="Copy">📋 Copy</button></p>` : ''}
+                                
+                                ${result.transfer_id ? `<p class="info mb-2"><strong>Transfer ID:</strong> <span class="font-mono text-xs">${result.transfer_id}</span> <button class="copy-btn-small" onclick="copyText('${result.transfer_id}')" title="Copy">📋 Copy</button></p>` : ''}
+                                
+                                ${result.memo && result.memo.zk_proof && result.memo.zk_proof.state_hash ? `<p class="info mb-2"><strong>State Hash:</strong> <span class="font-mono text-xs break-all">${result.memo.zk_proof.state_hash}</span> <button class="copy-btn-small" onclick="copyText('${result.memo.zk_proof.state_hash}')" title="Copy">📋 Copy</button></p>` : ''}
+                                
+                                ${result.proofs && result.proofs.merkle_proof ? `<p class="info mb-2"><strong>Merkle Proof:</strong> <span class="font-mono text-xs">Root: ${result.proofs.merkle_proof.merkle_root || 'N/A'}, Depth: ${result.proofs.merkle_proof.tree_depth || 'N/A'}</span></p>` : ''}
+                                
+                                ${result.proofs && result.proofs.consensus_proof ? `<p class="info mb-2"><strong>Consensus Proof:</strong> <span class="font-mono text-xs">Type: ${result.proofs.consensus_proof.consensus_type || 'N/A'}, Block: ${result.proofs.consensus_proof.block_height || 'N/A'}</span></p>` : ''}
+                            </div>
+                        `;
+                    }
+                    
+                    // Construir seção de benefícios se disponível
+                    let benefitsSection = '';
+                    if (result.benefits && Array.isArray(result.benefits) && result.benefits.length > 0) {
+                        benefitsSection = `
+                            <div class="bg-blue-900/20 border border-blue-500 rounded p-3 mt-3">
+                                <p class="info font-bold mb-2">🌍 Benefícios desta transferência:</p>
+                                <ul class="list-disc list-inside text-sm space-y-1">
+                                    ${result.benefits.map(benefit => `<li class="text-gray-300">${benefit}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `;
+                    }
+                    
+                    // Mensagem "world_first" se disponível
+                    let worldFirstSection = '';
+                    if (result.world_first) {
+                        worldFirstSection = `
+                            <div class="bg-yellow-900/20 border border-yellow-500 rounded p-3 mt-3">
+                                <p class="success font-bold text-center">${result.world_first}</p>
+                            </div>
+                        `;
+                    }
+                    
+                    resultContent.innerHTML = `
+                        ${proofsSection}
+                        ${txInfo}
+                        ${benefitsSection}
+                        ${worldFirstSection}
+                        <details class="mt-4">
+                            <summary class="cursor-pointer text-sm text-gray-400 hover:text-gray-300">📋 Ver JSON completo</summary>
+                            <pre id="fullResultJson" class="mt-2 text-xs bg-gray-900 p-3 rounded overflow-auto">${JSON.stringify(result, null, 2)}</pre>
+                        </details>
+                    `;
+                } else {
+                    resultContent.innerHTML = `
+                        <p class="error">❌ ${result.error || 'Transfer error'}</p>
+                        ${result.note ? `<p class="info mt-2">ℹ️ ${result.note}</p>` : ''}
+                        <pre class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                }
+                } catch (fetchError) {
+                    clearInterval(progressInterval);
+                    throw fetchError;
+                }
+            } catch (error) {
+                // Remover overlay de loading em caso de erro
+                const overlay = document.getElementById('loadingOverlay');
+                if (overlay) {
+                    overlay.remove();
+                }
+                
+                // Restaurar botão
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                btnText.classList.remove('hidden');
+                btnLoader.classList.add('hidden');
+                
+                // Mensagem de erro mais informativa
+                let errorMessage = error.message || 'Unknown error';
+                let errorNote = '';
+                
+                if (errorMessage.includes('timeout')) {
+                    errorNote = '<p class="info mt-2">ℹ️ A transação pode ter sido processada com sucesso, mas a resposta demorou mais de 5 minutos. Transações Bitcoin podem demorar devido à validação de UTXOs. Verifique o explorer da blockchain de destino para confirmar.</p>';
+                } else if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
+                    errorNote = '<p class="info mt-2">ℹ️ Erro de conexão. Verifique sua internet e tente novamente.</p>';
+                }
+                
+                resultContent.innerHTML = `
+                    <p class="error">❌ Error: ${errorMessage}</p>
+                    ${errorNote}
+                    <details class="mt-4">
+                        <summary class="cursor-pointer text-sm text-gray-400 hover:text-gray-300">📋 Ver detalhes do erro</summary>
+                        <pre class="mt-2 text-xs bg-gray-900 p-3 rounded overflow-auto">${JSON.stringify({error: error.message, stack: error.stack}, null, 2)}</pre>
+                    </details>
+                `;
+            }
+        });
+
+        // Search Proof (Test Tab) - Com retry automático e loading contínuo
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const uchainId = document.getElementById('uchainId').value.trim();
+            if (!uchainId) {
+                alert('Please enter a UChainID');
+                return;
+            }
+
+            const searchResults = document.getElementById('searchResults');
+            const searchContent = document.getElementById('searchContent');
+            searchResults.classList.remove('hidden');
+            
+            // Mostrar loading desde o início (nunca mostrar erro nas primeiras tentativas)
+            let loadingDots = 0;
+            const loadingInterval = setInterval(() => {
+                loadingDots = (loadingDots + 1) % 4;
+                const dots = '.'.repeat(loadingDots);
+                searchContent.innerHTML = `<p class="info">⏳ Searching proof...${dots}</p>`;
+            }, 300);
+
+            // Retry automático no frontend (silencioso, sem mostrar erro)
+            let result = null;
+            let lastError = null;
+            const maxRetries = 8; // Aumentar para 8 tentativas
+            const retryDelay = 300; // Reduzir delay para 300ms (mais rápido)
+
+            for (let attempt = 0; attempt < maxRetries; attempt++) {
+                try {
+                    if (attempt > 0) {
+                        await new Promise(resolve => setTimeout(resolve, retryDelay));
+                    }
+
+                    const response = await fetch(`/api/cross-chain/proof/${encodeURIComponent(uchainId)}`);
+                    result = await response.json();
+
+                    if (result.success) {
+                        clearInterval(loadingInterval);
+                        const prettyJson = JSON.stringify(result, null, 2);
+                        
+                        // Extrair memo de forma resiliente (sem alterar o backend)
+                        const memoCandidate =
+                            (result.transfer_details && result.transfer_details.memo) ||
+                            result.memo_data ||
+                            result.memo ||
+                            null;
+                        let memoSection = '';
+                        if (memoCandidate) {
+                            const memoJson = JSON.stringify(memoCandidate, null, 2);
+                            memoSection = `
+                                <div class="mt-3 border-t border-gray-700 pt-3">
+                                    <p class="info font-semibold mb-1">Memo</p>
+                                    <pre class="mt-1 text-xs overflow-auto">${memoJson}</pre>
+                                </div>
+                            `;
+                        }
+
+                        // Armazenar globalmente para o botão "Copy All"
+                        window.lastSearchProofJson = prettyJson;
+                        searchContent.innerHTML = `
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="success">✅ Proof found!</p>
+                                <button
+                                    type="button"
+                                    class="copy-btn-small bg-gray-700 hover:bg-gray-600 text-xs px-3 py-1 rounded flex items-center gap-1"
+                                    onclick="copySearchProofJson()"
+                                    title="Copy All Information"
+                                >
+                                    <i class="fas fa-copy"></i> Copy All
+                                </button>
+                            </div>
+                            ${memoSection}
+                            <pre class="mt-2 text-xs overflow-auto">${prettyJson}</pre>
+                        `;
+                        return; // Success, exit loop
+                    } else {
+                        lastError = result.error || 'Proof not found';
+                        // Continuar para próxima tentativa (não mostrar erro ainda)
+                    }
+                } catch (error) {
+                    lastError = error.message;
+                    // Continuar para próxima tentativa
+                }
+            }
+
+            // Só mostrar erro após todas as tentativas falharem
+            clearInterval(loadingInterval);
+            searchContent.innerHTML = `
+                <p class="error">❌ ${lastError || 'Proof not found'}</p>
+                <p class="info mt-2 text-xs">ℹ️ Tentou ${maxRetries} vezes. O UChainID pode estar sendo salvo ainda. Tente novamente em alguns segundos.</p>
+            `;
+        });
+
+
+        // Decoder
+        document.getElementById('decoderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const uchainId = document.getElementById('decoderUChainID').value;
+            
+            // Redirect to decoder page
+            window.location.href = `/decode/${encodeURIComponent(uchainId)}`;
+        });
+
+        // Copiar todos os dados do ZK Verifier (meta + campos + resultado)
+        function copyAllVerifierData() {
+            const proof = (document.getElementById('verifierProof') || {}).value || '';
+            const vkey = (document.getElementById('verifierKey') || {}).value || '';
+            const inputs = (document.getElementById('verifierInputs') || {}).value || '';
+            const meta = window.lastVerifierMeta || {};
+            
+            const payload = {
+                uchain_id: meta.uchain_id || null,
+                proof_id: meta.proof_id || null,
+                state_hash: meta.state_hash || null,
+                source_chain: meta.source_chain || null,
+                target_chain: meta.target_chain || null,
+                verified: meta.verified !== undefined ? meta.verified : null,
+                proof_hex: proof || null,
+                verification_key_hex: vkey || null,
+                public_inputs: inputs || null
+            };
+            
+            const text = JSON.stringify(payload, null, 2);
+            navigator.clipboard.writeText(text).then(() => {
+                alert('All ZK proof data copied to clipboard.');
+            }).catch(err => {
+                console.error('Error copying all:', err);
+                alert('Error copying all data. Please try again.');
+            });
+        }
+        
+        // Load All Proofs
+        // Função para copiar todas as provas
+        function copyAllProofsInfo() {
+            let textToCopy = '';
+            // Priorizar o objeto JSON armazenado globalmente
+            if (window.lastProofsResult) {
+                textToCopy = JSON.stringify(window.lastProofsResult, null, 2);
+            } else {
+                // Fallback: tentar obter do pre tag
+                const preTag = document.querySelector('#proofsContent pre');
+                if (preTag) {
+                    textToCopy = preTag.textContent;
+                }
+            }
+
+            if (!textToCopy) {
+                alert('No data to copy');
+                return;
+            }
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const button = document.getElementById('copyAllProofsBtn');
+                if (button) {
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-check"></i> All Information Copied!';
+                    button.style.background = '#10b981';
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.style.background = '';
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error('Error copying:', err);
+                alert('Error copying. Try selecting and copying manually.');
+            });
+        }
+
+        async function loadAllProofs() {
+            const resultsDiv = document.getElementById('proofsResults');
+            const resultContent = document.getElementById('proofsContent');
+            const copyAllBtn = document.getElementById('copyAllProofsBtn');
+            resultsDiv.classList.remove('hidden');
+            copyAllBtn.classList.add('hidden'); // Esconder botão enquanto carrega
+            resultContent.innerHTML = '<p class="info">⏳ Loading proofs...</p>';
+
+            try {
+                const response = await fetch('/api/cross-chain/proofs?limit=50');
+                const result = await response.json();
+
+                if (result.success) {
+                    // Armazenar resultado globalmente para copiar depois
+                    window.lastProofsResult = result;
+                    
+                    if (result.total === 0) {
+                        copyAllBtn.classList.add('hidden'); // Esconder se não há provas
+                        resultContent.innerHTML = `
+                            <p class="info">ℹ️ No cross-chain proofs found yet.</p>
+                            <p class="text-xs text-gray-400 mt-2">Create your first cross-chain transfer to generate proofs.</p>
+                        `;
+                    } else {
+                        copyAllBtn.classList.remove('hidden'); // Mostrar botão quando há provas
+                        resultContent.innerHTML = `
+                            <p class="success">✅ ${result.total} proofs found (showing ${result.returned})</p>
+                            <pre id="allProofsJson" class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                        `;
+                    }
+                } else {
+                    // Armazenar resultado mesmo em caso de erro
+                    window.lastProofsResult = result;
+                    copyAllBtn.classList.remove('hidden'); // Mostrar botão mesmo em erro
+                    resultContent.innerHTML = `
+                        <p class="error">❌ ${result.error || 'Error listing proofs'}</p>
+                        <pre id="allProofsJson" class="mt-4 text-xs">${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                copyAllBtn.classList.add('hidden'); // Esconder em caso de exceção
+                resultContent.innerHTML = `<p class="error">❌ {{ t('error') or 'Error' }}: ${error.message}</p>`;
+            }
+        }
+
+        // ZK Verifier
+        document.getElementById('verifierForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const proof = document.getElementById('verifierProof').value.trim();
+            const verificationKey = document.getElementById('verifierKey').value.trim();
+            const publicInputs = document.getElementById('verifierInputs').value.trim();
+
+            if (!proof || !verificationKey) {
+                alert('Please enter both proof and verification key');
+                return;
+            }
+
+            const resultsDiv = document.getElementById('verifierResults');
+            const resultContent = document.getElementById('verifierContent');
+            resultsDiv.classList.remove('hidden');
+            resultContent.innerHTML = '<p class="info">⏳ Verifying...</p>';
+
+            try {
+                // Garantir que public_inputs é um objeto, não string
+                let publicInputsObj = {};
+                if (publicInputs && publicInputs.trim()) {
+                    // Se for uma string (state_hash), converter para objeto
+                    if (publicInputs.trim().length === 64 && !publicInputs.trim().startsWith('{')) {
+                        publicInputsObj = {state_hash: publicInputs.trim()};
+                    } else {
+                        try {
+                            publicInputsObj = JSON.parse(publicInputs);
+                        } catch {
+                            publicInputsObj = {state_hash: publicInputs.trim()};
+                        }
+                    }
+                }
+                
+                const response = await fetch('/api/cross-chain/verify-zk', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({proof, verification_key: verificationKey, public_inputs: publicInputsObj})
+                });
+
+                const data = await response.json();
+                resultContent.innerHTML = `
+                    <p class="${data.success && data.valid ? 'success' : 'error'}">
+                        ${data.success && data.valid ? '✅' : '❌'} ${data.message || data.error}
+                    </p>
+                    <pre class="mt-4 text-xs">${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultContent.innerHTML = `<p class="error">❌ {{ t('error') or 'Error' }}: ${error.message}</p>`;
+            }
+        });
+
+        // Load recent UChainIDs on page load (Otimizado)
+        async function loadRecentUChainIDs() {
+            try {
+                // Carregar em paralelo sem bloquear
+                const response = await fetch('/api/cross-chain/proofs?limit=20');
+                const data = await response.json();
+                
+                const select = document.getElementById('recentUChainIDs');
+                if (!select) return;
+                
+                if (data.success && data.proofs && data.proofs.length > 0) {
+                    // Limpar opções existentes (exceto a primeira)
+                    while (select.options.length > 1) {
+                        select.remove(1);
+                    }
+                    
+                    // Adicionar UChainIDs recentes
+                    data.proofs.forEach(proof => {
+                        const option = document.createElement('option');
+                        option.value = proof.uchain_id;
+                        const date = proof.timestamp ? new Date(proof.timestamp * 1000).toLocaleString() : 'Recent';
+                        const shortId = proof.uchain_id.length > 20 ? proof.uchain_id.substring(0, 20) + '...' : proof.uchain_id;
+                        option.textContent = `${shortId} (${proof.source_chain} → ${proof.target_chain})`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading recent UChainIDs:', error);
+            }
+        }
+
+        // Select UChainID from dropdown
+        function selectUChainID() {
+            const select = document.getElementById('recentUChainIDs');
+            const uchainId = select.value;
+            if (uchainId) {
+                document.getElementById('quickUChainID').value = uchainId;
+                loadFromUChainID();
+            }
+        }
+
+        // Cache para resultados recentes
+        const uchainIdCache = new Map();
+        const CACHE_TTL = 30000; // 30 segundos
+
+        // Load from UChainID (Otimizado - mais rápido)
+        async function loadFromUChainID() {
+            const uchainId = document.getElementById('quickUChainID').value.trim();
+            if (!uchainId) {
+                alert('Please enter a UChainID');
+                return;
+            }
+
+            // Verificar cache primeiro
+            const cached = uchainIdCache.get(uchainId);
+            if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+                displayQuickLoadResult(cached.data, uchainId);
+                return;
+            }
+
+            // Mostrar loading no topo
+            const resultsDiv = document.getElementById('quickLoadResults');
+            const resultContent = document.getElementById('quickLoadContent');
+            resultsDiv.classList.remove('hidden');
+            let loadingDots = 0;
+            const loadingInterval = setInterval(() => {
+                loadingDots = (loadingDots + 1) % 4;
+                const dots = '.'.repeat(loadingDots);
+                resultContent.innerHTML = `<p class="info">⏳ Loading...${dots}</p>`;
+            }, 200);
+
+            try {
+                // Busca otimizada: menos tentativas, delay menor
+                let data = null;
+                let attempts = 0;
+                const maxAttempts = 5; // Reduzido de 30 para 5
+                const delayMs = 500; // Reduzido de 3000ms para 500ms
+                
+                while (attempts < maxAttempts) {
+                    attempts++;
+                    const response = await fetch(`/api/cross-chain/proof/${encodeURIComponent(uchainId)}`);
+                    data = await response.json();
+                    
+                    if (data.success && data.zk_proof) {
+                        // Salvar no cache
+                        uchainIdCache.set(uchainId, { data, timestamp: Date.now() });
+                        break; // Encontrou, sair do loop
+                    }
+                    
+                    // Se não encontrou e ainda há tentativas, aguardar um pouco
+                    if (attempts < maxAttempts) {
+                        await new Promise(resolve => setTimeout(resolve, delayMs));
+                    }
+                }
+
+                // Exibir resultado
+                displayQuickLoadResult(data, uchainId);
+            } catch (error) {
+                resultContent.innerHTML = `<p class="error">❌ {{ t("error_loading_proof") or "Error loading proof" }}: ${error.message}</p>`;
+            } finally {
+                clearInterval(loadingInterval);
+            }
+        }
+
+        // Função auxiliar para exibir resultado do quick load
+        function displayQuickLoadResult(data, uchainId) {
+            const resultsDiv = document.getElementById('quickLoadResults');
+            const resultContent = document.getElementById('quickLoadContent');
+            resultsDiv.classList.remove('hidden');
+
+            if (data && data.success) {
+                if (data.zk_proof) {
+                    // Garantir que zk_proof é um objeto, não string
+                    let zkProof = data.zk_proof;
+                    if (typeof zkProof === 'string') {
+                        try {
+                            zkProof = JSON.parse(zkProof);
+                        } catch {
+                            zkProof = {};
+                        }
+                    }
+                    
+                    if (zkProof && typeof zkProof === 'object') {
+                        // Preencher campos do verifier com os dados corretos (se existirem)
+                        const verifierProof = document.getElementById('verifierProof');
+                        const verifierKey = document.getElementById('verifierKey');
+                        const verifierInputs = document.getElementById('verifierInputs');
+                        
+                        if (verifierProof) verifierProof.value = zkProof.proof || '';
+                        if (verifierKey) verifierKey.value = zkProof.verification_key || '';
+                        if (verifierInputs) verifierInputs.value = zkProof.state_transition_hash || zkProof.state_hash || '';
+                        
+                        // Determinar status verified
+                        let verifiedStatus = false;
+                        if (zkProof.verified !== undefined && zkProof.verified !== null) {
+                            if (typeof zkProof.verified === 'boolean') {
+                                verifiedStatus = zkProof.verified;
+                            } else if (typeof zkProof.verified === 'string') {
+                                verifiedStatus = ['true', '1', 'yes'].includes(zkProof.verified.toLowerCase());
+                            } else if (typeof zkProof.verified === 'number') {
+                                verifiedStatus = zkProof.verified !== 0;
+                            }
+                        } else if (zkProof.valid !== undefined) {
+                            verifiedStatus = zkProof.valid === true || zkProof.valid === 1 || zkProof.valid === 'true';
+                        }
+                        
+                        // Guardar metadados globalmente para o botão "Copy All"
+                        window.lastVerifierMeta = {
+                            uchain_id: uchainId,
+                            proof_id: zkProof.proof_id || null,
+                            state_hash: zkProof.state_transition_hash || zkProof.state_hash || null,
+                            source_chain: zkProof.source_chain || data.source_chain || null,
+                            target_chain: zkProof.target_chain || data.target_chain || null,
+                            verified: verifiedStatus
+                        };
+                        
+                        // Mostrar feedback visual no topo
+                        resultContent.innerHTML = `
+                            <p class="success">✅ Proof data loaded successfully!</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 text-sm">
+                                <p class="info"><strong>UChainID:</strong> <span class="font-mono text-xs">${uchainId}</span></p>
+                                <p class="info"><strong>Proof ID:</strong> <span class="font-mono text-xs">${zkProof.proof_id || 'N/A'}</span></p>
+                                <p class="info"><strong>State Hash:</strong> <span class="font-mono text-xs break-all">${zkProof.state_transition_hash || zkProof.state_hash || 'N/A'}</span></p>
+                                <p class="info"><strong>Verified:</strong> ${verifiedStatus ? '✅ Yes' : '❌ No'}</p>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2">All fields have been automatically filled. Go to 'ZK Verifier' tab to verify.</p>
+                        `;
+                        
+                        // Scroll suave para o resultado
+                        resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    } else {
+                        resultContent.innerHTML = `<p class="error">❌ ZK Proof data is in invalid format</p>`;
+                    }
+                } else {
+                    resultContent.innerHTML = `<p class="error">❌ No ZK Proof available for this UChainID</p>`;
+                }
+            } else {
+                resultContent.innerHTML = `<p class="error">❌ ${data ? (data.error || '{{ t("uchainid_not_found") or "UChainID not found" }}') : '{{ t("error_loading_proof") or "Error loading proof" }}'}</p>`;
+            }
+        }
+
+        // Load recent UChainIDs on page load (Otimizado - carregar imediatamente)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Carregar UChainIDs recentes imediatamente ao carregar a página (campo está no topo)
+            loadRecentUChainIDs();
+            
+            // Também recarregar quando mudar de aba (caso novos proofs sejam criados)
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    setTimeout(loadRecentUChainIDs, 200);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+

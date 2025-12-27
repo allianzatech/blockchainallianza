@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌐 Interoperability Explorer - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .status-completed { background: #10b981; color: white; }
+        .status-pending { background: #f59e0b; color: white; }
+        .status-failed { background: #ef4444; color: white; }
+        .status-in_progress { background: #3b82f6; color: white; }
+        .chain-badge {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+            margin: 2px;
+        }
+        .chain-bitcoin { background: #f7931a; color: white; }
+        .chain-polygon { background: #8247e5; color: white; }
+        .chain-ethereum { background: #627eea; color: white; }
+        .chain-solana { background: #14f195; color: #000; }
+        .chain-unknown { background: #6b7280; color: white; }
+        .transaction-row {
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .transaction-row:hover {
+            background: #1f2937;
+            border-left-color: #60a5fa;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Header -->
+    <div class="bg-gray-800 border-b border-gray-700">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <a href="/" class="text-blue-400 hover:text-blue-300">
+                        <i class="fas fa-arrow-left"></i> Dashboard
+                    </a>
+                    <h1 class="text-2xl font-bold">
+                        <i class="fas fa-exchange-alt text-blue-400"></i> Interoperability Explorer
+                    </h1>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button onclick="loadStatistics()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg">
+                        <i class="fas fa-chart-bar"></i> Statistics
+                    </button>
+                    <button onclick="loadTransactions()" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-gray-800 border-b border-gray-700">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex flex-wrap gap-4 items-end">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">From Chain</label>
+                    <select id="filterFromChain" class="bg-gray-700 text-white px-3 py-2 rounded-lg border border-gray-600">
+                        <option value="">All Chains</option>
+                        <option value="bitcoin">Bitcoin</option>
+                        <option value="polygon">Polygon</option>
+                        <option value="ethereum">Ethereum</option>
+                        <option value="solana">Solana</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">To Chain</label>
+                    <select id="filterToChain" class="bg-gray-700 text-white px-3 py-2 rounded-lg border border-gray-600">
+                        <option value="">All Chains</option>
+                        <option value="bitcoin">Bitcoin</option>
+                        <option value="polygon">Polygon</option>
+                        <option value="ethereum">Ethereum</option>
+                        <option value="solana">Solana</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Status</label>
+                    <select id="filterStatus" class="bg-gray-700 text-white px-3 py-2 rounded-lg border border-gray-600">
+                        <option value="">All Status</option>
+                        <option value="completed">Completed</option>
+                        <option value="pending">Pending</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="failed">Failed</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Limit</label>
+                    <input type="number" id="filterLimit" value="100" min="10" max="1000" 
+                           class="bg-gray-700 text-white px-3 py-2 rounded-lg border border-gray-600 w-24">
+                </div>
+                <button onclick="applyFilters()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg">
+                    <i class="fas fa-filter"></i> Apply Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Panel (hidden by default) -->
+    <div id="statisticsPanel" class="hidden bg-gray-800 border-b border-gray-700">
+        <div class="container mx-auto px-4 py-4">
+            <h2 class="text-xl font-bold mb-4">Statistics</h2>
+            <div id="statisticsContent" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Statistics will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-6">
+        <!-- Loading -->
+        <div id="loading" class="text-center py-12">
+            <i class="fas fa-spinner fa-spin text-4xl text-blue-400"></i>
+            <p class="mt-4 text-gray-400">Loading transactions...</p>
+        </div>
+
+        <!-- Error -->
+        <div id="error" class="hidden bg-red-900 border border-red-700 rounded-lg p-4 mb-4">
+            <p id="errorMessage" class="text-red-200"></p>
+        </div>
+
+        <!-- Transactions Table -->
+        <div id="transactionsContainer" class="hidden">
+            <div class="bg-gray-800 rounded-lg overflow-hidden border border-gray-700">
+                <table class="w-full">
+                    <thead class="bg-gray-700">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-sm font-semibold">Date</th>
+                            <th class="px-4 py-3 text-left text-sm font-semibold">Allianza TX ID</th>
+                            <th class="px-4 py-3 text-left text-sm font-semibold">From → To</th>
+                            <th class="px-4 py-3 text-left text-sm font-semibold">Amount</th>
+                            <th class="px-4 py-3 text-left text-sm font-semibold">Status</th>
+                            <th class="px-4 py-3 text-left text-sm font-semibold">Links</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsTableBody">
+                        <!-- Transactions will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="transactionsCount" class="mt-4 text-gray-400 text-sm"></div>
+        </div>
+    </div>
+
+    <!-- Transaction Detail Modal -->
+    <div id="transactionModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+        <div class="bg-gray-800 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-gray-700">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">Transaction Details</h2>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            <div id="transactionDetailContent">
+                <!-- Details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTransactions = [];
+
+        function getChainClass(chain) {
+            const chainLower = (chain || '').toLowerCase();
+            if (chainLower.includes('bitcoin') || chainLower.includes('btc')) return 'chain-bitcoin';
+            if (chainLower.includes('polygon')) return 'chain-polygon';
+            if (chainLower.includes('ethereum') || chainLower.includes('eth')) return 'chain-ethereum';
+            if (chainLower.includes('solana')) return 'chain-solana';
+            return 'chain-unknown';
+        }
+
+        function getChainName(chain) {
+            const chainLower = (chain || '').toLowerCase();
+            if (chainLower.includes('bitcoin') || chainLower.includes('btc')) return 'Bitcoin';
+            if (chainLower.includes('polygon')) return 'Polygon';
+            if (chainLower.includes('ethereum') || chainLower.includes('eth')) return 'Ethereum';
+            if (chainLower.includes('solana')) return 'Solana';
+            return chain || 'Unknown';
+        }
+
+        function getStatusClass(status) {
+            const statusLower = (status || '').toLowerCase();
+            if (statusLower === 'completed') return 'status-completed';
+            if (statusLower === 'pending') return 'status-pending';
+            if (statusLower === 'failed') return 'status-failed';
+            if (statusLower === 'in_progress') return 'status-in_progress';
+            return 'status-pending';
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return 'N/A';
+            const date = new Date(timestamp * 1000);
+            return date.toLocaleString();
+        }
+
+        function formatAmount(amount, asset) {
+            if (!amount) return '0';
+            return `${parseFloat(amount).toFixed(6)} ${asset || 'ALZ'}`;
+        }
+
+        function getExplorerUrl(chain, txHash) {
+            if (!txHash) return null;
+            const chainLower = (chain || '').toLowerCase();
+            if (chainLower.includes('bitcoin') || chainLower.includes('btc')) {
+                return `https://blockstream.info/testnet/tx/${txHash}`;
+            }
+            if (chainLower.includes('polygon')) {
+                return `https://amoy.polygonscan.com/tx/${txHash}`;
+            }
+            if (chainLower.includes('ethereum') || chainLower.includes('eth')) {
+                return `https://sepolia.etherscan.io/tx/${txHash}`;
+            }
+            return null;
+        }
+
+        async function loadTransactions() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const errorMessage = document.getElementById('errorMessage');
+            const container = document.getElementById('transactionsContainer');
+            const tableBody = document.getElementById('transactionsTableBody');
+            const countDiv = document.getElementById('transactionsCount');
+
+            loading.classList.remove('hidden');
+            error.classList.add('hidden');
+            container.classList.add('hidden');
+
+            try {
+                const fromChain = document.getElementById('filterFromChain').value;
+                const toChain = document.getElementById('filterToChain').value;
+                const status = document.getElementById('filterStatus').value;
+                const limit = document.getElementById('filterLimit').value || 100;
+
+                let url = `/api/interoperability/transactions?limit=${limit}`;
+                if (fromChain) url += `&from_chain=${fromChain}`;
+                if (toChain) url += `&to_chain=${toChain}`;
+                if (status) url += `&status=${status}`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.success) {
+                    currentTransactions = data.transactions || [];
+                    renderTransactions(currentTransactions);
+                    countDiv.textContent = `Showing ${currentTransactions.length} transaction(s)`;
+                    container.classList.remove('hidden');
+                } else {
+                    throw new Error(data.error || 'Failed to load transactions');
+                }
+            } catch (err) {
+                errorMessage.textContent = `Error: ${err.message}`;
+                error.classList.remove('hidden');
+            } finally {
+                loading.classList.add('hidden');
+            }
+        }
+
+        function renderTransactions(transactions) {
+            const tableBody = document.getElementById('transactionsTableBody');
+            tableBody.innerHTML = '';
+
+            if (transactions.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-gray-400">
+                            No transactions found
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            transactions.forEach(tx => {
+                const row = document.createElement('tr');
+                row.className = 'transaction-row border-b border-gray-700 cursor-pointer';
+                row.onclick = () => showTransactionDetail(tx.allianza_tx_id);
+
+                const fromChainClass = getChainClass(tx.from_chain);
+                const toChainClass = getChainClass(tx.to_chain);
+                const statusClass = getStatusClass(tx.status);
+
+                const explorerUrlOrigin = tx.explorer_url_origin || getExplorerUrl(tx.from_chain, tx.tx_hash_origin);
+                const explorerUrlDest = tx.explorer_url_dest || getExplorerUrl(tx.to_chain, tx.tx_hash_dest);
+
+                row.innerHTML = `
+                    <td class="px-4 py-3 text-sm">${formatDate(tx.created_at)}</td>
+                    <td class="px-4 py-3 text-sm font-mono text-blue-400">${tx.allianza_tx_id.substring(0, 20)}...</td>
+                    <td class="px-4 py-3">
+                        <span class="${fromChainClass}">${getChainName(tx.from_chain)}</span>
+                        <i class="fas fa-arrow-right mx-2 text-gray-500"></i>
+                        <span class="${toChainClass}">${getChainName(tx.to_chain)}</span>
+                    </td>
+                    <td class="px-4 py-3 text-sm font-semibold">${formatAmount(tx.amount, tx.asset)}</td>
+                    <td class="px-4 py-3">
+                        <span class="${statusClass}">${tx.status || 'pending'}</span>
+                    </td>
+                    <td class="px-4 py-3">
+                        ${explorerUrlOrigin ? `<a href="${explorerUrlOrigin}" target="_blank" class="text-blue-400 hover:text-blue-300 mr-2" onclick="event.stopPropagation()"><i class="fas fa-external-link-alt"></i> Origin</a>` : ''}
+                        ${explorerUrlDest ? `<a href="${explorerUrlDest}" target="_blank" class="text-blue-400 hover:text-blue-300" onclick="event.stopPropagation()"><i class="fas fa-external-link-alt"></i> Dest</a>` : ''}
+                        ${!explorerUrlOrigin && !explorerUrlDest ? '<span class="text-gray-500">-</span>' : ''}
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        async function showTransactionDetail(txId) {
+            const modal = document.getElementById('transactionModal');
+            const content = document.getElementById('transactionDetailContent');
+
+            modal.classList.remove('hidden');
+            content.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-2xl"></i></div>';
+
+            try {
+                const response = await fetch(`/api/interoperability/transactions/${txId}`);
+                const data = await response.json();
+
+                if (data.success && data.transaction) {
+                    const tx = data.transaction;
+                    const explorerUrlOrigin = tx.explorer_url_origin || getExplorerUrl(tx.from_chain, tx.tx_hash_origin);
+                    const explorerUrlDest = tx.explorer_url_dest || getExplorerUrl(tx.to_chain, tx.tx_hash_dest);
+
+                    content.innerHTML = `
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-gray-400 text-sm">Allianza TX ID</label>
+                                    <p class="font-mono text-blue-400">${tx.allianza_tx_id}</p>
+                                </div>
+                                <div>
+                                    <label class="text-gray-400 text-sm">Status</label>
+                                    <p><span class="${getStatusClass(tx.status)}">${tx.status || 'pending'}</span></p>
+                                </div>
+                                <div>
+                                    <label class="text-gray-400 text-sm">From Chain</label>
+                                    <p><span class="${getChainClass(tx.from_chain)}">${getChainName(tx.from_chain)}</span></p>
+                                </div>
+                                <div>
+                                    <label class="text-gray-400 text-sm">To Chain</label>
+                                    <p><span class="${getChainClass(tx.to_chain)}">${getChainName(tx.to_chain)}</span></p>
+                                </div>
+                                <div>
+                                    <label class="text-gray-400 text-sm">Amount</label>
+                                    <p class="font-semibold">${formatAmount(tx.amount, tx.asset)}</p>
+                                </div>
+                                <div>
+                                    <label class="text-gray-400 text-sm">Created At</label>
+                                    <p>${formatDate(tx.created_at)}</p>
+                                </div>
+                                ${tx.completed_at ? `
+                                <div>
+                                    <label class="text-gray-400 text-sm">Completed At</label>
+                                    <p>${formatDate(tx.completed_at)}</p>
+                                </div>
+                                ` : ''}
+                            </div>
+                            ${tx.tx_hash_origin ? `
+                            <div>
+                                <label class="text-gray-400 text-sm">Origin Transaction Hash</label>
+                                <p class="font-mono text-sm break-all">${tx.tx_hash_origin}</p>
+                                ${explorerUrlOrigin ? `<a href="${explorerUrlOrigin}" target="_blank" class="text-blue-400 hover:text-blue-300"><i class="fas fa-external-link-alt"></i> View on Explorer</a>` : ''}
+                            </div>
+                            ` : ''}
+                            ${tx.tx_hash_dest ? `
+                            <div>
+                                <label class="text-gray-400 text-sm">Destination Transaction Hash</label>
+                                <p class="font-mono text-sm break-all">${tx.tx_hash_dest}</p>
+                                ${explorerUrlDest ? `<a href="${explorerUrlDest}" target="_blank" class="text-blue-400 hover:text-blue-300"><i class="fas fa-external-link-alt"></i> View on Explorer</a>` : ''}
+                            </div>
+                            ` : ''}
+                            ${tx.metadata ? `
+                            <div>
+                                <label class="text-gray-400 text-sm">Metadata</label>
+                                <pre class="bg-gray-900 p-4 rounded-lg text-xs overflow-auto">${JSON.stringify(tx.metadata, null, 2)}</pre>
+                            </div>
+                            ` : ''}
+                        </div>
+                    `;
+                } else {
+                    content.innerHTML = '<p class="text-red-400">Transaction not found</p>';
+                }
+            } catch (err) {
+                content.innerHTML = `<p class="text-red-400">Error: ${err.message}</p>`;
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('transactionModal').classList.add('hidden');
+        }
+
+        async function loadStatistics() {
+            const panel = document.getElementById('statisticsPanel');
+            const content = document.getElementById('statisticsContent');
+
+            if (panel.classList.contains('hidden')) {
+                panel.classList.remove('hidden');
+                content.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin"></i></div>';
+
+                try {
+                    const response = await fetch('/api/interoperability/statistics');
+                    const data = await response.json();
+
+                    if (data.success && data.statistics) {
+                        const stats = data.statistics;
+                        content.innerHTML = `
+                            <div class="bg-gray-700 p-4 rounded-lg">
+                                <div class="text-3xl font-bold text-blue-400">${stats.total || 0}</div>
+                                <div class="text-gray-400 text-sm">Total Transactions</div>
+                            </div>
+                            <div class="bg-gray-700 p-4 rounded-lg">
+                                <div class="text-3xl font-bold text-green-400">${stats.total_volume?.toFixed(6) || '0'}</div>
+                                <div class="text-gray-400 text-sm">Total Volume</div>
+                            </div>
+                            <div class="bg-gray-700 p-4 rounded-lg">
+                                <div class="text-sm text-gray-300 mb-2">By Status</div>
+                                ${Object.entries(stats.by_status || {}).map(([status, count]) => `
+                                    <div class="flex justify-between text-sm">
+                                        <span>${status}</span>
+                                        <span class="font-semibold">${count}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="bg-gray-700 p-4 rounded-lg">
+                                <div class="text-sm text-gray-300 mb-2">Top Chain Pairs</div>
+                                ${Object.entries(stats.by_chain_pair || {}).slice(0, 5).map(([pair, count]) => `
+                                    <div class="flex justify-between text-sm">
+                                        <span>${pair}</span>
+                                        <span class="font-semibold">${count}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+                } catch (err) {
+                    content.innerHTML = `<p class="text-red-400">Error: ${err.message}</p>`;
+                }
+            } else {
+                panel.classList.add('hidden');
+            }
+        }
+
+        function applyFilters() {
+            loadTransactions();
+        }
+
+        // Load transactions on page load
+        loadTransactions();
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,29 @@
+{
+  "timestamp": "2025-12-08T11:43:14.387097",
+  "test_environment": "public",
+  "tests": {
+    "qrs3": {
+      "status": "PASSED",
+      "implementation": "REAL (liboqs-python)",
+      "ml_dsa": "✅",
+      "sphincs_plus": "✅",
+      "real_pqc": true
+    },
+    "blockchain": {
+      "status": "PASSED",
+      "blocks": 8,
+      "wallet_created": true
+    },
+    "verification": {
+      "status": "PASSED",
+      "description": "Testes básicos de verificação (QRS-3, Blockchain, Interoperabilidade)"
+    }
+  },
+  "summary": {
+    "total_tests": 3,
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "success_rate": 100.0
+  }
+}

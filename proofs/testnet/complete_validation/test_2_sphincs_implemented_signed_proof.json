@@ -1,0 +1,138 @@
+{
+  "test_id": "test_2_sphincs_implemented_signed",
+  "name": "SPHINCS+ Implementado e Assinado",
+  "start_time": "2025-11-26T00:53:54.209527",
+  "iterations": 10,
+  "keypairs": [
+    {
+      "iteration": 0,
+      "keypair_id": "sphincs_real_1764129234_78a9005f85064a25",
+      "algorithm": "SPHINCS+ SHA2-128s",
+      "quantum_resistant": true
+    },
+    {
+      "iteration": 1,
+      "keypair_id": "sphincs_real_1764129234_78a9005f85064a25",
+      "algorithm": "SPHINCS+ SHA2-128s",
+      "quantum_resistant": true
+    },
+    {
+      "iteration": 2,
+      "keypair_id": "sphincs_real_1764129234_78a9005f85064a25",
+      "algorithm": "SPHINCS+ SHA2-128s",
+      "quantum_resistant": true
+    },
+    {
+      "iteration": 3,
+      "keypair_id": "sphincs_real_1764129234_78a9005f85064a25",
+      "algorithm": "SPHINCS+ SHA2-128s",
+      "quantum_resistant": true
+    },
+    {
+      "iteration": 4,
+      "keypair_id": "sphincs_real_1764129234_78a9005f85064a25",
+      "algorithm": "SPHINCS+ SHA2-128s",
+      "quantum_resistant": true
+    },
+    {
+      "iteration": 5,
+      "keypair_id": "sphincs_real_1764129234_78a9005f85064a25",
+      "algorithm": "SPHINCS+ SHA2-128s",
+      "quantum_resistant": true
+    },
+    {
+      "iteration": 6,
+      "keypair_id": "sphincs_real_1764129234_78a9005f85064a25",
+      "algorithm": "SPHINCS+ SHA2-128s",
+      "quantum_resistant": true
+    },
+    {
+      "iteration": 7,
+      "keypair_id": "sphincs_real_1764129234_78a9005f85064a25",
+      "algorithm": "SPHINCS+ SHA2-128s",
+      "quantum_resistant": true
+    },
+    {
+      "iteration": 8,
+      "keypair_id": "sphincs_real_1764129234_78a9005f85064a25",
+      "algorithm": "SPHINCS+ SHA2-128s",
+      "quantum_resistant": true
+    },
+    {
+      "iteration": 9,
+      "keypair_id": "sphincs_real_1764129234_78a9005f85064a25",
+      "algorithm": "SPHINCS+ SHA2-128s",
+      "quantum_resistant": true
+    }
+  ],
+  "signatures": [
+    {
+      "iteration": 0,
+      "keypair_id": "sphincs_real_1764129234_78a9005f85064a25",
+      "signed": true,
+      "signature_hash": "35c90a74f4c1a0e855ec8768ed5794ff"
+    },
+    {
+      "iteration": 1,
+      "keypair_id": "sphincs_real_1764129234_78a9005f85064a25",
+      "signed": true,
+      "signature_hash": "cf307799c111735fe7d8d7c8c1d33f8c"
+    },
+    {
+      "iteration": 2,
+      "keypair_id": "sphincs_real_1764129234_78a9005f85064a25",
+      "signed": true,
+      "signature_hash": "77c9d49a13f68adf060fa32c78ba6b6b"
+    },
+    {
+      "iteration": 3,
+      "keypair_id": "sphincs_real_1764129234_78a9005f85064a25",
+      "signed": true,
+      "signature_hash": "5861901270aab3a8c93cddbdaaac353b"
+    },
+    {
+      "iteration": 4,
+      "keypair_id": "sphincs_real_1764129234_78a9005f85064a25",
+      "signed": true,
+      "signature_hash": "fe158fce3d040f5057a142e0f497d112"
+    },
+    {
+      "iteration": 5,
+      "keypair_id": "sphincs_real_1764129234_78a9005f85064a25",
+      "signed": true,
+      "signature_hash": "3bd2565cbecb6de5ca5178854c653695"
+    },
+    {
+      "iteration": 6,
+      "keypair_id": "sphincs_real_1764129234_78a9005f85064a25",
+      "signed": true,
+      "signature_hash": "4baee9bd13c150769cfbbe71bf898ae9"
+    },
+    {
+      "iteration": 7,
+      "keypair_id": "sphincs_real_1764129234_78a9005f85064a25",
+      "signed": true,
+      "signature_hash": "d323ab4f4b3e93744c1ec6ce1c9c4cb2"
+    },
+    {
+      "iteration": 8,
+      "keypair_id": "sphincs_real_1764129234_78a9005f85064a25",
+      "signed": true,
+      "signature_hash": "bc4e62732f7ddb60d9577d937c9f7248"
+    },
+    {
+      "iteration": 9,
+      "keypair_id": "sphincs_real_1764129234_78a9005f85064a25",
+      "signed": true,
+      "signature_hash": "f37202dee52320a2ba92c9d371bbc170"
+    }
+  ],
+  "errors": [],
+  "total_keypairs": 10,
+  "total_signatures": 10,
+  "total_errors": 0,
+  "success_rate": 100.0,
+  "all_signed": true,
+  "success": true,
+  "duration": 1.0504539012908936
+}

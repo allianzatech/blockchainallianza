@@ -1,0 +1,41 @@
+{
+  "success": true,
+  "test_id": "qrs3_signature_1764028868",
+  "test_name": "QRS-3 Signature",
+  "results": {
+    "keypair_generated": true,
+    "signature_created": true,
+    "verification_passed": true,
+    "signing_time_ms": 693.7687397003174,
+    "total_time_ms": 697.0691680908203,
+    "algorithms": {
+      "ecdsa": true,
+      "ml_dsa": true,
+      "sphincs": true,
+      "sphincs_real": true,
+      "sphincs_implementation": "real"
+    },
+    "redundancy_level": 3,
+    "proofs": {
+      "public_keys": {
+        "ecdsa": "",
+        "ml_dsa": "",
+        "sphincs": ""
+      },
+      "signature_example": {
+        "ecdsa_signature_hex": "MEQCIBsuqLUnjh0M21eq7S8CUbaCbfeyny3GgMByvbYKwndOAiA30SmvRWVyPJkt...",
+        "ml_dsa_signature_base64": "QwOQjEac08FhKpbRxMJKObAW6SEL78dtiOEh5FzUaQAour7COnX5JFysz5cCWAuI...",
+        "sphincs_signature_base64": "0mkDKt5g7DbAaEWgOjP/XghXOUXCiwBWmTo+zvx3nMSNzUo3iy37QgyQ8DQJgwt/..."
+      },
+      "canonicalization": {
+        "method": "RFC8785",
+        "canonical_message": "{\"message\":\"Allianza Testnet Public Test - qrs3_signature_1764028868\"}",
+        "signed_digest_hex": "0x0a8cfc1d11b6b70bad912cb1492aeebfe127016de3b739ba10e224723b33b249",
+        "digest_algorithm": "sha256"
+      },
+      "keypair_id": "qrs3_1764028868_922ea0fee288888d",
+      "verification_command": "python verify_allianza_proofs.py proofs/testnet/public_tests/qrs3_signature_1764028868.json"
+    }
+  },
+  "timestamp": "2025-11-25T00:01:09.476668Z"
+}

@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Allianza Wallet - Carteira Universal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg { background: linear-gradient(135deg, #0f172a, #1e293b); }
+        .card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(71, 85, 105, 0.5); }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); z-index: 50; }
+        .modal-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 32px; width: 90%; max-width: 500px; background: #1e293b; border-radius: 16px; }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-4xl font-black">
+                <span class="text-purple-400">⟁</span> Allianza Wallet
+            </h1>
+            <div class="flex gap-4">
+                <button onclick="openModal('receive-modal')" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl transition">
+                    📥 Receber
+                </button>
+                <button onclick="openModal('send-modal')" class="px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-xl transition font-semibold">
+                    💸 Enviar
+                </button>
+            </div>
+        </div>
+
+        <!-- Saldos Multi-Chain -->
+        <div class="card p-6 rounded-xl mb-6">
+            <h2 class="text-2xl font-bold mb-4 text-purple-300">💰 Seus Saldos</h2>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4" id="balances-grid">
+                <!-- Saldos serão carregados aqui -->
+                <div class="text-center p-4 bg-slate-800 rounded-lg">
+                    <p class="text-sm text-slate-400">BTC</p>
+                    <p class="text-2xl font-bold text-yellow-400" id="balance-btc">Carregando...</p>
+                </div>
+                <div class="text-center p-4 bg-slate-800 rounded-lg">
+                    <p class="text-sm text-slate-400">ETH</p>
+                    <p class="text-2xl font-bold text-blue-400" id="balance-eth">Carregando...</p>
+                </div>
+                <div class="text-center p-4 bg-slate-800 rounded-lg">
+                    <p class="text-sm text-slate-400">ALZ</p>
+                    <p class="text-2xl font-bold text-green-400" id="balance-alz">Carregando...</p>
+                </div>
+                <div class="text-center p-4 bg-slate-800 rounded-lg">
+                    <p class="text-sm text-slate-400">MATIC</p>
+                    <p class="text-2xl font-bold text-purple-400" id="balance-matic">Carregando...</p>
+                </div>
+                <div class="text-center p-4 bg-slate-800 rounded-lg">
+                    <p class="text-sm text-slate-400">USDT</p>
+                    <p class="text-2xl font-bold text-teal-400" id="balance-usdt">Carregando...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Histórico Tipo Etherscan Melhorado -->
+        <div class="card p-6 rounded-xl">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-purple-300">📊 Histórico de Transações</h2>
+                <button onclick="loadTransactionHistory()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm">
+                    🔄 Atualizar
+                </button>
+            </div>
+            <div id="transaction-history" class="space-y-3">
+                <p class="text-slate-400 text-center py-8">Carregando histórico...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Enviar (Simplificado) -->
+    <div id="send-modal" class="modal">
+        <div class="modal-content">
+            <span class="absolute top-4 right-4 text-2xl cursor-pointer" onclick="closeModal('send-modal')">×</span>
+            <h2 class="text-3xl font-bold mb-6 text-purple-400">💸 Enviar</h2>
+            
+            <!-- Origem -->
+            <div class="mb-4">
+                <label class="block text-sm text-slate-400 mb-2">De:</label>
+                <select id="send-from" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-lg text-white">
+                    <option value="btc">BTC (Bitcoin)</option>
+                    <option value="eth">ETH (Ethereum)</option>
+                    <option value="alz">ALZ (Allianza)</option>
+                    <option value="usdt">USDT</option>
+                    <option value="matic">MATIC (Polygon)</option>
+                    <option value="bnb">BNB (BSC)</option>
+                </select>
+                <p class="text-xs text-slate-500 mt-1">Saldo: <span id="send-from-balance">0.00</span></p>
+            </div>
+
+            <!-- Destino (Rede) -->
+            <div class="mb-4">
+                <label class="block text-sm text-slate-400 mb-2">Para (Rede):</label>
+                <select id="send-to-chain" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-lg text-white">
+                    <option value="ethereum">Ethereum</option>
+                    <option value="polygon">Polygon</option>
+                    <option value="bsc">BSC</option>
+                    <option value="bitcoin">Bitcoin</option>
+                    <option value="allianza">Allianza</option>
+                    <option value="avalanche">Avalanche</option>
+                    <option value="arbitrum">Arbitrum</option>
+                    <option value="optimism">Optimism</option>
+                    <option value="base">Base</option>
+                    <option value="fantom">Fantom</option>
+                    <option value="solana">Solana</option>
+                </select>
+            </div>
+
+            <!-- Endereço de Destino -->
+            <div class="mb-4">
+                <label class="block text-sm text-slate-400 mb-2">Endereço de Destino:</label>
+                <input type="text" id="send-address" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-lg text-white" placeholder="0x... ou ALZ:...">
+                <button onclick="useUniversalChainID()" class="mt-2 text-sm text-purple-400 hover:text-purple-300">
+                    🔍 Usar Universal Chain ID
+                </button>
+            </div>
+
+            <!-- Quantidade -->
+            <div class="mb-6">
+                <label class="block text-sm text-slate-400 mb-2">Quantidade:</label>
+                <input type="number" id="send-amount" step="0.00000001" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-lg text-white" placeholder="0.00">
+                <button onclick="sendMax()" class="mt-2 text-sm text-purple-400 hover:text-purple-300">
+                    Enviar máximo
+                </button>
+            </div>
+
+            <!-- Opções Avançadas (Ocultas por padrão) -->
+            <div class="mb-4">
+                <button onclick="toggleAdvanced()" class="text-sm text-slate-400 hover:text-slate-300">
+                    ⚙️ Opções Avançadas
+                </button>
+                <div id="advanced-options" class="hidden mt-4 space-y-2">
+                    <label class="flex items-center">
+                        <input type="checkbox" id="use-bridge-free" class="mr-2">
+                        <span class="text-sm">Usar Bridge-Free (sem custódia)</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="use-intelligent-route" class="mr-2" checked>
+                        <span class="text-sm">Roteamento Inteligente</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Botão Enviar -->
+            <button onclick="sendTransaction()" class="w-full bg-purple-600 hover:bg-purple-500 p-4 rounded-xl font-semibold text-lg transition">
+                ✅ Enviar
+            </button>
+
+            <!-- Resultado -->
+            <div id="send-result" class="mt-4 p-4 bg-slate-800 rounded-lg hidden"></div>
+        </div>
+    </div>
+
+    <!-- Modal Receber -->
+    <div id="receive-modal" class="modal">
+        <div class="modal-content">
+            <span class="absolute top-4 right-4 text-2xl cursor-pointer" onclick="closeModal('receive-modal')">×</span>
+            <h2 class="text-3xl font-bold mb-6 text-purple-400">📥 Receber</h2>
+            
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-3 text-green-400">🌐 Universal Chain ID</h3>
+                <p class="text-sm text-slate-400 mb-3">Um único endereço para todas as blockchains:</p>
+                <div class="p-4 bg-slate-800 rounded-lg border border-purple-500">
+                    <p class="font-mono text-lg text-purple-300" id="uchain-id-display">Gerando...</p>
+                </div>
+                <button onclick="copyUChainID()" class="mt-3 w-full bg-purple-600 hover:bg-purple-500 p-3 rounded-lg">
+                    📋 Copiar UChainID
+                </button>
+            </div>
+
+            <div class="border-t border-slate-700 pt-6">
+                <h3 class="text-lg font-semibold mb-3 text-blue-400">📍 Endereços por Rede</h3>
+                <div id="addresses-by-chain" class="space-y-2">
+                    <!-- Endereços serão carregados aqui -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUChainID = null;
+        let currentAddresses = {};
+
+        // Funções de Modal
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.style.display = 'block';
+                if (id === 'receive-modal') {
+                    generateUChainID();
+                }
+                if (id === 'send-modal') {
+                    loadBalances();
+                }
+            } else {
+                console.warn(`Modal '${id}' não encontrado`);
+            }
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Carregar Saldos Multi-Chain
+        async function loadBalances() {
+            try {
+                // Tentar carregar saldos reais (se wallet estiver conectada)
+                // Por enquanto, simular - em produção viria da API
+                const balances = {
+                    btc: '0.5',
+                    eth: '2.3',
+                    alz: '1000',
+                    usdt: '500'
+                };
+                
+                document.getElementById('balance-btc').textContent = balances.btc;
+                document.getElementById('balance-eth').textContent = balances.eth;
+                document.getElementById('balance-alz').textContent = balances.alz;
+                document.getElementById('balance-usdt').textContent = balances.usdt;
+                document.getElementById('balance-matic').textContent = balances.matic || '0';
+                
+                // Atualizar saldo no modal de envio
+                updateSendFromBalance();
+            } catch (error) {
+                console.error('Erro ao carregar saldos:', error);
+            }
+        }
+
+        function updateSendFromBalance() {
+            const from = document.getElementById('send-from').value;
+                const balances = {
+                    btc: '0.5',
+                    eth: '2.3',
+                    alz: '1000',
+                    usdt: '500',
+                    matic: '100',
+                    bnb: '0.8'
+                };
+                document.getElementById('send-from-balance').textContent = balances[from] || '0.00';
+        }
+
+        // Gerar Universal Chain ID
+        async function generateUChainID() {
+            try {
+                const response = await fetch('/universal/chain_id/generate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: '{}'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    currentUChainID = data.uchain_id;
+                    currentAddresses = data.addresses;
+                    document.getElementById('uchain-id-display').textContent = data.uchain_id;
+                    displayAddressesByChain(data.addresses);
+                }
+            } catch (error) {
+                console.error('Erro ao gerar UChainID:', error);
+            }
+        }
+
+        function displayAddressesByChain(addresses) {
+            const container = document.getElementById('addresses-by-chain');
+            container.innerHTML = '';
+            for (const [chain, address] of Object.entries(addresses)) {
+                const div = document.createElement('div');
+                div.className = 'p-3 bg-slate-800 rounded-lg';
+                div.innerHTML = `
+                    <p class="text-xs text-slate-400 mb-1">${chain.toUpperCase()}</p>
+                    <p class="font-mono text-sm text-white">${address}</p>
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        function copyUChainID() {
+            if (currentUChainID) {
+                navigator.clipboard.writeText(currentUChainID);
+                alert('UChainID copiado!');
+            }
+        }
+
+        function useUniversalChainID() {
+            if (currentUChainID) {
+                document.getElementById('send-address').value = currentUChainID;
+            } else {
+                generateUChainID().then(() => {
+                    if (currentUChainID) {
+                        document.getElementById('send-address').value = currentUChainID;
+                    }
+                });
+            }
+        }
+
+        function sendMax() {
+            const from = document.getElementById('send-from').value;
+            const balance = document.getElementById('send-from-balance').textContent;
+            document.getElementById('send-amount').value = balance;
+        }
+
+        function toggleAdvanced() {
+            const options = document.getElementById('advanced-options');
+            options.classList.toggle('hidden');
+        }
+
+        // Enviar Transação
+        async function sendTransaction() {
+            const from = document.getElementById('send-from').value;
+            const toChain = document.getElementById('send-to-chain').value;
+            const address = document.getElementById('send-address').value;
+            const amount = parseFloat(document.getElementById('send-amount').value);
+            const useBridgeFree = document.getElementById('use-bridge-free').checked;
+
+            if (!amount || !address) {
+                alert('Preencha todos os campos');
+                return;
+            }
+
+            try {
+                let response;
+                
+                // Se usar Bridge-Free
+                if (useBridgeFree) {
+                    response = await fetch('/bridge-free/transfer', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            source_chain: from === 'btc' ? 'bitcoin' : from === 'eth' ? 'ethereum' : from,
+                            target_chain: toChain,
+                            amount: amount,
+                            token_symbol: from.toUpperCase(),
+                            recipient: address
+                        })
+                    });
+                } else {
+                    // Usar roteamento inteligente
+                    response = await fetch('/advanced/interop/intelligent_route', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            operation: 'transfer',
+                            amount: amount,
+                            from_address: currentAddresses[from] || '',
+                            to_address: address,
+                            preferences: {
+                                priority: 'low_cost'
+                            }
+                        })
+                    });
+                }
+
+                const data = await response.json();
+                const resultDiv = document.getElementById('send-result');
+                resultDiv.classList.remove('hidden');
+                
+                if (data.success) {
+                    resultDiv.className = 'mt-4 p-4 bg-green-900 rounded-lg text-green-300';
+                    resultDiv.innerHTML = `
+                        <p class="font-semibold">✅ Transação enviada com sucesso!</p>
+                        <p class="text-sm mt-2">${JSON.stringify(data, null, 2)}</p>
+                    `;
+                    loadBalances();
+                    setTimeout(() => closeModal('send-modal'), 3000);
+                } else {
+                    resultDiv.className = 'mt-4 p-4 bg-red-900 rounded-lg text-red-300';
+                    resultDiv.innerHTML = `
+                        <p class="font-semibold">❌ Erro ao enviar</p>
+                        <p class="text-sm mt-2">${data.error || JSON.stringify(data, null, 2)}</p>
+                    `;
+                }
+            } catch (error) {
+                const resultDiv = document.getElementById('send-result');
+                resultDiv.classList.remove('hidden');
+                resultDiv.className = 'mt-4 p-4 bg-red-900 rounded-lg text-red-300';
+                resultDiv.innerHTML = `<p>Erro: ${error.message}</p>`;
+            }
+        }
+
+        // Atualizar saldo ao mudar origem
+        document.getElementById('send-from').addEventListener('change', updateSendFromBalance);
+
+        // Carregar Histórico de Transações (Tipo Etherscan Melhorado)
+        async function loadTransactionHistory() {
+            try {
+                const response = await fetch('/transactions/history?limit=50');
+                const data = await response.json();
+                
+                const container = document.getElementById('transaction-history');
+                
+                if (!data.transactions || data.transactions.length === 0) {
+                    container.innerHTML = '<p class="text-slate-400 text-center py-8">Nenhuma transação encontrada</p>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                
+                data.transactions.forEach(tx => {
+                    const txDiv = document.createElement('div');
+                    txDiv.className = 'p-4 bg-slate-800 rounded-lg border border-slate-700 hover:border-purple-500 transition';
+                    
+                    // Formatar timestamp
+                    const date = new Date(tx.timestamp * 1000);
+                    const timeAgo = getTimeAgo(date);
+                    
+                    // Determinar tipo de transação e ícone
+                    let txType = 'transfer';
+                    let txIcon = '💸';
+                    let fromChain = 'Allianza';
+                    let toChain = 'Allianza';
+                    let fromToken = 'ALZ';
+                    let toToken = 'ALZ';
+                    
+                    // Detectar transação cross-chain
+                    if (tx.network && tx.network !== 'allianza') {
+                        txType = 'cross-chain';
+                        txIcon = '🌉';
+                        toChain = tx.network.charAt(0).toUpperCase() + tx.network.slice(1);
+                    }
+                    
+                    // Detectar tipo de token baseado no type
+                    if (tx.type) {
+                        // Detectar BTC
+                        if (tx.type.includes('BTC') || tx.type.includes('bitcoin') || tx.type.toLowerCase().includes('btc')) {
+                            fromToken = 'BTC';
+                            // Se for cross-chain, determinar token de destino
+                            if (tx.is_cross_chain || tx.network !== 'allianza') {
+                                if (tx.network === 'ethereum') toToken = 'ETH';
+                                else if (tx.network === 'polygon') toToken = 'MATIC';
+                                else if (tx.network === 'bsc') toToken = 'BNB';
+                                else toToken = 'BTC';
+                            } else {
+                                toToken = 'BTC';
+                            }
+                        }
+                        // Detectar ETH
+                        else if (tx.type.includes('ETH') || tx.type.includes('ethereum') || tx.type.toLowerCase().includes('eth')) {
+                            fromToken = 'ETH';
+                            toToken = 'ETH';
+                        }
+                        // Detectar cross-chain pelo formato do type
+                        else if (tx.type.includes('cross_chain')) {
+                            // Formato: cross_chain_BTC_bitcoin_to_ethereum
+                            const parts = tx.type.split('_');
+                            if (parts.length >= 4) {
+                                fromToken = parts[2]; // BTC, ETH, etc.
+                                const targetChain = parts[parts.length - 1]; // ethereum, polygon, etc.
+                                if (targetChain === 'ethereum') toToken = 'ETH';
+                                else if (targetChain === 'polygon') toToken = 'MATIC';
+                                else if (targetChain === 'bsc') toToken = 'BNB';
+                                else toToken = fromToken;
+                            }
+                            txType = 'cross-chain';
+                            txIcon = '🌉';
+                        }
+                        // Detectar intelligent route
+                        else if (tx.type.includes('intelligent_route')) {
+                            // Formato: intelligent_route_ethereum
+                            const parts = tx.type.split('_');
+                            if (parts.length >= 3) {
+                                const chain = parts[2];
+                                if (chain === 'ethereum') {
+                                    fromToken = 'ALZ';
+                                    toToken = 'ETH';
+                                } else if (chain === 'polygon') {
+                                    fromToken = 'ALZ';
+                                    toToken = 'MATIC';
+                                } else if (chain === 'bsc') {
+                                    fromToken = 'ALZ';
+                                    toToken = 'BNB';
+                                }
+                            }
+                            txType = 'cross-chain';
+                            txIcon = '🌉';
+                        }
+                    }
+                    
+                    // Formatar endereços (abreviar)
+                    const formatAddress = (addr) => {
+                        if (!addr) return 'N/A';
+                        if (addr.length > 20) {
+                            return addr.substring(0, 6) + '...' + addr.substring(addr.length - 4);
+                        }
+                        return addr;
+                    };
+                    
+                    txDiv.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4 flex-1">
+                                <div class="text-2xl">${txIcon}</div>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="text-sm text-slate-400">De:</span>
+                                        <span class="font-mono text-sm text-white">${formatAddress(tx.sender)}</span>
+                                        <span class="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 rounded text-xs">${fromToken}</span>
+                                        ${txType === 'cross-chain' ? '<span class="text-purple-400">→</span>' : ''}
+                                        ${txType === 'cross-chain' ? `<span class="px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-xs">${toChain}</span>` : ''}
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm text-slate-400">Para:</span>
+                                        <span class="font-mono text-sm text-white">${formatAddress(tx.receiver)}</span>
+                                        <span class="px-2 py-0.5 bg-green-500/20 text-green-400 rounded text-xs">${toToken}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-lg font-bold text-green-400">${tx.amount.toFixed(4)}</div>
+                                <div class="text-xs text-slate-400">${timeAgo}</div>
+                            </div>
+                        </div>
+                        ${tx.id ? `<div class="mt-2 pt-2 border-t border-slate-700">
+                            <span class="text-xs text-slate-500">TX ID: </span>
+                            <span class="font-mono text-xs text-purple-400">${formatAddress(tx.id)}</span>
+                        </div>` : ''}
+                    `;
+                    
+                    container.appendChild(txDiv);
+                });
+                
+            } catch (error) {
+                console.error('Erro ao carregar histórico:', error);
+                document.getElementById('transaction-history').innerHTML = 
+                    '<p class="text-red-400 text-center py-8">Erro ao carregar histórico</p>';
+            }
+        }
+        
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diff = now - date;
+            const seconds = Math.floor(diff / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+            
+            if (days > 0) return `${days}d atrás`;
+            if (hours > 0) return `${hours}h atrás`;
+            if (minutes > 0) return `${minutes}m atrás`;
+            return 'Agora';
+        }
+
+        // Carregar saldos e histórico ao iniciar
+        loadBalances();
+        loadTransactionHistory();
+        
+        // Atualizar histórico a cada 30 segundos
+        setInterval(loadTransactionHistory, 30000);
+    </script>
+</body>
+</html>
+

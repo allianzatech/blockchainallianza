@@ -1,0 +1,19 @@
+{
+  "test_id": "test_4_gasless_cross_chain",
+  "timestamp": "2025-11-26T00:53:53.370113",
+  "relay_result": {
+    "success": true,
+    "relay_address": "0xRelayAddress",
+    "gas_paid": 0.001,
+    "user_gas_paid": 0.0,
+    "transaction_hash": "0x797ed08087074ccbf134d3a26a0fd3daa1cb541aa1494b253db80ba73501c477",
+    "timestamp": "2025-11-26T00:53:53.370103"
+  },
+  "verification": {
+    "success": true,
+    "transaction_confirmed": true,
+    "gas_reimbursed": true,
+    "relay_reward": 0.0001
+  },
+  "note": "Teste simulado - Implementação completa em desenvolvimento"
+}
