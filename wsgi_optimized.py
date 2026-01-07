@@ -12,10 +12,13 @@ import sys
 base_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, base_dir)
 
-# Adicionar diretório deploy ao path (onde está allianza_blockchain.py)
+# Adicionar diretório deploy ao path PRIMEIRO (onde está allianza_blockchain.py e seus módulos)
 deploy_path = os.path.join(base_dir, "deploy")
 if os.path.exists(deploy_path):
     sys.path.insert(0, deploy_path)
+    # Mudar diretório de trabalho para deploy para imports relativos funcionarem
+    original_cwd = os.getcwd()
+    os.chdir(deploy_path)
 
 # Adicionar caminho do commercial_repo ao sys.path para importar corretamente
 commercial_repo_path = os.path.join(base_dir, "commercial_repo", "production")
@@ -43,22 +46,37 @@ from flask import Flask, request
 # Importar app completo diretamente do arquivo (sem lazy loading)
 try:
     # Tentar importar do deploy primeiro (onde está o arquivo)
+    # Como mudamos o CWD para deploy/, o import funciona diretamente
     try:
         from allianza_blockchain import app as application
         print("✅ Allianza Blockchain importado de deploy/allianza_blockchain.py")
     except ImportError as e1:
-        # Fallback: tentar importar do caminho comercial
+        # Fallback: tentar importar usando importlib diretamente do arquivo
         try:
-            from commercial_repo.production.allianza_blockchain import app as application
-            print("✅ Allianza Blockchain importado de commercial_repo/production/allianza_blockchain.py")
-        except ImportError as e2:
-            # Último fallback: tentar importar do wrapper na raiz
+            import importlib.util
+            allianza_path = os.path.join(deploy_path, "allianza_blockchain.py")
+            if os.path.exists(allianza_path):
+                spec = importlib.util.spec_from_file_location("allianza_blockchain", allianza_path)
+                allianza_module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(allianza_module)
+                application = allianza_module.app
+                print("✅ Allianza Blockchain importado via importlib de deploy/allianza_blockchain.py")
+            else:
+                raise ImportError(f"Arquivo não encontrado: {allianza_path}")
+        except Exception as e2:
+            # Fallback: tentar importar do caminho comercial
             try:
-                import allianza_blockchain
-                application = allianza_blockchain.app
-                print("✅ Allianza Blockchain importado de allianza_blockchain.py (wrapper)")
+                from commercial_repo.production.allianza_blockchain import app as application
+                print("✅ Allianza Blockchain importado de commercial_repo/production/allianza_blockchain.py")
             except ImportError as e3:
-                raise ImportError(f"Não foi possível importar allianza_blockchain. Erros: {e1}, {e2}, {e3}")
+                # Último fallback: tentar importar do wrapper na raiz
+                try:
+                    os.chdir(original_cwd)  # Voltar ao diretório original
+                    import allianza_blockchain
+                    application = allianza_blockchain.app
+                    print("✅ Allianza Blockchain importado de allianza_blockchain.py (wrapper)")
+                except ImportError as e4:
+                    raise ImportError(f"Não foi possível importar allianza_blockchain. Erros: {e1}, {e2}, {e3}, {e4}")
     application.config['ENV'] = os.getenv('FLASK_ENV', 'production')
     application.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
     
