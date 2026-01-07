@@ -287,9 +287,7 @@ cat *.json
 
 If you have questions about the proofs or need additional verification:
 
-- **Technical Questions:** info@allianza.tech
-- **Security Questions:** security@allianza.tech
-- **Commercial Inquiries:** commercial@allianza.tech
+- **Contact:** contact@allianza.tech
 
 ---
 

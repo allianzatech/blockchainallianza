@@ -189,7 +189,7 @@ This repository contains the **open-core** protocol. For production deployment, 
 - Priority updates and features
 
 ### Contact for Commercial Licensing:
-- **Email:** commercial@allianza.tech
+- **Email:** contact@allianza.tech
 - **Website:** [https://allianza.tech](https://allianza.tech)
 
 See [COMMERCIAL_LICENSE.md](./COMMERCIAL_LICENSE.md) for more information.
@@ -241,9 +241,7 @@ See [PUBLIC_REPO_EXCLUSIONS.md](./PUBLIC_REPO_EXCLUSIONS.md) for a complete list
 
 ## 📧 Contact
 
-- **Commercial Inquiries:** commercial@allianza.tech
-- **Security Issues:** security@allianza.tech
-- **General Questions:** info@allianza.tech
+- **Contact:** contact@allianza.tech
 
 ---
 

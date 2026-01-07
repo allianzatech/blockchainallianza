@@ -273,9 +273,7 @@ Allianza Blockchain/
 
 ## 📧 Contato
 
-- **Comercial:** commercial@allianza.tech
-- **Segurança:** security@allianza.tech
-- **Geral:** info@allianza.tech
+- **Contato:** contact@allianza.tech
 
 ---
 

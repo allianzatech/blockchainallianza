@@ -303,9 +303,7 @@ When conducting an audit, consider documenting:
 
 ## 📧 Contact for Questions
 
-- **Technical Questions:** info@allianza.tech
-- **Security Issues:** security@allianza.tech
-- **Commercial Inquiries:** commercial@allianza.tech
+- **Contact:** contact@allianza.tech
 
 ---
 

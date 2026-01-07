@@ -150,7 +150,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
 For commercial licensing inquiries:
 
-- **Email:** commercial@allianza.tech
+- **Email:** contact@allianza.tech
 - **Website:** [https://allianza.tech](https://allianza.tech)
 
 See [COMMERCIAL_LICENSE.md](./COMMERCIAL_LICENSE.md) for more information.
@@ -159,7 +159,7 @@ See [COMMERCIAL_LICENSE.md](./COMMERCIAL_LICENSE.md) for more information.
 
 If you start with open-source and later need commercial features:
 
-1. **Contact Us** - Reach out to commercial@allianza.tech
+1. **Contact Us** - Reach out to contact@allianza.tech
 2. **Discuss Needs** - We'll discuss your specific requirements
 3. **License Agreement** - Sign commercial license agreement
 4. **Access Granted** - Get access to commercial components

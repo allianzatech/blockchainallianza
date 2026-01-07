@@ -133,7 +133,7 @@ Commercial licensing is available through:
 ## 📧 How to Obtain a Commercial License
 
 ### Step 1: Contact Us
-- **Email:** commercial@allianza.tech
+- **Email:** contact@allianza.tech
 - **Subject:** Commercial License Inquiry
 - **Include:**
   - Your use case
@@ -199,14 +199,14 @@ Commercial licensing is available through:
 ## 📞 Contact Information
 
 ### Commercial Licensing
-- **Email:** commercial@allianza.tech
+- **Email:** contact@allianza.tech
 - **Website:** [https://allianza.tech](https://allianza.tech)
 
 ### General Inquiries
-- **Email:** info@allianza.tech
+- **Email:** contact@allianza.tech
 
 ### Security Issues
-- **Email:** security@allianza.tech
+- **Email:** contact@allianza.tech
 - See [SECURITY.md](./SECURITY.md) for security reporting
 
 ---
@@ -223,5 +223,5 @@ Commercial licenses are governed by a formal license agreement that will be prov
 
 ---
 
-**For commercial licensing inquiries, please contact: commercial@allianza.tech**
+**For commercial licensing inquiries, please contact: contact@allianza.tech**
 

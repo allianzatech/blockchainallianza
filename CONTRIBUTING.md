@@ -19,7 +19,7 @@ If you find a bug or have a suggestion, please open an issue on GitHub:
 **Please do NOT open public issues for security vulnerabilities.**
 
 Instead, report security issues privately:
-- **Email:** security@allianza.tech
+- **Email:** contact@allianza.tech
 - **Subject:** `[SECURITY] Brief description`
 - See [SECURITY.md](./SECURITY.md) for more details
 
@@ -196,7 +196,7 @@ Please do NOT contribute:
 If you have questions about contributing:
 
 - Open a discussion on GitHub
-- Email: info@allianza.tech
+- Email: contact@allianza.tech
 - Check existing issues and discussions
 
 ## 🙏 Thank You!
