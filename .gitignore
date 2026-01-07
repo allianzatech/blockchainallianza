@@ -1,0 +1,149 @@
+# Allianza Blockchain - .gitignore for Public Repository
+# This ensures production/commercial files stay in private repo only
+
+# ============================================
+# PRODUCTION/COMMERCIAL FILES (PRIVATE REPO ONLY)
+# ============================================
+
+# Production Bridge and Commercial Code
+real_cross_chain_bridge.py
+allianza_bridge_config.py
+db_manager.py
+bridge_free_interop.py
+
+# Commercial Repository
+commercial_repo/
+!commercial_repo/.gitkeep
+
+# Deploy Directory (Production Infrastructure)
+deploy/
+!deploy/.gitkeep
+
+# Testnet Files (Runs on Private Infrastructure)
+testnet_*.py
+testnet_*.yaml
+testnet_*.yml
+testnet_*.json
+testnet_*.sh
+
+# Production Infrastructure Files
+wsgi.py
+wsgi_optimized.py
+gunicorn_config.py
+Procfile
+render.yaml
+render.yml
+docker-compose.yml
+Dockerfile
+.dockerignore
+runtime.txt
+.htaccess
+start_server.sh
+nginx_*.conf
+
+# Production Database Files
+*.db
+*.sqlite
+*.sqlite3
+allianza_blockchain.db
+allianza_blockchain_*.db
+
+# Production Logs
+*.log
+logs/
+allianza_blockchain*.log
+
+# Production Secrets and Keys
+secrets/
+*.key
+*.pem
+*.p12
+*.pfx
+.env
+.env.production
+.env.local
+*.secret
+exposed_keys_report.json
+
+# Production Data
+data/
+!data/.gitkeep
+faucet_last_requests.json
+pending_commitments.json
+commitment_metrics.json
+
+# Production Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Production Build Files
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ============================================
+# DEVELOPMENT FILES (OK FOR PUBLIC)
+# ============================================
+
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Virtual Environment (if used for examples)
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node modules (if SDK has them)
+node_modules/
+qss-sdk/node_modules/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Archive (if exists)
+archive/
+
+# ============================================
+# DOCUMENTATION (OK FOR PUBLIC)
+# ============================================
+# Documentation files are OK and should be included
+
+# ============================================
+# PROOFS (OK FOR PUBLIC - VERIFIABLE PROOFS)
+# ============================================
+# Proof files are OK - they prove the technology works
+# proofs/ directory should be included
+
+# ============================================
+# CORE PROTOCOL (OK FOR PUBLIC)
+# ============================================
+# Core protocol files are OK - this is the open-core
+# core/ directory should be included
+
+# ============================================
+# EXAMPLES (OK FOR PUBLIC)
+# ============================================
+# Example files are OK - they help developers learn
+# examples/ directory should be included if exists
+
