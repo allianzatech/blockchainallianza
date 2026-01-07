@@ -12,12 +12,14 @@ import sys
 base_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, base_dir)
 
+# Salvar diretório original
+original_cwd = os.getcwd()
+
 # Adicionar diretório deploy ao path PRIMEIRO (onde está allianza_blockchain.py e seus módulos)
 deploy_path = os.path.join(base_dir, "deploy")
 if os.path.exists(deploy_path):
     sys.path.insert(0, deploy_path)
     # Mudar diretório de trabalho para deploy para imports relativos funcionarem
-    original_cwd = os.getcwd()
     os.chdir(deploy_path)
 
 # Adicionar caminho do commercial_repo ao sys.path para importar corretamente
