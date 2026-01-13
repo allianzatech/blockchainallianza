@@ -1,0 +1,258 @@
+{
+  "testnet_version": "1.0.0",
+  "timestamp": "2025-11-20T20:41:11.542271",
+  "total_duration": 27.39,
+  "tests": {
+    "qrs3_signature": {
+      "success": true,
+      "test_name": "QRS-3 Signature",
+      "message": "test_qrs3_1763682044",
+      "signature_time_ms": 247.98,
+      "verify_time_ms": 0.0,
+      "redundancy_level": 3,
+      "has_classic": true,
+      "has_ml_dsa": true,
+      "has_sphincs": true,
+      "proof_hash": "2ed15dfd63dcfb5e29274193ac516fc3f565ef937d1a249b956c3c25ada2855e79bd4aa299879cce00dca049fc57be327c32312e88121d042f82d1c21f1ba3a8",
+      "algorithms": {
+        "ecdsa": "secp256k1",
+        "ml_dsa": "Dilithium3",
+        "sphincs": "SPHINCS+-SHAKE-256f"
+      },
+      "pqc_versions": {
+        "ml_dsa": "NIST FIPS 204",
+        "sphincs": "NIST FIPS 205"
+      }
+    },
+    "interoperability": {
+      "success": true,
+      "test_name": "Interoperabilidade",
+      "lock_id": "lock_1763682044_e6029505",
+      "tx_hash_source": "0x46294d308a309ea73715dc0644cf34b47fbae016867727d24eeef8032616699a",
+      "tx_hash_target": "0x917894ff8f1bb2d813d26dc2b1d1fe89a9e71d47aa0b66a0cebad09846bc2429",
+      "confirmations": 1,
+      "bridge_status": "active",
+      "chains": {
+        "source": "allianza",
+        "target": "ethereum_testnet"
+      },
+      "proof_hash": "751eafd3caab86d2e7d71d5bb2bb710d3aac42dadafdc2c413e1afe73a6940a1d336668680b3a2f4e94d62735d2785c75c25f7fc2427016830090d985c5c6b89"
+    },
+    "performance": {
+      "success": true,
+      "test_name": "Performance",
+      "num_signatures": 100,
+      "avg_time_ms": 269.95,
+      "min_time_ms": 160.51,
+      "max_time_ms": 566.02,
+      "std_dev_ms": 120.39,
+      "total_time_s": 27.0,
+      "throughput_per_sec": 3.7
+    },
+    "block_validation": {
+      "success": true,
+      "test_name": "Block Validation",
+      "total_blocks": 8,
+      "validated": 8,
+      "shards": 8,
+      "validation_rate": 100.0
+    },
+    "quantum_security": {
+      "success": true,
+      "test_name": "Quantum Security",
+      "qrs3_available": true,
+      "qrs3_functional": true,
+      "ml_dsa_available": true,
+      "sphincs_available": true,
+      "quantum_resistant": true,
+      "redundancy_level": 3,
+      "nist_standards": {
+        "ml_dsa": "FIPS 204",
+        "sphincs": "FIPS 205"
+      }
+    }
+  },
+  "logs": [
+    {
+      "timestamp": "2025-11-20T20:40:44.155738",
+      "level": "INFO",
+      "message": "🚀 Iniciando Testes Públicos da Allianza Quantum Testnet"
+    },
+    {
+      "timestamp": "2025-11-20T20:40:44.156020",
+      "level": "INFO",
+      "message": "======================================================================"
+    },
+    {
+      "timestamp": "2025-11-20T20:40:44.156147",
+      "level": "INFO",
+      "message": "🔍 Teste 1: Validando QRS-3 Signature"
+    },
+    {
+      "timestamp": "2025-11-20T20:40:44.156310",
+      "level": "INFO",
+      "message": "  🔐 Gerando assinatura QRS-3..."
+    },
+    {
+      "timestamp": "2025-11-20T20:40:44.404510",
+      "level": "INFO",
+      "message": "  ✔ SPHINCS+ OK (tempo: 247.98ms)"
+    },
+    {
+      "timestamp": "2025-11-20T20:40:44.404876",
+      "level": "INFO",
+      "message": "  ✔ ML-DSA OK"
+    },
+    {
+      "timestamp": "2025-11-20T20:40:44.404942",
+      "level": "INFO",
+      "message": "  ✔ ECDSA OK"
+    },
+    {
+      "timestamp": "2025-11-20T20:40:44.404992",
+      "level": "INFO",
+      "message": "  🔍 Verificando assinatura..."
+    },
+    {
+      "timestamp": "2025-11-20T20:40:44.405500",
+      "level": "INFO",
+      "message": "  ✅ Verificação QRS-3: SUCCESS"
+    },
+    {
+      "timestamp": "2025-11-20T20:40:44.405670",
+      "level": "INFO",
+      "message": "  📋 Hash da Prova: 2ed15dfd63dcfb5e29274193ac516fc3..."
+    },
+    {
+      "timestamp": "2025-11-20T20:40:44.405902",
+      "level": "INFO",
+      "message": "🔍 Teste 2: Testando Interoperabilidade"
+    },
+    {
+      "timestamp": "2025-11-20T20:40:44.406139",
+      "level": "INFO",
+      "message": "  🔐 Criando Lock on-chain..."
+    },
+    {
+      "timestamp": "2025-11-20T20:40:44.521889",
+      "level": "INFO",
+      "message": "  ⛓️ Lock confirmado - TxHash: 0x46294d308a309ea73715dc0644cf34b47fbae016867727d24eeef8032616699a"
+    },
+    {
+      "timestamp": "2025-11-20T20:40:44.523901",
+      "level": "INFO",
+      "message": "  ✅ Interoperabilidade: SUCCESS"
+    },
+    {
+      "timestamp": "2025-11-20T20:40:44.530071",
+      "level": "INFO",
+      "message": "🔍 Teste 3: Testando Performance"
+    },
+    {
+      "timestamp": "2025-11-20T20:40:44.532704",
+      "level": "INFO",
+      "message": "  🔄 Executando 100 assinaturas QRS-3..."
+    },
+    {
+      "timestamp": "2025-11-20T20:40:46.618071",
+      "level": "INFO",
+      "message": "  📊 Progresso: 10/100"
+    },
+    {
+      "timestamp": "2025-11-20T20:40:49.496308",
+      "level": "INFO",
+      "message": "  📊 Progresso: 20/100"
+    },
+    {
+      "timestamp": "2025-11-20T20:40:51.821726",
+      "level": "INFO",
+      "message": "  📊 Progresso: 30/100"
+    },
+    {
+      "timestamp": "2025-11-20T20:40:54.252580",
+      "level": "INFO",
+      "message": "  📊 Progresso: 40/100"
+    },
+    {
+      "timestamp": "2025-11-20T20:40:58.603936",
+      "level": "INFO",
+      "message": "  📊 Progresso: 50/100"
+    },
+    {
+      "timestamp": "2025-11-20T20:41:00.362952",
+      "level": "INFO",
+      "message": "  📊 Progresso: 60/100"
+    },
+    {
+      "timestamp": "2025-11-20T20:41:02.812196",
+      "level": "INFO",
+      "message": "  📊 Progresso: 70/100"
+    },
+    {
+      "timestamp": "2025-11-20T20:41:05.618028",
+      "level": "INFO",
+      "message": "  📊 Progresso: 80/100"
+    },
+    {
+      "timestamp": "2025-11-20T20:41:08.635796",
+      "level": "INFO",
+      "message": "  📊 Progresso: 90/100"
+    },
+    {
+      "timestamp": "2025-11-20T20:41:11.541049",
+      "level": "INFO",
+      "message": "  📊 Progresso: 100/100"
+    },
+    {
+      "timestamp": "2025-11-20T20:41:11.541262",
+      "level": "INFO",
+      "message": "  ✅ Performance: 100 assinaturas em 27.0s"
+    },
+    {
+      "timestamp": "2025-11-20T20:41:11.541333",
+      "level": "INFO",
+      "message": "  📊 Média: 269.95ms | Min: 160.51ms | Max: 566.02ms"
+    },
+    {
+      "timestamp": "2025-11-20T20:41:11.541388",
+      "level": "INFO",
+      "message": "🔍 Teste 4: Validando Blocos"
+    },
+    {
+      "timestamp": "2025-11-20T20:41:11.541444",
+      "level": "INFO",
+      "message": "  ✅ Validação: 8/8 blocos validados"
+    },
+    {
+      "timestamp": "2025-11-20T20:41:11.541483",
+      "level": "INFO",
+      "message": "🔍 Teste 5: Testando Segurança Quântica"
+    },
+    {
+      "timestamp": "2025-11-20T20:41:11.542067",
+      "level": "INFO",
+      "message": "  ✅ QRS-3: Disponível e Funcional"
+    },
+    {
+      "timestamp": "2025-11-20T20:41:11.542154",
+      "level": "INFO",
+      "message": "  ✅ ML-DSA: Disponível"
+    },
+    {
+      "timestamp": "2025-11-20T20:41:11.542193",
+      "level": "INFO",
+      "message": "  ✅ SPHINCS+: Disponível"
+    },
+    {
+      "timestamp": "2025-11-20T20:41:11.542238",
+      "level": "INFO",
+      "message": "  📊 Nível de Redundância: 3"
+    }
+  ],
+  "summary": {
+    "total_tests": 5,
+    "passed": 5,
+    "failed": 0,
+    "success_rate": 100.0
+  }
+}

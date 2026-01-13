@@ -1,0 +1,25 @@
+{
+  "timestamp": "2025-12-08T11:14:54.236014",
+  "test_environment": "public",
+  "tests": {
+    "qrs3": {
+      "status": "SKIPPED",
+      "reason": "liboqs-python not installed"
+    },
+    "blockchain": {
+      "status": "FAILED",
+      "error": "'AllianzaBlockchain' object has no attribute 'chain'"
+    },
+    "verification": {
+      "status": "FAILED",
+      "description": "Testes básicos de verificação (QRS-3, Blockchain, Interoperabilidade)"
+    }
+  },
+  "summary": {
+    "total_tests": 3,
+    "passed": 0,
+    "failed": 2,
+    "skipped": 1,
+    "success_rate": 0.0
+  }
+}

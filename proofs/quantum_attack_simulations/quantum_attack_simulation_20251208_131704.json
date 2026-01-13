@@ -1,0 +1,98 @@
+{
+  "suite_name": "Advanced Quantum Attack Simulations",
+  "timestamp": "2025-12-08T13:17:04.205029",
+  "tests": [
+    {
+      "attack_type": "Shor's Algorithm on ECDSA",
+      "key_size": 256,
+      "timestamp": "2025-12-08T13:17:04.205061",
+      "status": "simulated",
+      "error": "Qiskit não disponível",
+      "estimated_time": "N/A (teórico: exponencial)"
+    },
+    {
+      "test_type": "QRS-3 Quantum Resistance",
+      "timestamp": "2025-12-08T13:17:04.205067",
+      "message": "Test message for quantum attack",
+      "keypair_id": {
+        "success": true,
+        "keypair_id": "qrs3_1765210624_ef72e435e180086a",
+        "algorithm": "QRS-3 (Tripla Redundância Quântica)",
+        "quantum_resistant": true,
+        "backward_compatible": true,
+        "classic_public_key": "-----BEGIN PUBLIC KEY-----\nMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEjn3rdsuXwD/mONUDMfJgLfusg6A/PH6u\negj3xbg3Id1VxLfTu4VdJHiKNXfTHB06U7FjSAftJW33BP90pYnRCw==\n-----END PUBLIC KEY-----\n",
+        "ml_dsa_public_key": "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",
+        "sphincs_public_key": "UUFXs1jA9adbvUHqFhUbEFNtny7pG6bVZtJWp/mlbKrtAIdJt+eiyjQ6YqhTzWSe",
+        "sphincs_available": true,
+        "sphincs_implementation": "real",
+        "redundancy_level": 3,
+        "message": "🔐🔐🔐 QRS-3 GERADO - TRIPLA REDUNDÂNCIA QUÂNTICA (REAL)!",
+        "world_first": "🌍 PRIMEIRO NO MUNDO: Tripla assinatura quântica (ECDSA + ML-DSA + SPHINCS+)!",
+        "note": "✅ SPHINCS+ REAL via liboqs-python - Máxima segurança quântica!",
+        "benefits": [
+          "3 camadas de segurança independentes",
+          "ML-DSA: Segurança lattice-based (NIST PQC)",
+          "SPHINCS+: Segurança hash-based (NIST PQC)",
+          "ECDSA: Compatibilidade total",
+          "Máxima segurança quântica garantida"
+        ],
+        "security_guarantee": "Mesmo se 2 algoritmos falharem, o terceiro protege. Segurança máxima garantida."
+      },
+      "error": "unhashable type: 'dict'",
+      "signature_components": 0,
+      "has_ecdsa": false,
+      "has_ml_dsa": false,
+      "has_sphincs": false,
+      "redundancy": "0/3",
+      "meets_redundancy_requirement": false,
+      "attack_simulation": [
+        {
+          "algorithm": "ECDSA",
+          "vulnerable_to_shor": true,
+          "protection": "Redundância (ML-DSA + SPHINCS+ ainda válidos)"
+        },
+        {
+          "algorithm": "ML-DSA",
+          "vulnerable_to_shor": false,
+          "protection": "Baseado em lattices (resistente a Shor)"
+        },
+        {
+          "algorithm": "SPHINCS+",
+          "vulnerable_to_shor": false,
+          "protection": "Baseado em hash (resistente a Shor)"
+        }
+      ],
+      "conclusion": "QRS-3 mantém segurança mesmo se ECDSA for quebrado",
+      "status": "FAILED"
+    },
+    {
+      "benchmark_type": "QRS-3 vs ECDSA",
+      "iterations": 50,
+      "timestamp": "2025-12-08T13:17:04.232076",
+      "ecdsa": {
+        "avg_time_ms": 0.001316070556640625,
+        "min_time_ms": 0.000476837158203125,
+        "max_time_ms": 0.031232833862304688
+      },
+      "qrs3": {
+        "avg_time_ms": 0.0013113021850585938,
+        "min_time_ms": 0.0007152557373046875,
+        "max_time_ms": 0.012874603271484375
+      },
+      "overhead": {
+        "percentage": -0.36231884057971175,
+        "absolute_ms": -4.76837158203125e-06
+      },
+      "quantum_resistance": {
+        "ecdsa": false,
+        "qrs3": true
+      }
+    }
+  ],
+  "summary": {
+    "total_tests": 3,
+    "passed": 0,
+    "failed": 1,
+    "errors": 2
+  }
+}

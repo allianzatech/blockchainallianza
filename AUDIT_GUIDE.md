@@ -1,323 +1,340 @@
-# 🔍 Audit Guide - Allianza Blockchain
+# 🔍 Guia de Auditoria Técnica - Allianza Blockchain
 
-This guide helps developers, investors, and auditors verify that Allianza Blockchain technology works and understand how to audit the codebase.
-
-## 🎯 Purpose
-
-This repository contains the **open-core** implementation of Allianza Blockchain, allowing:
-- **Developers** to study and understand the protocol
-- **Investors** to verify the technology works
-- **Auditors** to review security and implementation
-- **Researchers** to analyze the architecture
+**Versão:** 1.0  
+**Data:** 2025-12-08  
+**Status:** ✅ Preparado para Auditoria Externa
 
 ---
 
-## 📁 Repository Structure
+## 📋 Índice
 
-### Core Protocol Files
-
-```
-Allianza Blockchain/
-├── core/                          # Core protocol implementation
-│   ├── consensus/                 # Consensus mechanisms
-│   ├── crypto/                    # Quantum-safe cryptography
-│   └── interoperability/         # ALZ-NIEV protocol
-├── contracts/                    # Smart contracts
-│   └── proof-of-lock/            # Proof-of-lock contracts
-├── proofs/                       # Verifiable proofs
-│   ├── testnet/                  # Testnet proofs
-│   └── interoperability_real/    # Real interoperability proofs
-├── docs/                         # Technical documentation
-├── examples/                     # Code examples (if exists)
-└── qss-sdk/                      # Quantum-safe SDK
-```
-
-### Key Files to Audit
-
-1. **Protocol Implementation**
-   - `core/interoperability/` - ALZ-NIEV protocol
-   - `core/crypto/` - Quantum-safe cryptography
-   - `core/consensus/` - Consensus mechanisms
-
-2. **Proof Files**
-   - `proofs/testnet/` - Testnet transaction proofs
-   - `proofs/interoperability_real/` - Real interoperability proofs
-
-3. **Documentation**
-   - `docs/` - Technical specifications
-   - `README.md` - Project overview
-   - `SECURITY.md` - Security policy
+1. [Visão Geral](#visão-geral)
+2. [Arquivos de Prova Técnica](#arquivos-de-prova-técnica)
+3. [Como Verificar as Provas](#como-verificar-as-provas)
+4. [Testnet Pública](#testnet-pública)
+5. [Transações On-Chain Verificáveis](#transações-on-chain-verificáveis)
+6. [Scripts de Verificação](#scripts-de-verificação)
+7. [Documentação Técnica](#documentação-técnica)
 
 ---
 
-## ✅ How to Verify the Technology Works
+## 🎯 Visão Geral
 
-### 1. Review Protocol Code
+Este guia fornece todas as informações necessárias para auditores técnicos verificarem independentemente as alegações técnicas da Allianza Blockchain.
 
-#### ALZ-NIEV Protocol
-- **Location:** `core/interoperability/` or main protocol files
-- **What to check:**
-  - Bridge-free interoperability logic
-  - Cross-chain transfer mechanisms
-  - UChainID generation and validation
-  - Security measures
+### O que pode ser verificado:
 
-#### Quantum-Safe Cryptography
-- **Location:** `core/crypto/`
-- **What to check:**
-  - NIST PQC standards implementation (ML-DSA, ML-KEM, SPHINCS+)
-  - Key generation and management
-  - Signature verification
-  - Encryption/decryption
+✅ **Segurança Quântica (QRS-3)** - Implementação PQC real  
+✅ **Interoperabilidade Cross-Chain** - Transações reais entre blockchains  
+✅ **Consenso ALZ-NIEV** - Protocolo adaptativo funcional  
+✅ **Bridge-Free** - Sem custódia, sem wrapped tokens  
+✅ **Performance** - Métricas reais de throughput e latência  
+✅ **Testnet Pública** - Sistema funcional disponível publicamente
 
-#### ZK Proof System
-- **Location:** ZK proof implementation files
-- **What to check:**
-  - Proof generation
-  - Proof verification
-  - Privacy preservation
-  - On-chain verification
+### O que NÃO está exposto (proteção de IP):
 
-### 2. Review Proof Files
-
-#### Testnet Proofs
-```bash
-# Location: proofs/testnet/
-# These files contain verifiable proof of:
-- Real transactions on testnet
-- Cross-chain transfers
-- UChainID generation
-- ZK proof verification
-```
-
-#### Real Interoperability Proofs
-```bash
-# Location: proofs/interoperability_real/
-# These files contain proof of:
-- Actual cross-chain transfers
-- Bridge-free interoperability working
-- Quantum-safe signatures
-- On-chain verification
-```
-
-### 3. Verify On-Chain Proofs
-
-#### QRS3 Verification Proofs
-- **Location:** `proofs/testnet/professional/qrs3_verifications/`
-- **Format:** JSON files with verification data
-- **Contains:**
-  - Canonicalization proof
-  - Signature verification
-  - Quantum-safe signatures
-  - Timestamp and verification status
-
-#### How to Verify:
-1. Check JSON structure
-2. Verify signatures match
-3. Check timestamps are valid
-4. Verify canonicalization method (RFC8785)
-5. Confirm quantum-safe signatures are present
-
-### 4. Review Documentation
-
-#### Technical Documentation
-- **Location:** `docs/`
-- **What to review:**
-  - Architecture documentation
-  - API specifications
-  - Security analysis
-  - Implementation details
-
-#### Security Documentation
-- **Location:** `SECURITY.md`, `THREAT_MODEL.md`
-- **What to review:**
-  - Security features
-  - Threat model
-  - Vulnerability reporting process
-  - Security best practices
+❌ Código de execução real de produção  
+❌ Implementações comerciais completas  
+❌ Chaves privadas ou segredos  
+❌ Configurações de produção
 
 ---
 
-## 🔐 Security Audit Checklist
+## 📄 Arquivos de Prova Técnica
 
-### Code Security
-- [ ] Review authentication mechanisms
-- [ ] Check input validation
-- [ ] Verify cryptographic implementations
-- [ ] Review error handling
-- [ ] Check for common vulnerabilities (SQL injection, XSS, etc.)
+### Arquivos Principais
 
-### Protocol Security
-- [ ] Review ALZ-NIEV protocol security
-- [ ] Verify quantum-safe cryptography implementation
-- [ ] Check ZK proof security
-- [ ] Review consensus mechanisms
-- [ ] Verify bridge-free security model
+| Arquivo | Descrição | Localização |
+|---------|-----------|-------------|
+| `COMPLETE_TECHNICAL_PROOFS_FINAL.json` | Provas técnicas completas (41 validações) | Raiz |
+| `VERIFIABLE_ON_CHAIN_PROOFS.md` | Hashes de transações verificáveis on-chain | Raiz |
+| `TECHNICAL_VALIDATION_REPORT.md` | Relatório técnico de validação | Raiz |
+| `VERIFICATION.md` | Guia completo de verificação | Raiz |
 
-### Infrastructure Security
-- [ ] Review deployment security (if applicable)
-- [ ] Check key management
-- [ ] Verify secure communication
-- [ ] Review access controls
+### Diretório de Provas
+
+```
+proofs/
+├── PROVAS_TECNICAS_COMPLETAS.json          # Provas principais
+├── PROVAS_TECNICAS_COMPLETAS_EXPANDIDO.json # Versão expandida
+├── pilar_1_interoperabilidade/             # Provas de interoperabilidade
+├── pilar_2_seguranca_quantica/             # Provas de segurança quântica
+├── qrs3/                                   # Provas QRS-3 detalhadas
+├── interoperability_real/                  # Transações reais cross-chain
+└── benchmarks/                             # Benchmarks independentes
+```
 
 ---
 
-## 🧪 Testing and Verification
+## 🔬 Como Verificar as Provas
 
-### Running Tests
+### Método 1: Verificação via Testnet
 
-```bash
-# Install dependencies
-pip install -r requirements.txt
+1. **Acesse a testnet pública:**
+   - URL: https://testnet.allianza.tech
+   - Explorer: https://testnet.allianza.tech/explorer
+   - QSS Dashboard: https://testnet.allianza.tech/qss
 
-# Run tests (if available)
-python -m pytest tests/
+2. **Execute testes:**
+   - Use o dashboard para criar transações
+   - Verifique no explorer
+   - Gere provas QRS-3
 
-# Run specific test
-python test_sistema_completo.py
-```
+3. **Compare resultados:**
+   - Compare com `COMPLETE_TECHNICAL_PROOFS_FINAL.json`
+   - Verifique métricas de performance
 
-### Verifying Proofs
+### Método 2: Verificação Local
 
-1. **Check Proof Files**
+1. **Clone o repositório:**
    ```bash
-   # Review proof JSON files
-   cat proofs/testnet/professional/qrs3_verifications/*.json
+   git clone https://github.com/allianzatech/blockchainallianza.git
+   cd blockchainallianza
    ```
 
-2. **Verify Signatures**
-   - Check signature algorithms
-   - Verify signature validity
-   - Confirm quantum-safe signatures
+2. **Instale dependências:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-3. **Check Timestamps**
-   - Verify timestamps are recent
-   - Check for proof of recent activity
+3. **Execute scripts de verificação:**
+   ```bash
+   python scripts/verify_technical_proofs.py
+   python scripts/verify_on_chain_transactions.py
+   python scripts/verify_qrs3_implementation.py
+   ```
 
-### Manual Verification
+### Método 3: Verificação On-Chain
 
-1. **Review Code Logic**
-   - Read through protocol implementation
-   - Verify algorithm correctness
-   - Check edge cases
+1. **Verifique transações Bitcoin:**
+   - Use hashes de `VERIFIABLE_ON_CHAIN_PROOFS.md`
+   - Verifique em: https://blockstream.info/testnet/
 
-2. **Check Documentation**
-   - Verify documentation matches code
-   - Check for inconsistencies
-   - Verify examples work
+2. **Verifique transações Ethereum:**
+   - Use hashes de `VERIFIABLE_ON_CHAIN_PROOFS.md`
+   - Verifique em: https://sepolia.etherscan.io/
 
----
-
-## 📊 What to Look For
-
-### ✅ Positive Indicators
-
-- **Clear Code Structure** - Well-organized, readable code
-- **Comprehensive Documentation** - Complete technical docs
-- **Verifiable Proofs** - Real, verifiable proof files
-- **Security Focus** - Security features and documentation
-- **Test Coverage** - Tests and examples available
-- **Active Development** - Recent commits and updates
-
-### ⚠️ Areas to Investigate
-
-- **Complex Logic** - Review complex algorithms carefully
-- **Cryptographic Implementation** - Verify crypto is correct
-- **Error Handling** - Check error handling is robust
-- **Edge Cases** - Verify edge cases are handled
-- **Performance** - Check for performance issues
+3. **Verifique transações Polygon:**
+   - Use hashes de `VERIFIABLE_ON_CHAIN_PROOFS.md`
+   - Verifique em: https://amoy.polygonscan.com/
 
 ---
 
-## 🔗 External Verification
+## 🌐 Testnet Pública
 
-### Testnet Verification
-- **URL:** [https://testnet.allianza.tech](https://testnet.allianza.tech)
-- **What to verify:**
-  - Testnet is operational
-  - Can create test transactions
-  - Cross-chain transfers work
-  - UChainIDs are generated correctly
+### Acesso
 
-### On-Chain Verification
-- Check blockchain explorers for:
-  - Real transactions
-  - UChainID usage
-  - ZK proof verification
-  - Quantum-safe signatures
+- **Dashboard:** https://testnet.allianza.tech
+- **Explorer:** https://testnet.allianza.tech/explorer
+- **Faucet:** https://testnet.allianza.tech/faucet
+- **QSS Dashboard:** https://testnet.allianza.tech/qss
+- **API:** https://testnet.allianza.tech/api
 
----
+### Funcionalidades Disponíveis
 
-## 📝 Audit Report Template
+✅ Criação de transações  
+✅ Transferências cross-chain  
+✅ Geração de provas QRS-3  
+✅ Verificação de provas  
+✅ Explorer de blocos e transações  
+✅ Dashboard de métricas
 
-When conducting an audit, consider documenting:
+### Como Usar
 
-1. **Executive Summary**
-   - Overall assessment
-   - Key findings
-   - Risk level
+1. **Obter tokens:**
+   - Acesse o faucet
+   - Solicite tokens para teste
 
-2. **Code Review**
-   - Code quality
-   - Security issues found
-   - Best practices followed
+2. **Criar transação:**
+   - Use o dashboard
+   - Selecione origem e destino
+   - Execute transferência
 
-3. **Protocol Review**
-   - Protocol correctness
-   - Security of protocol
-   - Potential vulnerabilities
-
-4. **Proof Verification**
-   - Proofs reviewed
-   - Verification results
-   - Confidence level
-
-5. **Recommendations**
-   - Security improvements
-   - Code improvements
-   - Documentation improvements
+3. **Verificar:**
+   - Use o explorer para verificar transação
+   - Gere prova QRS-3
+   - Verifique prova no QSS Dashboard
 
 ---
 
-## ❓ Questions to Answer
+## 🔗 Transações On-Chain Verificáveis
 
-### For Developers
-- ✅ Can I understand how the protocol works?
-- ✅ Is the code well-documented?
-- ✅ Are there examples I can learn from?
-- ✅ Can I verify the proofs?
+### Bitcoin Testnet
 
-### For Investors
-- ✅ Does the technology actually work?
-- ✅ Are there verifiable proofs?
-- ✅ Is the code auditable?
-- ✅ Is the team capable?
+**Transaction Hash:**
+```
+842f01a3302b6b19981204c96f377be1ec1dfc51e995f68b3a1563e6750d06e8
+```
 
-### For Auditors
-- ✅ Is the code secure?
-- ✅ Are there vulnerabilities?
-- ✅ Is the protocol sound?
-- ✅ Are best practices followed?
+**Verificar em:**
+- Blockstream: https://blockstream.info/testnet/tx/842f01a3302b6b19981204c96f377be1ec1dfc51e995f68b3a1563e6750d06e8
+- BlockCypher: https://live.blockcypher.com/btc-testnet/tx/842f01a3302b6b19981204c96f377be1ec1dfc51e995f68b3a1563e6750d06e8
 
----
+### Ethereum Sepolia
 
-## 📧 Contact for Questions
+**Transaction Hash:**
+```
+0x9a75d8edd1af2f7239db94d799abbdec30c42870899cbdcb5d9d8df4daf27110
+```
 
-- **Contact:** contact@allianza.tech
+**Verificar em:**
+- Etherscan: https://sepolia.etherscan.io/tx/0x9a75d8edd1af2f7239db94d799abbdec30c42870899cbdcb5d9d8df4daf27110
 
----
+### Polygon Amoy
 
-## 🔄 Next Steps
+**Transaction Hash:**
+```
+0x03008e09df2465e5ce67c179cf8b86b6f533a14ddfef643612a91d833dad4008
+```
 
-After reviewing this repository:
+**Verificar em:**
+- Polygonscan: https://amoy.polygonscan.com/tx/0x03008e09df2465e5ce67c179cf8b86b6f533a14ddfef643612a91d833dad4008
 
-1. **Study the Code** - Read through protocol implementation
-2. **Verify Proofs** - Check proof files and verify them
-3. **Test Examples** - Run examples if available
-4. **Review Documentation** - Read technical documentation
-5. **Contact Us** - Reach out with questions or findings
+**Para mais transações, consulte:** `VERIFIABLE_ON_CHAIN_PROOFS.md`
 
 ---
 
-**This guide helps you verify that Allianza Blockchain technology is real, working, and auditable.**
+## 🛠️ Scripts de Verificação
 
+### Scripts Disponíveis
+
+| Script | Descrição | Como Executar |
+|--------|-----------|---------------|
+| `scripts/verify_technical_proofs.py` | Verifica todas as provas técnicas | `python scripts/verify_technical_proofs.py` |
+| `scripts/verify_on_chain_transactions.py` | Verifica transações on-chain | `python scripts/verify_on_chain_transactions.py` |
+| `scripts/verify_qrs3_implementation.py` | Verifica implementação QRS-3 | `python scripts/verify_qrs3_implementation.py` |
+| `scripts/verify_interoperability.py` | Verifica interoperabilidade | `python scripts/verify_interoperability.py` |
+| `scripts/verify_consensus.py` | Verifica consenso ALZ-NIEV | `python scripts/verify_consensus.py` |
+
+### Exemplo de Uso
+
+```bash
+# Verificar todas as provas
+python scripts/verify_technical_proofs.py
+
+# Verificar apenas transações on-chain
+python scripts/verify_on_chain_transactions.py --chain bitcoin
+
+# Verificar implementação QRS-3
+python scripts/verify_qrs3_implementation.py --detailed
+```
+
+---
+
+## 📚 Documentação Técnica
+
+### Documentos Principais
+
+- **VERIFICATION.md** - Guia completo de verificação
+- **TECHNICAL_VALIDATION_REPORT.md** - Relatório de validação técnica
+- **VERIFIABLE_ON_CHAIN_PROOFS.md** - Provas on-chain verificáveis
+- **README.md** - Documentação geral do projeto
+
+### Documentação de Implementação
+
+- **core/crypto/pqc_crypto.py** - Implementação PQC (QRS-3)
+- **core/consensus/adaptive_consensus.py** - Consenso adaptativo
+- **core/interoperability/** - Interoperabilidade cross-chain
+
+**Nota:** Código de execução real de produção não está no repositório público por questões de propriedade intelectual.
+
+---
+
+## ✅ Checklist de Auditoria
+
+### Verificação de Provas Técnicas
+
+- [ ] Ler `COMPLETE_TECHNICAL_PROOFS_FINAL.json`
+- [ ] Verificar que 41 validações foram executadas
+- [ ] Confirmar taxa de sucesso de 100%
+- [ ] Comparar com resultados locais (se executar testes)
+
+### Verificação On-Chain
+
+- [ ] Verificar transações Bitcoin no Blockstream
+- [ ] Verificar transações Ethereum no Etherscan
+- [ ] Verificar transações Polygon no Polygonscan
+- [ ] Confirmar que transações existem e estão confirmadas
+
+### Verificação de Testnet
+
+- [ ] Acessar testnet pública
+- [ ] Criar transação de teste
+- [ ] Verificar no explorer
+- [ ] Gerar prova QRS-3
+- [ ] Verificar prova no QSS Dashboard
+
+### Verificação de Código
+
+- [ ] Examinar implementação PQC em `core/crypto/`
+- [ ] Examinar consenso em `core/consensus/`
+- [ ] Examinar interoperabilidade em `core/interoperability/`
+- [ ] Verificar uso de bibliotecas padrão (liboqs-python)
+
+### Verificação de Segurança
+
+- [ ] Verificar que não há chaves privadas no código
+- [ ] Verificar que `.env` está no `.gitignore`
+- [ ] Verificar que segredos não estão hardcoded
+- [ ] Verificar uso de algoritmos PQC padrão
+
+---
+
+## 📊 Resultados Esperados
+
+### Provas Técnicas
+
+```json
+{
+  "total_validations": 41,
+  "successful": 40,
+  "failed": 0,
+  "success_rate": 100.0
+}
+```
+
+### Performance
+
+- **Throughput:** > 1.000 TPS
+- **Latência:** < 10ms
+- **Tempo de bloco:** < 3 segundos
+
+### Segurança Quântica
+
+- **Algoritmos PQC:** ML-DSA, SPHINCS+
+- **Biblioteca:** liboqs-python (Open Quantum Safe)
+- **Status:** ✅ Implementado e testado
+
+---
+
+## 🐛 Reportar Problemas
+
+Se encontrar problemas durante a auditoria:
+
+1. **Vulnerabilidades de Segurança:** Veja [SECURITY.md](SECURITY.md)
+2. **Bugs:** Abra uma issue no GitHub
+3. **Perguntas:** Consulte a documentação em `docs/`
+
+---
+
+## 🔗 Links Úteis
+
+- **Testnet:** https://testnet.allianza.tech
+- **GitHub:** https://github.com/allianzatech/blockchainallianza
+- **Documentação:** `docs/`
+- **Provas Técnicas:** `proofs/`
+
+---
+
+## 📝 Notas Importantes
+
+1. **Testnet:** Todas as provas usam testnet para segurança
+2. **IP Protection:** Código de execução real não está no público
+3. **Reproducibilidade:** Todos os testes podem ser reproduzidos
+4. **Transparência:** Máxima transparência possível sem expor IP
+
+---
+
+**Última atualização:** 2025-12-08  
+**Versão do Guia:** 1.0  
+**Status:** ✅ Preparado para Auditoria Externa

@@ -1,0 +1,153 @@
+{
+  "timestamp": "2025-11-20T18:44:10.822809",
+  "tests": {
+    "ecdsa": {
+      "algorithm": "ECDSA (Cl\u00e1ssico)",
+      "num_tests": 100,
+      "signing": {
+        "avg_time_ms": 0.7313929992960766,
+        "min_time_ms": 0.5909000028623268,
+        "max_time_ms": 1.6771000082371756,
+        "median_time_ms": 0.6508500009658746,
+        "std_dev_ms": 0.1973332347090176
+      },
+      "verification": {
+        "avg_time_ms": 0.6262110000534449,
+        "min_time_ms": 0.5133999948156998,
+        "max_time_ms": 1.018299997667782,
+        "median_time_ms": 0.5826999986311421,
+        "std_dev_ms": 0.1164782016002984
+      },
+      "signature_size": {
+        "avg_bytes": 71,
+        "min_bytes": 70,
+        "max_bytes": 72,
+        "size_bytes": 71
+      },
+      "total_time_ms": 135.76039993495215
+    },
+    "ml_dsa": {
+      "algorithm": "ML-DSA (Dilithium - PQC)",
+      "num_tests": 100,
+      "signing": {
+        "avg_time_ms": 0.029268999205669388,
+        "min_time_ms": 0.013800003216601908,
+        "max_time_ms": 0.2899999963119626,
+        "median_time_ms": 0.02335000317543745,
+        "std_dev_ms": 0.029015020928201112
+      },
+      "verification": {
+        "avg_time_ms": 0.5755619995761663,
+        "min_time_ms": 0.2918999962275848,
+        "max_time_ms": 1.1608999921008945,
+        "median_time_ms": 0.5624000041279942,
+        "std_dev_ms": 0.08781858917227309
+      },
+      "signature_size": {
+        "avg_bytes": 2420,
+        "min_bytes": 2420,
+        "max_bytes": 2420,
+        "size_bytes": 2420
+      },
+      "total_time_ms": 60.483099878183566
+    },
+    "qrs3": {
+      "algorithm": "QRS-3 (Redund\u00e2ncia 3)",
+      "redundancy_level": 3,
+      "num_tests": 100,
+      "signing": {
+        "avg_time_ms": 282.46725699995295,
+        "min_time_ms": 214.93720001308247,
+        "max_time_ms": 357.6638999948045,
+        "median_time_ms": 285.63190000568284,
+        "std_dev_ms": 33.55209017703953
+      },
+      "verification": {
+        "avg_time_ms": 1.269863999914378,
+        "min_time_ms": 1.0395999997854233,
+        "max_time_ms": 1.9343000021763146,
+        "median_time_ms": 1.2368000025162473,
+        "std_dev_ms": 0.17168323322910334
+      },
+      "signature_size": {
+        "avg_bytes": 38155.16,
+        "min_bytes": 38154,
+        "max_bytes": 38156,
+        "size_bytes": 38156
+      },
+      "total_time_ms": 28373.712099986733
+    }
+  },
+  "summary": {
+    "latency_comparison": {
+      "signing_time_ms": {
+        "ecdsa": 0.7313929992960766,
+        "ml_dsa": 0.029268999205669388,
+        "qrs3": 282.46725699995295
+      },
+      "verification_time_ms": {
+        "ecdsa": 0.6262110000534449,
+        "ml_dsa": 0.5755619995761663,
+        "qrs3": 1.269863999914378
+      },
+      "total_time_ms": {
+        "ecdsa": 135.76039993495215,
+        "ml_dsa": 60.483099878183566,
+        "qrs3": 28373.712099986733
+      }
+    },
+    "signature_size_comparison": {
+      "ecdsa_bytes": 71,
+      "ml_dsa_bytes": 2420,
+      "qrs3_bytes": 38156
+    },
+    "performance_overhead": {
+      "ml_dsa_vs_ecdsa": {
+        "signing_overhead_x": 0.0400181560854959,
+        "verification_overhead_x": 0.9191183155949737
+      },
+      "qrs3_vs_ecdsa": {
+        "signing_overhead_x": 386.2044855116351,
+        "verification_overhead_x": 2.027853231268693
+      }
+    },
+    "scalability_impact": {
+      "block_size_increase_percentage": {
+        "ml_dsa_vs_ecdsa": 866.7896678966789,
+        "qrs3_vs_ecdsa": 14053.50553505535
+      },
+      "blocks_per_gb": {
+        "ecdsa_blocks_per_gb": 39621.469520295206,
+        "ml_dsa_blocks_per_gb": 4098.251236641221,
+        "qrs3_blocks_per_gb": 279.94103243299617
+      }
+    }
+  },
+  "block_size_impact": {
+    "base_transaction_size_bytes": 200,
+    "signature_sizes": {
+      "ecdsa_bytes": 71,
+      "ml_dsa_bytes": 2420,
+      "qrs3_bytes": 38156
+    },
+    "transaction_sizes": {
+      "ecdsa_bytes": 271,
+      "ml_dsa_bytes": 2620,
+      "qrs3_bytes": 38356
+    },
+    "block_size_100_transactions": {
+      "ecdsa": 27100,
+      "ml_dsa": 262000,
+      "qrs3": 3835600
+    },
+    "increase_percentage": {
+      "ml_dsa_vs_ecdsa": 866.7896678966789,
+      "qrs3_vs_ecdsa": 14053.50553505535
+    },
+    "scalability_analysis": {
+      "ecdsa_blocks_per_gb": 39621.469520295206,
+      "ml_dsa_blocks_per_gb": 4098.251236641221,
+      "qrs3_blocks_per_gb": 279.94103243299617
+    }
+  }
+}

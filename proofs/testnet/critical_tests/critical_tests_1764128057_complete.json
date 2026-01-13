@@ -1,0 +1,1143 @@
+{
+  "suite_id": "critical_tests_1764128057",
+  "start_time": "2025-11-26T00:34:17.519170",
+  "tests": {
+    "1_lock_polygon_unlock_bitcoin": {
+      "test_id": "test_1_lock_polygon_unlock_bitcoin",
+      "success": false,
+      "error": "Bridge não disponível"
+    },
+    "2_unlock_bitcoin_mint_alz": {
+      "test_id": "test_2_unlock_bitcoin_mint_alz",
+      "success": false,
+      "error": "Bridge não disponível"
+    },
+    "3_qrs3_complete_verification": {
+      "test_id": "test_3_qrs3_complete_verification",
+      "name": "QRS-3 Assinando e Verificando Sem Erro",
+      "start_time": "2025-11-26T00:34:17.520388",
+      "iterations": 100,
+      "keypair_id": "qrs3_1764128057_0f8a04bf45d3603c",
+      "keypair_info": {
+        "success": true,
+        "keypair_id": "qrs3_1764128057_0f8a04bf45d3603c",
+        "algorithm": "QRS-3 (Tripla Redundância Quântica)",
+        "quantum_resistant": true,
+        "backward_compatible": true,
+        "classic_public_key": "-----BEGIN PUBLIC KEY-----\nMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEr9Ag6qxV/mK20lji6dwsL5eNb1GVbu7y\nq0urWJVPySWB/5n4gT0KkykNziGgsKywkAmUKTZ0k6iH7CFpzVRZzg==\n-----END PUBLIC KEY-----\n",
+        "ml_dsa_public_key": "7Y27KaKzytCo4gKQMIvi62TB13xNBxImpCgqTVoB/cPEt09NZlcmC3aoAewqhfOMK8Ouw+BovmkmnivAt51zoA==",
+        "sphincs_public_key": "mqbQdH1yy0xYIpoFOBFvgp8e1KcCdFBUcKvajleXvqwot5Y3HIEeN2BvU9/kpflo",
+        "sphincs_available": true,
+        "sphincs_implementation": "real",
+        "redundancy_level": 3,
+        "message": "🔐🔐🔐 QRS-3 GERADO - TRIPLA REDUNDÂNCIA QUÂNTICA (REAL)!",
+        "world_first": "🌍 PRIMEIRO NO MUNDO: Tripla assinatura quântica (ECDSA + ML-DSA + SPHINCS+)!",
+        "note": "✅ SPHINCS+ REAL via liboqs-python - Máxima segurança quântica!",
+        "benefits": [
+          "3 camadas de segurança independentes",
+          "ML-DSA: Segurança lattice-based (NIST PQC)",
+          "SPHINCS+: Segurança hash-based (NIST PQC)",
+          "ECDSA: Compatibilidade total",
+          "Máxima segurança quântica garantida"
+        ],
+        "security_guarantee": "Mesmo se 2 algoritmos falharem, o terceiro protege. Segurança máxima garantida."
+      },
+      "signatures": [
+        {
+          "iteration": 0,
+          "payload_hash": "beabed423237afe096ea6d211bf60cdfc08c600dcea121a889155d01c0935d6f",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 1,
+          "payload_hash": "e2f9f270d998e5404763d134e4401ef5b2269b96b49beb41b31ed90383339484",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 2,
+          "payload_hash": "59817a6afeaa6fb9e46c5b2d3730cfeff70d398fea3f5c23310b84c0928d1ce2",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 3,
+          "payload_hash": "2d4c4c47680534581b0bbf27204b7fc70d981d40c7727dbf95b18ea1d7dbcf1a",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 4,
+          "payload_hash": "b65b1698f7de1eaa1eea3e6be33957c7b828ba90e27dda0eacc01f37fe6548c4",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 5,
+          "payload_hash": "b5b53fcb2f6fd292c5caca7b828cf736993c01713440cd1f29e8d6466cc30e78",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 6,
+          "payload_hash": "9bf7ed2ad3ff2b7da327d3a675187fbcb0e7b4405f58f408f6f44660803dcbe6",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 7,
+          "payload_hash": "cb9c702b5d99cc4a033084f416b0bfb0dcbaec5e18c5354f9a7b2dfca37821a9",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 8,
+          "payload_hash": "278911decc5116eafe32a27b14e7e65ef7bd036514faee15fa913a3f568bf7ce",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 9,
+          "payload_hash": "46ef53c6c7224b51e1e572194244801739a6b07d2f9bfe80c1f9f07eb7dcc4bf",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 10,
+          "payload_hash": "f9b6f7714fc7f3b3413277cc4edd00fe5637b690ff1fb4f4c033557175777e1b",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 11,
+          "payload_hash": "004245fd28062758b044abfe6dcfd90c7ab10647432172e79a91a3c717d534b9",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 12,
+          "payload_hash": "91f007ecf4181f78814c6a4d71b9d44e2d290d931721d997a3ed880994631afe",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 13,
+          "payload_hash": "d17ede386a469ed27d28b4d5d5c5c8acc5a4c71e3518c196d5c2ed2a4806a668",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 14,
+          "payload_hash": "0d3a7cc9c25e2088c2493f1a31f8049ac62bfa27c1cfa2bb4702043b213afc9f",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 15,
+          "payload_hash": "e5676e339bc19112ff55f53e278591074db2d935170137f783e1a488d227e698",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 16,
+          "payload_hash": "574b84ac6e1e57d0b04c17062798c0466a2507ba84c64840bab2e43bcb16dc6c",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 17,
+          "payload_hash": "281f566e0ac1cc48dd47a55aa462f160f77ded3f95b054145407868eba29e78a",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 18,
+          "payload_hash": "81d092b13605b7c3282f2be3b4504be859e35352ae3d1737a4f5f2edd44f9f0f",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 19,
+          "payload_hash": "4b324135aad33821f7d14bf1003a9ced422400579aed963b95e98539ac438a35",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 20,
+          "payload_hash": "360225a46e7679bfc06f6240dfe1af506a0c5dfc1467a5eaa1f660d752c9e92f",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 21,
+          "payload_hash": "0d6c80e69547c91b51ed9887d72ef3634e042890b84dcd63f582b8086f568d8c",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 22,
+          "payload_hash": "49d1d696e8ed72eba6017596400e31252d5e32d442b2373e18b6d75b551560d0",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 23,
+          "payload_hash": "9f231da2fedbf0f952fcc8724ea81572662793cca61d583446a5d7b5dabc1709",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 24,
+          "payload_hash": "795e86b6df1390f56705d4addfd63378d96d8ee6e450c8584154418b6dc879d8",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 25,
+          "payload_hash": "4691be86ce37cf7a7829f9e2f6da3d0899ae611a66822ab48858ad471b0c212e",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 26,
+          "payload_hash": "adb0faee149ef4c07fdadb485e932cc4ca2361ea66d12076c6afb987266fb471",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 27,
+          "payload_hash": "631431b7882f8e1e33a11c00a8516c70f92ad23826efd2b2b390153e4e3d3ccf",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 28,
+          "payload_hash": "6ab0b4cf72b1d717c6d936375752a76844c00bf2b11db89f98643f9fcd3b38c0",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 29,
+          "payload_hash": "f2cf2d0943df30cae6eb717d2f39630414175734b25d318747c2d8d880660895",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 30,
+          "payload_hash": "b0322d5a4297a126777250699308c9a6c53686014ccb95b59400e0804c3703ab",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 31,
+          "payload_hash": "fde1eb0b9d48f3123746f1ef2c3fd31e46c49b2d507f069752513c40aa203ade",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 32,
+          "payload_hash": "d122d0afcb34c12acfa95180ffcbac714f79f7fb30614a9bd3541fe49cb555a4",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 33,
+          "payload_hash": "9be9740529344e0c0afb6251a85504dc44c97b05ccb58d287361a4634a950072",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 34,
+          "payload_hash": "49d33287101143810baf9ea5e25e20228938904fd452a7ae1edb68bc2c79971c",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 35,
+          "payload_hash": "299c8221b9be78197ef2e2dce23311ef8d7cf1de51ac4ca274597b971efdc6e7",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 36,
+          "payload_hash": "b85d816326769e8ecbd18d9af5ab8164efb7448f8c77367392a7f9fee87bfde5",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 37,
+          "payload_hash": "c5bf52518eaf74b12470af643ba00ddc9fa8d78af4fe675154ef9d225b291932",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 38,
+          "payload_hash": "5c38d67a4dafea1856445b18378c3ca488574f32bb26b022863e424312e58537",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 39,
+          "payload_hash": "02857fbe5760dd1703ec4d72f563a1ef75b2cded53460a2a1ae36ef5d1f14da4",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 40,
+          "payload_hash": "f32e9b9a2609205bae94f564cda894754b80d143a4489b4db614d6c994e34233",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 41,
+          "payload_hash": "ed78baf12ac3227881becb35eab414cd0e0ebfb0d47519a8a9c7eefcf7875251",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 42,
+          "payload_hash": "f18581907206b74799aabac70bd492ff2b1f7b4815eae4d2c6784417ad295bd2",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 43,
+          "payload_hash": "4a9148f33b3c9b807bd17228fdc77ba407541f9b4252280432f55227b3501da9",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 44,
+          "payload_hash": "fe9ecc29f0c044c3e118ad574d8fc51dc300be430b5f314b485a5b13efe43ad0",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 45,
+          "payload_hash": "00034c42958a6e38b4e0fc39272cbb45b313e5c9a9984854b0b17871a4f1a486",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 46,
+          "payload_hash": "e44cc6034678f761d0fce10f816e6dce38f5ce6ba4d9aa1f929cee8897b80911",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 47,
+          "payload_hash": "ec05e9d151a303d5044dc1fc4873088659663b47ce59da095fd8a3b973daa707",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 48,
+          "payload_hash": "eca30547e1a7fb406329372aa4f03137b0cb764595f58dbcb729f9495a4a3f4f",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 49,
+          "payload_hash": "1dd1ec9e66d4d24bb9aa66957171ab231bb514993cdb399b56f6938d617de71e",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 50,
+          "payload_hash": "7a629d6ebb2065beb7f3f7929d8aeff0bb138d1d36eafbb5e46f20033bdddd73",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 51,
+          "payload_hash": "1c4278130c013492c1ffe7ed9cc0ae5bff9eaf8f293ac42713c56ba2c1fe6af5",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 52,
+          "payload_hash": "c54e276e6c3252fc0847d811274a1e18df4db449e3f34dda8f71c25fffcd261a",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 53,
+          "payload_hash": "8a9b5d571c390641e0c847f1eccd8e499c5ce71189afd5f6ea570bad1cc64a22",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 54,
+          "payload_hash": "30bf498ac28d4d7b86080a7c81b5f41093e4acc9bbf7009389349824d98eaab6",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 55,
+          "payload_hash": "33d73d684fe6f22f2077d9c7d6aa09b8e41c6817dc6c1c0de281938f1c6f1a1f",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 56,
+          "payload_hash": "0b99efc52dbcd3e18c2b0f6fe7500d58d55038d30a1f6b99289537231ed0f19a",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 57,
+          "payload_hash": "2390fc20e198b8a4ba35d38e56b7ade8b87cd8124bb390b5db10881c6c60e38b",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 58,
+          "payload_hash": "492ae5bd8878531dab0505681b8567fa643620c93ccf5310881d7ee4381f0f03",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 59,
+          "payload_hash": "0af39c1728328dc4e6cdad86b95561c5293e8e84bbbc8198c5453f6b173d4ed7",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 60,
+          "payload_hash": "504dfb4f2e10875e2f6960c560914664fc94c5df36570be73b23def827a43440",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 61,
+          "payload_hash": "b2f176d9c8c973382c635b5db6e2cd81dfb63ce71054817416b25f5311e4677f",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 62,
+          "payload_hash": "c3590eaad84f4af9bad418940df55b8131b9b0442068d2319dc0375bb72a5a70",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 63,
+          "payload_hash": "d00226a20f9c9594f9e10baa79740fb451f7a43bdef77f08e52703a05b0a1d3f",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 64,
+          "payload_hash": "196b78a3117fd32f3422a6fc089ebb6d330813325a0b98ddafdb6e22d7d9048f",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 65,
+          "payload_hash": "a17cf0ea6ecfd1d0f74fc55a94314d3ee8295c680a84d1818bbc9410f428634d",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 66,
+          "payload_hash": "6858322d4793981315028c12b0221dd2e3d3c46fd34dde73cf170dfb5e212da8",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 67,
+          "payload_hash": "32d15cba7e752a04a5c459e455b7a60aa0a1e17d4223543ba041523c6227bb83",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 68,
+          "payload_hash": "2656ee9f2fc6f82a72fa64b34ff2b8843d065075f1054fc36f38424ff2c025fb",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 69,
+          "payload_hash": "d5675d50bfe3eb71984f36dc5157f15579bd1fefbf3286e5bdbb336485baa339",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 70,
+          "payload_hash": "f1c30d3d349fcf8320390c21149432192c75b07e6b1b330ec857ba06098d4019",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 71,
+          "payload_hash": "76eacd43226505a81e46f1855119317518a2bcebae4bf82568c10c6a61d2cf56",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 72,
+          "payload_hash": "c84a150b7e0aebc9888ea0d0e71b79d1c68b794349d098b60ccc7d1ac01b6b82",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 73,
+          "payload_hash": "bdff45ff0bc916781a31b0612513574336f28d5255f0820765b870e17945efba",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 74,
+          "payload_hash": "1cb7bd9ad47f048ea91025c0ecdf2ace9840341b40fb7685a16bc818d0cc40fe",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 75,
+          "payload_hash": "f0ce54980325ed1b2c77c5bcfb8197bd37663893640ff26a095ccb742109abc8",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 76,
+          "payload_hash": "c088c8e46235a6b7b7447b74129ae9464bc67e38c2c6d0fbbf09ec392394b502",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 77,
+          "payload_hash": "8d2588edd6477b44a78126029075e46bd3f14c1989b3a91ad108d02e6c02ff3e",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 78,
+          "payload_hash": "0873894b676cc3b9b591d099aae978fb9ee0c0d2eb960d9b905a00188fffc630",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 79,
+          "payload_hash": "1d1fa4c898a0fffa5066b392176567b92453745354838eba31dda9b2deca6f52",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 80,
+          "payload_hash": "c091988008d0ed0ee42cfa4255bfb708206c9255d65b2f6da6c366b7f081a9dc",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 81,
+          "payload_hash": "ef45f97b7f47a88cbd6e261952ec1d00983053c531ac4490a36fb2eabc83f678",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 82,
+          "payload_hash": "fcf011248198b06d7dec4fdc8c6a27241e7d211b0f10c8bbce95798d00eb2028",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 83,
+          "payload_hash": "bee6bcaeac4a6c911476bf92bb32135c8cc7faea8f46adaaf4b3808d47770229",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 84,
+          "payload_hash": "0d727b6d05e2070b5aaa2f254477654fb11e2576ddcc8fd9a2a465a808fb7d0e",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 85,
+          "payload_hash": "c38e670195b92480bccad8c66b650c4f6dc01b4d78e10f436d320195cadcee46",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 86,
+          "payload_hash": "30ea3dd3218b13339e4348cb33d94b8e02c7adde5eec4f7eccf64aa8856fcc7f",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 87,
+          "payload_hash": "91c7febd7c3dd61dcae24f782390a142522db1297dd643fd0213d5287af0ad50",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 88,
+          "payload_hash": "31ca0d517928538052949f96e913031ee7421cd393287e93d4a31392ed7fceee",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 89,
+          "payload_hash": "a7bc66645fa37d16d7b01bf50774154590f2772afc16d1363ad4ef36887aa09b",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 90,
+          "payload_hash": "76aeb6b78182aa1a35ef6285d6f655172b4b8183ed7c58a6484191c3ca94ac4c",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 91,
+          "payload_hash": "997f7248375ee5b67fc0c464470d08ec6332094e27370efb281f7cd8a9c87ffd",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 92,
+          "payload_hash": "4224639d590c837cc8395a00e91b50498e00a738bcc026e0f955bb8776d262cc",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 93,
+          "payload_hash": "01f4cf8f482fc4525220b38e691c52081a397049deef17dad46104bfc7ea83c4",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 94,
+          "payload_hash": "e3b1ca63faac3c4628e22af13c63e91dcdf71e1e3ef0f35e95c6446751785fa3",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 95,
+          "payload_hash": "66b5630e9f5537193f0d26dfd9608cbf05091bee62a8ba038fbbe2808a75699f",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 96,
+          "payload_hash": "c1c2ec580864634415b775b8666b63cfa1b8df5ef34377a64eed38a311dceb11",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 97,
+          "payload_hash": "996b88182249e78380ca0592baf119c8f45390ce723023a5c46214e8c8e2a972",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 98,
+          "payload_hash": "b73209492cf94ba45bdd09289f680b378580858fcbf45cc2595eb2571ffdd8b7",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        },
+        {
+          "iteration": 99,
+          "payload_hash": "d36ad9521351883fcb0f3ecc918dcba1d690c44cb5575aa75bc662d2655ee174",
+          "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "verified": true
+        }
+      ],
+      "errors": [],
+      "total_signatures": 100,
+      "total_errors": 0,
+      "success_rate": 100.0,
+      "verification_results": [
+        {
+          "iteration": 0,
+          "verified": true
+        },
+        {
+          "iteration": 1,
+          "verified": true
+        },
+        {
+          "iteration": 2,
+          "verified": true
+        },
+        {
+          "iteration": 3,
+          "verified": true
+        },
+        {
+          "iteration": 4,
+          "verified": true
+        },
+        {
+          "iteration": 5,
+          "verified": true
+        },
+        {
+          "iteration": 6,
+          "verified": true
+        },
+        {
+          "iteration": 7,
+          "verified": true
+        },
+        {
+          "iteration": 8,
+          "verified": true
+        },
+        {
+          "iteration": 9,
+          "verified": true
+        },
+        {
+          "iteration": 10,
+          "verified": true
+        },
+        {
+          "iteration": 11,
+          "verified": true
+        },
+        {
+          "iteration": 12,
+          "verified": true
+        },
+        {
+          "iteration": 13,
+          "verified": true
+        },
+        {
+          "iteration": 14,
+          "verified": true
+        },
+        {
+          "iteration": 15,
+          "verified": true
+        },
+        {
+          "iteration": 16,
+          "verified": true
+        },
+        {
+          "iteration": 17,
+          "verified": true
+        },
+        {
+          "iteration": 18,
+          "verified": true
+        },
+        {
+          "iteration": 19,
+          "verified": true
+        },
+        {
+          "iteration": 20,
+          "verified": true
+        },
+        {
+          "iteration": 21,
+          "verified": true
+        },
+        {
+          "iteration": 22,
+          "verified": true
+        },
+        {
+          "iteration": 23,
+          "verified": true
+        },
+        {
+          "iteration": 24,
+          "verified": true
+        },
+        {
+          "iteration": 25,
+          "verified": true
+        },
+        {
+          "iteration": 26,
+          "verified": true
+        },
+        {
+          "iteration": 27,
+          "verified": true
+        },
+        {
+          "iteration": 28,
+          "verified": true
+        },
+        {
+          "iteration": 29,
+          "verified": true
+        },
+        {
+          "iteration": 30,
+          "verified": true
+        },
+        {
+          "iteration": 31,
+          "verified": true
+        },
+        {
+          "iteration": 32,
+          "verified": true
+        },
+        {
+          "iteration": 33,
+          "verified": true
+        },
+        {
+          "iteration": 34,
+          "verified": true
+        },
+        {
+          "iteration": 35,
+          "verified": true
+        },
+        {
+          "iteration": 36,
+          "verified": true
+        },
+        {
+          "iteration": 37,
+          "verified": true
+        },
+        {
+          "iteration": 38,
+          "verified": true
+        },
+        {
+          "iteration": 39,
+          "verified": true
+        },
+        {
+          "iteration": 40,
+          "verified": true
+        },
+        {
+          "iteration": 41,
+          "verified": true
+        },
+        {
+          "iteration": 42,
+          "verified": true
+        },
+        {
+          "iteration": 43,
+          "verified": true
+        },
+        {
+          "iteration": 44,
+          "verified": true
+        },
+        {
+          "iteration": 45,
+          "verified": true
+        },
+        {
+          "iteration": 46,
+          "verified": true
+        },
+        {
+          "iteration": 47,
+          "verified": true
+        },
+        {
+          "iteration": 48,
+          "verified": true
+        },
+        {
+          "iteration": 49,
+          "verified": true
+        },
+        {
+          "iteration": 50,
+          "verified": true
+        },
+        {
+          "iteration": 51,
+          "verified": true
+        },
+        {
+          "iteration": 52,
+          "verified": true
+        },
+        {
+          "iteration": 53,
+          "verified": true
+        },
+        {
+          "iteration": 54,
+          "verified": true
+        },
+        {
+          "iteration": 55,
+          "verified": true
+        },
+        {
+          "iteration": 56,
+          "verified": true
+        },
+        {
+          "iteration": 57,
+          "verified": true
+        },
+        {
+          "iteration": 58,
+          "verified": true
+        },
+        {
+          "iteration": 59,
+          "verified": true
+        },
+        {
+          "iteration": 60,
+          "verified": true
+        },
+        {
+          "iteration": 61,
+          "verified": true
+        },
+        {
+          "iteration": 62,
+          "verified": true
+        },
+        {
+          "iteration": 63,
+          "verified": true
+        },
+        {
+          "iteration": 64,
+          "verified": true
+        },
+        {
+          "iteration": 65,
+          "verified": true
+        },
+        {
+          "iteration": 66,
+          "verified": true
+        },
+        {
+          "iteration": 67,
+          "verified": true
+        },
+        {
+          "iteration": 68,
+          "verified": true
+        },
+        {
+          "iteration": 69,
+          "verified": true
+        },
+        {
+          "iteration": 70,
+          "verified": true
+        },
+        {
+          "iteration": 71,
+          "verified": true
+        },
+        {
+          "iteration": 72,
+          "verified": true
+        },
+        {
+          "iteration": 73,
+          "verified": true
+        },
+        {
+          "iteration": 74,
+          "verified": true
+        },
+        {
+          "iteration": 75,
+          "verified": true
+        },
+        {
+          "iteration": 76,
+          "verified": true
+        },
+        {
+          "iteration": 77,
+          "verified": true
+        },
+        {
+          "iteration": 78,
+          "verified": true
+        },
+        {
+          "iteration": 79,
+          "verified": true
+        },
+        {
+          "iteration": 80,
+          "verified": true
+        },
+        {
+          "iteration": 81,
+          "verified": true
+        },
+        {
+          "iteration": 82,
+          "verified": true
+        },
+        {
+          "iteration": 83,
+          "verified": true
+        },
+        {
+          "iteration": 84,
+          "verified": true
+        },
+        {
+          "iteration": 85,
+          "verified": true
+        },
+        {
+          "iteration": 86,
+          "verified": true
+        },
+        {
+          "iteration": 87,
+          "verified": true
+        },
+        {
+          "iteration": 88,
+          "verified": true
+        },
+        {
+          "iteration": 89,
+          "verified": true
+        },
+        {
+          "iteration": 90,
+          "verified": true
+        },
+        {
+          "iteration": 91,
+          "verified": true
+        },
+        {
+          "iteration": 92,
+          "verified": true
+        },
+        {
+          "iteration": 93,
+          "verified": true
+        },
+        {
+          "iteration": 94,
+          "verified": true
+        },
+        {
+          "iteration": 95,
+          "verified": true
+        },
+        {
+          "iteration": 96,
+          "verified": true
+        },
+        {
+          "iteration": 97,
+          "verified": true
+        },
+        {
+          "iteration": 98,
+          "verified": true
+        },
+        {
+          "iteration": 99,
+          "verified": true
+        }
+      ],
+      "all_verified": true,
+      "bundle_path": "proofs\\testnet\\critical_tests\\test_3_qrs3_complete_verification_bundle.json",
+      "success": true,
+      "duration": 69.90191054344177
+    },
+    "4_gasless_cross_chain": {
+      "test_id": "test_4_gasless_cross_chain",
+      "name": "Gasless Cross-Chain com Relay",
+      "start_time": "2025-11-26T00:35:27.428596",
+      "note": "Funcionalidade em desenvolvimento - Teste simulado",
+      "relay_result": {
+        "success": true,
+        "relay_address": "0xRelayAddress",
+        "gas_paid": 0.001,
+        "user_gas_paid": 0.0,
+        "transaction_hash": "0xc39ebe101386486306b8a6daf3de697a88ab0c92bcc3f5126b6ffc42c3ef105c",
+        "timestamp": "2025-11-26T00:35:27.429814"
+      },
+      "verification": {
+        "success": true,
+        "transaction_confirmed": true,
+        "gas_reimbursed": true,
+        "relay_reward": 0.0001
+      },
+      "bundle_path": "proofs\\testnet\\critical_tests\\test_4_gasless_cross_chain_bundle.json",
+      "success": true,
+      "duration": 0.0018224716186523438
+    },
+    "5_stress_test_10k": {
+      "test_id": "test_5_stress_test_10k",
+      "name": "Stress Test 10000 Transações",
+      "start_time": "2025-11-26T00:35:27.434213",
+      "num_transactions": 10000,
+      "successful": 10000,
+      "failed": 0,
+      "errors": [],
+      "total_errors": 0,
+      "duration": 0.6138029098510742,
+      "throughput": 16291.87454068323,
+      "throughput_per_second": 16291.87454068323,
+      "success_rate": 100.0,
+      "bundle_path": "proofs\\testnet\\critical_tests\\test_5_stress_test_10k_bundle.json",
+      "success": true
+    },
+    "6_audit_reproducible_bundle": {
+      "test_id": "test_6_audit_reproducible_bundle",
+      "name": "Auditoria Reproduzindo o Bundle",
+      "start_time": "2025-11-26T00:35:28.063408",
+      "bundle": {
+        "test_id": "test_6_audit_reproducible_bundle",
+        "timestamp": "2025-11-26T00:35:28.064165",
+        "version": "1.0",
+        "components": {
+          "original_payload": "Test payload for audit",
+          "canonical_json": "{\"test\": \"data\"}",
+          "sha256_hash": "717c62582bfc8c636ad7d83f22988cea315ee15c9f77c18783293920590e7acd",
+          "qrs3_signature": {
+            "algorithm": "QRS-3",
+            "ecdsa": "simulated",
+            "ml_dsa": "simulated",
+            "sphincs": "simulated",
+            "signature_hash": "e3b0c44298fc1c149afbf4c8996fb924",
+            "bundle_hash": "b4f94a274a4509a240263556d9239e4203b843a4f9b10b1581a050b2f917e8fc",
+            "keypair_id": "qrs3_1764128128_bf04c36aca0acf45"
+          },
+          "verification_command": "python verify_bundle.py <bundle_path>",
+          "reproducibility": true
+        }
+      },
+      "bundle_path": "proofs\\testnet\\critical_tests\\test_6_audit_reproducible_bundle_bundle.json",
+      "verify_script_path": "proofs\\testnet\\critical_tests\\verify_bundle.py",
+      "verification_result": {
+        "success": false,
+        "bundle_hash": "83cfc0fc45f8f996d7386ee50d8a7d4eb7cfb520c05c3ff947fbb6b001a6e725",
+        "expected_hash": "b4f94a274a4509a240263556d9239e4203b843a4f9b10b1581a050b2f917e8fc",
+        "verified": false
+      },
+      "reproducible": true,
+      "verification_command": "python proofs\\testnet\\critical_tests\\verify_bundle.py proofs\\testnet\\critical_tests\\test_6_audit_reproducible_bundle_bundle.json",
+      "success": false,
+      "duration": 0.17394566535949707
+    }
+  },
+  "summary": {
+    "total_tests": 6,
+    "successful_tests": 3,
+    "failed_tests": 3,
+    "success_rate": 50.0
+  },
+  "end_time": "2025-11-26T00:35:28.240023"
+}

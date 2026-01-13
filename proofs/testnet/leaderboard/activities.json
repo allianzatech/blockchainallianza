@@ -1,0 +1,107 @@
+[
+  {
+    "timestamp": "2025-12-31T14:33:19.790722",
+    "user_id": "12ca17b49af22894",
+    "user_name": "dino",
+    "type": "proof_generated",
+    "points": 15,
+    "details": {
+      "chain": "bitcoin",
+      "tx_hash": "6d23f47a7de2b4c6...",
+      "proof_hash": "da0cf684da08411f..."
+    }
+  },
+  {
+    "timestamp": "2025-12-31T14:41:56.685200",
+    "user_id": "12ca17b49af22894",
+    "user_name": "dino",
+    "type": "proof_generated",
+    "points": 15,
+    "details": {
+      "chain": "bitcoin",
+      "tx_hash": "6d23f47a7de2b4c6...",
+      "proof_hash": "1245123a4c8cf6e1..."
+    }
+  },
+  {
+    "timestamp": "2025-12-31T16:31:51.206452",
+    "user_id": "4b004f308edb25d5",
+    "user_name": "User_4b004f30",
+    "type": "qss_request",
+    "points": 5,
+    "details": {
+      "type": "qrs3_generation",
+      "verified": true
+    }
+  },
+  {
+    "timestamp": "2025-12-31T16:31:54.694619",
+    "user_id": "4b004f308edb25d5",
+    "user_name": "User_4b004f30",
+    "type": "qss_request",
+    "points": 5,
+    "details": {
+      "type": "qrs3_verification",
+      "verified": true,
+      "proof_id": "qrs3_1767209514_02d03ed94fe89368"
+    }
+  },
+  {
+    "timestamp": "2025-12-31T16:52:21.179959",
+    "user_id": "12ca17b49af22894",
+    "user_name": "dino",
+    "type": "qss_request",
+    "points": 5,
+    "details": {
+      "type": "qrs3_generation",
+      "verified": true
+    }
+  },
+  {
+    "timestamp": "2025-12-31T16:52:24.626373",
+    "user_id": "12ca17b49af22894",
+    "user_name": "dino",
+    "type": "qss_request",
+    "points": 5,
+    "details": {
+      "type": "qrs3_verification",
+      "verified": true,
+      "proof_id": "qrs3_1767210744_9d0c40c66bbcca11"
+    }
+  },
+  {
+    "timestamp": "2026-01-02T17:43:07.700817",
+    "user_id": "12ca17b49af22894",
+    "user_name": "dino",
+    "type": "qss_request",
+    "points": 5,
+    "details": {
+      "type": "qrs3_generation",
+      "verified": false
+    }
+  },
+  {
+    "timestamp": "2026-01-02T17:43:13.854768",
+    "user_id": "12ca17b49af22894",
+    "user_name": "dino",
+    "type": "qss_request",
+    "points": 5,
+    "details": {
+      "type": "qrs3_verification",
+      "verified": true,
+      "proof_id": "qrs3_1767386593_2a26da68a6e80244"
+    }
+  },
+  {
+    "timestamp": "2026-01-02T17:43:47.642293",
+    "user_id": "12ca17b49af22894",
+    "user_name": "dino",
+    "type": "qss_request",
+    "points": 5,
+    "details": {
+      "type": "qrs3_verification",
+      "verified": true,
+      "proof_id": "qrs3_1767386627_30ea902baa4479ec"
+    }
+  }
+]

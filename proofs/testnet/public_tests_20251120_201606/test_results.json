@@ -1,0 +1,143 @@
+{
+  "testnet_version": "1.0.0",
+  "timestamp": "2025-11-20T20:16:06.917654",
+  "total_duration": 0.15,
+  "tests": {
+    "qrs3_signature": {
+      "success": false,
+      "error": "QuantumSecuritySystem.sign_qrs3() missing 1 required positional argument: 'message'"
+    },
+    "interoperability": {
+      "success": true,
+      "test_name": "Interoperabilidade",
+      "lock_id": "lock_1763680566_3edff31a",
+      "tx_hash_source": "0x908b2b05786806bea9d3440e6f39290c830ebf832ce795bc138aad66d9bad26e",
+      "tx_hash_target": "0x36c1c61b29c4c23fb5fe828bc6025e8a50ab3ac997d6506250f18ace44ab0ff6",
+      "confirmations": 1,
+      "bridge_status": "active",
+      "chains": {
+        "source": "allianza",
+        "target": "ethereum_testnet"
+      },
+      "proof_hash": "b14bca47950852f3d4abc03540a2bea488705e36c0fb6ca5de1caa7ec949308bda2441a9ceb7e991b149758b51bb948180ade9e8b444df59444446606a2b55cb"
+    },
+    "performance": {
+      "success": false,
+      "error": "QuantumSecuritySystem.sign_qrs3() missing 1 required positional argument: 'message'"
+    },
+    "block_validation": {
+      "success": false,
+      "error": "'Block' object has no attribute 'get'"
+    },
+    "quantum_security": {
+      "success": false,
+      "test_name": "Quantum Security",
+      "qrs3_available": true,
+      "ml_dsa_available": true,
+      "sphincs_available": false,
+      "quantum_resistant": true,
+      "nist_standards": {
+        "ml_dsa": "FIPS 204",
+        "sphincs": "FIPS 205"
+      }
+    }
+  },
+  "logs": [
+    {
+      "timestamp": "2025-11-20T20:16:06.767653",
+      "level": "INFO",
+      "message": "🚀 Iniciando Testes Públicos da Allianza Quantum Testnet"
+    },
+    {
+      "timestamp": "2025-11-20T20:16:06.768470",
+      "level": "INFO",
+      "message": "======================================================================"
+    },
+    {
+      "timestamp": "2025-11-20T20:16:06.768972",
+      "level": "INFO",
+      "message": "🔍 Teste 1: Validando QRS-3 Signature"
+    },
+    {
+      "timestamp": "2025-11-20T20:16:06.769727",
+      "level": "INFO",
+      "message": "  🔐 Gerando assinatura QRS-3..."
+    },
+    {
+      "timestamp": "2025-11-20T20:16:06.803928",
+      "level": "ERROR",
+      "message": "  ❌ Erro: QuantumSecuritySystem.sign_qrs3() missing 1 required positional argument: 'message'"
+    },
+    {
+      "timestamp": "2025-11-20T20:16:06.804938",
+      "level": "INFO",
+      "message": "🔍 Teste 2: Testando Interoperabilidade"
+    },
+    {
+      "timestamp": "2025-11-20T20:16:06.805703",
+      "level": "INFO",
+      "message": "  🔐 Criando Lock on-chain..."
+    },
+    {
+      "timestamp": "2025-11-20T20:16:06.906761",
+      "level": "INFO",
+      "message": "  ⛓️ Lock confirmado - TxHash: 0x908b2b05786806bea9d3440e6f39290c830ebf832ce795bc138aad66d9bad26e"
+    },
+    {
+      "timestamp": "2025-11-20T20:16:06.908813",
+      "level": "INFO",
+      "message": "  ✅ Interoperabilidade: SUCCESS"
+    },
+    {
+      "timestamp": "2025-11-20T20:16:06.909794",
+      "level": "INFO",
+      "message": "🔍 Teste 3: Testando Performance"
+    },
+    {
+      "timestamp": "2025-11-20T20:16:06.911041",
+      "level": "INFO",
+      "message": "  🔄 Executando 100 assinaturas QRS-3..."
+    },
+    {
+      "timestamp": "2025-11-20T20:16:06.912012",
+      "level": "ERROR",
+      "message": "  ❌ Erro: QuantumSecuritySystem.sign_qrs3() missing 1 required positional argument: 'message'"
+    },
+    {
+      "timestamp": "2025-11-20T20:16:06.912510",
+      "level": "INFO",
+      "message": "🔍 Teste 4: Validando Blocos"
+    },
+    {
+      "timestamp": "2025-11-20T20:16:06.913028",
+      "level": "ERROR",
+      "message": "  ❌ Erro: 'Block' object has no attribute 'get'"
+    },
+    {
+      "timestamp": "2025-11-20T20:16:06.913784",
+      "level": "INFO",
+      "message": "🔍 Teste 5: Testando Segurança Quântica"
+    },
+    {
+      "timestamp": "2025-11-20T20:16:06.914629",
+      "level": "INFO",
+      "message": "  ✅ QRS-3: Disponível"
+    },
+    {
+      "timestamp": "2025-11-20T20:16:06.915684",
+      "level": "INFO",
+      "message": "  ✅ ML-DSA: Disponível"
+    },
+    {
+      "timestamp": "2025-11-20T20:16:06.916699",
+      "level": "INFO",
+      "message": "  ✅ SPHINCS+: Indisponível"
+    }
+  ],
+  "summary": {
+    "total_tests": 5,
+    "passed": 1,
+    "failed": 4,
+    "success_rate": 20.0
+  }
+}

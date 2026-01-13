@@ -1,0 +1,20 @@
+{
+  "users": {
+    "12ca17b49af22894": {
+      "name": "dino",
+      "points": 125,
+      "tests_run": 0,
+      "proofs_generated": 0,
+      "qss_requests": 7,
+      "first_seen": "2025-12-31T10:59:22.563188",
+      "last_active": "2026-01-07T10:59:10.406796",
+      "badges": [],
+      "username": "dino",
+      "email": null,
+      "password_hash": "42a81e17d89ae9e660ceaaef8a1def7abf3e1f2f5a5a7f623e18a7897b7ac5c0",
+      "registered": true,
+      "logged_in": false
+    }
+  },
+  "last_updated": "2026-01-07T10:59:10.406816"
+}

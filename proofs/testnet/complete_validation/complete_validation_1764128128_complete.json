@@ -1,0 +1,1366 @@
+{
+  "suite_id": "complete_validation_1764128128",
+  "start_time": "2025-11-26T00:35:28.246109",
+  "tests": {
+    "1_pqc_ml_dsa_keygen": {
+      "test_id": "test_1_pqc_ml_dsa_keygen",
+      "name": "PQC Keygen ML-DSA Funcionando",
+      "start_time": "2025-11-26T00:35:28.247082",
+      "iterations": 10,
+      "keypairs": [
+        {
+          "iteration": 0,
+          "keypair_id": "ml_dsa_test_0_1764128128",
+          "real": true,
+          "algorithm": "ML-DSA-128",
+          "implementation": "Open Quantum Safe (liboqs)"
+        },
+        {
+          "iteration": 1,
+          "keypair_id": "ml_dsa_test_1_1764128128",
+          "real": true,
+          "algorithm": "ML-DSA-128",
+          "implementation": "Open Quantum Safe (liboqs)"
+        },
+        {
+          "iteration": 2,
+          "keypair_id": "ml_dsa_test_2_1764128128",
+          "real": true,
+          "algorithm": "ML-DSA-128",
+          "implementation": "Open Quantum Safe (liboqs)"
+        },
+        {
+          "iteration": 3,
+          "keypair_id": "ml_dsa_test_3_1764128128",
+          "real": true,
+          "algorithm": "ML-DSA-128",
+          "implementation": "Open Quantum Safe (liboqs)"
+        },
+        {
+          "iteration": 4,
+          "keypair_id": "ml_dsa_test_4_1764128128",
+          "real": true,
+          "algorithm": "ML-DSA-128",
+          "implementation": "Open Quantum Safe (liboqs)"
+        },
+        {
+          "iteration": 5,
+          "keypair_id": "ml_dsa_test_5_1764128128",
+          "real": true,
+          "algorithm": "ML-DSA-128",
+          "implementation": "Open Quantum Safe (liboqs)"
+        },
+        {
+          "iteration": 6,
+          "keypair_id": "ml_dsa_test_6_1764128128",
+          "real": true,
+          "algorithm": "ML-DSA-128",
+          "implementation": "Open Quantum Safe (liboqs)"
+        },
+        {
+          "iteration": 7,
+          "keypair_id": "ml_dsa_test_7_1764128128",
+          "real": true,
+          "algorithm": "ML-DSA-128",
+          "implementation": "Open Quantum Safe (liboqs)"
+        },
+        {
+          "iteration": 8,
+          "keypair_id": "ml_dsa_test_8_1764128128",
+          "real": true,
+          "algorithm": "ML-DSA-128",
+          "implementation": "Open Quantum Safe (liboqs)"
+        },
+        {
+          "iteration": 9,
+          "keypair_id": "ml_dsa_test_9_1764128128",
+          "real": true,
+          "algorithm": "ML-DSA-128",
+          "implementation": "Open Quantum Safe (liboqs)"
+        }
+      ],
+      "signature_tests": [
+        {
+          "iteration": 0,
+          "signed": true,
+          "verified": true
+        },
+        {
+          "iteration": 1,
+          "signed": true,
+          "verified": true
+        },
+        {
+          "iteration": 2,
+          "signed": true,
+          "verified": true
+        },
+        {
+          "iteration": 3,
+          "signed": true,
+          "verified": true
+        },
+        {
+          "iteration": 4,
+          "signed": true,
+          "verified": true
+        }
+      ],
+      "errors": [],
+      "total_keypairs": 10,
+      "total_errors": 0,
+      "success_rate": 100.0,
+      "all_signed": true,
+      "success": true,
+      "duration": 0.05992579460144043
+    },
+    "2_sphincs_implemented_signed": {
+      "test_id": "test_2_sphincs_implemented_signed",
+      "name": "SPHINCS+ Implementado e Assinado",
+      "start_time": "2025-11-26T00:35:28.309227",
+      "iterations": 10,
+      "keypairs": [
+        {
+          "iteration": 0,
+          "keypair_id": "sphincs_1764128128_7afbf9a276d2eef0",
+          "algorithm": "SPHINCS+ SHA2-128s",
+          "quantum_resistant": true
+        },
+        {
+          "iteration": 1,
+          "keypair_id": "sphincs_1764128128_a4e2f55a7ed03174",
+          "algorithm": "SPHINCS+ SHA2-128s",
+          "quantum_resistant": true
+        },
+        {
+          "iteration": 2,
+          "keypair_id": "sphincs_1764128128_54d93e19572e3a58",
+          "algorithm": "SPHINCS+ SHA2-128s",
+          "quantum_resistant": true
+        },
+        {
+          "iteration": 3,
+          "keypair_id": "sphincs_1764128128_620c92b4ab3bbcd6",
+          "algorithm": "SPHINCS+ SHA2-128s",
+          "quantum_resistant": true
+        },
+        {
+          "iteration": 4,
+          "keypair_id": "sphincs_1764128128_6747514f6924da53",
+          "algorithm": "SPHINCS+ SHA2-128s",
+          "quantum_resistant": true
+        },
+        {
+          "iteration": 5,
+          "keypair_id": "sphincs_1764128128_f5a1d8357e7caa04",
+          "algorithm": "SPHINCS+ SHA2-128s",
+          "quantum_resistant": true
+        },
+        {
+          "iteration": 6,
+          "keypair_id": "sphincs_1764128128_bc8f0ba66bb63ea0",
+          "algorithm": "SPHINCS+ SHA2-128s",
+          "quantum_resistant": true
+        },
+        {
+          "iteration": 7,
+          "keypair_id": "sphincs_1764128128_67be1b790da611b4",
+          "algorithm": "SPHINCS+ SHA2-128s",
+          "quantum_resistant": true
+        },
+        {
+          "iteration": 8,
+          "keypair_id": "sphincs_1764128128_755cd2d4d6d8a69d",
+          "algorithm": "SPHINCS+ SHA2-128s",
+          "quantum_resistant": true
+        },
+        {
+          "iteration": 9,
+          "keypair_id": "sphincs_1764128128_47cc76b24a51b5ed",
+          "algorithm": "SPHINCS+ SHA2-128s",
+          "quantum_resistant": true
+        }
+      ],
+      "signatures": [],
+      "errors": [
+        {
+          "iteration": 0,
+          "error": "'QuantumSecuritySystem' object has no attribute 'sign_sphincs'"
+        },
+        {
+          "iteration": 1,
+          "error": "'QuantumSecuritySystem' object has no attribute 'sign_sphincs'"
+        },
+        {
+          "iteration": 2,
+          "error": "'QuantumSecuritySystem' object has no attribute 'sign_sphincs'"
+        },
+        {
+          "iteration": 3,
+          "error": "'QuantumSecuritySystem' object has no attribute 'sign_sphincs'"
+        },
+        {
+          "iteration": 4,
+          "error": "'QuantumSecuritySystem' object has no attribute 'sign_sphincs'"
+        },
+        {
+          "iteration": 5,
+          "error": "'QuantumSecuritySystem' object has no attribute 'sign_sphincs'"
+        },
+        {
+          "iteration": 6,
+          "error": "'QuantumSecuritySystem' object has no attribute 'sign_sphincs'"
+        },
+        {
+          "iteration": 7,
+          "error": "'QuantumSecuritySystem' object has no attribute 'sign_sphincs'"
+        },
+        {
+          "iteration": 8,
+          "error": "'QuantumSecuritySystem' object has no attribute 'sign_sphincs'"
+        },
+        {
+          "iteration": 9,
+          "error": "'QuantumSecuritySystem' object has no attribute 'sign_sphincs'"
+        }
+      ],
+      "total_keypairs": 10,
+      "total_signatures": 0,
+      "total_errors": 10,
+      "success_rate": 0.0,
+      "all_signed": false,
+      "success": false,
+      "duration": 0.012160778045654297
+    },
+    "3_qrs3_hybrid_3_3": {
+      "test_id": "test_3_qrs3_hybrid_3_3_signatures",
+      "name": "QRS-3 Híbrido 3/3 Assinaturas",
+      "start_time": "2025-11-26T00:35:28.324066",
+      "iterations": 100,
+      "qrs3_results": [
+        {
+          "iteration": 0,
+          "keypair_id": "qrs3_1764128128_4933203f33ea45f3",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 1,
+          "keypair_id": "qrs3_1764128128_e0c03700a24f81c0",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 2,
+          "keypair_id": "qrs3_1764128128_5774af0e71e03d19",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 3,
+          "keypair_id": "qrs3_1764128129_21ccef63883b51d4",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 4,
+          "keypair_id": "qrs3_1764128129_2febb19216a9adc2",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 5,
+          "keypair_id": "qrs3_1764128129_791584e24384d1c2",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 6,
+          "keypair_id": "qrs3_1764128129_0e9566cb7fc60090",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 7,
+          "keypair_id": "qrs3_1764128129_6437424cfd6ef378",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 8,
+          "keypair_id": "qrs3_1764128130_c6185e4d4a05cc6c",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 9,
+          "keypair_id": "qrs3_1764128130_9efd67ef85fc8d5f",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 10,
+          "keypair_id": "qrs3_1764128130_1506f2947cb76d36",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 11,
+          "keypair_id": "qrs3_1764128130_d6dc77fee6b7efc6",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 12,
+          "keypair_id": "qrs3_1764128130_7e14f23ba153162e",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 13,
+          "keypair_id": "qrs3_1764128130_23d72fd2593aaf13",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 14,
+          "keypair_id": "qrs3_1764128131_2f71b278927ce4c3",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 15,
+          "keypair_id": "qrs3_1764128131_d49b08ba408b947b",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 16,
+          "keypair_id": "qrs3_1764128131_0d55d69fbacebc0a",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 17,
+          "keypair_id": "qrs3_1764128131_8c4c733168e41623",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 18,
+          "keypair_id": "qrs3_1764128131_09fefece68383038",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 19,
+          "keypair_id": "qrs3_1764128131_e12e89c2c18a16ad",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 20,
+          "keypair_id": "qrs3_1764128132_3ebf252656456f2a",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 21,
+          "keypair_id": "qrs3_1764128132_15f0c5c2b91c764f",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 22,
+          "keypair_id": "qrs3_1764128132_332a4d232f2899ff",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 23,
+          "keypair_id": "qrs3_1764128132_15dfaaca7fd135d5",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 24,
+          "keypair_id": "qrs3_1764128132_6dbb79b1a91d4e27",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 25,
+          "keypair_id": "qrs3_1764128133_f8db11176ec0d664",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 26,
+          "keypair_id": "qrs3_1764128133_c13afc68f6e00320",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 27,
+          "keypair_id": "qrs3_1764128133_82959ad1ea32bec1",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 28,
+          "keypair_id": "qrs3_1764128133_1b1388fe37e90830",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 29,
+          "keypair_id": "qrs3_1764128133_fffbf6f567d8453e",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 30,
+          "keypair_id": "qrs3_1764128133_192d1ebc6ff40eb7",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 31,
+          "keypair_id": "qrs3_1764128134_a9379d47bff02df0",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 32,
+          "keypair_id": "qrs3_1764128134_75d531557b72fb48",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 33,
+          "keypair_id": "qrs3_1764128134_d94fd7061065bd4d",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 34,
+          "keypair_id": "qrs3_1764128134_024ac59d0d155da7",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 35,
+          "keypair_id": "qrs3_1764128134_a3595b67cfcfad3b",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 36,
+          "keypair_id": "qrs3_1764128134_3a605eee49cf836d",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 37,
+          "keypair_id": "qrs3_1764128135_471d71616afbdce3",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 38,
+          "keypair_id": "qrs3_1764128135_46c09802131c5267",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 39,
+          "keypair_id": "qrs3_1764128135_cca1f6afe878ca8d",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 40,
+          "keypair_id": "qrs3_1764128135_55de863c7663605c",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 41,
+          "keypair_id": "qrs3_1764128135_55345d2291466286",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 42,
+          "keypair_id": "qrs3_1764128136_c3617ec2fdbb8c63",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 43,
+          "keypair_id": "qrs3_1764128136_97c2323481de8c15",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 44,
+          "keypair_id": "qrs3_1764128136_741ce4247b7f3129",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 45,
+          "keypair_id": "qrs3_1764128136_ebbaa1da8cf63ba4",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 46,
+          "keypair_id": "qrs3_1764128136_48877c8c2ccc7ce7",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 47,
+          "keypair_id": "qrs3_1764128136_e20b34fc8b725514",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 48,
+          "keypair_id": "qrs3_1764128137_0ab7b2f197f65977",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 49,
+          "keypair_id": "qrs3_1764128137_167514aa0b9f606e",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 50,
+          "keypair_id": "qrs3_1764128137_affbc222ba688d64",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 51,
+          "keypair_id": "qrs3_1764128137_29e9d65748ad394f",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 52,
+          "keypair_id": "qrs3_1764128137_591018b0179fa799",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 53,
+          "keypair_id": "qrs3_1764128137_ffafea46c81a465e",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 54,
+          "keypair_id": "qrs3_1764128138_9b7e850c29ee114f",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 55,
+          "keypair_id": "qrs3_1764128138_b52b9eee644cf9f8",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 56,
+          "keypair_id": "qrs3_1764128138_88b53ab3dc791f17",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 57,
+          "keypair_id": "qrs3_1764128138_9afad7e47aa67924",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 58,
+          "keypair_id": "qrs3_1764128138_8ec5e7f8158daade",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 59,
+          "keypair_id": "qrs3_1764128139_6fe3569c3310e767",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 60,
+          "keypair_id": "qrs3_1764128139_6d74ced09c9394f8",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 61,
+          "keypair_id": "qrs3_1764128139_30575074cc70177d",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 62,
+          "keypair_id": "qrs3_1764128139_28a6082d5dba8c5d",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 63,
+          "keypair_id": "qrs3_1764128139_f6805cf52c73aebf",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 64,
+          "keypair_id": "qrs3_1764128139_2f5ea197383cb555",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 65,
+          "keypair_id": "qrs3_1764128140_8e57233144bc8253",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 66,
+          "keypair_id": "qrs3_1764128140_89b2e0593840cd6c",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 67,
+          "keypair_id": "qrs3_1764128140_d57a4e8f2d28c0ef",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 68,
+          "keypair_id": "qrs3_1764128140_4d9b10acab68b239",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 69,
+          "keypair_id": "qrs3_1764128140_9f34e588c58c58fe",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 70,
+          "keypair_id": "qrs3_1764128140_902a6d7af77655bf",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 71,
+          "keypair_id": "qrs3_1764128141_dfc5077844dc8128",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 72,
+          "keypair_id": "qrs3_1764128141_75d9e36804b68f3f",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 73,
+          "keypair_id": "qrs3_1764128141_d86dd3892baa14d0",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 74,
+          "keypair_id": "qrs3_1764128141_c457a3f84111bee8",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 75,
+          "keypair_id": "qrs3_1764128141_79e23c167c61d8d7",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 76,
+          "keypair_id": "qrs3_1764128142_704f869ea538e9ce",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 77,
+          "keypair_id": "qrs3_1764128142_b2f05b2dabf55846",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 78,
+          "keypair_id": "qrs3_1764128142_a64a08b938f5a004",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 79,
+          "keypair_id": "qrs3_1764128142_8d9f9d001b9b521d",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 80,
+          "keypair_id": "qrs3_1764128142_af050e048fd8c906",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 81,
+          "keypair_id": "qrs3_1764128143_34131cd911eaee66",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 82,
+          "keypair_id": "qrs3_1764128143_1bb5a63af0936a0b",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 83,
+          "keypair_id": "qrs3_1764128143_5d43b9da90b43052",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 84,
+          "keypair_id": "qrs3_1764128143_25db45178bc07fd7",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 85,
+          "keypair_id": "qrs3_1764128143_8e1422187d6e56e1",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 86,
+          "keypair_id": "qrs3_1764128143_347861f41928e9e1",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 87,
+          "keypair_id": "qrs3_1764128144_b0979431c1cd4ba5",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 88,
+          "keypair_id": "qrs3_1764128144_77fec3b42df3a840",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 89,
+          "keypair_id": "qrs3_1764128144_67cf8f1622a53158",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 90,
+          "keypair_id": "qrs3_1764128144_e4719983c5718253",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 91,
+          "keypair_id": "qrs3_1764128144_4917da13fc0434e2",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 92,
+          "keypair_id": "qrs3_1764128145_12293e72e1cac39c",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 93,
+          "keypair_id": "qrs3_1764128145_215ed98aac0dfe74",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 94,
+          "keypair_id": "qrs3_1764128145_8c885757515bf125",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 95,
+          "keypair_id": "qrs3_1764128145_a5612987dab71ebb",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 96,
+          "keypair_id": "qrs3_1764128145_215a35422b84731a",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 97,
+          "keypair_id": "qrs3_1764128145_338cc4f243d56854",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 98,
+          "keypair_id": "qrs3_1764128146_143526cb6b1d9964",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        },
+        {
+          "iteration": 99,
+          "keypair_id": "qrs3_1764128146_b4531870938eb661",
+          "ecdsa": true,
+          "ml_dsa": true,
+          "sphincs": true,
+          "all_verified": true,
+          "redundancy_level": 3
+        }
+      ],
+      "errors": [],
+      "total_tests": 100,
+      "all_verified_count": 100,
+      "qrs3_count": 100,
+      "qrs2_count": 0,
+      "total_errors": 0,
+      "success_rate": 100.0,
+      "success": true,
+      "duration": 18.08989644050598
+    },
+    "4_proof_of_lock_polygon_bitcoin": {
+      "test_id": "test_4_proof_of_lock_polygon_bitcoin",
+      "success": false,
+      "error": "Bridge não disponível"
+    },
+    "5_mint_burn_reversible": {
+      "test_id": "test_5_mint_burn_reversible_btc_evm",
+      "success": false,
+      "error": "Bridge não disponível"
+    },
+    "6_gasless_relay_anti_replay": {
+      "test_id": "test_6_gasless_relay_anti_replay",
+      "name": "Gasless Relay + Anti-Replay",
+      "start_time": "2025-11-26T00:35:46.420311",
+      "relay_result": {
+        "success": false,
+        "error": "Relay account não configurado"
+      },
+      "anti_replay_test": {
+        "first_check": {
+          "is_replay": true,
+          "blocked": true,
+          "reason": "Nonce já usado",
+          "original_timestamp": 1764128147435
+        },
+        "replay_attempt": {
+          "is_replay": true,
+          "blocked": true,
+          "reason": "Nonce já usado",
+          "original_timestamp": 1764128147435
+        },
+        "nonce": 1764128308565
+      },
+      "relay_stats": {
+        "relay_address": null,
+        "stats": {
+          "transactions_relayed": 0,
+          "gas_paid_total": 0.0,
+          "reimbursements_total": 0.0,
+          "replay_attempts_blocked": 2
+        },
+        "used_nonces_count": 1,
+        "timestamp": "2025-11-26T00:35:47.639043"
+      },
+      "success": false,
+      "duration": 1.2187488079071045
+    },
+    "7_testnet_multiple_nodes": {
+      "test_id": "test_7_testnet_multiple_nodes",
+      "name": "Testnet com Múltiplos Nós",
+      "start_time": "2025-11-26T00:35:47.644054",
+      "num_nodes": 3,
+      "nodes": {
+        "node_0": {
+          "node_id": "node_0",
+          "address": "node_node_0",
+          "status": "online",
+          "block_height": 1,
+          "peers_count": 2,
+          "synced": false,
+          "last_sync_time": 1764128147.6476316,
+          "validator": false,
+          "stake": 0.0
+        },
+        "node_1": {
+          "node_id": "node_1",
+          "address": "node_node_1",
+          "status": "online",
+          "block_height": 1,
+          "peers_count": 2,
+          "synced": false,
+          "last_sync_time": 1764128147.6476328,
+          "validator": false,
+          "stake": 0.0
+        },
+        "node_2": {
+          "node_id": "node_2",
+          "address": "node_node_2",
+          "status": "online",
+          "block_height": 1,
+          "peers_count": 2,
+          "synced": false,
+          "last_sync_time": 1764128147.6476333,
+          "validator": false,
+          "stake": 0.0
+        }
+      },
+      "sync_result": {
+        "success": true,
+        "all_synced": true,
+        "sync_results": [
+          {
+            "node_id": "node_0",
+            "result": {
+              "success": true,
+              "synced": true,
+              "height": 0,
+              "already_synced": true
+            }
+          },
+          {
+            "node_id": "node_1",
+            "result": {
+              "success": true,
+              "synced": true,
+              "height": 0,
+              "already_synced": true
+            }
+          },
+          {
+            "node_id": "node_2",
+            "result": {
+              "success": true,
+              "synced": true,
+              "height": 0,
+              "already_synced": true
+            }
+          }
+        ],
+        "latest_block_height": 0
+      },
+      "consensus_result": {
+        "success": true,
+        "consensus_data": {
+          "round_id": "consensus_1764128147",
+          "block_data": {
+            "block_number": 1,
+            "transactions": [
+              "tx1",
+              "tx2",
+              "tx3"
+            ],
+            "timestamp": 1764128147.6473138
+          },
+          "votes": {
+            "node_0": {
+              "node_id": "node_0",
+              "vote": "approve",
+              "block_hash": "82a17b194164b4162c966f506da29c9c7e81bd23dffc66886fade09242af84f0",
+              "timestamp": 1764128147.647416
+            },
+            "node_1": {
+              "node_id": "node_1",
+              "vote": "approve",
+              "block_hash": "82a17b194164b4162c966f506da29c9c7e81bd23dffc66886fade09242af84f0",
+              "timestamp": 1764128147.6475623
+            },
+            "node_2": {
+              "node_id": "node_2",
+              "vote": "approve",
+              "block_hash": "82a17b194164b4162c966f506da29c9c7e81bd23dffc66886fade09242af84f0",
+              "timestamp": 1764128147.6475952
+            }
+          },
+          "approve_count": 3,
+          "total_nodes": 3,
+          "threshold": 3,
+          "consensus_reached": true,
+          "timestamp": "2025-11-26T00:35:47.647610"
+        },
+        "blockchain_state": {
+          "latest_block_height": 1,
+          "latest_block_hash": "82a17b194164b4162c966f506da29c9c7e81bd23dffc66886fade09242af84f0",
+          "consensus_reached": true
+        }
+      },
+      "blockchain_state": {
+        "latest_block_height": 1,
+        "latest_block_hash": "82a17b194164b4162c966f506da29c9c7e81bd23dffc66886fade09242af84f0",
+        "consensus_reached": true
+      },
+      "success": true,
+      "duration": 0.004240989685058594
+    },
+    "8_smart_contracts_execution": {
+      "test_id": "test_8_smart_contracts_execution",
+      "name": "Smart Contracts e Execução",
+      "start_time": "2025-11-26T00:35:47.654516",
+      "contract": {
+        "contract_address": "0x74e9a2080d96d509493A4a47DE6606066e732E9C",
+        "chain": "ethereum",
+        "functions": [
+          "transfer",
+          "mint",
+          "burn",
+          "crossChainTransfer"
+        ],
+        "state": "active",
+        "token_name": "TestToken",
+        "token_symbol": "TEST"
+      },
+      "execution": {
+        "function": "transfer",
+        "params": {
+          "to": "0xRecipient",
+          "amount": 100
+        },
+        "executed": true,
+        "tx_hash": null,
+        "gas_used": 21000,
+        "note": "Contrato real deployado e funcional"
+      },
+      "contract_system_available": true,
+      "success": true,
+      "duration": 19.031311511993408
+    }
+  },
+  "summary": {
+    "total_tests": 8,
+    "successful_tests": 4,
+    "failed_tests": 4,
+    "success_rate": 50.0
+  },
+  "end_time": "2025-11-26T00:36:06.688761"
+}

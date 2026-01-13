@@ -1,0 +1,97 @@
+{
+  "suite_name": "Independent Benchmark Suite",
+  "timestamp": "2025-12-08T13:14:56.460364",
+  "benchmarks": [
+    {
+      "benchmark_type": "TPS (Transactions Per Second)",
+      "transactions": 1000,
+      "duration_seconds": 10,
+      "timestamp": "2025-12-08T13:14:56.460591",
+      "metrics": {
+        "total_transactions": 1000,
+        "elapsed_time_seconds": 1.6509790420532227,
+        "tps": 605.7012079065283,
+        "avg_tx_time_ms": 1.6483311653137207,
+        "min_tx_time_ms": 1.0554790496826172,
+        "max_tx_time_ms": 1.9881725311279297,
+        "p50_tx_time_ms": 1.6732215881347656,
+        "p95_tx_time_ms": 1.811981201171875,
+        "p99_tx_time_ms": 1.8711090087890625
+      },
+      "comparison": {
+        "allianza": 605.7012079065283,
+        "ethereum": 15,
+        "polygon": 7000,
+        "solana": 3000,
+        "bitcoin": 7
+      }
+    },
+    {
+      "benchmark_type": "Latency",
+      "iterations": 100,
+      "timestamp": "2025-12-08T13:14:58.113421",
+      "metrics": {
+        "avg_latency_ms": 0.6185722351074219,
+        "min_latency_ms": 0.3609657287597656,
+        "max_latency_ms": 0.9629726409912109,
+        "p50_latency_ms": 0.5950927734375,
+        "p95_latency_ms": 0.7798671722412109,
+        "p99_latency_ms": 0.9629726409912109
+      },
+      "comparison": {
+        "allianza": 0.6185722351074219,
+        "ethereum": 15000,
+        "polygon": 2000,
+        "solana": 400,
+        "bitcoin": 600000
+      }
+    },
+    {
+      "benchmark_type": "Throughput",
+      "data_size_mb": 1.0,
+      "timestamp": "2025-12-08T13:14:58.176098",
+      "metrics": {
+        "data_size_mb": 1.0,
+        "elapsed_time_seconds": 0.010363101959228516,
+        "throughput_mbps": 96.49620392950813
+      }
+    },
+    {
+      "benchmark_type": "Batch Verification",
+      "batch_sizes": [
+        10,
+        100,
+        1000
+      ],
+      "timestamp": "2025-12-08T13:14:58.187178",
+      "batch_results": [
+        {
+          "batch_size": 10,
+          "time_ms": 1.2536048889160156,
+          "throughput_per_second": 7976.9950551540505
+        },
+        {
+          "batch_size": 100,
+          "time_ms": 10.527610778808594,
+          "throughput_per_second": 9498.83141588912
+        },
+        {
+          "batch_size": 1000,
+          "time_ms": 100.24857521057129,
+          "throughput_per_second": 9975.204115365315
+        }
+      ],
+      "improvement_vs_individual": {
+        "percentage": 20.031761125903387,
+        "individual_time_ms": 125.36048889160156,
+        "batch_time_ms": 100.24857521057129
+      }
+    }
+  ],
+  "summary": {
+    "total_benchmarks": 4,
+    "avg_tps": 605.7012079065283,
+    "avg_latency_ms": 0.6185722351074219,
+    "batch_verification_improvement": 20.031761125903387
+  }
+}
