@@ -5,10 +5,13 @@
 ![Allianza Blockchain](https://img.shields.io/badge/Allianza-Blockchain-blue)
 ![Python](https://img.shields.io/badge/Python-3.8+-green)
 ![License](https://img.shields.io/badge/License-Commercial-blue)
+![Tests](https://img.shields.io/badge/Tests-41%20validations-success)
+![Success Rate](https://img.shields.io/badge/Success%20Rate-100%25-brightgreen)
+![Testnet](https://img.shields.io/badge/Testnet-Active-success)
 
 **Advanced Blockchain Platform with Cross-Chain Interoperability**
 
-[Features](#-features) • [Documentation](#-documentation) • [Quick Start](#-quick-start) • [Security](#-security)
+[Features](#-features) • [Documentation](#-documentation) • [Quick Start](#-quick-start) • [Security](#-security) • [Getting Started](GETTING_STARTED.md) • [Testing](TESTING.md)
 
 </div>
 
@@ -101,13 +104,38 @@ npm install
 
 ## 📖 Quick Start
 
-```bash
-# Run blockchain node
-python allianza_blockchain.py
+### 1. Clone and Install
 
-# Access testnet interface
-# Open http://localhost:5000/testnet
+```bash
+git clone https://github.com/allianzatech/blockchainallianza.git
+cd blockchainallianza
+pip install -r requirements.txt
 ```
+
+### 2. Run Examples
+
+```bash
+# QRS-3 Signature Demo
+python examples/qrs3_demo.py
+
+# ALZ-NIEV Protocol Demo
+python examples/alz_niev_demo.py
+
+# Cross-Chain Transfer Demo
+python examples/cross_chain_transfer.py
+```
+
+### 3. Verify Technical Proofs
+
+```bash
+# Verify all proofs
+python scripts/verify_technical_proofs.py
+
+# Verify on-chain transactions
+python scripts/verify_on_chain_transactions.py
+```
+
+**For detailed instructions, see [GETTING_STARTED.md](GETTING_STARTED.md)**
 
 ## 🔐 Security
 
@@ -142,7 +170,21 @@ This project uses a commercial license. See [LICENSE](LICENSE) for details.
 
 ## 🤝 Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for guidelines.
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## 🧪 Testing
+
+Run tests and verify technical proofs:
+
+```bash
+# Run all public tests
+python tests/public/run_all_tests.py
+
+# Verify technical proofs
+python scripts/verify_technical_proofs.py
+```
+
+See [TESTING.md](TESTING.md) for complete testing guide.
 
 ## 🌐 Links
 
