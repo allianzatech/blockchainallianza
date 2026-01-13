@@ -82,13 +82,30 @@ allianza-blockchain/
 
 ## 🛠️ Installation
 
-### Requirements
+### Quick Start (Docker - Recommended)
+
+```bash
+# Clone repository
+git clone https://github.com/allianzatech/blockchainallianza.git
+cd blockchainallianza
+
+# Run with Docker (one command)
+docker-compose -f docker-compose.public.yml up
+
+# Or build and run
+docker build -f Dockerfile.public -t allianza-public .
+docker run -v $(pwd)/verification_reports:/app/verification_reports allianza-public
+```
+
+### Manual Installation
+
+#### Requirements
 
 - Python 3.8+
 - Redis (optional, for caching)
 - Node.js 16+ (for frontend assets)
 
-### Setup
+#### Setup
 
 ```bash
 # Clone repository
@@ -102,7 +119,27 @@ pip install -r requirements.txt
 npm install
 ```
 
+### GitHub Codespaces
+
+Click the green "Code" button and select "Codespaces" to test the repository in your browser with one click!
+
 ## 📖 Quick Start
+
+### Run All Demos
+
+```bash
+# Linux/Mac
+./examples/run_all_demos.sh
+
+# Windows
+examples\run_all_demos.bat
+```
+
+### Docker Quick Test
+
+```bash
+docker-compose -f docker-compose.public.yml up
+```
 
 ### 1. Clone and Install
 

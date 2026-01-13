@@ -249,6 +249,38 @@ def generate_report(results):
     
     print("\n" + "="*70)
     
+    # Generate log file
+    log_file = Path("verification_reports") / f"verification_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+    log_file.parent.mkdir(exist_ok=True)
+    
+    try:
+        with open(log_file, 'w', encoding='utf-8') as f:
+            f.write("="*70 + "\n")
+            f.write("ALLIANZA BLOCKCHAIN - VERIFICATION REPORT\n")
+            f.write("="*70 + "\n")
+            f.write(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"Total Verifications: {total}\n")
+            f.write(f"Passed: {passed}\n")
+            f.write(f"Failed: {failed}\n")
+            f.write(f"Success Rate: {(passed/total*100):.1f}%\n")
+            f.write("\n" + "="*70 + "\n")
+            f.write("DETAILS:\n")
+            f.write("="*70 + "\n")
+            
+            for check, result in results.items():
+                status = "PASSED" if result else "FAILED"
+                f.write(f"{status}: {check}\n")
+            
+            f.write("\n" + "="*70 + "\n")
+            if failed == 0:
+                f.write("ALL VERIFICATIONS PASSED!\n")
+            else:
+                f.write(f"{failed} VERIFICATION(S) FAILED\n")
+        
+        print_success(f"Log file saved: {log_file}")
+    except Exception as e:
+        print_warning(f"Could not save log file: {e}")
+    
     if failed == 0:
         print_success("TODAS AS VERIFICAÇÕES PASSARAM!")
         return True
