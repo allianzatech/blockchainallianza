@@ -1,0 +1,199 @@
+/* ============================================
+   ALLIANZA TESTNET - MOBILE RESPONSIVE CSS
+   Shared styles for all testnet templates
+   ============================================ */
+
+/* Mobile First - Base styles for mobile */
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+    
+    .container, .container.mx-auto {
+        padding: 1rem !important;
+    }
+    
+    h1 {
+        font-size: 1.75rem !important;
+        line-height: 1.2;
+    }
+    
+    h2 {
+        font-size: 1.5rem !important;
+    }
+    
+    h3 {
+        font-size: 1.25rem !important;
+    }
+    
+    /* Forms - Full width on mobile */
+    .grid.grid-cols-1.md\:grid-cols-2,
+    .grid.grid-cols-2,
+    .grid.grid-cols-3,
+    .grid.grid-cols-4,
+    .grid.grid-cols-5 {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+    
+    /* Inputs - Larger touch targets, prevent zoom on iOS */
+    input, select, textarea {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        padding: 12px !important;
+        min-height: 44px; /* Apple's recommended touch target */
+        width: 100% !important;
+    }
+    
+    /* Buttons - Larger touch targets */
+    button, .btn, a.button, .btn-back {
+        min-height: 44px !important;
+        min-width: 44px !important;
+        padding: 12px 20px !important;
+        font-size: 14px !important;
+    }
+    
+    /* Cards - Less padding on mobile */
+    .card, .bg-gray-800, .bg-gray-700, .bg-gray-900\/20 {
+        padding: 1rem !important;
+    }
+    
+    /* Tables - Horizontal scroll */
+    table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+        font-size: 12px;
+    }
+    
+    /* Copy buttons - Larger on mobile */
+    .copy-btn, .copy-btn-small {
+        min-height: 36px !important;
+        min-width: 36px !important;
+        padding: 8px 12px !important;
+    }
+    
+    /* Text sizes - Adjusted for mobile */
+    .text-xs { font-size: 11px !important; }
+    .text-sm { font-size: 13px !important; }
+    .text-base { font-size: 14px !important; }
+    .text-lg { font-size: 1rem !important; }
+    .text-xl { font-size: 1.25rem !important; }
+    .text-2xl { font-size: 1.5rem !important; }
+    .text-3xl { font-size: 1.75rem !important; }
+    .text-4xl { font-size: 2rem !important; }
+    
+    /* Spacing - Reduced on mobile */
+    .space-y-4 > * + * { margin-top: 1rem !important; }
+    .space-y-6 > * + * { margin-top: 1.5rem !important; }
+    .mb-8 { margin-bottom: 1.5rem !important; }
+    .mb-6 { margin-bottom: 1rem !important; }
+    .mb-4 { margin-bottom: 0.75rem !important; }
+    .p-6 { padding: 1rem !important; }
+    .p-8 { padding: 1.5rem !important; }
+    
+    /* Modals - Full width on mobile */
+    .fixed.inset-0 {
+        padding: 1rem !important;
+    }
+    
+    .max-w-md, .max-w-lg, .max-w-xl, .max-w-2xl {
+        max-width: 100% !important;
+        margin: 0.5rem !important;
+    }
+    
+    /* Font mono - Smaller on mobile, break words */
+    .font-mono {
+        font-size: 11px !important;
+        word-break: break-all;
+        overflow-wrap: break-word;
+    }
+    
+    /* Tabs - Scrollable on mobile */
+    .flex.gap-2, .flex.gap-4 {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding-bottom: 0.5rem;
+    }
+    
+    .flex.gap-2::-webkit-scrollbar,
+    .flex.gap-4::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .tab-button {
+        white-space: nowrap;
+        min-width: fit-content;
+    }
+    
+    /* Result boxes - Better scrolling */
+    .result-box, pre {
+        max-height: 300px !important;
+        font-size: 11px !important;
+        padding: 12px !important;
+        overflow-x: auto;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+    h1 { font-size: 1.5rem !important; }
+    h2 { font-size: 1.25rem !important; }
+    
+    .card, .bg-gray-800, .bg-gray-700 {
+        padding: 0.75rem !important;
+    }
+    
+    button, .btn {
+        padding: 10px 16px !important;
+        font-size: 13px !important;
+    }
+    
+    input, select, textarea {
+        padding: 10px !important;
+    }
+}
+
+/* Touch-friendly interactions */
+@media (hover: none) and (pointer: coarse) {
+    button, a, .clickable, .copy-btn, .copy-btn-small, .btn-back {
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+        touch-action: manipulation;
+    }
+    
+    button:active, a:active, .btn:active {
+        transform: scale(0.98);
+        transition: transform 0.1s;
+    }
+}
+
+/* Landscape mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .container {
+        padding: 0.75rem !important;
+    }
+    
+    h1 {
+        font-size: 1.5rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .mb-8 {
+        margin-bottom: 1rem !important;
+    }
+}
+
+/* Ensure proper scrolling on all mobile devices */
+@media (max-width: 768px) {
+    html, body {
+        overflow-x: hidden;
+        width: 100%;
+    }
+    
+    * {
+        max-width: 100%;
+    }
+}
+

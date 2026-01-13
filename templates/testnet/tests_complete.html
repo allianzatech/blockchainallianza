@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="{{ lang or 'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ t('complete_tests_title') or 'Complete Tests - Allianza Testnet' }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Botão Voltar Padronizado */
+                .btn-back {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #374151;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        
+        
+        
+    
+        .btn-back:hover {
+            background: #4b5563;
+        }
+</style>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold mb-2">🧪 {{ t('complete_tests_title') or 'Complete Tests - All Validations' }}</h1>
+            <p class="text-gray-400">{{ t('complete_tests_subtitle') or 'Execute all documented tests and verify results' }}</p>
+            <a href="javascript:history.back()" class="btn-back mt-2">{{ t('back') or 'Back' }}</a>
+        </div>
+
+        <!-- Suites de Testes -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <!-- Complete Validation Suite -->
+            <div class="bg-gray-800 p-6 rounded-lg border-2 border-blue-500">
+                <h3 class="text-xl font-semibold mb-2">
+                    <i class="fas fa-check-circle text-blue-400"></i> {{ t('complete_validation_suite') or 'Complete Validation Suite' }}
+                </h3>
+                <p class="text-gray-400 mb-4">{{ t('8_validation_tests') or '8 complete validation tests' }}</p>
+                <button onclick="runCompleteValidation()" class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition">
+                    {{ t('execute_tests') or 'Execute Tests' }}
+                </button>
+            </div>
+
+            <!-- Critical Tests Suite -->
+            <div class="bg-gray-800 p-6 rounded-lg border-2 border-red-500">
+                <h3 class="text-xl font-semibold mb-2">
+                    <i class="fas fa-exclamation-triangle text-red-400"></i> {{ t('critical_tests_suite') or 'Critical Tests Suite' }}
+                </h3>
+                <p class="text-gray-400 mb-4">{{ t('6_critical_tests') or '6 critical tests' }}</p>
+                <button onclick="runCriticalTests()" class="w-full bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition">
+                    {{ t('execute_tests') or 'Execute Tests' }}
+                </button>
+            </div>
+
+            <!-- Professional Suite -->
+            <div class="bg-gray-800 p-6 rounded-lg border-2 border-purple-500">
+                <h3 class="text-xl font-semibold mb-2">
+                    <i class="fas fa-star text-purple-400"></i> {{ t('professional_suite') or 'Professional Suite' }}
+                </h3>
+                <p class="text-gray-400 mb-4">{{ t('14_professional_tests') or '14 professional tests' }}</p>
+                <button onclick="runProfessionalSuite()" class="w-full bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded transition">
+                    {{ t('execute_tests') or 'Execute Tests' }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Executar Todos -->
+        <div class="mb-8">
+            <div class="bg-gradient-to-r from-green-600 to-blue-600 p-6 rounded-lg">
+                <h3 class="text-2xl font-semibold mb-2">
+                    <i class="fas fa-rocket"></i> {{ t('execute_all_tests') or 'Execute All Tests' }}
+                </h3>
+                <p class="text-gray-200 mb-4">{{ t('execute_all_description') or 'Execute all suites at once (may take several minutes)' }}</p>
+                <button onclick="runAllTests()" class="bg-white text-gray-900 px-6 py-3 rounded font-semibold hover:bg-gray-100 transition">
+                    <i class="fas fa-play"></i> {{ t('execute_all_button') or 'Execute All' }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Resultados -->
+        <div id="results" class="hidden">
+            <h2 class="text-2xl font-semibold mb-4">📊 {{ t('results') or 'Results' }}</h2>
+            <div id="results-content" class="bg-gray-800 p-6 rounded-lg">
+                <div class="text-center">
+                    <i class="fas fa-spinner fa-spin text-4xl text-blue-400"></i>
+                    <p class="mt-4">{{ t('executing_tests') or 'Executing tests...' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Definir lang global para JavaScript
+        window.lang = '{{ lang or "en" }}';
+        window.t = function(key, defaultVal) {
+            // Traduções simples para JavaScript
+            const translations = {
+                'pt': {
+                    'copy': 'Copiar',
+                    'download': 'Baixar',
+                    'total_tests': 'Total de Testes',
+                    'successful_tests': 'Sucessos',
+                    'failed_tests': 'Falhas',
+                    'success_rate': 'Taxa de Sucesso',
+                    'view_details': 'Ver Detalhes',
+                    'executing_tests': 'Executando testes... Isso pode levar alguns minutos.',
+                    'error_executing': 'Erro ao executar testes:',
+                    'unknown_error': 'Erro desconhecido',
+                    'results_copied': '✅ Resultados copiados para a área de transferência!',
+                    'error_copying': '❌ Erro ao copiar. Tente selecionar e copiar manualmente.'
+                },
+                'en': {
+                    'copy': 'Copy',
+                    'download': 'Download',
+                    'total_tests': 'Total Tests',
+                    'successful_tests': 'Successful',
+                    'failed_tests': 'Failed',
+                    'success_rate': 'Success Rate',
+                    'view_details': 'View Details',
+                    'executing_tests': 'Executing tests... This may take a few minutes.',
+                    'error_executing': 'Error executing tests:',
+                    'unknown_error': 'Unknown error',
+                    'results_copied': '✅ Results copied to clipboard!',
+                    'error_copying': '❌ Error copying. Try selecting and copying manually.'
+                }
+            };
+            return translations[window.lang]?.[key] || defaultVal || key;
+        };
+
+        async function runCompleteValidation() {
+            showLoading();
+            try {
+                const response = await fetch('/api/tests/complete-validation/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 200)}`);
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Expected JSON but got ${contentType}. Response: ${text.substring(0, 200)}`);
+                }
+
+                const data = await response.json();
+                showResults('Complete Validation Suite', data);
+            } catch (error) {
+                showError(error);
+            }
+        }
+
+        async function runCriticalTests() {
+            showLoading();
+            try {
+                const response = await fetch('/api/tests/critical/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 200)}`);
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Expected JSON but got ${contentType}. Response: ${text.substring(0, 200)}`);
+                }
+
+                const data = await response.json();
+                showResults('Critical Tests Suite', data);
+            } catch (error) {
+                showError(error);
+            }
+        }
+
+        async function runProfessionalSuite() {
+            showLoading();
+            try {
+                const response = await fetch('/api/tests/professional/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}: ${response.statusText}` }));
+                    throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                showResults('Professional Suite', data);
+            } catch (error) {
+                showError(error);
+            }
+        }
+
+        async function runAllTests() {
+            showLoading();
+            try {
+                const response = await fetch('/api/tests/all/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 200)}`);
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Expected JSON but got ${contentType}. Response: ${text.substring(0, 200)}`);
+                }
+
+                const data = await response.json();
+                // Ajustar título para refletir o total retornado pelo backend
+                const results = data.results || data;
+                const summary = results.summary || {};
+                const total = summary.total_validations || summary.total_tests || 'N/A';
+                showResults(`All Tests (${total} Validations)`, data);
+            } catch (error) {
+                showError(error);
+            }
+        }
+
+        function showLoading() {
+            document.getElementById('results').classList.remove('hidden');
+            document.getElementById('results-content').innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-spinner fa-spin text-4xl text-blue-400"></i>
+                    <p class="mt-4">${window.t('executing_tests', 'Executing tests... This may take a few minutes.')}</p>
+                </div>
+            `;
+        }
+
+        // Armazenar dados para copiar/baixar
+        let completeResultsData = null;
+
+        function showResults(suiteName, data) {
+            completeResultsData = { suiteName, data };
+            document.getElementById('results').classList.remove('hidden');
+            
+            let html = `<h3 class="text-xl font-semibold mb-4">${suiteName}</h3>`;
+            
+            if (data.success) {
+                const results = data.results || data;
+                const summary = results.summary || {};
+                
+                html += `
+                    <div class="mb-4 flex gap-2 justify-end">
+                        <button onclick="copyCompleteResults()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition flex items-center gap-2">
+                            <i class="fas fa-copy"></i> ${window.t ? window.t('copy') : (window.lang === 'pt' ? 'Copiar' : 'Copy')}
+                        </button>
+                        <button onclick="downloadCompleteResults()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded transition flex items-center gap-2">
+                            <i class="fas fa-download"></i> ${window.t ? window.t('download') : (window.lang === 'pt' ? 'Baixar' : 'Download')}
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-green-900 p-4 rounded">
+                            <div class="text-2xl font-bold">${summary.total_validations || summary.total_tests || 'N/A'}</div>
+                            <div class="text-sm text-gray-300">${window.t ? window.t('total_tests') : (window.lang === 'pt' ? 'Total de Testes' : 'Total Tests')}</div>
+                        </div>
+                        <div class="bg-blue-900 p-4 rounded">
+                            <div class="text-2xl font-bold">${summary.successful_validations || summary.successful_tests || 'N/A'}</div>
+                            <div class="text-sm text-gray-300">${window.t ? window.t('successful_tests') : (window.lang === 'pt' ? 'Sucessos' : 'Successful')}</div>
+                        </div>
+                        <div class="bg-red-900 p-4 rounded">
+                            <div class="text-2xl font-bold">${summary.failed_validations || summary.failed_tests || 'N/A'}</div>
+                            <div class="text-sm text-gray-300">${window.t ? window.t('failed_tests') : (window.lang === 'pt' ? 'Falhas' : 'Failed')}</div>
+                        </div>
+                        <div class="bg-purple-900 p-4 rounded">
+                            <div class="text-2xl font-bold">${summary.success_rate ? summary.success_rate.toFixed(1) : 'N/A'}%</div>
+                            <div class="text-sm text-gray-300">${window.t ? window.t('success_rate') : (window.lang === 'pt' ? 'Taxa de Sucesso' : 'Success Rate')}</div>
+                        </div>
+                    </div>
+                `;
+                
+                // Detalhes dos testes
+                if (results.tests || results.suites) {
+                    html += `<details class="mt-4"><summary class="cursor-pointer text-blue-400">${window.t('view_details', 'View Details')}</summary><pre class="mt-2 bg-gray-900 p-4 rounded overflow-auto text-xs">${JSON.stringify(results, null, 2)}</pre></details>`;
+                }
+            } else {
+                html += `<div class="bg-red-900 p-4 rounded"><p class="text-red-200">${window.t('error_executing', 'Error:')} ${data.error || window.t('unknown_error', 'Unknown error')}</p></div>`;
+            }
+            
+            document.getElementById('results-content').innerHTML = html;
+        }
+
+        // Funções para copiar e baixar resultados completos
+        function copyCompleteResults() {
+            const content = completeResultsData ? JSON.stringify(completeResultsData, null, 2) : document.getElementById('results-content').innerText;
+            navigator.clipboard.writeText(content).then(() => {
+                alert(window.t('results_copied', '✅ Results copied to clipboard!'));
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                alert(window.t('error_copying', '❌ Error copying. Try selecting and copying manually.'));
+            });
+        }
+
+        function downloadCompleteResults() {
+            const content = completeResultsData ? JSON.stringify(completeResultsData, null, 2) : document.getElementById('results-content').innerText;
+            const blob = new Blob([content], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `prova_testes_completos_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function showError(error) {
+            document.getElementById('results').classList.remove('hidden');
+            document.getElementById('results-content').innerHTML = `
+                <div class="bg-red-900 p-4 rounded">
+                    <p class="text-red-200">${window.t('error_executing', 'Error executing tests:')} ${error.message}</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
+

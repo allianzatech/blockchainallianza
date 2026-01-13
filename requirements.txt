@@ -1,13 +1,25 @@
-Flask==3.1.2
-web3==7.14.0
-flask-cors==4.0.0
-Werkzeug==3.1.3
-fpdf==1.7.2
-openpyxl==3.1.5
-psycopg[binary]==3.2.11
-psycopg2-binary==2.9.9
+flask==2.3.3
+flask-socketio==5.3.6
+flask-limiter==3.5.0
+flask-cors==6.0.0  # ✅ ATUALIZADO: Corrige 5 CVEs críticos (CVE-2024-1681, CVE-2024-6844, CVE-2024-6866, CVE-2024-6839, PYSEC-2024-71)
+python-socketio==5.14.0  # ✅ ATUALIZADO: Corrige CVE-2025-61765
+cryptography==41.0.7
+web3==6.11.0
 python-dotenv==1.0.0
-PyJWT==2.8.0
-gunicorn==21.2.0
-stripe==8.0.0
+gunicorn==22.0.0  # ✅ ATUALIZADO: Corrige CVE-2024-1135 e CVE-2024-6827
+requests==2.31.0
+urllib3>=2.6.0  # ✅ ATUALIZADO: Corrige CVE-2025-66418 e CVE-2025-66471
+werkzeug>=3.1.4  # ✅ ATUALIZADO: Corrige CVE-2025-66221
+base58==2.1.1
+setuptools>=65.0.0
+bitcoinlib==0.7.5
+bech32>=1.2.0
+python-bitcointx>=1.1.5
+bit>=0.8.0
 requests>=2.31.0
+schedule>=1.2.0
+qiskit>=2.0.0
+qiskit-aer>=0.17.0
+ecdsa>=0.19.1  # ✅ ATUALIZADO: Corrige CVE-2024-23342 (usar versão mais recente disponível)
+solana>=0.30.2
+solders>=0.18.0

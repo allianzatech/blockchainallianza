@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="{{ lang or 'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ t('status_page') or 'Status - Allianza Testnet' }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/output.css') }}" onerror="this.onerror=null; this.href='https://cdn.tailwindcss.com'">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Fallback para Tailwind CDN se o CSS local não carregar
+        window.addEventListener('load', function() {
+            const link = document.querySelector('link[href*="output.css"]');
+            if (link && !link.sheet) {
+                console.warn('CSS local não carregou, usando CDN como fallback');
+                const fallback = document.createElement('script');
+                fallback.src = 'https://cdn.tailwindcss.com';
+                document.head.appendChild(fallback);
+            }
+        });
+    </script>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <div class="mb-6">
+            <a href="javascript:history.back()" class="btn-back">{{ t('back') or 'Back' }}</a>
+        </div>
+
+        <h1 class="text-4xl font-bold mb-2">📊 {{ t('status_page') or 'Status Page' }}</h1>
+        <p class="text-gray-400 mb-8">{{ t('real_time_monitoring') or 'Real-time monitoring of Allianza Testnet' }}</p>
+
+        <!-- Status Geral -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-semibold">{{ t('general_status') or 'General Status' }}</h2>
+                <span class="px-4 py-2 rounded-lg bg-green-600 font-semibold">
+                    ✅ {{ overall_status.status|upper }}
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-gray-700 p-4 rounded">
+                    <p class="text-gray-400 text-sm">{{ t('uptime') or 'Uptime' }}</p>
+                    <p class="text-3xl font-bold text-green-400">{{ "%.2f"|format(overall_status.uptime_percentage) }}%</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ overall_status.uptime_readable }}</p>
+                </div>
+                <div class="bg-gray-700 p-4 rounded">
+                    <p class="text-gray-400 text-sm">{{ t('average_latency') or 'Average Latency' }}</p>
+                    <p class="text-3xl font-bold text-blue-400">{{ "%.2f"|format(realtime_metrics.latency_avg_ms) }}ms</p>
+                </div>
+                <div class="bg-gray-700 p-4 rounded">
+                    <p class="text-gray-400 text-sm">{{ t('validators_online') or 'Validators Online' }}</p>
+                    <p class="text-3xl font-bold text-purple-400">{{ realtime_metrics.validators_online }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Componentes -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">{{ t('components') or 'Components' }}</h2>
+            <div class="space-y-3">
+                {% for component_id, component in overall_status.components.items() %}
+                <div class="bg-gray-700 p-4 rounded flex items-center justify-between">
+                    <div>
+                        <p class="font-semibold">{{ component.name }}</p>
+                        <p class="text-sm text-gray-400">
+                            {% if component.response_time_ms %}
+                            Tempo de resposta: {{ "%.2f"|format(component.response_time_ms) }}ms
+                            {% elif component.online_count is defined %}
+                            Online: {{ component.online_count }}/{{ component.total_count }}
+                            {% elif component.blocks_total is defined %}
+                            Blocos: {{ component.blocks_total }} | Shards: {{ component.shards_active }}
+                            {% endif %}
+                        </p>
+                    </div>
+                    <span class="px-3 py-1 rounded bg-green-600 text-sm">
+                        ✅ {{ component.status|upper }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Métricas em Tempo Real -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4">{{ t('realtime_metrics') or 'Real-Time Metrics' }}</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-gray-700 p-4 rounded">
+                    <p class="text-gray-400 text-sm">{{ t('current_tps') or 'Current TPS' }}</p>
+                    <p class="text-2xl font-bold text-green-400">{{ "%.2f"|format(realtime_metrics.tps_current) }}</p>
+                </div>
+                <div class="bg-gray-700 p-4 rounded">
+                    <p class="text-gray-400 text-sm">{{ t('tps_24h_avg_label') or 'TPS 24h (Average)' }}</p>
+                    <p class="text-2xl font-bold text-blue-400">{{ "%.2f"|format(realtime_metrics.tps_24h_avg) }}</p>
+                </div>
+                <div class="bg-gray-700 p-4 rounded">
+                    <p class="text-gray-400 text-sm">{{ t('blocks_last_hour') or 'Blocks (Last Hour)' }}</p>
+                    <p class="text-2xl font-bold text-purple-400">{{ realtime_metrics.blocks_last_hour }}</p>
+                </div>
+                <div class="bg-gray-700 p-4 rounded">
+                    <p class="text-gray-400 text-sm">{{ t('last_update') or 'Last Update' }}</p>
+                    <p class="text-xs text-gray-300">{{ realtime_metrics.timestamp[:19] }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Incidentes -->
+        <div class="bg-gray-800 p-6 rounded-lg">
+            <h2 class="text-2xl font-semibold mb-4">{{ t('incident_history') or 'Incident History' }}</h2>
+            {% if incidents %}
+            <div class="space-y-3">
+                {% for incident in incidents %}
+                <div class="bg-gray-700 p-4 rounded">
+                    <div class="flex items-center justify-between mb-2">
+                        <div>
+                            <p class="font-semibold">{{ incident.type|upper }}</p>
+                            <p class="text-sm text-gray-400">{{ incident.description }}</p>
+                        </div>
+                        <span class="px-3 py-1 rounded bg-green-600 text-sm">
+                            ✅ {{ incident.status|upper }}
+                        </span>
+                    </div>
+                    <p class="text-xs text-gray-500">
+                        {{ incident.started_at[:19] }} - Impacto: {{ incident.impact|upper }}
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-400">{{ t('no_incidents') or 'No incidents recorded. Network operational! ✅' }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Atualizar métricas a cada 5 segundos SEM recarregar a página
+        setInterval(() => {
+            fetch('/api/status', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                signal: AbortSignal.timeout(10000)
+            })
+                .then(r => {
+                    if (!r.ok) {
+                        throw new Error(`HTTP ${r.status}: ${r.statusText}`);
+                    }
+                    return r.json();
+                })
+                .then(data => {
+                    // Atualizar apenas os valores sem recarregar
+                    if (data.overall_status) {
+                        const uptimeEl = document.querySelector('.text-green-400');
+                        if (uptimeEl && data.overall_status.uptime_percentage) {
+                            uptimeEl.textContent = data.overall_status.uptime_percentage.toFixed(2) + '%';
+                        }
+                    }
+                    if (data.realtime_metrics) {
+                        const latencyEl = document.querySelector('.text-blue-400');
+                        if (latencyEl && data.realtime_metrics.latency_avg_ms) {
+                            latencyEl.textContent = data.realtime_metrics.latency_avg_ms.toFixed(2) + 'ms';
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error('Erro ao atualizar status:', err);
+                    // Não mostrar erro ao usuário para atualizações automáticas
+                });
+        }, 5000);
+    </script>
+</body>
+</html>
+
+
+
+

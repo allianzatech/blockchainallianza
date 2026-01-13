@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="{{ lang or 'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>🔍 Explorer - Allianza Testnet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Botão Voltar Padronizado */
+                .btn-back {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #374151;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        
+        
+        
+        
+        
+        .btn-back:hover {
+            background: #4b5563;
+        }
+.stat-card {
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+        .tx-card {
+            transition: all 0.3s;
+        }
+        .tx-card:hover {
+            background-color: rgba(55, 65, 81, 0.8);
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-green { background-color: #10b981; color: white; }
+        .badge-blue { background-color: #3b82f6; color: white; }
+        .badge-purple { background-color: #8b5cf6; color: white; }
+        .badge-yellow { background-color: #f59e0b; color: white; }
+        .badge-red { background-color: #ef4444; color: white; }
+        
+        /* ============================================
+           MOBILE RESPONSIVE STYLES
+           ============================================ */
+        @media (max-width: 768px) {
+            body { font-size: 14px; }
+            .container { padding: 1rem !important; }
+            h1 { font-size: 1.75rem !important; line-height: 1.2; }
+            h2 { font-size: 1.5rem !important; }
+            h3 { font-size: 1.25rem !important; }
+            
+            .btn-back {
+                min-height: 44px;
+                padding: 10px 16px !important;
+                font-size: 14px !important;
+            }
+            
+            .stat-card, .tx-card {
+                padding: 1rem !important;
+                margin-bottom: 1rem !important;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr !important;
+                gap: 1rem !important;
+            }
+            
+            table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                white-space: nowrap;
+                font-size: 12px;
+            }
+            
+            input, select, textarea {
+                font-size: 16px !important;
+                padding: 12px !important;
+                min-height: 44px;
+            }
+            
+            button, .btn {
+                min-height: 44px !important;
+                min-width: 44px !important;
+                padding: 12px 20px !important;
+                font-size: 14px !important;
+            }
+            
+            .text-xs { font-size: 11px !important; }
+            .text-sm { font-size: 13px !important; }
+            .text-4xl { font-size: 2rem !important; }
+            .text-3xl { font-size: 1.75rem !important; }
+            .text-2xl { font-size: 1.5rem !important; }
+            
+            .mb-8 { margin-bottom: 1.5rem !important; }
+            .mb-6 { margin-bottom: 1rem !important; }
+            .p-6 { padding: 1rem !important; }
+            .p-8 { padding: 1.5rem !important; }
+            
+            .font-mono {
+                font-size: 11px !important;
+                word-break: break-all;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 { font-size: 1.5rem !important; }
+            .stat-card, .tx-card { padding: 0.75rem !important; }
+        }
+        
+        @media (hover: none) and (pointer: coarse) {
+            button, a, .clickable, .btn-back {
+                -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+                touch-action: manipulation;
+            }
+            button:active, a:active {
+                transform: scale(0.98);
+                transition: transform 0.1s;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-6">
+            <a href="javascript:history.back()" class="btn-back mb-4">{{ t('back') or 'Back' }}</a>
+            <h1 class="text-4xl font-bold mb-2">🔍 {{ t('explorer') or 'Explorer' }}</h1>
+            <p class="text-gray-400">{{ t('explore_blocks_transactions') or 'Explore blocks, transactions and detailed network statistics' }}</p>
+        </div>
+
+        <!-- Stats Melhoradas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="stat-card bg-blue-900 p-4 rounded-lg border-2 border-blue-500">
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('total_blocks') or 'Total Blocks' }}</h3>
+                <p class="text-3xl font-bold">{{ stats.total_blocks }}</p>
+                {% if stats.last_block_index %}
+                <p class="text-xs text-gray-400 mt-1">{{ t('last') or 'Last' }}: #{{ stats.last_block_index }}</p>
+                {% endif %}
+            </div>
+            <div class="stat-card bg-green-900 p-4 rounded-lg border-2 border-green-500">
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('confirmed_transactions') or 'Confirmed Transactions' }}</h3>
+                <p class="text-3xl font-bold">{{ stats.confirmed_transactions or stats.total_transactions }}</p>
+                {% if stats.pending_transactions and stats.pending_transactions > 0 %}
+                <p class="text-xs text-yellow-400 mt-1">
+                    <i class="fas fa-clock mr-1"></i>{{ stats.pending_transactions }} {{ t('pending') or 'pending' }}
+                </p>
+                {% else %}
+                <p class="text-xs text-green-400 mt-1">
+                    <i class="fas fa-check-circle mr-1"></i>{{ t('all_confirmed') or 'All confirmed' }}
+                </p>
+                {% endif %}
+            </div>
+            <div class="stat-card bg-purple-900 p-4 rounded-lg border-2 border-purple-500">
+                <h3 class="text-sm text-gray-400 mb-1">TPS (24h)</h3>
+                <p class="text-3xl font-bold">{{ stats.tps_24h_avg }}</p>
+                {% if stats.tps_current %}
+                <p class="text-xs text-gray-400 mt-1">{{ t('current') or 'Current' }}: {{ stats.tps_current }}/s</p>
+                {% endif %}
+            </div>
+            <div class="stat-card bg-yellow-900 p-4 rounded-lg border-2 border-yellow-500">
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('average_latency') or 'Average Latency' }}</h3>
+                <p class="text-3xl font-bold">{{ stats.latency_avg_ms }}ms</p>
+                {% if stats.active_shards %}
+                <p class="text-xs text-gray-400 mt-1">{{ stats.active_shards }} {{ t('active_shards') or 'active shards' }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Estatísticas Avançadas -->
+        {% if stats.cross_chain or stats.quantum_security %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            {% if stats.cross_chain %}
+            <div class="bg-gray-800 p-6 rounded-lg border-2 border-cyan-500">
+                <h3 class="text-xl font-semibold mb-4 text-cyan-400">
+                    <i class="fas fa-project-diagram mr-2"></i>Cross-Chain
+                </h3>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">{{ t('transactions') or 'Transactions' }}:</span>
+                        <span class="font-bold">{{ stats.cross_chain.total_transactions }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">{{ t('total_volume') or 'Total Volume' }}:</span>
+                        <span class="font-bold">{{ "%.2f"|format(stats.cross_chain.total_volume) }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">{{ t('percentage') or 'Percentage' }}:</span>
+                        <span class="font-bold">{{ stats.cross_chain.percentage }}%</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if stats.quantum_security %}
+            <div class="bg-gray-800 p-6 rounded-lg border-2 border-purple-500">
+                <h3 class="text-xl font-semibold mb-4 text-purple-400">
+                    <i class="fas fa-atom mr-2"></i>{{ t('quantum_security') or 'Quantum Security' }}
+                </h3>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">{{ t('signed_with_pqc') or 'Signed with PQC' }}:</span>
+                        <span class="font-bold">{{ stats.quantum_security.quantum_signed_count }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">{{ t('percentage') or 'Percentage' }}:</span>
+                        <span class="font-bold">{{ stats.quantum_security.quantum_percentage }}%</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">{{ t('qrs3_verified') or 'QRS-3 Verified' }}:</span>
+                        <span class="font-bold">{{ stats.quantum_security.qrs3_verified_count }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Chains Suportadas -->
+        {% if stats.chains_supported %}
+        <div class="mb-8 bg-gray-800 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold mb-2">🌐 {{ t('supported_blockchains') or 'Supported Blockchains' }}</h3>
+            <div class="flex flex-wrap gap-2">
+                {% for chain in stats.chains_supported %}
+                <span class="badge badge-blue">{{ chain }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Blocks Melhorados -->
+        <div class="mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold">📦 {{ t('recent_blocks') or 'Recent Blocks' }}</h2>
+                <span class="text-sm text-gray-400">{{ blocks|length }} {{ t('blocks') or 'blocks' }}</span>
+            </div>
+            
+            {% if blocks|length > 0 and blocks[0].transaction_count == 0 %}
+            <div class="bg-blue-900/30 border border-blue-500/50 rounded-lg p-4 mb-4 text-sm text-blue-200">
+                <p><strong>ℹ️ {{ t('information') or 'Information' }}:</strong> {{ t('blocks_being_created_info') or 'Blocks are being created, but there are no pending transactions to include yet. This is normal - empty blocks are created periodically to keep the network active. When there are transactions, they will appear here automatically.' }}</p>
+            </div>
+            {% endif %}
+            <div class="space-y-3">
+                {% for block in blocks %}
+                <div class="tx-card bg-gray-800 p-5 rounded-lg border-l-4 border-blue-500">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="font-mono text-lg font-bold text-blue-400">#{{ block.index }}</span>
+                                {% if block.qrs3_verified %}
+                                <span class="badge badge-green">
+                                    <i class="fas fa-shield-alt mr-1"></i>QRS-3 ✓
+                                </span>
+                                {% endif %}
+                                {% if block.statistics.cross_chain_count > 0 %}
+                                <span class="badge badge-cyan">
+                                    <i class="fas fa-project-diagram mr-1"></i>{{ block.statistics.cross_chain_count }} Cross-Chain
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="text-sm text-gray-400 space-y-1">
+                                <p><span class="text-gray-500">Hash:</span> <span class="font-mono">{{ block.hash_short }}</span></p>
+                                <p><span class="text-gray-500">Timestamp:</span> {{ block.timestamp_readable }} <span class="text-gray-600">({{ block.timestamp_relative }})</span></p>
+                                <p><span class="text-gray-500">Shard:</span> {{ block.shard_id }} | <span class="text-gray-500">Validator:</span> {{ block.validator[:20] }}...</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold text-green-400">{{ block.transaction_count }}</div>
+                            <div class="text-xs text-gray-400">{{ t('transactions') or 'transactions' }}</div>
+                            {% if block.statistics %}
+                            <div class="text-xs text-gray-400 mt-1">
+                                {{ t('total') or 'Total' }}: {{ "%.2f"|format(block.statistics.total_amount) }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if block.statistics %}
+                    <div class="mt-3 pt-3 border-t border-gray-700 grid grid-cols-3 gap-2 text-xs">
+                        <div>
+                            <span class="text-gray-500">Cross-Chain:</span>
+                            <span class="font-bold">{{ block.statistics.cross_chain_count }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">PQC Signed:</span>
+                            <span class="font-bold">{{ block.statistics.quantum_signed_count }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">{{ t('size') or 'Size' }}:</span>
+                            <span class="font-bold">{{ block.size_bytes }} {{ t('bytes') or 'bytes' }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-3 flex gap-2">
+                        <a href="/api/proofs/block/{{ block.index }}?format=json" 
+                           class="text-xs bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded"
+                           onclick="copyBlockJSON({{ block.index }}); return false;">
+                            <i class="fas fa-copy mr-1"></i>{{ t('copy_json') or 'Copy JSON' }}
+                        </a>
+                        <a href="/api/proofs/block/{{ block.index }}?format=json" 
+                           target="_blank"
+                           class="text-xs bg-gray-600 hover:bg-gray-700 px-3 py-1 rounded">
+                            <i class="fas fa-external-link-alt mr-1"></i>{{ t('open_json') or 'Open JSON' }}
+                        </a>
+                        {% if block.transaction_count > 0 %}
+                        <button onclick="toggleBlockTransactions({{ block.index }})" 
+                                class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded">
+                            <i class="fas fa-list mr-1"></i>{{ t('view_transactions') or 'View Transactions' }}
+                        </button>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Transações do bloco (ocultas por padrão) -->
+                    <div id="block-{{ block.index }}-transactions" class="hidden mt-4 pt-4 border-t border-gray-700">
+                        <h4 class="text-sm font-semibold mb-2">{{ t('block_transactions') or 'Block Transactions' }}:</h4>
+                        <div class="space-y-2">
+                            {% for tx in block.transactions[:5] %}
+                            <div class="bg-gray-900 p-3 rounded text-xs">
+                                <div class="flex justify-between">
+                                    <span class="font-mono">{{ tx.tx_hash_short }}</span>
+                                    <span class="text-gray-400">{{ tx.amount_formatted }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% if block.transaction_count > 5 %}
+                            <p class="text-xs text-gray-500">... {{ t('and_more') or 'and more' }} {{ block.transaction_count - 5 }} {{ t('transactions') or 'transactions' }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Transactions Melhoradas -->
+        <div>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold">💸 {{ t('recent_transactions') or 'Recent Transactions' }}</h2>
+                <span class="text-sm text-gray-400">{{ transactions|length }} {{ t('transactions') or 'transactions' }}</span>
+            </div>
+            <div class="space-y-3">
+                {% for tx in transactions %}
+                <div class="tx-card bg-gray-800 p-5 rounded-lg border-l-4 {% if tx.is_cross_chain %}border-cyan-500{% elif tx.has_quantum_signature %}border-purple-500{% else %}border-green-500{% endif %}">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2 flex-wrap">
+                                <span class="font-mono text-sm">{{ tx.tx_hash_short }}</span>
+                                {% if tx.is_cross_chain %}
+                                <span class="badge badge-cyan">
+                                    <i class="fas fa-project-diagram mr-1"></i>
+                                    {% if tx.source_chain == 'allianza' or tx.source_chain == 'alz' %}
+                                        ALZ → {{ tx.target_chain|upper }}
+                                    {% else %}
+                                        {{ tx.source_chain|upper }} → {{ tx.target_chain|upper }}
+                                    {% endif %}
+                                </span>
+                                {% endif %}
+                                {% if tx.has_quantum_signature %}
+                                <span class="badge badge-purple">
+                                    <i class="fas fa-atom mr-1"></i>{{ tx.quantum_algorithm }}
+                                </span>
+                                {% endif %}
+                                {% if tx.qrs3_verified %}
+                                <span class="badge badge-green">
+                                    <i class="fas fa-shield-alt mr-1"></i>QRS-3 ✓
+                                </span>
+                                {% endif %}
+                                <span class="badge badge-{{ tx.status_color }}">
+                                    {{ tx.status|upper }}
+                                </span>
+                            </div>
+                            <div class="text-sm text-gray-400 space-y-1">
+                                <p>
+                                    <span class="text-gray-500">{{ t('from') or 'From' }}:</span> 
+                                    <span class="font-mono">{{ tx.from_short }}</span>
+                                    <span class="text-gray-600">→</span>
+                                    <span class="text-gray-500">{{ t('to') or 'To' }}:</span> 
+                                    <span class="font-mono">{{ tx.to_short }}</span>
+                                </p>
+                                <p>
+                                    <span class="text-gray-500">{{ t('amount') or 'Amount' }}:</span> 
+                                    <span class="font-bold text-green-400">{{ tx.amount_formatted }}</span>
+                                    {% if tx.gas_cost > 0 %}
+                                    <span class="text-gray-600">|</span>
+                                    <span class="text-gray-500">Gas:</span> 
+                                    <span class="text-yellow-400">{{ tx.gas_cost|int }}</span>
+                                    {% endif %}
+                                </p>
+                                <p>
+                                    <span class="text-gray-500">Timestamp:</span> 
+                                    {{ tx.timestamp_readable }} 
+                                    <span class="text-gray-600">({{ tx.timestamp_relative }})</span>
+                                    {% if tx.confirmations > 0 %}
+                                    <span class="text-gray-600">|</span>
+                                    <span class="text-gray-500">{{ t('confirmations') or 'Confirmations' }}:</span> 
+                                    <span class="text-green-400">{{ tx.confirmations }}</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xl font-bold text-green-400">
+                                {% if tx.is_cross_chain and tx.asset %}
+                                    {{ tx.amount_formatted }}
+                                {% else %}
+                                    {{ tx.amount_formatted }}
+                                {% endif %}
+                            </div>
+                            <div class="text-xs text-gray-400">
+                                {% if tx.is_cross_chain and tx.asset %}
+                                    {{ tx.asset }}
+                                {% else %}
+                                    ALZ-T
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3 flex gap-2 flex-wrap">
+                        <button onclick="copyTransactionJSON('{{ tx.tx_hash }}')" 
+                                class="text-xs bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">
+                            <i class="fas fa-copy mr-1"></i>{{ t('copy_json') or 'Copy JSON' }}
+                        </button>
+                        <a href="/api/proofs/transaction/{{ tx.tx_hash }}?format=json" 
+                           target="_blank"
+                           class="text-xs bg-gray-600 hover:bg-gray-700 px-3 py-1 rounded">
+                            <i class="fas fa-external-link-alt mr-1"></i>{{ t('open_json') or 'Open JSON' }}
+                        </a>
+                        {% if tx.is_cross_chain %}
+                            {% if tx.explorer_url_origin %}
+                            <a href="{{ tx.explorer_url_origin }}" target="_blank"
+                               class="text-xs bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">
+                                <i class="fas fa-external-link-alt mr-1"></i>{{ tx.source_chain|upper }} Explorer
+                            </a>
+                            {% endif %}
+                            {% if tx.explorer_url_dest %}
+                            <a href="{{ tx.explorer_url_dest }}" target="_blank"
+                               class="text-xs bg-cyan-600 hover:bg-cyan-700 px-3 py-1 rounded">
+                                <i class="fas fa-external-link-alt mr-1"></i>{{ tx.target_chain|upper }} Explorer
+                            </a>
+                            {% endif %}
+                        {% elif tx.explorer_url %}
+                        <a href="{{ tx.explorer_url }}" target="_blank"
+                           class="text-xs bg-cyan-600 hover:bg-cyan-700 px-3 py-1 rounded">
+                            <i class="fas fa-external-link-alt mr-1"></i>{{ t('external_explorer') or 'External Explorer' }}
+                        </a>
+                        {% endif %}
+                        {% if tx.has_quantum_signature %}
+                        <span class="text-xs bg-purple-600 px-3 py-1 rounded">
+                            <i class="fas fa-atom mr-1"></i>PQC: {{ tx.quantum_algorithm }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleBlockTransactions(blockIndex) {
+            const element = document.getElementById(`block-${blockIndex}-transactions`);
+            if (element) {
+                element.classList.toggle('hidden');
+            }
+        }
+        
+        // Auto-refresh a cada 30 segundos
+        setInterval(() => {
+            location.reload();
+        }, 30000);
+    </script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Allianza Testnet - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ============================================
+           MOBILE RESPONSIVE STYLES - COMPLETE
+           ============================================ */
+        
+        /* Mobile First - Base styles */
+        @media (max-width: 768px) {
+            body { 
+                font-size: 14px; 
+            }
+            
+            .container {
+                padding: 1rem !important;
+            }
+            
+            h1 { 
+                font-size: 1.75rem !important; 
+                line-height: 1.2;
+            }
+            h2 { 
+                font-size: 1.5rem !important; 
+            }
+            h3 { 
+                font-size: 1.25rem !important; 
+            }
+            
+            button, a.button, .btn {
+                min-height: 44px !important;
+                min-width: 44px !important;
+                padding: 12px 20px !important;
+                font-size: 14px !important;
+            }
+            
+            .card, .bg-gray-800, .bg-gray-700 {
+                padding: 1rem !important;
+            }
+            
+            /* Grids - Single column on mobile */
+            .grid {
+                grid-template-columns: 1fr !important;
+                gap: 1rem !important;
+            }
+            
+            /* Tables - Horizontal scroll */
+            table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                white-space: nowrap;
+            }
+            
+            /* Inputs - Prevent zoom on iOS */
+            input, select, textarea {
+                font-size: 16px !important;
+                padding: 12px !important;
+                min-height: 44px;
+            }
+            
+            /* Text sizes */
+            .text-xs { font-size: 11px !important; }
+            .text-sm { font-size: 13px !important; }
+            .text-lg { font-size: 1rem !important; }
+            .text-xl { font-size: 1.25rem !important; }
+            .text-2xl { font-size: 1.5rem !important; }
+            .text-3xl { font-size: 1.75rem !important; }
+            .text-4xl { font-size: 2rem !important; }
+            
+            /* Spacing - Reduced */
+            .mb-8 { margin-bottom: 1.5rem !important; }
+            .mb-6 { margin-bottom: 1rem !important; }
+            .mb-4 { margin-bottom: 0.75rem !important; }
+            .p-6 { padding: 1rem !important; }
+            .p-8 { padding: 1.5rem !important; }
+            
+            /* Modals - Full width */
+            .max-w-lg, .max-w-md, .max-w-sm {
+                max-width: 100% !important;
+                margin: 0.5rem !important;
+            }
+        }
+        
+        /* Very small screens */
+        @media (max-width: 480px) {
+            h1 { font-size: 1.5rem !important; }
+            .card, .bg-gray-800 { padding: 0.75rem !important; }
+            button, .btn { padding: 10px 16px !important; }
+        }
+        
+        /* Touch-friendly */
+        @media (hover: none) and (pointer: coarse) {
+            button, a, .clickable, .btn {
+                -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+                touch-action: manipulation;
+            }
+            
+            button:active, a:active, .btn:active {
+                transform: scale(0.98);
+                transition: transform 0.1s;
+            }
+        }
+        
+        /* Landscape mobile */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .container { padding: 0.75rem !important; }
+            h1 { font-size: 1.5rem !important; margin-bottom: 0.5rem !important; }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <!-- Notice banner -->
+    <div id="notice-banner" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+        <div class="bg-gray-800 text-white p-6 rounded-lg shadow-lg max-w-lg w-full mx-4 border border-gray-600">
+            <h3 class="text-xl font-semibold mb-3">Notice</h3>
+            <p class="text-sm text-gray-200 leading-relaxed mb-4">
+                We are continuously improving for a better experience. If you see any differences between the site, whitepaper, and testnet, please disregard them — we are evolving fast.
+            </p>
+            <button id="notice-close" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition">
+                Got it
+            </button>
+        </div>
+    </div>
+
+
+    <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold mb-2">🌐 Allianza Testnet</h1>
+            <p class="text-gray-400">World's first testnet with native quantum protection</p>
+        </div>
+
+        <!-- Network Info -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-lg font-semibold mb-2">Network ID</h3>
+                <p class="text-2xl font-mono">{{ network_info.network_id }}</p>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-lg font-semibold mb-2">Chain ID</h3>
+                <p class="text-2xl font-mono">{{ network_info.chain_id }}</p>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-lg font-semibold mb-2">Version</h3>
+                <p class="text-2xl">{{ network_info.version }}</p>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <div class="bg-blue-900 p-6 rounded-lg">
+                <h3 class="text-sm text-gray-400 mb-1">Total Blocks</h3>
+                <p class="text-3xl font-bold">{{ stats.total_blocks }}</p>
+            </div>
+            <div class="bg-green-900 p-6 rounded-lg">
+                <h3 class="text-sm text-gray-400 mb-1">Confirmed Transactions</h3>
+                <p class="text-3xl font-bold">{{ stats.confirmed_transactions or stats.total_transactions }}</p>
+                {% if stats.pending_transactions and stats.pending_transactions > 0 %}
+                <p class="text-xs text-yellow-400 mt-1">
+                    <i class="fas fa-clock mr-1"></i>{{ stats.pending_transactions }} pending
+                </p>
+                {% endif %}
+            </div>
+            <div class="bg-purple-900 p-6 rounded-lg">
+                <h3 class="text-sm text-gray-400 mb-1">TPS (24h)</h3>
+                <p class="text-3xl font-bold">{{ stats.tps_24h_avg }}</p>
+            </div>
+            <div class="bg-yellow-900 p-6 rounded-lg">
+                <h3 class="text-sm text-gray-400 mb-1">Average Latency</h3>
+                <p class="text-3xl font-bold">{{ stats.latency_avg_ms }}ms</p>
+            </div>
+        </div>
+
+        <!-- Developer Hub & Leaderboard -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <a href="/developer-hub" class="bg-gradient-to-br from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 p-4 sm:p-5 rounded-lg transition transform hover:scale-105 shadow-lg">
+                <div class="flex items-center gap-3 sm:gap-4">
+                    <i class="fas fa-rocket text-3xl sm:text-4xl"></i>
+                    <div>
+                        <h3 class="text-lg sm:text-xl font-semibold mb-1">🚀 Developer Hub</h3>
+                        <p class="text-xs sm:text-sm text-gray-200">Quick Start Guide</p>
+                        <p class="text-xs text-gray-300 mt-1 hidden sm:block">Start integrating in minutes</p>
+                    </div>
+                </div>
+            </a>
+            <a href="/leaderboard" class="bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 p-4 sm:p-5 rounded-lg transition transform hover:scale-105 shadow-lg">
+                <div class="flex items-center gap-3 sm:gap-4">
+                    <i class="fas fa-trophy text-3xl sm:text-4xl"></i>
+                    <div>
+                        <h3 class="text-lg sm:text-xl font-semibold mb-1">🏆 Leaderboard</h3>
+                        <p class="text-xs sm:text-sm text-gray-200">Ranking</p>
+                        <p class="text-xs text-gray-300 mt-1 hidden sm:block" id="developerCount">{{ (leaderboard_stats.total_users if leaderboard_stats else 0) or 0 }} developers</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Atividade Recente -->
+        {% if recent_activities %}
+        <div class="bg-gray-800 rounded-lg p-6 mb-6 sm:mb-8">
+            <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-semibold">
+                    <i class="fas fa-history text-blue-400 mr-2"></i>
+                    Recent Activity
+                </h2>
+                <a href="/leaderboard" class="text-sm text-blue-400 hover:text-blue-300">
+                    View all <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+            <div class="space-y-2 max-h-64 overflow-y-auto">
+                {% for activity in recent_activities[:10] %}
+                <div class="bg-gray-700 rounded-lg p-3 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        {% if activity.type == "test_run" %}
+                        <i class="fas fa-vial text-blue-400"></i>
+                        {% elif activity.type == "proof_generated" %}
+                        <i class="fas fa-shield-alt text-green-400"></i>
+                        {% elif activity.type == "qss_request" %}
+                        <i class="fas fa-bolt text-yellow-400"></i>
+                        {% else %}
+                        <i class="fas fa-circle text-gray-400"></i>
+                        {% endif %}
+                        <div>
+                            <p class="text-sm">
+                                <span class="font-semibold">{{ activity.user_name }}</span>
+                                {% if activity.type == "test_run" %}
+                                ran a test
+                                {% elif activity.type == "proof_generated" %}
+                                generated a quantum proof
+                                {% elif activity.type == "qss_request" %}
+                                made a QSS request
+                                {% endif %}
+                            </p>
+                            <p class="text-xs text-gray-400">
+                                {{ activity.timestamp[:19].replace('T', ' ') }}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm font-semibold text-green-400">+{{ activity.points }}</div>
+                        <div class="text-xs text-gray-400">points</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Quick Links -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 mb-6 sm:mb-8">
+            <a href="/faucet" class="bg-green-600 hover:bg-green-700 p-3 sm:p-4 rounded-lg text-center transition transform hover:scale-105">
+                <i class="fas fa-faucet text-2xl sm:text-3xl mb-1"></i>
+                <h3 class="text-sm sm:text-base font-semibold">Faucet</h3>
+                <p class="text-xs text-gray-300 hidden sm:block">Obtain tokens</p>
+            </a>
+            <a href="/explorer" class="bg-blue-600 hover:bg-blue-700 p-3 sm:p-4 rounded-lg text-center transition transform hover:scale-105">
+                <i class="fas fa-search text-2xl sm:text-3xl mb-1"></i>
+                <h3 class="text-sm sm:text-base font-semibold">Explorer</h3>
+                <p class="text-xs text-gray-300 hidden sm:block">Blocks and transactions</p>
+            </a>
+            <a href="/qrs3-verifier" class="bg-purple-600 hover:bg-purple-700 p-3 sm:p-4 rounded-lg text-center transition transform hover:scale-105">
+                <i class="fas fa-shield-alt text-2xl sm:text-3xl mb-1"></i>
+                <h3 class="text-sm sm:text-base font-semibold">QRS-3</h3>
+                <p class="text-xs text-gray-300 hidden sm:block">Verify signatures</p>
+            </a>
+            <a href="/dashboard/quantum-attack-simulator" class="bg-gradient-to-br from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 p-3 sm:p-4 rounded-lg text-center transition transform hover:scale-105 shadow-lg">
+                <i class="fas fa-flask text-2xl sm:text-3xl mb-1"></i>
+                <h3 class="text-sm sm:text-base font-semibold">Simulator</h3>
+                <p class="text-xs text-gray-300 hidden sm:block">Quantum Attack</p>
+            </a>
+            <a href="/qss" class="bg-gradient-to-br from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 p-3 sm:p-4 rounded-lg text-center transition transform hover:scale-105 shadow-lg">
+                <i class="fas fa-shield-virus text-2xl sm:text-3xl mb-1"></i>
+                <h3 class="text-sm sm:text-base font-semibold">QSS</h3>
+                <p class="text-xs text-gray-300 hidden sm:block">Security Service</p>
+            </a>
+        </div>
+
+        <!-- Novas Funcionalidades Profissionais -->
+        <div class="mb-8">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">🔐 Professional Features</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+                <a href="/status" class="bg-gray-800 hover:bg-gray-700 p-3 sm:p-4 rounded-lg border border-green-500 transition">
+                    <i class="fas fa-chart-line text-2xl sm:text-3xl mb-1 text-green-400"></i>
+                    <h3 class="text-sm sm:text-base font-semibold">Status</h3>
+                    <p class="text-xs text-gray-300 hidden sm:block">Monitoring</p>
+                </a>
+                <a href="/quantum-security" class="bg-gray-800 hover:bg-gray-700 p-3 sm:p-4 rounded-lg border border-purple-500 transition">
+                    <i class="fas fa-atom text-2xl sm:text-3xl mb-1 text-purple-400"></i>
+                    <h3 class="text-sm sm:text-base font-semibold">QRS-3</h3>
+                    <p class="text-xs text-gray-300 hidden sm:block">Dashboard</p>
+                </a>
+                <a href="/interoperability" class="bg-gray-800 hover:bg-gray-700 p-3 sm:p-4 rounded-lg border border-blue-500 transition">
+                    <i class="fas fa-project-diagram text-2xl sm:text-3xl mb-1 text-blue-400"></i>
+                    <h3 class="text-sm sm:text-base font-semibold">Interoperability</h3>
+                    <p class="text-xs text-gray-300 hidden sm:block">Bridge-Free Cross-Chain</p>
+                </a>
+                <a href="/alz-niev" class="bg-gray-800 hover:bg-gray-700 p-3 sm:p-4 rounded-lg border border-purple-500 transition">
+                    <i class="fas fa-atom text-2xl sm:text-3xl mb-1 text-purple-400"></i>
+                    <h3 class="text-sm sm:text-base font-semibold">ALZ-NIEV</h3>
+                    <p class="text-xs text-gray-300 hidden sm:block">5 Layers</p>
+                </a>
+                <a href="/public-tests" class="bg-gray-800 hover:bg-gray-700 p-3 sm:p-4 rounded-lg border border-yellow-500 transition">
+                    <i class="fas fa-vial text-2xl sm:text-3xl mb-1 text-yellow-400"></i>
+                    <h3 class="text-sm sm:text-base font-semibold">Tests</h3>
+                    <p class="text-xs text-gray-300 hidden sm:block">Public</p>
+                </a>
+                <a href="/professional-tests" class="bg-gray-800 hover:bg-gray-700 p-3 sm:p-4 rounded-lg border border-cyan-500 transition">
+                    <i class="fas fa-vial text-2xl sm:text-3xl mb-1 text-cyan-400"></i>
+                    <h3 class="text-sm sm:text-base font-semibold">Professional</h3>
+                    <p class="text-xs text-gray-300 hidden sm:block">Complete suite</p>
+                </a>
+                <a href="/tests/complete" class="bg-gradient-to-br from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 p-3 sm:p-4 rounded-lg border border-green-400 transition shadow-lg">
+                    <i class="fas fa-check-double text-2xl sm:text-3xl mb-1 text-white"></i>
+                    <h3 class="text-sm sm:text-base font-semibold">Validations Complete</h3>
+                    <p class="text-xs text-gray-200 hidden sm:block">Complete</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div class="bg-gray-800 p-6 rounded-lg">
+            <h3 class="text-xl font-semibold mb-4">Network Status</h3>
+            <div class="flex items-center">
+                <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                <span class="text-lg">{{ stats.network_status|upper }}</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<script>
+    // Show notice EVERY TIME user enters dashboard (removed sessionStorage)
+    (function() {
+        const banner = document.getElementById('notice-banner');
+        const closeBtn = document.getElementById('notice-close');
+        if (!banner || !closeBtn) return;
+
+        // Sempre mostrar o aviso (removido sessionStorage)
+        banner.classList.remove('hidden');
+
+        closeBtn.addEventListener('click', () => {
+            banner.classList.add('hidden');
+            // Não salvar no sessionStorage - aviso aparece sempre na próxima vez
+        });
+    })();
+    
+    // Atualizar contador de desenvolvedores dinamicamente
+    (function() {
+        const developerCountEl = document.getElementById('developerCount');
+        if (!developerCountEl) return;
+        
+        // Fazer requisição para obter estatísticas atualizadas
+        fetch('/api/leaderboard/stats')
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.total_users !== undefined) {
+                    const count = data.total_users || 0;
+                    developerCountEl.textContent = `${count} developer${count !== 1 ? 's' : ''}`;
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao atualizar contador de desenvolvedores:', error);
+            });
+    })();
+</script>
+

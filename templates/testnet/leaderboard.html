@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="{{ lang or 'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 {{ t('leaderboard') or 'Leaderboard - Allianza Testnet' }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Otimizações de performance */
+        * {
+            will-change: auto;
+        }
+        
+        button, a {
+            cursor: pointer;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .btn-back {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #374151;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background 0.1s ease;
+            touch-action: manipulation;
+        }
+        
+        .btn-back:hover {
+            background: #4b5563;
+        }
+        
+        .btn-back:active {
+            transform: scale(0.98);
+        }
+        
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; }
+        .rank-2 { background: linear-gradient(135deg, #C0C0C0, #808080); color: #000; }
+        .rank-3 { background: linear-gradient(135deg, #CD7F32, #8B4513); color: #fff; }
+        .rank-other { background: #374151; color: #fff; }
+        
+        /* Otimizar botões - remover transições lentas */
+        button {
+            touch-action: manipulation;
+            will-change: transform;
+            transition: transform 0.05s ease, background-color 0.1s ease;
+        }
+        
+        button:active {
+            transform: scale(0.97);
+        }
+        
+        /* Remover transições desnecessárias de hover em mobile */
+        @media (hover: none) {
+            button:hover {
+                background-color: inherit;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="javascript:history.back()" class="btn-back mb-4">
+{{ t('back') or 'Back' }}
+            </a>
+            <div class="flex items-center justify-between mb-2">
+                <div>
+                    <h1 class="text-4xl font-bold mb-2">🏆 {{ t('leaderboard') or 'Leaderboard' }}</h1>
+                    <p class="text-gray-400">{{ t('developer_ranking') or 'Ranking of developers and contributions' }}</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="showLoginModal()" id="loginBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-transform active:scale-95">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login
+                    </button>
+                    <button onclick="showRegisterModal()" id="registerBtn" class="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-lg font-semibold transition-transform active:scale-95">
+                        <i class="fas fa-user-plus mr-2"></i>{{ t('register_name') or 'Register Your Name' }}
+                    </button>
+                    <button onclick="logoutUser()" id="logoutBtn" class="hidden bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition-transform active:scale-95">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Status -->
+        <div id="userStatus" class="hidden bg-green-900/30 border border-green-600 rounded-lg p-4 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-green-200 font-semibold">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        Logado como: <span id="currentUsername"></span>
+                    </p>
+                    <p class="text-green-300 text-sm mt-1">
+                        Pontos: <span id="currentPoints">0</span> | 
+                        Testes: <span id="currentTests">0</span> | 
+                        Provas: <span id="currentProofs">0</span>
+                    </p>
+                </div>
+                <button onclick="refreshUserStatus()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition-transform active:scale-95">
+                    <i class="fas fa-sync-alt mr-2"></i>Atualizar
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Summary -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-blue-900 rounded-lg p-4">
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('total_users') or 'Total Users' }}</h3>
+                <p class="text-3xl font-bold">{{ stats.total_users or 0 }}</p>
+            </div>
+            <div class="bg-green-900 rounded-lg p-4">
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('total_points') or 'Total Points' }}</h3>
+                <p class="text-3xl font-bold">{{ stats.total_points or 0 }}</p>
+            </div>
+            <div class="bg-purple-900 rounded-lg p-4">
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('tests_executed') or 'Tests Executed' }}</h3>
+                <p class="text-3xl font-bold">{{ stats.total_tests or 0 }}</p>
+            </div>
+            <div class="bg-yellow-900 rounded-lg p-4">
+                <h3 class="text-sm text-gray-400 mb-1">{{ t('proofs_generated') or 'Proofs Generated' }}</h3>
+                <p class="text-3xl font-bold">{{ stats.total_proofs or 0 }}</p>
+            </div>
+        </div>
+
+        <!-- Top Users -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-8">
+            <h2 class="text-2xl font-semibold mb-4">
+                <i class="fas fa-trophy text-yellow-400 mr-2"></i>
+                {{ t('top_developers') or 'Top Developers' }}
+            </h2>
+            
+            {% if top_users %}
+            <div class="space-y-3">
+                {% for user in top_users %}
+                <div class="bg-gray-700 rounded-lg p-4 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        {% set rank = loop.index %}
+                        {% if rank == 1 %}
+                        <div class="rank-badge rank-1">🥇</div>
+                        {% elif rank == 2 %}
+                        <div class="rank-badge rank-2">🥈</div>
+                        {% elif rank == 3 %}
+                        <div class="rank-badge rank-3">🥉</div>
+                        {% else %}
+                        <div class="rank-badge rank-other">#{{ rank }}</div>
+                        {% endif %}
+                        
+                        <div>
+                            <h3 class="text-lg font-semibold">{{ user.name }}</h3>
+                            <div class="flex gap-4 text-sm text-gray-400">
+                                <span><i class="fas fa-vial mr-1"></i>{{ user.tests_run }} testes</span>
+                                <span><i class="fas fa-shield-alt mr-1"></i>{{ user.proofs_generated }} provas</span>
+                                <span><i class="fas fa-bolt mr-1"></i>{{ user.qss_requests }} QSS</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-right">
+                        <div class="text-2xl font-bold text-yellow-400">{{ user.points }}</div>
+                        <div class="text-xs text-gray-400">pontos</div>
+                        {% if user.badges %}
+                        <div class="flex gap-1 mt-2">
+                            {% for badge in user.badges %}
+                            <span class="text-lg" title="{{ badge.name }}">{{ badge.icon }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-8 text-gray-400">
+                <i class="fas fa-trophy text-6xl mb-4 opacity-50"></i>
+                <p>{{ t('no_developers_yet') or 'No developer yet. Be the first!' }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-2xl font-semibold mb-4">
+                <i class="fas fa-history text-blue-400 mr-2"></i>
+                {{ t('recent_activities') or 'Recent Activities' }}
+            </h2>
+            
+            {% if recent_activities %}
+            <div class="space-y-2 max-h-96 overflow-y-auto">
+                {% for activity in recent_activities %}
+                <div class="bg-gray-700 rounded-lg p-3 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        {% if activity.type == "test_run" %}
+                        <i class="fas fa-vial text-blue-400"></i>
+                        {% elif activity.type == "proof_generated" %}
+                        <i class="fas fa-shield-alt text-green-400"></i>
+                        {% elif activity.type == "qss_request" %}
+                        <i class="fas fa-bolt text-yellow-400"></i>
+                        {% else %}
+                        <i class="fas fa-circle text-gray-400"></i>
+                        {% endif %}
+                        
+                        <div>
+                            <p class="text-sm">
+                                <span class="font-semibold">{{ activity.user_name }}</span>
+                                {% if activity.type == "test_run" %}
+                                executou um teste
+                                {% elif activity.type == "proof_generated" %}
+                                gerou uma prova quântica
+                                {% elif activity.type == "qss_request" %}
+                                fez uma requisição QSS
+                                {% else %}
+                                realizou uma atividade
+                                {% endif %}
+                            </p>
+                            <p class="text-xs text-gray-400">
+                                {{ activity.timestamp[:19].replace('T', ' ') }}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-right">
+                        <div class="text-sm font-semibold text-green-400">+{{ activity.points }}</div>
+                        <div class="text-xs text-gray-400">pontos</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-8 text-gray-400">
+                <i class="fas fa-history text-6xl mb-4 opacity-50"></i>
+                <p>Nenhuma atividade recente</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+        <div class="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-blue-400">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Login
+                </h2>
+                <button onclick="closeLoginModal()" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <form id="loginForm" onsubmit="loginUser(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Nome de Usuário *</label>
+                    <input type="text" id="loginUsername" required 
+                           class="w-full bg-gray-700 text-white p-2 rounded" 
+                           placeholder="Seu username">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Senha *</label>
+                    <input type="password" id="loginPassword" required 
+                           class="w-full bg-gray-700 text-white p-2 rounded" 
+                           placeholder="Sua senha">
+                </div>
+                
+                <div id="loginError" class="hidden bg-red-900/30 border border-red-600 rounded p-3 mb-4">
+                    <p class="text-red-200 text-sm" id="loginErrorText"></p>
+                </div>
+                
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-transform active:scale-95" style="touch-action: manipulation;">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Entrar
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+        <div class="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-yellow-400">
+                    <i class="fas fa-user-plus mr-2"></i>Registrar Nome
+                </h2>
+                <button onclick="closeRegisterModal()" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <form id="registerForm" onsubmit="registerUser(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Nome de Usuário *</label>
+                    <input type="text" id="registerUsername" required minlength="3" maxlength="30" 
+                           class="w-full bg-gray-700 text-white p-2 rounded" 
+                           placeholder="Seu nome no ranking">
+                    <p class="text-xs text-gray-400 mt-1">3-30 caracteres, apenas letras, números e _</p>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Senha *</label>
+                    <input type="password" id="registerPassword" required minlength="4" 
+                           class="w-full bg-gray-700 text-white p-2 rounded" 
+                           placeholder="Mínimo 4 caracteres">
+                    <p class="text-xs text-gray-400 mt-1">Mínimo 4 caracteres</p>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Email (opcional)</label>
+                    <input type="email" id="registerEmail" 
+                           class="w-full bg-gray-700 text-white p-2 rounded" 
+                           placeholder="seu@email.com">
+                </div>
+                
+                <div id="registerError" class="hidden bg-red-900/30 border border-red-600 rounded p-3 mb-4">
+                    <p class="text-red-200 text-sm" id="registerErrorText"></p>
+                </div>
+                
+                <div id="registerSuccess" class="hidden bg-green-900/30 border border-green-600 rounded p-3 mb-4">
+                    <p class="text-green-200 text-sm">✅ Registrado com sucesso! Seu nome aparecerá no ranking.</p>
+                </div>
+                
+                <button type="submit" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 rounded-lg transition-transform active:scale-95">
+                    <i class="fas fa-check mr-2"></i>Registrar
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Verificar status do usuário ao carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshUserStatus();
+        });
+
+        // Debounce para evitar múltiplos cliques
+        let lastClickTime = 0;
+        const CLICK_DEBOUNCE = 200; // 200ms entre cliques
+        
+        function debounceClick(func) {
+            return function(...args) {
+                const now = Date.now();
+                if (now - lastClickTime < CLICK_DEBOUNCE) {
+                    return;
+                }
+                lastClickTime = now;
+                return func.apply(this, args);
+            };
+        }
+
+        const showRegisterModal = debounceClick(function() {
+            const modal = document.getElementById('registerModal');
+            if (modal) modal.classList.remove('hidden');
+        });
+
+        const closeRegisterModal = debounceClick(function() {
+            const modal = document.getElementById('registerModal');
+            const errorDiv = document.getElementById('registerError');
+            const successDiv = document.getElementById('registerSuccess');
+            const form = document.getElementById('registerForm');
+            if (modal) modal.classList.add('hidden');
+            if (errorDiv) errorDiv.classList.add('hidden');
+            if (successDiv) successDiv.classList.add('hidden');
+            if (form) form.reset();
+        });
+
+        const showLoginModal = debounceClick(function() {
+            const modal = document.getElementById('loginModal');
+            if (modal) modal.classList.remove('hidden');
+        });
+
+        const closeLoginModal = debounceClick(function() {
+            const modal = document.getElementById('loginModal');
+            const errorDiv = document.getElementById('loginError');
+            const form = document.getElementById('loginForm');
+            if (modal) modal.classList.add('hidden');
+            if (errorDiv) errorDiv.classList.add('hidden');
+            if (form) form.reset();
+        });
+
+        async function loginUser(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.classList.add('hidden');
+            
+            try {
+                const response = await fetch('/api/leaderboard/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    closeLoginModal();
+                    refreshUserStatus();
+                    setTimeout(() => location.reload(), 500); // Pequeno delay antes de recarregar
+                } else {
+                    showLoginError(data.error || 'Erro ao fazer login');
+                }
+            } catch (error) {
+                showLoginError('Erro de conexão. Tente novamente.');
+                console.error('Erro:', error);
+            }
+        }
+
+        function showLoginError(message) {
+            const errorDiv = document.getElementById('loginError');
+            const errorText = document.getElementById('loginErrorText');
+            errorText.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+
+        async function logoutUser() {
+            // Desabilitar botão durante logout para evitar múltiplos cliques
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.disabled = true;
+                logoutBtn.style.opacity = '0.6';
+            }
+            
+            try {
+                const response = await fetch('/api/leaderboard/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin' // Garantir que cookies são enviados
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Esconder UI imediatamente
+                    document.getElementById('userStatus').classList.add('hidden');
+                    document.getElementById('registerBtn').classList.remove('hidden');
+                    document.getElementById('loginBtn').classList.remove('hidden');
+                    document.getElementById('logoutBtn').classList.add('hidden');
+                    
+                    // Forçar recarga após um pequeno delay para garantir que sessão foi limpa
+                    setTimeout(() => {
+                        window.location.href = '/leaderboard'; // Redirect em vez de reload
+                    }, 100);
+                } else {
+                    if (logoutBtn) {
+                        logoutBtn.disabled = false;
+                        logoutBtn.style.opacity = '1';
+                    }
+                    alert('Erro ao fazer logout: ' + (data.error || 'Erro desconhecido'));
+                }
+            } catch (error) {
+                console.error('Erro ao fazer logout:', error);
+                if (logoutBtn) {
+                    logoutBtn.disabled = false;
+                    logoutBtn.style.opacity = '1';
+                }
+                alert('Erro de conexão ao fazer logout');
+            }
+        }
+
+        async function registerUser(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('registerUsername').value.trim();
+            const password = document.getElementById('registerPassword').value.trim();
+            const email = document.getElementById('registerEmail').value.trim() || null;
+            
+            // Validar username
+            if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                showRegisterError('Username pode conter apenas letras, números e underscore (_)');
+                return;
+            }
+            
+            if (!password || password.length < 4) {
+                showRegisterError('Senha deve ter pelo menos 4 caracteres');
+                return;
+            }
+            
+            const errorDiv = document.getElementById('registerError');
+            const successDiv = document.getElementById('registerSuccess');
+            errorDiv.classList.add('hidden');
+            successDiv.classList.add('hidden');
+            
+            try {
+                const response = await fetch('/api/leaderboard/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password, email })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    successDiv.classList.remove('hidden');
+                    setTimeout(() => {
+                        closeRegisterModal();
+                        refreshUserStatus();
+                        setTimeout(() => location.reload(), 500); // Recarregar após registro
+                    }, 1500);
+                } else {
+                    showRegisterError(data.error || 'Erro ao registrar usuário');
+                }
+            } catch (error) {
+                showRegisterError('Erro de conexão. Tente novamente.');
+                console.error('Erro:', error);
+            }
+        }
+
+        function showRegisterError(message) {
+            const errorDiv = document.getElementById('registerError');
+            const errorText = document.getElementById('registerErrorText');
+            errorText.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+
+        let refreshTimeout = null;
+        async function refreshUserStatus() {
+            // Debounce: cancelar refresh anterior se ainda estiver pendente
+            if (refreshTimeout) {
+                clearTimeout(refreshTimeout);
+            }
+            
+            refreshTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch('/api/leaderboard/user', {
+                        credentials: 'same-origin', // Garantir que cookies são enviados
+                        cache: 'no-cache' // Sempre buscar dados frescos
+                    });
+                    const data = await response.json();
+                    
+                    // IMPORTANTE: Só mostrar como logado se logged_in for true explicitamente
+                    if (data.success && data.user && data.user.logged_in === true) {
+                        document.getElementById('userStatus').classList.remove('hidden');
+                        document.getElementById('currentUsername').textContent = data.user.username || data.user.name || 'Usuário';
+                        document.getElementById('currentPoints').textContent = data.user.points || 0;
+                        document.getElementById('currentTests').textContent = data.user.tests_run || 0;
+                        document.getElementById('currentProofs').textContent = data.user.proofs_generated || 0;
+                        document.getElementById('registerBtn').classList.add('hidden');
+                        document.getElementById('loginBtn').classList.add('hidden');
+                        document.getElementById('logoutBtn').classList.remove('hidden');
+                    } else {
+                        // Não está logado - esconder tudo
+                        document.getElementById('userStatus').classList.add('hidden');
+                        document.getElementById('registerBtn').classList.remove('hidden');
+                        document.getElementById('loginBtn').classList.remove('hidden');
+                        document.getElementById('logoutBtn').classList.add('hidden');
+                    }
+                } catch (error) {
+                    console.error('Erro ao verificar status:', error);
+                }
+            }, 50); // Debounce de 50ms
+        }
+
+        // Auto-refresh apenas do status do usuário (não recarregar página inteira)
+        // Isso é muito mais rápido que reload completo
+        setInterval(() => {
+            const loginModal = document.getElementById('loginModal');
+            const registerModal = document.getElementById('registerModal');
+            if (loginModal && loginModal.classList.contains('hidden') && 
+                registerModal && registerModal.classList.contains('hidden')) {
+                refreshUserStatus(); // Apenas atualizar status, não reload completo
+            }
+        }, 30000); // 30 segundos
+    </script>
+</body>
+</html>
+
