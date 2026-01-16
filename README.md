@@ -17,6 +17,35 @@
 
 ---
 
+## 💰 Investment Opportunity - Seed Round Open
+
+<div align="center">
+
+**🌐 The First Quantum-Safe, Bridge-Free Cross-Chain Infrastructure**
+
+Solving **$2.5B+ bridge hacks** and **$1T+ quantum risk** with proven technology
+
+| Market Opportunity | Allianza Solution |
+|-------------------|------------------|
+| $50B+ Cross-Chain Volume | Bridge-Free Protocol (ALZ-NIEV) |
+| $1T+ Quantum Risk | QRS-3 Triple Protection |
+| 100% Success Rate | 41 Technical Validations |
+
+**Quick Links:**
+- 📄 [Full Investment Overview](docs/INVEST_IN_ALLIANZA.md) - Complete investor document
+- 📋 [Investment One-Pager](docs/INVEST_IN_ALLIANZA_ONE_PAGER.md) - Executive summary
+- 📧 **Contact Investors:** [contact@allianza.tech](mailto:contact@allianza.tech)
+
+**Why Invest:**
+- ✅ **Proven Technology** - Public testnet with real cross-chain transfers
+- ✅ **No Competitors** - Only bridge-free + quantum-safe solution
+- ✅ **Enterprise-Ready** - Institutional-grade audit guides and proofs
+- ✅ **Open Core Model** - Sustainable revenue with transparent protocols
+
+</div>
+
+---
+
 ## 🌟 Features
 
 - ✅ **Cross-Chain Interoperability**: Real transfers between EVM, non-EVM, and sovereign blockchains
