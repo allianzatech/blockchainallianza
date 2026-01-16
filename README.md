@@ -31,16 +31,32 @@ Solving **$2.5B+ bridge hacks** and **$1T+ quantum risk** with proven technology
 | $1T+ Quantum Risk | QRS-3 Triple Protection |
 | 100% Success Rate | 41 Technical Validations |
 
+**💼 Investment Details:**
+- **Valuation:** $20M Pre-Money
+- **Investment Ask:** $3M - $5M (15-20% equity)
+- **Round:** Seed - Open for Strategic Partners
+
+**🏆 Market Comparables:**
+
+| Company | Current Valuation | Problem Solved |
+|---------|-------------------|----------------|
+| **LayerZero** | $3+ Billion | Cross-chain messaging |
+| **Chainlink** | $8+ Billion | Oracle infrastructure |
+| **Wormhole** | $2.5+ Billion | Cross-chain bridge |
+
+**Allianza Advantage:** Unlike LayerZero and Wormhole at seed stage, **Allianza has working technology** with live testnet and verifiable proofs. Positioned to become the next infrastructure protocol reaching multi-billion dollar valuations.
+
 **Quick Links:**
 - 📄 [Full Investment Overview](docs/INVEST_IN_ALLIANZA.md) - Complete investor document
 - 📋 [Investment One-Pager](docs/INVEST_IN_ALLIANZA_ONE_PAGER.md) - Executive summary
 - 📧 **Contact Investors:** [contact@allianza.tech](mailto:contact@allianza.tech)
 
 **Why Invest:**
-- ✅ **Proven Technology** - Public testnet with real cross-chain transfers
+- ✅ **Proven Technology** - Public testnet with real cross-chain transfers (Solana → Bitcoin verified)
 - ✅ **No Competitors** - Only bridge-free + quantum-safe solution
 - ✅ **Enterprise-Ready** - Institutional-grade audit guides and proofs
 - ✅ **Open Core Model** - Sustainable revenue with transparent protocols
+- ✅ **Working Now** - Not a whitepaper, but **production-ready technology**
 
 </div>
 
