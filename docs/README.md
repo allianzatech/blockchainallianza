@@ -1,31 +1,32 @@
-# Documentação Allianza Blockchain
+# Allianza Blockchain Documentation
 
-Este diretório contém a documentação técnica completa do projeto Allianza Blockchain.
+This directory contains the complete technical documentation for the Allianza Blockchain project.
 
-## 📚 Documentos Disponíveis
+## 📚 Available Documents
 
-### Melhorias e Implementações
+### Enterprise & Business
 
-- **[MELHORIAS_INTEROPERABILIDADE_COMPLETA.md](./MELHORIAS_INTEROPERABILIDADE_COMPLETA.md)**
-  - Documentação completa das melhorias de interoperabilidade
-  - Arquitetura, componentes, fluxos
-  - Guia técnico completo
+- **[Investment Overview](INVEST_IN_ALLIANZA.md)** - Complete investment documentation for investors
+- **[Investment One-Pager](INVEST_IN_ALLIANZA_ONE_PAGER.md)** - Executive summary for quick reference
 
-### Documentação na Raiz
+### Developer Resources
 
-- `KNOWN_LIMITATIONS.md` - Limitações conhecidas do sistema
-- `THREAT_MODEL.md` - Modelo de ameaças e análise de segurança
-- `PLANO_MELHORIAS_BINDING.md` - Plano de ação para melhorias
-- `INTEGRACAO_COMMITMENT_COMPLETA.md` - Guia técnico de integração
-- `INSTRUCOES_DEPLOY.md` - Instruções de deploy dos contratos
+- **[Developer Onboarding](DEVELOPER_ONBOARDING.md)** - Complete guide for new contributors
+- **[Architecture](ARCHITECTURE.md)** - System architecture and design
+- **[Architecture Decision Records (ADRs)](adr/README.md)** - Key architectural decisions
 
-## 🚀 Início Rápido
+### Technical Documentation
 
-Para entender as melhorias implementadas, comece por:
+- **[ROADMAP](ROADMAP.md)** - Development roadmap
+- **[Executive Security Brief](EXECUTIVE_SECURITY_BRIEF.md)** - Executive security overview
+- **[Security Audit Report](SECURITY_AUDIT_REPORT.md)** - Security audit documentation
+- **[Quantum Attack Analysis](QUANTUM_ATTACK_ANALYSIS.md)** - Quantum attack simulations
 
-1. **[MELHORIAS_INTEROPERABILIDADE_COMPLETA.md](./MELHORIAS_INTEROPERABILIDADE_COMPLETA.md)** - Visão geral completa
-2. `KNOWN_LIMITATIONS.md` - Entender limitações atuais
-3. `INTEGRACAO_COMMITMENT_COMPLETA.md` - Guia técnico de uso
+### Other Documentation
+
+- `KNOWN_LIMITATIONS.md` - Known system limitations
+- `PLANO_MELHORIAS_BINDING.md` - Improvement action plan
+- `INTEGRACAO_COMMITMENT_COMPLETA.md` - Technical integration guide
 
 ## 📖 Estrutura
 
